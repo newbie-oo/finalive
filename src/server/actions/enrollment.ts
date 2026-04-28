@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
 import { ApiError } from "@/lib/api-error";
+import { isUniqueViolation } from "@/lib/pg-error";
 import { generateRefCode } from "../services/ref-code";
 import { requireSession } from "../auth-session";
 
@@ -82,11 +83,10 @@ export async function createPendingEnrollment(
       if (!row) throw new ApiError("internal_error", "insert returned no rows");
       return row;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      // Postgres 23505 = unique_violation. Retry on ref_code clash; surface partial-unique
-      // (one_active_pending) as conflict immediately.
-      if (msg.includes("ref_code")) continue;
-      if (msg.includes("one_active_pending")) {
+      // Match by SQLSTATE + constraint name; substring-matching error
+      // messages breaks under PG locale changes / version bumps.
+      if (isUniqueViolation(e, "pending_enrollment_ref_code_unique")) continue;
+      if (isUniqueViolation(e, "one_active_pending")) {
         throw new ApiError("conflict", "another pending enrollment already exists");
       }
       throw e;

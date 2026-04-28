@@ -6,6 +6,7 @@ import { pendingEnrollment, paymentSlip } from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { ApiError } from "@/lib/api-error";
+import { getEnv } from "@/lib/env";
 import { requireSession } from "../auth-session";
 import { putObject } from "../services/r2";
 import { withIdempotency } from "../services/idempotency";
@@ -137,7 +138,7 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
 
         await enqueueEmail(
           {
-            toEmail: "admin@finalive.dev",
+            toEmail: getEnv().ADMIN_NOTIFY_EMAIL,
             template: "admin_new_slip",
             paramsJson: {
               studentEmail: user.email,
