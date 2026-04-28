@@ -24,6 +24,30 @@ export async function getCertificateByCode(certCode: string) {
   return rows[0] ?? null;
 }
 
+export interface CertificateListItem {
+  certCode: string;
+  courseTitle: string;
+  issuedAt: Date;
+  revokedAt: Date | null;
+}
+
+export async function listCertificatesByUserId(userId: string): Promise<CertificateListItem[]> {
+  const rows = await db
+    .select({
+      certCode: certificate.certCode,
+      courseTitle: courseTable.title,
+      issuedAt: certificate.issuedAt,
+      revokedAt: certificate.revokedAt,
+    })
+    .from(certificate)
+    .innerJoin(enrollment, eq(certificate.enrollmentId, enrollment.id))
+    .innerJoin(courseTable, eq(enrollment.courseId, courseTable.id))
+    .where(eq(enrollment.userId, userId))
+    .orderBy(certificate.issuedAt);
+
+  return rows;
+}
+
 export interface VerifyCertificateResult {
   certCode: string;
   issuedAt: Date;
