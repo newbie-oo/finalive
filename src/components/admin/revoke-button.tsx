@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { revokeCertificateAction } from "@/server/actions/certificate-admin";
 
 interface RevokeButtonProps {
@@ -18,9 +19,10 @@ export function RevokeButton({ certId }: RevokeButtonProps) {
     const res = await revokeCertificateAction(certId, reason);
     setLoading(false);
     if (res.ok) {
+      toast.success("เพิกถอนใบรับรองแล้ว");
       window.location.reload();
     } else {
-      alert("เพิกถอนไม่สำเร็จ");
+      toast.error("เพิกถอนไม่สำเร็จ");
     }
   };
 

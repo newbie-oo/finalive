@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 interface SlipUploadFormProps {
   pendingId: string;
   amount: string;
 }
+
+const MAX_SLIP_BYTES = 5 * 1024 * 1024;
 
 export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -23,7 +26,11 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
       return;
     }
     if (!f.type.startsWith("image/")) {
-      alert("รองรับเฉพาะไฟล์รูปภาพ");
+      toast.error("รองรับเฉพาะไฟล์รูปภาพ (PNG หรือ JPG)");
+      return;
+    }
+    if (f.size > MAX_SLIP_BYTES) {
+      toast.error("ไฟล์ใหญ่เกิน 5 MB");
       return;
     }
     setFile(f);
@@ -62,12 +69,14 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
     >
       <input type="hidden" name="pendingId" value={pendingId} />
 
-      <div
+      <button
+        type="button"
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onClick={() => inputRef.current?.click()}
-        className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+        aria-label="เลือกไฟล์สลิป — ลากไฟล์มาวาง หรือคลิกเลือก"
+        className={`relative w-full cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
           dragOver
             ? "border-primary bg-primary/5"
             : preview
@@ -80,7 +89,7 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={preview}
-              alt="preview"
+              alt="ตัวอย่างสลิปที่อัปโหลด"
               className="mx-auto max-h-64 rounded object-contain"
             />
           </>
@@ -103,7 +112,7 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
           className="sr-only"
           onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
         />
-      </div>
+      </button>
 
       {file && (
         <div className="flex items-center justify-between rounded border border-border bg-card px-3 py-2 text-xs">
