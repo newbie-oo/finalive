@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/server/auth-session";
 import { listCertificatesByUserId } from "@/server/repos/certificate";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +20,18 @@ export default async function AccountCertificatesPage() {
       <h1 className="text-2xl font-semibold">ใบรับรองของฉัน</h1>
 
       {certs.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">
-          ยังไม่มีใบรับรอง สำเร็จคอร์สแล้วจะได้รับใบรับรองอัตโนมัติ
-        </p>
+        <div className="mt-6">
+          <EmptyState
+            icon="🏆"
+            title="ยังไม่มีใบรับรอง"
+            description="เมื่อเรียนจบคอร์สที่ลงทะเบียนแล้ว ระบบจะออกใบรับรองให้อัตโนมัติ"
+            action={
+              <Button asChild variant="outline">
+                <Link href="/account/enrollments">ดูคอร์สของฉัน</Link>
+              </Button>
+            }
+          />
+        </div>
       ) : (
         <div className="mt-4 space-y-3">
           {certs.map((cert) => (

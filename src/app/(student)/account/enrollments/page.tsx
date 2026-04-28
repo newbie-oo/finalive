@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireSession } from "@/server/auth-session";
 import { listAccountPendings } from "@/server/repos/account";
 import { formatTHB } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   PENDING_STATUS_LABEL,
   isActionable,
@@ -22,9 +24,16 @@ export default async function EnrollmentsPage() {
       </p>
 
       {pendings.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          ยังไม่มีรายการ — <Link href="/courses" className="text-primary hover:underline">เลือกคอร์ส</Link>
-        </p>
+        <EmptyState
+          icon="📚"
+          title="ยังไม่มีคอร์ส"
+          description="เลือกคอร์สแรกแล้วเริ่มเรียนได้เลย"
+          action={
+            <Button asChild>
+              <Link href="/courses">เลือกคอร์ส</Link>
+            </Button>
+          }
+        />
       ) : (
         <ul className="space-y-3">
           {pendings.map((p) => (

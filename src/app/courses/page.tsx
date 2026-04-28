@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard, CourseCardSkeleton } from "@/components/course/course-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { listPublishedCourses } from "@/server/repos/course";
 import { offsetSchema, type SearchParams } from "@/lib/pagination";
@@ -12,10 +13,11 @@ async function CourseGrid({ params }: { params: ReturnType<typeof offsetSchema.p
 
   if (result.data.length === 0) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-lg font-medium">ยังไม่มีคอร์สเปิดสอน</p>
-        <p className="mt-1 text-sm text-muted-foreground">กรุณากลับมาตรวจสอบภายหลัง</p>
-      </div>
+      <EmptyState
+        icon="🎓"
+        title="ยังไม่มีคอร์สเปิดสอน"
+        description="ทีมงานกำลังเตรียมคอร์สใหม่ — กรุณากลับมาตรวจสอบภายหลัง"
+      />
     );
   }
 
