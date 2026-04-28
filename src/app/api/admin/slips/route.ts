@@ -34,6 +34,7 @@ export async function GET(req: Request) {
         { status: 400 },
       );
     }
+    console.error("admin/slips error:", e);
     throw e;
   }
 }

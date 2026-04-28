@@ -35,6 +35,7 @@ export async function POST(
         { status: statusForCode(e.code) },
       );
     }
+    console.error("admin/slips/reject error:", e);
     throw e;
   }
 }

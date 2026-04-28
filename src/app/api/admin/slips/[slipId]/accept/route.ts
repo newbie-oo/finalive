@@ -17,6 +17,7 @@ export async function POST(
         { status: statusForCode(e.code) },
       );
     }
+    console.error("admin/slips/accept error:", e);
     throw e;
   }
 }

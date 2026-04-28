@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseCollaborator } from "@/db/schema/course";
 
@@ -37,7 +37,7 @@ export async function getCourseAccess(
   const collabRows = await db
     .select({ role: courseCollaborator.role })
     .from(courseCollaborator)
-    .where(eq(courseCollaborator.courseId, courseId))
+    .where(and(eq(courseCollaborator.courseId, courseId), eq(courseCollaborator.userId, userId)))
     .limit(1);
 
   const collabRole = collabRows[0]?.role;

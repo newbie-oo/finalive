@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         { status: statusForCode(e.code) },
       );
     }
+    console.error("slip/upload error:", e);
     throw e;
   }
 }

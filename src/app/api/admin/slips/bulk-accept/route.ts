@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         { status: statusForCode(e.code) },
       );
     }
+    console.error("admin/slips/bulk-accept error:", e);
     throw e;
   }
 }

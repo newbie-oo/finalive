@@ -43,9 +43,9 @@ const tusServer = new Server({
     const courseId = upload.metadata?.courseId;
     if (!lessonId || !courseId) return {};
 
+    const title = upload.metadata?.filename || upload.metadata?.name || "Untitled";
+    const filePath = path.join(uploadDir, upload.id);
     try {
-      const title = upload.metadata?.filename || upload.metadata?.name || "Untitled";
-      const filePath = path.join(uploadDir, upload.id);
 
       // Cleanup old video if exists.
       const lessonRows = await db
@@ -91,15 +91,16 @@ const tusServer = new Server({
         .update(lesson)
         .set({ videoMediaId: asset!.id, updatedAt: new Date() })
         .where(eq(lesson.id, lessonId));
-
-      // Delete temp file.
+    } catch (err) {
+      console.error("Failed to process upload to Bunny:", err);
+      throw err; // Propagate so TUS client knows upload failed
+    } finally {
+      // Delete temp file regardless of success/failure.
       try {
         await unlink(filePath);
       } catch {
         // File may already be cleaned up.
       }
-    } catch (err) {
-      console.error("Failed to process upload to Bunny:", err);
     }
 
     return {};

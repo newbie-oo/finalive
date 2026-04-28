@@ -4,6 +4,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getSession } from "@/server/auth-session";
 import { db } from "@/db/client";
 import { enrollment } from "@/db/schema/enrollment";
+import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { user as userTable } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
@@ -55,14 +56,12 @@ export async function issueCertificate(enrollmentId: string) {
     .limit(1);
 
   // Need to get course title via enrollment -> course.
-  // Use raw query since we need course info.
-  const courseRows = await db.execute<{ title: string }>(`
-    SELECT c.title
-    FROM enrollment e
-    JOIN course c ON e.course_id = c.id
-    WHERE e.id = '${enrollmentId}'
-    LIMIT 1
-  `);
+  const courseRows = await db
+    .select({ title: course.title })
+    .from(enrollment)
+    .innerJoin(course, eq(enrollment.courseId, course.id))
+    .where(eq(enrollment.id, enrollmentId))
+    .limit(1);
 
   const courseTitle = courseRows[0]?.title ?? "Course";
   const studentName = userRow[0]?.name ?? session.user.email ?? "Student";

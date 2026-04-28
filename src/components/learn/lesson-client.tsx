@@ -28,9 +28,13 @@ export function LessonClient({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ lessonId }),
-    }).then((res) => {
-      if (!cancelled && res.ok) setStarted(true);
-    });
+    })
+      .then((res) => {
+        if (!cancelled && res.ok) setStarted(true);
+      })
+      .catch(() => {
+        // Network error — lesson start will retry on next visit.
+      });
     return () => {
       cancelled = true;
     };

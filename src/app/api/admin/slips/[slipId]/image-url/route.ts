@@ -50,6 +50,7 @@ export async function GET(
         { status: statusForCode(e.code) },
       );
     }
+    console.error("admin/slips/image-url error:", e);
     throw e;
   }
 }

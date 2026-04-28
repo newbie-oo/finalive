@@ -17,6 +17,7 @@ export async function POST(req: Request) {
         { status: statusForCode(e.code) },
       );
     }
+    console.error("checkout/start error:", e);
     throw e;
   }
 }
