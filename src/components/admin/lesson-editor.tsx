@@ -4,6 +4,7 @@ import { useState, useTransition, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { updateLessonAction } from "@/server/actions/admin-curriculum";
+import { VideoUploader } from "@/components/admin/video-uploader";
 import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
 
 interface LessonEditorProps {
@@ -111,6 +112,15 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
             />
             ฟรี
           </label>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">วิดีโอ</label>
+          <VideoUploader
+            courseId={courseId}
+            lessonId={lesson.id}
+            onUploadComplete={() => window.location.reload()}
+          />
         </div>
 
         <div>
