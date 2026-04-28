@@ -10,6 +10,10 @@ import {
   PasswordReset,
   passwordResetSubject,
 } from "@/server/email/templates/password-reset";
+import {
+  GrantCourse,
+  grantCourseSubject,
+} from "@/server/email/templates/grant-course";
 
 declare global {
   var __finalive_mail_transport: Transporter | undefined;
@@ -77,4 +81,21 @@ export async function sendPasswordResetEmail(args: PasswordResetEmailArgs): Prom
     render(node, { plainText: true }),
   ]);
   await sendMail({ to: args.to, subject: passwordResetSubject, html, text });
+}
+
+
+export interface GrantCourseEmailArgs {
+  to: string;
+  name: string;
+  courseTitle: string;
+  learnUrl: string;
+}
+
+export async function sendGrantCourseEmail(args: GrantCourseEmailArgs): Promise<void> {
+  const node = GrantCourse({ name: args.name, courseTitle: args.courseTitle, learnUrl: args.learnUrl });
+  const [html, text] = await Promise.all([
+    render(node),
+    render(node, { plainText: true }),
+  ]);
+  await sendMail({ to: args.to, subject: grantCourseSubject, html, text });
 }
