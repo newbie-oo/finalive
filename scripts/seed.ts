@@ -29,6 +29,7 @@ interface SeedLesson {
   durationSeconds: number;
   isPreview?: boolean;
   isFree?: boolean;
+  bodyMd?: string;
 }
 interface SeedModule {
   title: string;
@@ -125,6 +126,32 @@ const SEED_COURSES: SeedCourse[] = [
   },
 ];
 
+/**
+ * Generate a richer default Markdown body for any lesson that doesn't
+ * supply its own bodyMd. Falls back from "Lorem placeholder" so seeded
+ * pages don't look empty in screenshots and demos.
+ */
+function defaultLessonBody(courseTitle: string, moduleTitle: string, lessonTitle: string): string {
+  return [
+    `# ${lessonTitle}`,
+    "",
+    `> ${courseTitle} → ${moduleTitle}`,
+    "",
+    "## สิ่งที่จะได้เรียน",
+    "- ภาพรวมของหัวข้อ และวิธีนำไปใช้จริง",
+    "- เครื่องมือที่ต้องเตรียม และคำแนะนำการเซ็ตอัป",
+    "- ตัวอย่างพร้อมโค้ด/แบบฝึกหัดท้ายบท",
+    "",
+    "## โน้ตประกอบ",
+    "ดูวิดีโอประกอบด้านบน หากต้องการทบทวนสามารถกลับมาได้ตลอดเวลา ระบบจะจดจำตำแหน่งล่าสุด",
+    "เพื่อให้คุณเรียนต่อได้ทันที",
+    "",
+    "## คำถามท้ายบท",
+    "1. คุณคิดว่าหัวข้อนี้นำไปใช้ในงานจริงได้อย่างไร?",
+    "2. มีจุดไหนที่อยากให้อาจารย์อธิบายเพิ่ม? เก็บไว้ถามใน Q&A",
+  ].join("\n");
+}
+
 async function seedUsers(): Promise<string> {
   await db.execute(sql`TRUNCATE TABLE "account", "session", "verification", "user" CASCADE`);
 
@@ -195,7 +222,7 @@ async function seedCourses(adminId: string): Promise<string[]> {
           id: lessonId,
           moduleId,
           title: l.title,
-          bodyMd: `# ${l.title}\n\nเนื้อหา placeholder สำหรับ seed.`,
+          bodyMd: l.bodyMd ?? defaultLessonBody(c.title, m.title, l.title),
           durationSeconds: l.durationSeconds,
           isPreview: l.isPreview ?? false,
           isFree: l.isFree ?? false,
@@ -277,8 +304,16 @@ async function seedAppSettings(adminId: string): Promise<void> {
   const settings = [
     {
       key: "bank_account_display",
-      valueJson: { text: "กสิกรไทย • 123-4-56789-0 • บจ.ฟิเนไลฟ์" },
+      valueJson: { text: "กสิกรไทย (KBank) • 123-4-56789-0 • บจ.ฟิเนไลฟ์ จำกัด" },
       description: "แสดงในหน้า /checkout",
+      updatedByUserId: adminId,
+    },
+    {
+      key: "promptpay_qr_image_url",
+      // Admin uploads a PromptPay QR image and stores the public URL here.
+      // Empty by default — the checkout page falls back to "โอนตามเลขบัญชี".
+      valueJson: { url: "" },
+      description: "URL ของรูป QR PromptPay ที่ admin อัปโหลดเอง",
       updatedByUserId: adminId,
     },
     {
