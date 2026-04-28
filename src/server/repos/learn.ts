@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -73,6 +73,7 @@ export async function getLearnCourse(
     .where(and(eq(courseModule.courseId, courseRow.id), isNull(courseModule.deletedAt)))
     .orderBy(asc(courseModule.sortOrder));
 
+  // Scope to this course only — joining via module avoids returning every lesson in DB.
   const lessons = await db
     .select({
       id: lesson.id,
@@ -84,7 +85,14 @@ export async function getLearnCourse(
       sortOrder: lesson.sortOrder,
     })
     .from(lesson)
-    .where(isNull(lesson.deletedAt))
+    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+    .where(
+      and(
+        eq(courseModule.courseId, courseRow.id),
+        isNull(lesson.deletedAt),
+        isNull(courseModule.deletedAt),
+      ),
+    )
     .orderBy(asc(lesson.sortOrder));
 
   const byModule = new Map<string, LearnLesson[]>();
@@ -137,13 +145,26 @@ export async function getLearnCourse(
         .where(eq(lessonProgress.userId, userId));
       progress = progRows;
 
-      // Resume: last watched lesson, or first lesson if none.
-      const lastWatched = progRows
-        .filter((p) => p.status !== "not_started")
-        .sort((a, b) => b.watchedSeconds - a.watchedSeconds)[0];
-      if (lastWatched) {
-        resumeLessonId = lastWatched.lessonId;
-      }
+      // Resume: most recently updated lesson, preferring in_progress over completed.
+      // Done at the DB to keep status priority + updatedAt sorting consistent.
+      const [resume] = await db
+        .select({ lessonId: lessonProgress.lessonId })
+        .from(lessonProgress)
+        .innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
+        .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+        .where(
+          and(
+            eq(lessonProgress.userId, userId),
+            eq(courseModule.courseId, courseRow.id),
+            sql`${lessonProgress.status} <> 'not_started'`,
+          ),
+        )
+        .orderBy(
+          sql`CASE WHEN ${lessonProgress.status} = 'in_progress' THEN 0 ELSE 1 END`,
+          desc(lessonProgress.updatedAt),
+        )
+        .limit(1);
+      if (resume) resumeLessonId = resume.lessonId;
     }
   }
 
@@ -208,6 +229,7 @@ export async function getLearnLesson(
       courseTitle: course.title,
       moduleTitle: courseModule.title,
       moduleId: courseModule.id,
+      moduleSortOrder: courseModule.sortOrder,
       lessonSortOrder: lesson.sortOrder,
     })
     .from(lesson)
@@ -228,8 +250,9 @@ export async function getLearnLesson(
   const row = rows[0];
   if (!row) return null;
 
-  // Find next lesson in the same course.
-  const nextRows = await db
+  // Windowed lookup: first lesson whose (moduleSort, lessonSort) sorts after the current.
+  // Avoids fetching every lesson in the course just to walk the array.
+  const [nextRow] = await db
     .select({ id: lesson.id })
     .from(lesson)
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
@@ -237,21 +260,14 @@ export async function getLearnLesson(
       and(
         eq(courseModule.courseId, row.courseId),
         isNull(lesson.deletedAt),
+        isNull(courseModule.deletedAt),
+        sql`(${courseModule.sortOrder}, ${lesson.sortOrder}) > (${row.moduleSortOrder}, ${row.lessonSortOrder})`,
       ),
     )
     .orderBy(asc(courseModule.sortOrder), asc(lesson.sortOrder))
-    .limit(2);
+    .limit(1);
 
-  // Find the lesson that comes after the current one.
-  let nextLessonId: string | null = null;
-  let found = false;
-  for (const nr of nextRows) {
-    if (found) {
-      nextLessonId = nr.id;
-      break;
-    }
-    if (nr.id === lessonId) found = true;
-  }
+  const nextLessonId = nextRow?.id ?? null;
 
   return {
     id: row.id,

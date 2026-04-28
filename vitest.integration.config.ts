@@ -7,7 +7,11 @@ export default defineConfig({
     globals: true,
     include: ["tests/integration/**/*.{test,spec}.ts"],
     setupFiles: ["./tests/integration/setup.ts"],
-    poolOptions: { threads: { singleThread: true } },
+    // Integration tests share a single Postgres database and TRUNCATE in beforeEach.
+    // Files must run serially or mutual TRUNCATE/insert FK violations occur.
+    pool: "forks",
+    poolOptions: { forks: { singleFork: true } },
+    fileParallelism: false,
     testTimeout: 30_000,
     hookTimeout: 30_000,
   },

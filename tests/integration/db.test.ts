@@ -1,9 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { user, session, account, verification } from "@/db/schema/auth";
 
 describe("db connection + Better Auth tables", () => {
+  beforeEach(async () => {
+    // Reset shared tables — earlier files may have left rows.
+    await db.execute(sql`TRUNCATE "user" CASCADE`);
+  });
+
   it("connects and runs SELECT 1", async () => {
     const result = await db.execute(sql`select 1 as ok`);
     expect(result[0]).toEqual({ ok: 1 });

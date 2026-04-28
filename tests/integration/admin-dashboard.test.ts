@@ -156,6 +156,8 @@ describe("getAdminDashboardCounts", () => {
       slipsRejectedToday: 0,
       enrollmentsActive: 0,
       coursesPublished: 0,
+      revenueMtd: 0,
+      certsMtd: 0,
     });
   });
 });
