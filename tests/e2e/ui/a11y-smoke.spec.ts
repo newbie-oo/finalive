@@ -21,7 +21,7 @@ test.describe("a11y smoke", () => {
     await page.goto("/login");
     await expect(page.getByLabel("อีเมล")).toBeVisible();
     await expect(page.getByLabel("รหัสผ่าน")).toBeVisible();
-    await expect(page.getByRole("button", { name: "เข้าสู่ระบบ" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true })).toBeEnabled();
   });
 
   test("countdown timer announces a localised label", async ({ page }) => {
@@ -29,7 +29,7 @@ test.describe("a11y smoke", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     await page.goto("/courses/python-for-investing");
@@ -46,7 +46,7 @@ test.describe("a11y smoke", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     // Enter learn for a course where student-a is not enrolled — only a

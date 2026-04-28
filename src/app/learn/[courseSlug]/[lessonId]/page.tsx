@@ -5,6 +5,7 @@ import { buildHlsUrl } from "@/server/services/bunny";
 import { CurriculumSidebar } from "@/components/learn/curriculum-sidebar";
 import { LearnShell } from "@/components/learn/learn-shell";
 import { LessonClient } from "@/components/learn/lesson-client";
+import { MarkdownView } from "@/lib/markdown";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
 import { getQuizByLessonId } from "@/server/repos/quiz";
@@ -82,8 +83,11 @@ export default async function LearnLessonPage({
                 title={lessonData.title}
               />
             ) : (
-              <div className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground">
-                วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)
+              <div
+                role="status"
+                className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground"
+              >
+                ยังไม่มีวิดีโอสำหรับบทเรียนนี้ — กรุณาอ่านเนื้อหาด้านล่าง
               </div>
             )}
 
@@ -110,11 +114,9 @@ export default async function LearnLessonPage({
             ) : null}
 
             {lessonData.bodyMd ? (
-              <article className="prose prose-sm mt-6 max-w-none dark:prose-invert">
-                <pre className="whitespace-pre-wrap rounded bg-muted p-4 text-xs">
-                  {lessonData.bodyMd}
-                </pre>
-              </article>
+              <div className="mt-6">
+                <MarkdownView text={lessonData.bodyMd} />
+              </div>
             ) : null}
           </div>
         </main>

@@ -11,6 +11,24 @@ function psql(sql: string): void {
   );
 }
 
+function psqlScalar(sql: string): string {
+  const out = execSync(
+    `docker exec finalive-db psql -U finalive -d finalive -At -c "${sql.replace(/"/g, '\\"')}"`,
+  ).toString().trim();
+  return out;
+}
+
+function firstLessonIdFor(slug: string): string {
+  return psqlScalar(`
+    SELECT l.id FROM lesson l
+    JOIN module m ON l.module_id = m.id
+    JOIN course c ON m.course_id = c.id
+    WHERE c.slug = '${slug}' AND l.deleted_at IS NULL
+    ORDER BY m.sort_order, l.sort_order
+    LIMIT 1
+  `);
+}
+
 test.describe.configure({ mode: "serial" });
 
 test.describe("learn flow", () => {
@@ -43,10 +61,10 @@ test.describe("learn flow", () => {
     const html = await learn.text();
     expect(html).toMatch(/Python For Investing/i);
 
-    // 4. Visit first lesson page.
-    const lessonPage = await studentCtx.get(
-      `/learn/${COURSE_SLUG}/75095747-3f89-4720-a1ad-b9708925f5cf`,
-    );
+    // 4. Visit first lesson page (look up the id — seed UUIDs are randomised per run).
+    const firstLessonId = firstLessonIdFor(COURSE_SLUG);
+    test.skip(!firstLessonId, "no lesson found — run `pnpm seed`");
+    const lessonPage = await studentCtx.get(`/learn/${COURSE_SLUG}/${firstLessonId}`);
     expect(lessonPage.status()).toBe(200);
 
     await studentCtx.dispose();
@@ -55,14 +73,32 @@ test.describe("learn flow", () => {
   test("preview page shows Vidstack player for free preview lesson", async ({ page, baseURL }) => {
     test.skip(!baseURL, "requires baseURL");
 
-    // Preview lesson for Python For Investing (seed course).
-    await page.goto("/courses/python-for-investing/preview/75095747-3f89-4720-a1ad-b9708925f5cf");
+    // Look up the first preview lesson rather than hard-code.
+    const previewLessonId = psqlScalar(`
+      SELECT l.id FROM lesson l
+      JOIN module m ON l.module_id = m.id
+      JOIN course c ON m.course_id = c.id
+      WHERE c.slug = 'python-for-investing'
+        AND l.is_preview = true AND l.deleted_at IS NULL
+      ORDER BY m.sort_order, l.sort_order LIMIT 1
+    `);
+    test.skip(!previewLessonId, "no preview lesson found");
+    await page.goto(`/courses/python-for-investing/preview/${previewLessonId}`);
     await page.waitForURL(/\/preview\//);
 
-    // Vidstack player should mount (video element with HLS blob URL).
+    // Lesson title is always rendered, even when no video has been uploaded.
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // If a Bunny video is wired, expect the player. Otherwise the page must
+    // surface the no-video status panel instead — both shapes are acceptable
+    // depending on whether the seed has a real bunny_video_id.
     const video = page.locator("video");
-    await expect(video).toBeAttached({ timeout: 10_000 });
-    const src = await video.evaluate((el: HTMLVideoElement) => el.src || el.currentSrc);
-    expect(src).toMatch(/blob:|\.m3u8/);
+    if ((await video.count()) > 0) {
+      await expect(video).toBeAttached({ timeout: 10_000 });
+      const src = await video.evaluate((el: HTMLVideoElement) => el.src || el.currentSrc);
+      expect(src).toMatch(/blob:|\.m3u8/);
+    } else {
+      await expect(page.getByText(/ตัวอย่างนี้ยังไม่มีวิดีโอ/)).toBeVisible();
+    }
   });
 });

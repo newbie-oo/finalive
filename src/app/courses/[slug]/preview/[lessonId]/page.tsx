@@ -4,6 +4,7 @@ import { PublicShell } from "@/components/layouts/public-shell";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { buildHlsUrl } from "@/server/services/bunny";
 import { getPreviewLesson } from "@/server/repos/course";
+import { MarkdownView } from "@/lib/markdown";
 
 export const dynamic = "force-dynamic";
 
@@ -31,16 +32,19 @@ export default async function PreviewLessonPage({
           {lesson.bunnyVideoId ? (
             <VidstackPlayer src={buildHlsUrl({ videoId: lesson.bunnyVideoId })} title={lesson.title} />
           ) : (
-            <div className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border text-sm text-muted-foreground">
-              วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)
+            <div
+              role="status"
+              className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground"
+            >
+              ตัวอย่างนี้ยังไม่มีวิดีโอ — กรุณาอ่านเนื้อหาด้านล่าง
             </div>
           )}
         </div>
 
         {lesson.bodyMd ? (
-          <article className="prose prose-sm mt-6 dark:prose-invert">
-            <pre className="whitespace-pre-wrap rounded bg-muted p-4 text-xs">{lesson.bodyMd}</pre>
-          </article>
+          <div className="mt-6">
+            <MarkdownView text={lesson.bodyMd} />
+          </div>
         ) : null}
       </section>
     </PublicShell>

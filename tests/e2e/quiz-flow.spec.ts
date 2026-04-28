@@ -1,9 +1,15 @@
 import { test, expect, request as pwRequest } from "@playwright/test";
+import { execSync } from "node:child_process";
 
 const STUDENT = { email: "student-a@finalive.dev", password: "change-me" };
 const COURSE_SLUG = "python-for-investing";
-// Hardcoded quiz ID from seed data (first lesson of Python For Investing).
-const QUIZ_ID = "ce295447-d2af-447e-a7bc-9944fc5b80c4";
+
+// Look up the seeded quiz id at runtime — UUIDs are randomised per `pnpm seed`.
+function quizIdForCourse(slug: string): string {
+  return execSync(
+    `docker exec finalive-db psql -U finalive -d finalive -At -c "SELECT q.id FROM quiz q JOIN lesson l ON q.lesson_id = l.id JOIN module m ON l.module_id = m.id JOIN course c ON m.course_id = c.id WHERE c.slug = '${slug}' LIMIT 1"`,
+  ).toString().trim();
+}
 
 test.describe.configure({ mode: "serial" });
 
@@ -24,7 +30,9 @@ test.describe("quiz flow", () => {
     );
 
     // 2. Visit quiz page.
-    const quizPage = await studentCtx.get(`/learn/${COURSE_SLUG}/quiz/${QUIZ_ID}`);
+    const quizId = quizIdForCourse(COURSE_SLUG);
+    test.skip(!quizId, "no quiz seeded — run `pnpm seed`");
+    const quizPage = await studentCtx.get(`/learn/${COURSE_SLUG}/quiz/${quizId}`);
     expect(quizPage.status()).toBe(200);
     const html = await quizPage.text();
     expect(html).toMatch(/แบบทดสอบท้ายบท/);
@@ -43,7 +51,9 @@ test.describe("quiz flow", () => {
     await page.waitForURL(/\/(courses|account)/, { timeout: 10_000 });
 
     // 2. Go to quiz page directly.
-    await page.goto(`/learn/${COURSE_SLUG}/quiz/${QUIZ_ID}`);
+    const quizId = quizIdForCourse(COURSE_SLUG);
+    test.skip(!quizId, "no quiz seeded");
+    await page.goto(`/learn/${COURSE_SLUG}/quiz/${quizId}`);
     await page.waitForURL(/\/quiz\//, { timeout: 10_000 });
 
     // 3. Should see questions.

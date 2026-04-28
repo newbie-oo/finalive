@@ -1,4 +1,5 @@
 import { test, expect, request as pwRequest } from "@playwright/test";
+import { execSync } from "node:child_process";
 
 // Full pay loop: student registers a pending, uploads slip, admin accepts,
 // student gains active enrollment. Drives the journey through HTTP routes
@@ -26,11 +27,27 @@ const ONE_PX_PNG = Buffer.from(
   "hex",
 );
 
+function resetStudentState(email: string): void {
+  const sub = `(SELECT id FROM \\\"user\\\" WHERE email = '${email}')`;
+  const sql = `
+DELETE FROM certificate WHERE enrollment_id IN (SELECT id FROM enrollment WHERE user_id = ${sub});
+DELETE FROM enrollment WHERE user_id = ${sub};
+DELETE FROM payment_slip WHERE pending_enrollment_id IN (SELECT id FROM pending_enrollment WHERE user_id = ${sub});
+DELETE FROM pending_enrollment WHERE user_id = ${sub};
+`;
+  execSync(`docker exec finalive-db psql -U finalive -d finalive -c "${sql}"`, { stdio: "ignore" });
+}
+
 test.describe.configure({ mode: "serial" });
 
 test.describe("full pay loop", () => {
   test("student pays, admin accepts, student gets enrollment", async ({ baseURL }) => {
     test.skip(!baseURL, "requires baseURL from playwright config");
+    // Re-runs of this spec used to fail with `enrollment_already_active`
+    // because the prior accept left an active enrollment behind. Reset
+    // the student's pendings + slips + enrollments before each run so
+    // the journey starts from a clean slate.
+    resetStudentState(STUDENT.email);
 
     const studentCtx = await pwRequest.newContext({ baseURL });
     const adminCtx = await pwRequest.newContext({ baseURL });

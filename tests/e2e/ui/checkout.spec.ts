@@ -33,7 +33,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     // Start checkout
@@ -44,7 +44,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
     // Assertions on checkout page
     await expect(page.getByRole("heading", { name: "ชำระเงิน" })).toBeVisible();
     await expect(page.locator("span.font-medium").filter({ hasText: "Python For Investing" })).toBeVisible();
-    await expect(page.getByText(/฿1,290\.00/)).toBeVisible();
+    await expect(page.getByText(/฿1,290\.00/).first()).toBeVisible();
     await expect(page.getByText(/FL-/)).toBeVisible(); // ref code
     await expect(page.getByText(/\d{2}:\d{2}:\d{2}/)).toBeVisible(); // countdown
     await expect(page.getByText("โอนเข้าบัญชี")).toBeVisible();
@@ -63,7 +63,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     // Start checkout
@@ -104,7 +104,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     // Start checkout to get a ref code
@@ -131,7 +131,7 @@ test.describe("full pay loop UI (4.5.14)", () => {
     await page.goto("/login");
     await page.getByLabel("อีเมล").fill(STUDENT.email);
     await page.getByLabel("รหัสผ่าน").fill(STUDENT.password);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
     await page.goto(`/courses/${COURSE_SLUG}`);
@@ -165,7 +165,7 @@ test.describe("full pay loop UI (4.5.14)", () => {
     await adminPage.goto("/login");
     await adminPage.getByLabel("อีเมล").fill(ADMIN.email);
     await adminPage.getByLabel("รหัสผ่าน").fill(ADMIN.password);
-    await adminPage.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await adminPage.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await adminPage.waitForURL(/\/account|\/admin/);
 
     await adminPage.goto("/admin/slips");
