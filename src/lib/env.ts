@@ -27,11 +27,38 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+const BUILD_FALLBACK: Record<string, string> = {
+  DATABASE_URL: "postgres://build:build@localhost:5432/build",
+  BETTER_AUTH_SECRET: "build-time-placeholder-secret-32b",
+  BETTER_AUTH_URL: "http://localhost:3000",
+  SMTP_HOST: "localhost",
+  SMTP_PORT: "1025",
+  EMAIL_FROM: "build@example.com",
+  S3_ENDPOINT: "http://localhost:9000",
+  S3_REGION: "auto",
+  S3_ACCESS_KEY_ID: "build",
+  S3_SECRET_ACCESS_KEY: "build",
+  S3_BUCKET_PRIVATE: "build-private",
+  S3_BUCKET_PUBLIC: "build-public",
+  S3_PUBLIC_BASE_URL: "http://localhost:9000/build-public",
+};
+
 let cached: Env | null = null;
+
+function isBuildPhase(): boolean {
+  // Next.js sets NEXT_PHASE to phase-production-build during `next build`.
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
 
 export function getEnv(): Env {
   if (cached) return cached;
-  const parsed = envSchema.safeParse(process.env);
+  const source: Record<string, string | undefined> = { ...process.env };
+  if (isBuildPhase()) {
+    for (const [k, v] of Object.entries(BUILD_FALLBACK)) {
+      if (!source[k]) source[k] = v;
+    }
+  }
+  const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
