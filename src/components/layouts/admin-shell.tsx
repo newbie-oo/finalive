@@ -4,11 +4,11 @@ import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import type { SessionUser } from "@/server/auth-session";
 
 const NAV: Array<{ href: string; label: string }> = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/slips", label: "Slip queue" },
-  { href: "/admin/courses", label: "Courses" },
-  { href: "/admin/users", label: "Users" },
-  { href: "/admin/certificates", label: "Certificates" },
+  { href: "/admin", label: "แผงควบคุม" },
+  { href: "/admin/slips", label: "ตรวจสลิป" },
+  { href: "/admin/courses", label: "คอร์ส" },
+  { href: "/admin/users", label: "ผู้ใช้" },
+  { href: "/admin/certificates", label: "ใบรับรอง" },
 ];
 
 export function AdminShell({
@@ -46,7 +46,7 @@ export function AdminShell({
               name={user.name}
               email={user.email}
               links={[
-                { href: "/admin", label: "Dashboard" },
+                { href: "/admin", label: "แผงควบคุม" },
                 { href: "/admin/courses", label: "จัดการคอร์ส" },
               ]}
             />

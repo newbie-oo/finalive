@@ -341,7 +341,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           {query.isLoading && rows.length === 0 ? (
             <li className="p-4 text-sm text-muted-foreground">กำลังโหลด…</li>
           ) : rows.length === 0 ? (
-            <li className="p-4 text-sm text-muted-foreground">— ไม่มี slip ในคิวนี้ —</li>
+            <li className="p-4 text-sm text-muted-foreground">— ไม่มีสลิปในคิวนี้ —</li>
           ) : (
             rows.map((slip) => {
               const isActive = slip.id === activeId;
@@ -465,7 +465,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
             )}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">เลือก slip ทางซ้ายเพื่อดูรายละเอียด</p>
+          <p className="text-sm text-muted-foreground">เลือกสลิปทางซ้ายเพื่อดูรายละเอียด</p>
         )}
       </div>
     </div>

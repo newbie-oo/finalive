@@ -31,8 +31,8 @@ export default function RootLayout({
         "h-full",
         "antialiased",
         geistSans.variable,
-        "font-mono",
         jetbrainsMono.variable,
+        "font-sans",
       )}
     >
       <body className="min-h-full flex flex-col">

@@ -35,7 +35,7 @@ export default async function AdminDashboardPage() {
       <h1 className="text-xl font-semibold">แผงควบคุม</h1>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card
-          label="Slip รอตรวจ"
+          label="สลิปรอตรวจ"
           value={c.slipsSubmitted}
           href="/admin/slips?status=submitted"
         />
@@ -49,9 +49,9 @@ export default async function AdminDashboardPage() {
           value={c.slipsRejectedToday}
           href="/admin/slips?status=rejected"
         />
-        <Card label="นักเรียน active" value={c.enrollmentsActive} />
+        <Card label="นักเรียนกำลังเรียน" value={c.enrollmentsActive} />
         <Card
-          label="คอร์ส published"
+          label="คอร์สเผยแพร่"
           value={c.coursesPublished}
           href="/admin/courses"
         />

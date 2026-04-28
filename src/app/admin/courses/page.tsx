@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listAdminCourses } from "@/server/repos/admin-course";
+import { formatTHB } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function AdminCoursesPage() {
                     <StatusBadge status={c.status} />
                   </td>
                   <td className="py-3 pr-4">
-                    {c.isFree ? "ฟรี" : `฿${c.price}`}
+                    {c.isFree ? "ฟรี" : formatTHB(c.price)}
                   </td>
                   <td className="py-3">
                     <Link

@@ -187,7 +187,7 @@ test.describe("full pay loop UI (4.5.14)", () => {
     // Accept via hotkey 'a'
     await adminPage.keyboard.press("a");
     // After accept, slip leaves the "submitted" queue.
-    await expect(adminPage.getByText(/ไม่มี slip ในคิวนี้/)).toBeVisible();
+    await expect(adminPage.getByText(/ไม่มีสลิปในคิวนี้/)).toBeVisible();
 
     // Verify slip moved to "accepted" queue
     await adminPage.goto("/admin/slips?status=accepted");
