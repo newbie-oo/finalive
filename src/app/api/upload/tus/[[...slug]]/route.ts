@@ -6,7 +6,8 @@ import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
 import { lesson } from "@/db/schema/course";
 import { eq } from "drizzle-orm";
-import { createBunnyVideo, uploadBunnyVideo } from "@/server/services/bunny";
+import { createBunnyVideo, uploadBunnyVideo, deleteBunnyVideo } from "@/server/services/bunny";
+import { unlink } from "node:fs/promises";
 import { canEditCourse } from "@/server/services/course-authz";
 
 const uploadDir = path.join(process.cwd(), "uploads", "video");
@@ -46,6 +47,30 @@ const tusServer = new Server({
       const title = upload.metadata?.filename || upload.metadata?.name || "Untitled";
       const filePath = path.join(uploadDir, upload.id);
 
+      // Cleanup old video if exists.
+      const lessonRows = await db
+        .select({ videoMediaId: lesson.videoMediaId })
+        .from(lesson)
+        .where(eq(lesson.id, lessonId))
+        .limit(1);
+      const oldVideoMediaId = lessonRows[0]?.videoMediaId;
+      if (oldVideoMediaId) {
+        const oldAssets = await db
+          .select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
+          .from(mediaAsset)
+          .where(eq(mediaAsset.id, oldVideoMediaId))
+          .limit(1);
+        const oldAsset = oldAssets[0];
+        if (oldAsset) {
+          try {
+            await deleteBunnyVideo(oldAsset.storageKey);
+          } catch (err) {
+            console.error("Failed to delete old Bunny video:", err);
+          }
+          await db.delete(mediaAsset).where(eq(mediaAsset.id, oldAsset.id));
+        }
+      }
+
       const videoId = await createBunnyVideo(title);
       await uploadBunnyVideo(videoId, filePath);
 
@@ -66,6 +91,13 @@ const tusServer = new Server({
         .update(lesson)
         .set({ videoMediaId: asset!.id, updatedAt: new Date() })
         .where(eq(lesson.id, lessonId));
+
+      // Delete temp file.
+      try {
+        await unlink(filePath);
+      } catch {
+        // File may already be cleaned up.
+      }
     } catch (err) {
       console.error("Failed to process upload to Bunny:", err);
     }

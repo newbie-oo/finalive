@@ -108,3 +108,24 @@ export async function uploadBunnyVideo(videoId: string, filePath: string): Promi
     throw new Error(`Bunny upload video failed: ${res.status} ${text}`);
   }
 }
+
+export async function deleteBunnyVideo(videoId: string): Promise<void> {
+  const env = getEnv();
+  const libraryId = env.BUNNY_LIBRARY_ID;
+  if (!libraryId) throw new Error("BUNNY_LIBRARY_ID is not configured");
+
+  const apiKey = env.BUNNY_API_KEY;
+  if (!apiKey) throw new Error("BUNNY_API_KEY is not configured");
+
+  const res = await fetch(`${BUNNY_API_BASE}/library/${libraryId}/videos/${videoId}`, {
+    method: "DELETE",
+    headers: {
+      AccessKey: apiKey,
+    },
+  });
+
+  if (!res.ok && res.status !== 404) {
+    const text = await res.text().catch(() => "unknown");
+    throw new Error(`Bunny delete video failed: ${res.status} ${text}`);
+  }
+}

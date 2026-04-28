@@ -1,8 +1,26 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { signEmbedToken } from "./bunny";
+beforeAll(() => {
+  process.env.BUNNY_LIBRARY_ID ??= "123456";
+  process.env.BUNNY_API_KEY ??= "test-api-key";
+  process.env.BETTER_AUTH_SECRET ??= "test-secret-min-16-chars-long-xx";
+  process.env.BETTER_AUTH_URL ??= "http://localhost:3000";
+  process.env.DATABASE_URL ??= "postgres://x:x@localhost:5432/x";
+  process.env.SMTP_HOST ??= "localhost";
+  process.env.SMTP_PORT ??= "1025";
+  process.env.EMAIL_FROM ??= "test@example.com";
+  process.env.S3_ENDPOINT ??= "http://localhost:9000";
+  process.env.S3_REGION ??= "auto";
+  process.env.S3_ACCESS_KEY_ID ??= "k";
+  process.env.S3_SECRET_ACCESS_KEY ??= "s";
+  process.env.S3_BUCKET_PRIVATE ??= "private";
+  process.env.S3_BUCKET_PUBLIC ??= "public";
+  process.env.S3_PUBLIC_BASE_URL ??= "http://localhost:9000/public";
+});
+
+import { signEmbedToken, deleteBunnyVideo } from "./bunny";
 
 describe("signEmbedToken", () => {
   it("produces deterministic base64url token + matching expires", () => {
@@ -49,5 +67,42 @@ describe("signEmbedToken", () => {
     delete process.env.BUNNY_STREAM_TOKEN_SECRET;
     expect(() => signEmbedToken({ videoId: "v" })).toThrow(/BUNNY_STREAM_TOKEN_SECRET/);
     if (original !== undefined) process.env.BUNNY_STREAM_TOKEN_SECRET = original;
+  });
+});
+
+describe("deleteBunnyVideo", () => {
+  it("sends DELETE to Bunny API with correct endpoint", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(null, { status: 200 }),
+    );
+
+    await deleteBunnyVideo("old-video-guid");
+
+    const call = fetchSpy.mock.calls[0]!;
+    expect(call[0]).toMatch(/\/library\/\d+\/videos\/old-video-guid/);
+    expect(call[1]).toMatchObject({ method: "DELETE" });
+    expect(call[1]?.headers).toMatchObject({ AccessKey: expect.any(String) });
+
+    fetchSpy.mockRestore();
+  });
+
+  it("does not throw on 404 (already deleted)", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(null, { status: 404 }),
+    );
+
+    await expect(deleteBunnyVideo("missing-guid")).resolves.not.toThrow();
+
+    fetchSpy.mockRestore();
+  });
+
+  it("throws on non-404 error", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response("Forbidden", { status: 403 }),
+    );
+
+    await expect(deleteBunnyVideo("error-guid")).rejects.toThrow(/Bunny delete video failed/);
+
+    fetchSpy.mockRestore();
   });
 });
