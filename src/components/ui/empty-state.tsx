@@ -11,21 +11,21 @@ export function EmptyState({ title, description, icon, action }: EmptyStateProps
   return (
     <div
       role="status"
-      className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center"
+      className="flex flex-col items-center justify-center rounded-[14px] border border-dashed border-(--border) bg-(--surface-muted)/40 px-6 py-12 text-center"
     >
       {icon ? (
         <div
           aria-hidden="true"
-          className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-2xl text-muted-foreground"
+          className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-(--surface-muted) text-(--foreground-muted)"
         >
           {icon}
         </div>
       ) : null}
-      <p className="text-base font-medium text-foreground">{title}</p>
+      <p className="text-h4 text-(--foreground)">{title}</p>
       {description ? (
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
+        <p className="mt-1.5 max-w-sm text-body text-(--foreground-muted)">{description}</p>
       ) : null}
-      {action ? <div className="mt-5">{action}</div> : null}
+      {action ? <div className="mt-6">{action}</div> : null}
     </div>
   );
 }
