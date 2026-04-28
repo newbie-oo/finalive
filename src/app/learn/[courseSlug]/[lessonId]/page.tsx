@@ -78,7 +78,7 @@ export default async function LearnLessonPage({
 
             {lessonData.bunnyVideoId ? (
               <VidstackPlayer
-                src={buildHlsUrl(lessonData.bunnyVideoId)}
+                src={buildHlsUrl({ videoId: lessonData.bunnyVideoId })}
                 title={lessonData.title}
               />
             ) : (

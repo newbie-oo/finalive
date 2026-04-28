@@ -29,7 +29,7 @@ export default async function PreviewLessonPage({
 
         <div className="mt-4">
           {lesson.bunnyVideoId ? (
-            <VidstackPlayer src={buildHlsUrl(lesson.bunnyVideoId)} title={lesson.title} />
+            <VidstackPlayer src={buildHlsUrl({ videoId: lesson.bunnyVideoId })} title={lesson.title} />
           ) : (
             <div className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border text-sm text-muted-foreground">
               วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)

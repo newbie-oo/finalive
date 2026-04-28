@@ -46,8 +46,39 @@ export function buildEmbedUrl(args: EmbedUrlArgs): string {
   return `https://iframe.mediadelivery.net/embed/${libraryId}/${args.videoId}?token=${token}&expires=${expires}`;
 }
 
-export function buildHlsUrl(videoId: string): string {
-  return `https://vz-cf7a0b15-c66.b-cdn.net/${videoId}/playlist.m3u8`;
+export interface HlsSignArgs {
+  videoId: string;
+  expiresAt?: number;
+  userIp?: string;
+  secretOverride?: string;
+}
+
+export function signHlsToken(args: HlsSignArgs): BunnyEmbedToken {
+  const expires = args.expiresAt ?? Math.floor(Date.now() / 1000) + 7200;
+  const secret = args.secretOverride ?? process.env.BUNNY_CDN_TOKEN_SECRET ?? "";
+  if (!secret) throw new Error("BUNNY_CDN_TOKEN_SECRET is not configured");
+  const path = `/${args.videoId}/playlist.m3u8`;
+  const message = `${path}${expires}${args.userIp ?? ""}`;
+  const digest = crypto.createHmac("sha256", secret).update(message).digest();
+  return { token: base64UrlEncode(digest), expires };
+}
+
+export interface HlsUrlArgs {
+  videoId: string;
+  expiresAt?: number;
+  userIp?: string;
+}
+
+export function buildHlsUrl(args: HlsUrlArgs): string {
+  const env = getEnv();
+  const cdn = env.BUNNY_CDN_HOSTNAME ?? "video.bunnycdn.com";
+  const secret = process.env.BUNNY_CDN_TOKEN_SECRET;
+  if (!secret) {
+    // Dev fallback: unsigned URL when token auth not configured
+    return `https://${cdn}/${args.videoId}/playlist.m3u8`;
+  }
+  const { token, expires } = signHlsToken(args);
+  return `https://${cdn}/${args.videoId}/playlist.m3u8?token=${token}&expires=${expires}`;
 }
 
 // ─── Bunny Stream Upload ───
