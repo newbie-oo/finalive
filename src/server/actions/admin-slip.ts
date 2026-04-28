@@ -35,18 +35,19 @@ export interface AcceptSlipResult {
   enrollmentId: string;
 }
 
-export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
-  const { user: admin } = await requireRole("admin");
-
-  // Pull slip + pending + course + student email up-front (read-only) so the
-  // TX is short. We re-check status inside the TX with a conditional UPDATE
-  // to defend against double-clicks racing with another admin.
+/**
+ * Single source of truth for the joined slip + pending + course + student
+ * row that both accept and reject need. Loaded read-only outside the TX so
+ * the TX itself stays short. The status guard inside the TX (conditional
+ * UPDATE) is the canonical race defense; we only inspect status here to
+ * fail fast with a friendly error.
+ */
+async function loadSlipForReview(slipId: string) {
   const rows = await db
     .select({
       slipId: paymentSlip.id,
       slipStatus: paymentSlip.status,
       pendingId: pendingEnrollment.id,
-      pendingStatus: pendingEnrollment.status,
       pendingAmount: pendingEnrollment.amount,
       pendingRefCode: pendingEnrollment.refCode,
       studentUserId: pendingEnrollment.userId,
@@ -65,9 +66,13 @@ export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
 
   const row = rows[0];
   if (!row) throw new ApiError("not_found", "slip not found");
-  if (row.slipStatus !== "submitted") {
-    throw new ApiError("slip_already_reviewed", "slip is not pending review");
-  }
+  return row;
+}
+
+export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
+  const { user: admin } = await requireRole("admin");
+
+  const row = await loadSlipForReview(slipId);
 
   const enrollmentId = await db.transaction(async (tx) => {
     // Conditional UPDATE — only flips when still 'submitted'. If two admins
@@ -161,30 +166,7 @@ export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
 export async function rejectSlip(input: RejectSlipInput): Promise<RejectSlipResult> {
   const { user: admin } = await requireRole("admin");
 
-  const rows = await db
-    .select({
-      slipStatus: paymentSlip.status,
-      pendingId: pendingEnrollment.id,
-      pendingRefCode: pendingEnrollment.refCode,
-      pendingAmount: pendingEnrollment.amount,
-      studentUserId: pendingEnrollment.userId,
-      studentEmail: userTable.email,
-      studentName: userTable.name,
-      courseTitle: course.title,
-      courseSlug: course.slug,
-    })
-    .from(paymentSlip)
-    .innerJoin(pendingEnrollment, eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id))
-    .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
-    .innerJoin(userTable, eq(pendingEnrollment.userId, userTable.id))
-    .where(eq(paymentSlip.id, input.slipId))
-    .limit(1);
-
-  const row = rows[0];
-  if (!row) throw new ApiError("not_found", "slip not found");
-  if (row.slipStatus !== "submitted") {
-    throw new ApiError("slip_already_reviewed", "slip is not pending review");
-  }
+  const row = await loadSlipForReview(input.slipId);
 
   await db.transaction(async (tx) => {
     const updated = await tx
@@ -250,15 +232,27 @@ export async function rejectSlip(input: RejectSlipInput): Promise<RejectSlipResu
 }
 
 const MAX_BULK = 50;
+const BULK_CONCURRENCY = 5;
 
 export interface BulkResult {
   succeeded: string[];
   failed: Array<{ slipId: string; code: string; message: string }>;
 }
 
+function describeBulkError(id: string, e: unknown): BulkResult["failed"][number] {
+  if (e instanceof ApiError) return { slipId: id, code: e.code, message: e.message };
+  return {
+    slipId: id,
+    code: "internal_error",
+    message: e instanceof Error ? e.message : String(e),
+  };
+}
+
 // Bulk operations run as N independent TXs (not one giant TX) so a single
-// stale slip doesn't poison the batch. Concurrency is intentionally serial
-// to keep the surrounding queue queries predictable for the admin UI.
+// stale slip doesn't poison the batch. We process up to BULK_CONCURRENCY
+// in flight at a time — high enough that a 50-slip batch finishes in a
+// couple of seconds, low enough that we don't saturate the connection
+// pool or thrash the queue invalidations downstream.
 async function runBulk(
   slipIds: string[],
   fn: (id: string) => Promise<unknown>,
@@ -266,22 +260,16 @@ async function runBulk(
   if (slipIds.length === 0 || slipIds.length > MAX_BULK) {
     throw new ApiError("validation_failed", `bulk size must be 1..${MAX_BULK}`);
   }
+
   const result: BulkResult = { succeeded: [], failed: [] };
-  for (const id of slipIds) {
-    try {
-      await fn(id);
-      result.succeeded.push(id);
-    } catch (e) {
-      if (e instanceof ApiError) {
-        result.failed.push({ slipId: id, code: e.code, message: e.message });
-      } else {
-        result.failed.push({
-          slipId: id,
-          code: "internal_error",
-          message: e instanceof Error ? e.message : String(e),
-        });
-      }
-    }
+  for (let i = 0; i < slipIds.length; i += BULK_CONCURRENCY) {
+    const chunk = slipIds.slice(i, i + BULK_CONCURRENCY);
+    const settled = await Promise.allSettled(chunk.map((id) => fn(id)));
+    settled.forEach((s, idx) => {
+      const id = chunk[idx]!;
+      if (s.status === "fulfilled") result.succeeded.push(id);
+      else result.failed.push(describeBulkError(id, s.reason));
+    });
   }
   return result;
 }
