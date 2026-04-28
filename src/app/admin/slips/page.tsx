@@ -34,7 +34,7 @@ export default async function AdminSlipsPage({
   return (
     <section className="flex flex-col gap-4">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">Slip queue</h1>
+        <h1 className="text-xl font-semibold">คิวตรวจสลิป</h1>
         <nav className="flex gap-2 text-sm">
           {STATUS_OPTIONS.map((opt) => {
             const active = opt.value === status;

@@ -84,7 +84,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
     });
 
     // Preview should appear
-    await expect(page.locator('img[alt="preview"]')).toBeVisible();
+    await expect(page.locator('img[alt="ตัวอย่างสลิปที่อัปโหลด"]')).toBeVisible();
 
     // Submit (traditional form POST + redirect)
     await Promise.all([
@@ -147,7 +147,7 @@ test.describe("full pay loop UI (4.5.14)", () => {
       mimeType: "image/png",
       buffer: ONE_PX_PNG,
     });
-    await expect(page.locator('img[alt="preview"]')).toBeVisible();
+    await expect(page.locator('img[alt="ตัวอย่างสลิปที่อัปโหลด"]')).toBeVisible();
     await Promise.all([
       page.waitForURL(/\/checkout\/[a-f0-9-]{36}\/upload-slip$/),
       page.getByRole("button", { name: "ส่งสลิป" }).click(),
@@ -169,7 +169,7 @@ test.describe("full pay loop UI (4.5.14)", () => {
     await adminPage.waitForURL(/\/account|\/admin/);
 
     await adminPage.goto("/admin/slips");
-    await expect(adminPage.getByRole("heading", { name: "Slip queue" })).toBeVisible();
+    await expect(adminPage.getByRole("heading", { name: "คิวตรวจสลิป" })).toBeVisible();
 
     // Force refresh until slip appears (TanStack Query caches + polls every 30s)
     const slipLink = adminPage.getByRole("link", { name: new RegExp(refCode!.trim()) });
