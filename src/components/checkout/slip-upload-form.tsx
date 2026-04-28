@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface SlipUploadFormProps {
   pendingId: string;
@@ -76,12 +78,12 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
         onDragLeave={onDragLeave}
         onClick={() => inputRef.current?.click()}
         aria-label="เลือกไฟล์สลิป — ลากไฟล์มาวาง หรือคลิกเลือก"
-        className={`relative w-full cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+        className={`relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) ${
           dragOver
-            ? "border-primary bg-primary/5"
+            ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
             : preview
-              ? "border-border bg-background"
-              : "border-muted-foreground/30 bg-muted/40 hover:bg-muted"
+              ? "border-(--border) bg-(--surface)"
+              : "border-(--border) bg-(--surface-muted) hover:bg-(--surface-sunken)"
         }`}
       >
         {preview ? (
@@ -90,17 +92,13 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
             <img
               src={preview}
               alt="ตัวอย่างสลิปที่อัปโหลด"
-              className="mx-auto max-h-64 rounded object-contain"
+              className="mx-auto max-h-64 rounded-md object-contain"
             />
           </>
         ) : (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">
-              ลากไฟล์มาวาง หรือคลิกเลือก
-            </p>
-            <p className="text-xs text-muted-foreground">
-              PNG / JPG ขนาดไม่เกิน 5 MB
-            </p>
+          <div className="space-y-1.5">
+            <p className="text-h4 text-(--foreground)">ลากไฟล์มาวาง หรือคลิกเลือก</p>
+            <p className="text-uism text-(--foreground-muted)">PNG / JPG ขนาดไม่เกิน 5 MB</p>
           </div>
         )}
         <input
@@ -115,23 +113,22 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
       </button>
 
       {file && (
-        <div className="flex items-center justify-between rounded border border-border bg-card px-3 py-2 text-xs">
+        <div className="flex items-center justify-between rounded-md border border-(--border) bg-(--surface) px-3 py-2 text-uism">
           <span className="truncate">{file.name}</span>
           <button
             type="button"
             onClick={() => handleFile(null)}
-            className="ml-2 text-muted-foreground hover:text-destructive"
+            className="ml-2 text-(--foreground-muted) hover:text-destructive"
           >
             ลบ
           </button>
         </div>
       )}
 
-      <label className="block space-y-1">
-        <span className="text-sm text-muted-foreground">
-          ยอดที่โอน (THB) — ไม่บังคับ
-        </span>
-        <input
+      <div>
+        <Label htmlFor="reportedAmount">ยอดที่โอน (THB) — ไม่บังคับ</Label>
+        <Input
+          id="reportedAmount"
           name="reportedAmount"
           type="number"
           step="0.01"
@@ -139,11 +136,11 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
           placeholder={amount}
           value={reportedAmount}
           onChange={(e) => setReportedAmount(e.target.value)}
-          className="w-full rounded border border-border bg-background p-2 text-sm"
+          className="num"
         />
-      </label>
+      </div>
 
-      <Button type="submit" disabled={!file || submitting} className="w-full">
+      <Button type="submit" variant="accent" size="lg" disabled={!file || submitting} className="w-full">
         {submitting ? "กำลังส่ง…" : "ส่งสลิป"}
       </Button>
     </form>

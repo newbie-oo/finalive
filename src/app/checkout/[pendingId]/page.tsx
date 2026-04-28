@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PublicShell } from "@/components/layouts/public-shell";
+import { CaretLeft, Copy, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import { CheckoutShell } from "@/components/layouts/checkout-shell";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { requireSession } from "@/server/auth-session";
 import { getCheckoutPending } from "@/server/repos/checkout";
 import { getBankDisplay, getPromptPayQrImageUrl } from "@/server/repos/app-setting";
@@ -27,110 +29,108 @@ export default async function CheckoutPage({
   ]);
 
   return (
-    <PublicShell>
-      <section className="mx-auto max-w-md p-4 sm:p-8">
-        <p className="text-xs text-muted-foreground">
-          <Link href={`/courses/${pending.courseSlug}`} className="hover:underline">
-            ← {pending.courseTitle}
-          </Link>
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">ชำระเงิน</h1>
+    <CheckoutShell step={1}>
+      <div className="mx-auto max-w-[640px]">
+        <Link
+          href={`/courses/${pending.courseSlug}`}
+          className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
+        >
+          <CaretLeft size={14} /> {pending.courseTitle}
+        </Link>
+        <h1 className="mt-2 text-h1">ชำระเงิน</h1>
 
         {expired ? (
-          <div className="mt-6 space-y-4">
-            <div
-              role="alert"
-              className="rounded border border-destructive bg-destructive/10 p-4 text-sm text-destructive"
-            >
-              การชำระเงินหมดอายุแล้ว — เลขอ้างอิง{" "}
-              <span className="font-mono">{pending.refCode}</span>{" "}
-              ไม่สามารถใช้ได้ ต้องเริ่มชำระเงินใหม่
-            </div>
+          <div className="mt-8 space-y-4">
+            <Card className="flex items-start gap-3 border-destructive bg-destructive-bg">
+              <WarningCircle size={24} weight="fill" className="text-destructive shrink-0" />
+              <div className="flex-1 text-body text-destructive-foreground">
+                <p className="font-medium">การชำระเงินหมดอายุแล้ว</p>
+                <p className="mt-1 text-uism">
+                  เลขอ้างอิง <span className="mono">{pending.refCode}</span> ไม่สามารถใช้ได้ — ต้องเริ่มชำระเงินใหม่
+                </p>
+              </div>
+            </Card>
             <form action="/checkout/start" method="post">
               <input type="hidden" name="courseSlug" value={pending.courseSlug} />
-              <Button type="submit" className="w-full">
+              <Button type="submit" variant="primary" size="lg" className="w-full">
                 เริ่มชำระเงินใหม่
               </Button>
             </form>
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="ghost" size="lg" className="w-full">
               <Link href={`/courses/${pending.courseSlug}`}>กลับไปหน้าคอร์ส</Link>
             </Button>
           </div>
         ) : (
-          <div className="mt-6 space-y-5">
-            {/* Summary card */}
-            <div className="rounded-lg border border-border bg-card p-4 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">คอร์ส</span>
-                <span className="font-medium">{pending.courseTitle}</span>
+          <div className="mt-8 space-y-5">
+            <Card className="space-y-3">
+              <h2 className="text-h4">สรุปการสั่งซื้อ</h2>
+              <Row label="คอร์ส" value={pending.courseTitle} />
+              <Row
+                label="ยอดที่ต้องโอน"
+                value={
+                  <span className="num text-h2 font-semibold text-success">
+                    {formatTHB(pending.amount)}
+                  </span>
+                }
+              />
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-uism text-(--foreground-muted)">เลขอ้างอิง</span>
+                <span className="mono inline-flex items-center gap-2 rounded-md border border-dashed border-(--border) bg-(--surface-sunken) px-3 py-1.5 text-ui">
+                  {pending.refCode}
+                  <Copy size={14} className="text-(--foreground-subtle)" aria-hidden />
+                </span>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-muted-foreground">ยอดที่ต้องโอน</span>
-                <span className="text-lg font-semibold">{formatTHB(pending.amount)}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="text-muted-foreground">เลขอ้างอิง</span>
-                <span className="font-mono text-sm">{pending.refCode}</span>
-              </div>
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-muted-foreground">เหลือเวลา</span>
-                <CountdownTimer expiresAt={pending.expiresAt} />
-              </div>
-            </div>
+              <Row label="เหลือเวลา" value={<CountdownTimer expiresAt={pending.expiresAt} />} />
+            </Card>
 
-            {/* Bank info */}
-            <div className="rounded-lg border border-border bg-card p-4">
-              <h2 className="text-sm font-medium">โอนเข้าบัญชี</h2>
-              {bank ? (
-                <p className="mt-1 text-sm text-muted-foreground">{bank.text}</p>
-              ) : (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  กรุณาติดต่อ admin สำหรับข้อมูลบัญชี
-                </p>
-              )}
-              <div className="mt-3 flex flex-col items-center gap-2">
+            <Card className="space-y-4">
+              <h2 className="text-h4">โอนเข้าบัญชี</h2>
+              <p className="text-body text-(--foreground-muted)">
+                {bank ? bank.text : "กรุณาติดต่อ admin สำหรับข้อมูลบัญชี"}
+              </p>
+              <div className="flex flex-col items-center gap-3">
                 {qrImageUrl ? (
-                  // QR image is uploaded by an admin in app_setting:
-                  // promptpay_qr_image_url. We render it as-is — no QR
-                  // generation in app code; the payer enters the amount
-                  // manually from the summary above.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={qrImageUrl}
                     width={224}
                     height={224}
                     alt="PromptPay QR สำหรับโอนค่าคอร์ส"
-                    className="h-56 w-56 rounded-lg border border-border bg-white object-contain p-2"
+                    className="h-56 w-56 rounded-card border border-(--border) bg-white object-contain p-2"
                   />
                 ) : (
                   <div
-                    className="flex h-40 w-40 items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 bg-muted/40 text-center"
                     role="img"
                     aria-label="ยังไม่ได้ตั้งค่า QR — โอนผ่านเลขบัญชีด้านบน"
+                    className="flex h-40 w-40 items-center justify-center rounded-card border border-dashed border-(--border) bg-(--surface-muted) px-3 text-center text-caption text-(--foreground-muted)"
                   >
-                    <span className="px-2 text-xs text-muted-foreground">
-                      QR ยังไม่พร้อม — โอนตามเลขบัญชีด้านบน
-                    </span>
+                    QR ยังไม่พร้อม — โอนตามเลขบัญชีด้านบน
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  โอนยอด {formatTHB(pending.amount)} แล้วกดปุ่มอัปโหลดสลิปด้านล่าง
+                <p className="text-uism text-(--foreground-muted)">
+                  โอนยอด <span className="num">{formatTHB(pending.amount)}</span> แล้วกดปุ่มอัปโหลดสลิปด้านล่าง
                 </p>
               </div>
-            </div>
+            </Card>
 
-            {/* Actions */}
-            <div className="space-y-2">
-              <Button asChild className="w-full">
-                <Link href={`/checkout/${pending.id}/upload-slip`}>อัปโหลดสลิป</Link>
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                กรุณาโอนภายในเวลาที่กำหนด จากนั้นกด &ldquo;อัปโหลดสลิป&rdquo;
-              </p>
-            </div>
+            <Button asChild variant="accent" size="lg" className="w-full">
+              <Link href={`/checkout/${pending.id}/upload-slip`}>อัปโหลดสลิป</Link>
+            </Button>
+            <p className="text-center text-caption text-(--foreground-subtle)">
+              กรุณาโอนภายในเวลาที่กำหนด จากนั้นกด &ldquo;อัปโหลดสลิป&rdquo;
+            </p>
           </div>
         )}
-      </section>
-    </PublicShell>
+      </div>
+    </CheckoutShell>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-uism text-(--foreground-muted)">{label}</span>
+      <span className="text-ui font-medium text-(--foreground)">{value}</span>
+    </div>
   );
 }
