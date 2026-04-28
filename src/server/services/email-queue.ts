@@ -1,7 +1,8 @@
 import "server-only";
-import type { PgTransaction } from "drizzle-orm/pg-core";
 import { db } from "@/db/client";
 import { emailMessage } from "@/db/schema/audit";
+
+type DbWriter = Pick<typeof db, "insert">;
 
 export type EmailTemplate =
   | "verify_email"
@@ -20,10 +21,7 @@ export interface EnqueueArgs {
   userId?: string | null;
 }
 
-export async function enqueueEmail(
-  args: EnqueueArgs,
-  tx?: PgTransaction<never, never, never>,
-): Promise<string> {
+export async function enqueueEmail(args: EnqueueArgs, tx?: DbWriter): Promise<string> {
   const writer = tx ?? db;
   const [row] = await writer
     .insert(emailMessage)

@@ -1,7 +1,8 @@
 import "server-only";
-import type { PgTransaction } from "drizzle-orm/pg-core";
 import { db } from "@/db/client";
 import { auditLog } from "@/db/schema/audit";
+
+type DbWriter = Pick<typeof db, "insert">;
 
 export type ActorType = "user" | "system" | "cron" | "webhook";
 
@@ -25,10 +26,7 @@ function asJson(v: unknown): unknown {
   return v ?? null;
 }
 
-export async function logAudit(
-  input: AuditInput,
-  tx?: PgTransaction<never, never, never>,
-): Promise<void> {
+export async function logAudit(input: AuditInput, tx?: DbWriter): Promise<void> {
   const writer = tx ?? db;
   await writer.insert(auditLog).values({
     actorType: input.actorType,
