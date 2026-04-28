@@ -50,6 +50,13 @@
       "when": 1777380586063,
       "tag": "0006_partial_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1777381065811,
+      "tag": "0007_enrollment",
+      "breakpoints": true
     }
   ]
 }

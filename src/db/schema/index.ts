@@ -5,3 +5,4 @@ export * from "./tag";
 export * from "./payment";
 export * from "./idempotency";
 export * from "./audit";
+export * from "./enrollment";

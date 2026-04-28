@@ -1,11 +1,30 @@
 // Integration test setup — runs against db-test (Postgres on :5433).
-// Sprint 1.4+ will add a resetDb() helper here that truncates all tables in TX.
-import { beforeAll } from "vitest";
+// Loads .env.local so env validation passes, then forces DATABASE_URL onto db-test.
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-beforeAll(() => {
-  if (!process.env.DATABASE_URL) {
-    process.env.DATABASE_URL =
-      process.env.DATABASE_URL_TEST ??
-      "postgres://finalive:test@localhost:5433/finalive_test";
+const envPath = resolve(__dirname, "../../.env.local");
+try {
+  const raw = readFileSync(envPath, "utf8");
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let val = trimmed.slice(eq + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (process.env[key] === undefined) process.env[key] = val;
   }
-});
+} catch {
+  // .env.local optional — fail later via env validation if vars missing.
+}
+
+// Force test database regardless of .env.local.
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL_TEST ?? "postgres://finalive:test@localhost:5433/finalive_test";
