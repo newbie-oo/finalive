@@ -8,6 +8,13 @@
       "when": 1777369691991,
       "tag": "0000_better_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777371408358,
+      "tag": "0001_course_schema",
+      "breakpoints": true
     }
   ]
 }
