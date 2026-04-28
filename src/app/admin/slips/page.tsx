@@ -3,6 +3,7 @@ import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
 import type { SearchParams } from "@/lib/pagination";
 import { SlipList } from "@/components/admin/slip-list";
+import { SlipImageViewer } from "@/components/admin/slip-image-viewer";
 
 const STATUS_OPTIONS: Array<{ value: SlipQueueStatus; label: string }> = [
   { value: "submitted", label: "รอตรวจ" },
@@ -85,9 +86,7 @@ export default async function AdminSlipsPage({
                 <dt className="text-muted-foreground">สถานะ</dt>
                 <dd>{selected.status}</dd>
               </dl>
-              <div className="rounded border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                ภาพ slip จะแสดงที่นี่ (commit 4.5)
-              </div>
+              <SlipImageViewer slipId={selected.id} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">เลือก slip ทางซ้ายเพื่อดูรายละเอียด</p>
