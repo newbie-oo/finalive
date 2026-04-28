@@ -1,11 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CheckCircle } from "@phosphor-icons/react";
 import { signUp } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { AuthCard } from "@/components/layouts/auth-card";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 
 const registerSchema = z.object({
   name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -53,103 +59,81 @@ export default function RegisterPage() {
   if (registered) {
     return (
       <PublicShell>
-        <section className="mx-auto max-w-sm p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold">สมัครสมาชิกสำเร็จ</h1>
-          <p className="text-sm text-muted-foreground">
-            กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี จากนั้นจึงเข้าสู่ระบบได้
-          </p>
-          <a
-            href="/login"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            ไปหน้าเข้าสู่ระบบ
-          </a>
-        </section>
+        <AuthCard title="สมัครสมาชิกสำเร็จ" subtitle="ตรวจสอบอีเมลเพื่อยืนยันบัญชี">
+          <div className="flex flex-col items-center gap-4 py-2 text-center">
+            <CheckCircle size={56} weight="fill" className="text-success" />
+            <p className="text-body text-(--foreground-muted)">
+              เราส่งลิงก์ยืนยันไปยังอีเมลของคุณแล้ว
+            </p>
+            <Button asChild variant="primary" size="lg" className="w-full">
+              <Link href="/login">ไปหน้าเข้าสู่ระบบ</Link>
+            </Button>
+          </div>
+        </AuthCard>
       </PublicShell>
     );
   }
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-sm p-8">
-        <h1 className="mb-6 text-xl font-semibold">สมัครสมาชิก</h1>
+      <AuthCard
+        title="สมัครสมาชิก"
+        subtitle="เริ่มต้นเรียนคอร์สแรกของคุณ"
+        footer={
+          <>
+            มีบัญชีอยู่แล้ว?{" "}
+            <Link href="/login" className="font-medium text-(--primary) hover:underline">
+              เข้าสู่ระบบ
+            </Link>
+          </>
+        }
+      >
         <GoogleSignInButton mode="register" />
-        <div className="my-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">หรือ</span>
-          <div className="h-px flex-1 bg-border" />
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-(--border)" />
+          <span className="text-uism text-(--foreground-muted)">หรือ</span>
+          <div className="h-px flex-1 bg-(--border)" />
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium">
-              ชื่อ
-            </label>
-            <input
-              id="name"
-              type="text"
-              autoComplete="name"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="mt-1 text-sm text-destructive">{errors.name.message}</p>
-            )}
+            <Label htmlFor="name" required>ชื่อ-นามสกุล</Label>
+            <Input id="name" type="text" autoComplete="name" invalid={!!errors.name} {...register("name")} />
+            {errors.name && <FieldError>{errors.name.message}</FieldError>}
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              อีเมล
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
-            )}
+            <Label htmlFor="email" required>อีเมล</Label>
+            <Input id="email" type="email" autoComplete="email" invalid={!!errors.email} {...register("email")} />
+            {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium">
-              รหัสผ่าน
-            </label>
-            <input
+            <Label htmlFor="password" required>รหัสผ่าน</Label>
+            <Input
               id="password"
               type="password"
               autoComplete="new-password"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+              invalid={!!errors.password}
               {...register("password")}
             />
-            {errors.password && (
-              <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
+            {errors.password ? (
+              <FieldError>{errors.password.message}</FieldError>
+            ) : (
+              <FieldHelper>อย่างน้อย 8 ตัวอักษร</FieldHelper>
             )}
           </div>
 
           {serverError && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
               {serverError}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "กำลังสมัคร..." : "สมัครสมาชิก"}
-          </button>
+          </Button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          มีบัญชีอยู่แล้ว?{" "}
-          <a href="/login" className="text-primary underline">
-            เข้าสู่ระบบ
-          </a>
-        </p>
-      </section>
+      </AuthCard>
     </PublicShell>
   );
 }

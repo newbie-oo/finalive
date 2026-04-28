@@ -1,16 +1,18 @@
 import Link from "next/link";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-2xl font-semibold">404</h1>
-      <p className="text-muted-foreground">ไม่พบหน้าที่คุณต้องการ</p>
-      <Link
-        href="/"
-        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-      >
-        กลับหน้าหลัก
-      </Link>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 py-24 text-center">
+      <MagnifyingGlass size={64} weight="light" className="text-foreground-subtle" />
+      <div>
+        <h1 className="text-h1">404</h1>
+        <p className="mt-2 text-bodylg text-(--foreground-muted)">ไม่พบหน้าที่คุณต้องการ</p>
+      </div>
+      <Button asChild variant="primary" size="lg">
+        <Link href="/">กลับหน้าหลัก</Link>
+      </Button>
+    </main>
   );
 }

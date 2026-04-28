@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CaretLeft, LockSimple } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
+import { Button } from "@/components/ui/button";
+import { StatusChip } from "@/components/ui/status-chip";
 import { buildHlsUrl } from "@/server/services/bunny";
 import { getPreviewLesson } from "@/server/repos/course";
 import { MarkdownView } from "@/lib/markdown";
@@ -19,33 +22,48 @@ export default async function PreviewLessonPage({
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-4xl p-4 sm:p-8">
-        <p className="text-xs text-muted-foreground">
-          <Link href={`/courses/${lesson.courseSlug}`} className="hover:underline">
-            ← {lesson.courseTitle}
-          </Link>
-        </p>
-        <h1 className="mt-2 text-2xl font-semibold">{lesson.title}</h1>
-        <p className="mt-1 text-xs text-muted-foreground">ตัวอย่างฟรี — ไม่ต้องลงทะเบียน</p>
+      <section className="mx-auto max-w-[960px] px-6 py-8">
+        <Link
+          href={`/courses/${lesson.courseSlug}`}
+          className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
+        >
+          <CaretLeft size={14} /> {lesson.courseTitle}
+        </Link>
+        <div className="mt-3 flex items-center gap-3">
+          <h1 className="text-h1">{lesson.title}</h1>
+          <StatusChip tone="info">ตัวอย่างฟรี</StatusChip>
+        </div>
 
-        <div className="mt-4">
+        <div className="mt-6 overflow-hidden rounded-card border border-(--border)">
           {lesson.bunnyVideoId ? (
             <VidstackPlayer src={buildHlsUrl({ videoId: lesson.bunnyVideoId })} title={lesson.title} />
           ) : (
             <div
               role="status"
-              className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground"
+              className="flex aspect-video w-full items-center justify-center bg-(--surface-muted) text-body text-(--foreground-muted)"
             >
               ตัวอย่างนี้ยังไม่มีวิดีโอ — กรุณาอ่านเนื้อหาด้านล่าง
             </div>
           )}
         </div>
 
-        {lesson.bodyMd ? (
-          <div className="mt-6">
+        {lesson.bodyMd && (
+          <div className="mt-8">
             <MarkdownView text={lesson.bodyMd} />
           </div>
-        ) : null}
+        )}
+
+        <div className="mt-10 flex items-center justify-between gap-4 rounded-card border border-(--border) bg-(--surface-muted) p-5">
+          <div className="flex items-center gap-3">
+            <LockSimple size={20} weight="bold" className="text-(--primary)" />
+            <p className="text-body text-(--foreground)">
+              บทเรียนถัดไปถูกล็อก — ลงทะเบียนเพื่อปลดล็อกคอร์สเต็ม
+            </p>
+          </div>
+          <Button asChild variant="accent" size="lg">
+            <Link href={`/courses/${lesson.courseSlug}`}>ลงทะเบียน</Link>
+          </Button>
+        </div>
       </section>
     </PublicShell>
   );

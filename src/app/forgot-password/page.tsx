@@ -1,9 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { EnvelopeSimple } from "@phosphor-icons/react";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { AuthCard } from "@/components/layouts/auth-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError } from "@/components/ui/label";
 
 const forgotSchema = z.object({
   email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -52,64 +58,50 @@ export default function ForgotPasswordPage() {
   if (sent) {
     return (
       <PublicShell>
-        <section className="mx-auto max-w-sm p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold">ส่งลิงก์แล้ว</h1>
-          <p className="text-sm text-muted-foreground">
-            หากอีเมลนี้มีบัญชีในระบบ คุณจะได้รับลิงก์สำหรับรีเซ็ตรหัสผ่าน
-          </p>
-          <a
-            href="/login"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            เข้าสู่ระบบ
-          </a>
-        </section>
+        <AuthCard title="ส่งลิงก์แล้ว" subtitle="ตรวจสอบกล่องอีเมลของคุณ">
+          <div className="flex flex-col items-center gap-4 py-2 text-center">
+            <EnvelopeSimple size={56} weight="duotone" className="text-(--primary)" />
+            <p className="text-body text-(--foreground-muted)">
+              หากอีเมลนี้มีบัญชีในระบบ คุณจะได้รับลิงก์สำหรับรีเซ็ตรหัสผ่าน
+            </p>
+            <Button asChild variant="primary" size="lg" className="w-full">
+              <Link href="/login">กลับไปเข้าสู่ระบบ</Link>
+            </Button>
+          </div>
+        </AuthCard>
       </PublicShell>
     );
   }
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-sm p-8">
-        <h1 className="mb-6 text-xl font-semibold">ลืมรหัสผ่าน</h1>
+      <AuthCard
+        title="ลืมรหัสผ่าน"
+        subtitle="กรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน"
+        footer={
+          <Link href="/login" className="font-medium text-(--primary) hover:underline">
+            กลับไปเข้าสู่ระบบ
+          </Link>
+        }
+      >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              อีเมล
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
-            )}
+            <Label htmlFor="email" required>อีเมล</Label>
+            <Input id="email" type="email" autoComplete="email" invalid={!!errors.email} {...register("email")} />
+            {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
 
           {serverError && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
               {serverError}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "กำลังส่ง..." : "ส่งลิงก์รีเซ็ตรหัสผ่าน"}
-          </button>
+          </Button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          <a href="/login" className="text-primary underline">
-            กลับไปเข้าสู่ระบบ
-          </a>
-        </p>
-      </section>
+      </AuthCard>
     </PublicShell>
   );
 }

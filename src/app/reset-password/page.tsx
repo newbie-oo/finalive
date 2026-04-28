@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CheckCircle } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { AuthCard } from "@/components/layouts/auth-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 
 const resetSchema = z.object({
   password: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"),
@@ -13,7 +19,19 @@ const resetSchema = z.object({
 
 type ResetForm = z.infer<typeof resetSchema>;
 
+export const dynamic = "force-dynamic";
+
 export default function ResetPasswordPage() {
+  return (
+    <PublicShell>
+      <Suspense fallback={null}>
+        <ResetForm />
+      </Suspense>
+    </PublicShell>
+  );
+}
+
+function ResetForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [serverError, setServerError] = useState<string | null>(null);
@@ -56,57 +74,46 @@ export default function ResetPasswordPage() {
 
   if (done) {
     return (
-      <PublicShell>
-        <section className="mx-auto max-w-sm p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold">รีเซ็ตรหัสผ่านสำเร็จ</h1>
-          <p className="text-sm text-muted-foreground">รหัสผ่านใหม่ของคุณพร้อมใช้งานแล้ว</p>
-          <a
-            href="/login"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            เข้าสู่ระบบ
-          </a>
-        </section>
-      </PublicShell>
+      <AuthCard title="รีเซ็ตรหัสผ่านสำเร็จ" subtitle="รหัสผ่านใหม่พร้อมใช้งาน">
+        <div className="flex flex-col items-center gap-4 py-2 text-center">
+          <CheckCircle size={56} weight="fill" className="text-success" />
+          <Button asChild variant="primary" size="lg" className="w-full">
+            <Link href="/login">เข้าสู่ระบบ</Link>
+          </Button>
+        </div>
+      </AuthCard>
     );
   }
 
   return (
-    <PublicShell>
-      <section className="mx-auto max-w-sm p-8">
-        <h1 className="mb-6 text-xl font-semibold">รีเซ็ตรหัสผ่าน</h1>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium">
-              รหัสผ่านใหม่
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
-            )}
-          </div>
-
-          {serverError && (
-            <p role="alert" className="text-sm text-destructive">
-              {serverError}
-            </p>
+    <AuthCard title="รีเซ็ตรหัสผ่าน" subtitle="กรอกรหัสผ่านใหม่ของคุณ">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div>
+          <Label htmlFor="password" required>รหัสผ่านใหม่</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            invalid={!!errors.password}
+            {...register("password")}
+          />
+          {errors.password ? (
+            <FieldError>{errors.password.message}</FieldError>
+          ) : (
+            <FieldHelper>อย่างน้อย 8 ตัวอักษร</FieldHelper>
           )}
+        </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting || !token}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-          >
-            {isSubmitting ? "กำลังบันทึก..." : "บันทึกรหัสผ่านใหม่"}
-          </button>
-        </form>
-      </section>
-    </PublicShell>
+        {serverError && (
+          <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
+            {serverError}
+          </p>
+        )}
+
+        <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting || !token}>
+          {isSubmitting ? "กำลังบันทึก..." : "บันทึกรหัสผ่านใหม่"}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

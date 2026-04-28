@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard, CourseCardSkeleton } from "@/components/course/course-card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,7 +15,7 @@ async function CourseGrid({ params }: { params: ReturnType<typeof offsetSchema.p
   if (result.data.length === 0) {
     return (
       <EmptyState
-        icon="🎓"
+        icon={<GraduationCap size={28} weight="duotone" />}
         title="ยังไม่มีคอร์สเปิดสอน"
         description="ทีมงานกำลังเตรียมคอร์สใหม่ — กรุณากลับมาตรวจสอบภายหลัง"
       />
@@ -23,19 +24,21 @@ async function CourseGrid({ params }: { params: ReturnType<typeof offsetSchema.p
 
   return (
     <>
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {result.data.map((c) => (
           <li key={c.id}>
             <CourseCard course={c} />
           </li>
         ))}
       </ul>
-      <PaginationNav
-        page={result.pagination.page}
-        totalPages={result.pagination.total_pages}
-        basePath="/courses"
-        perPage={params.per_page === 12 ? undefined : params.per_page}
-      />
+      <div className="mt-10">
+        <PaginationNav
+          page={result.pagination.page}
+          totalPages={result.pagination.total_pages}
+          basePath="/courses"
+          perPage={params.per_page === 12 ? undefined : params.per_page}
+        />
+      </div>
     </>
   );
 }
@@ -53,11 +56,18 @@ export default async function CoursesPage({
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-6xl p-4 sm:p-8">
-        <h1 className="mb-1 text-2xl font-semibold">คอร์สทั้งหมด</h1>
+      <section className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
+        <header className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-h1">คอร์สทั้งหมด</h1>
+            <p className="mt-2 text-bodylg text-(--foreground-muted)">
+              เลือกคอร์สที่เหมาะกับเป้าหมายของคุณ
+            </p>
+          </div>
+        </header>
         <Suspense
           fallback={
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <li key={i}>
                   <CourseCardSkeleton />
