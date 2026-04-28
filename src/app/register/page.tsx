@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signUp } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 
 const registerSchema = z.object({
   name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -72,6 +73,12 @@ export default function RegisterPage() {
     <PublicShell>
       <section className="mx-auto max-w-sm p-8">
         <h1 className="mb-6 text-xl font-semibold">สมัครสมาชิก</h1>
+        <GoogleSignInButton mode="register" />
+        <div className="my-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">หรือ</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label htmlFor="name" className="mb-1 block text-sm font-medium">
