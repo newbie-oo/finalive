@@ -95,8 +95,28 @@ const tusServer = new Server({
         }
       }
 
-      const videoId = await createBunnyVideo(title);
-      await uploadBunnyVideo(videoId, filePath);
+      let videoId: string;
+      try {
+        videoId = await createBunnyVideo(title);
+        logger.info("tus.finish.bunny_video_created", { videoId, title });
+      } catch (err) {
+        logger.error("tus.finish.bunny_create_failed", err, { title });
+        throw err;
+      }
+
+      try {
+        await uploadBunnyVideo(videoId, filePath);
+        logger.info("tus.finish.bunny_uploaded", { videoId });
+      } catch (err) {
+        logger.error("tus.finish.bunny_upload_failed", err, { videoId, filePath });
+        // Attempt to clean up orphaned Bunny video before re-throwing.
+        try {
+          await deleteBunnyVideo(videoId);
+        } catch {
+          // Best-effort cleanup.
+        }
+        throw err;
+      }
 
       const session = await auth.api.getSession({ headers: req.headers });
       const [asset] = await db

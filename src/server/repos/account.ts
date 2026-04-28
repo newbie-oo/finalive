@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
+import { enrollment } from "@/db/schema/enrollment";
 
 export interface AccountPendingItem {
   pendingId: string;
@@ -24,6 +25,34 @@ const STATUS_PRIORITY: Record<string, number> = {
   expired: 2,
   cancelled: 1,
 };
+
+export interface AccountEnrollmentItem {
+  enrollmentId: string;
+  courseSlug: string;
+  courseTitle: string;
+  priceAtPurchase: string;
+  source: string;
+  enrolledAt: Date;
+}
+
+export async function listAccountEnrollments(userId: string): Promise<AccountEnrollmentItem[]> {
+  const rows = await db
+    .select({
+      enrollmentId: enrollment.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+      priceAtPurchase: enrollment.priceAtPurchase,
+      source: enrollment.source,
+      enrolledAt: enrollment.createdAt,
+    })
+    .from(enrollment)
+    .innerJoin(course, eq(enrollment.courseId, course.id))
+    .where(eq(enrollment.userId, userId))
+    .orderBy(desc(enrollment.createdAt))
+    .limit(50);
+
+  return rows;
+}
 
 export async function listAccountPendings(userId: string): Promise<AccountPendingItem[]> {
   const rows = await db

@@ -400,12 +400,22 @@ function SortableLesson({
     });
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onSelect();
+    }
+  }
+
   return (
-    <button
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       className={`flex w-full items-center justify-between rounded px-2 py-1 text-sm ${
         isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
       }`}
@@ -452,7 +462,7 @@ function SortableLesson({
           แก้ไข
         </Link>
       </span>
-    </button>
+    </div>
   );
 }
 

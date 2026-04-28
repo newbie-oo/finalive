@@ -15,6 +15,7 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +30,7 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
       setUploading(true);
       setProgress(0);
       setProcessing(false);
+      setError(null);
 
       const upload = new tus.Upload(file, {
         endpoint: `${window.location.origin}/api/upload/tus`,
@@ -41,15 +43,20 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
         },
         onError(error) {
           setUploading(false);
+          setProgress(0);
+          setError(error.message);
           toast.error(`อัปโหลดไม่สำเร็จ: ${error.message}`);
         },
         onProgress(bytesUploaded, bytesTotal) {
           const pct = bytesTotal ? Math.round((bytesUploaded / bytesTotal) * 100) : 0;
-          setProgress(pct);
+          // Cap at 99% until onSuccess confirms backend processing started.
+          setProgress(Math.min(pct, 99));
         },
         onSuccess() {
           setUploading(false);
+          setProgress(100);
           setProcessing(true);
+          setError(null);
           toast.success("อัปโหลดสำเร็จ กำลังประมวลผลวิดีโอ…");
           setTimeout(() => {
             onUploadComplete?.();
@@ -74,11 +81,14 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
             disabled={uploading}
           />
           <Button size="sm" variant="outline" asChild>
-            <span>{uploading ? "กำลังอัปโหลด…" : "+ เลือกไฟล์วิดีโอ"}</span>
+            <span>{uploading ? "กำลังอัปโหลด…" : error ? "ลองใหม่" : "+ เลือกไฟล์วิดีโอ"}</span>
           </Button>
         </label>
-        {uploading && <span className="text-xs text-muted-foreground">{progress}%</span>}
+        {uploading && (
+          <span className="text-xs text-muted-foreground tabular-nums">{progress}%</span>
+        )}
         {processing && <span className="text-xs text-muted-foreground">กำลังประมวลผล…</span>}
+        {error && <span className="text-xs text-destructive">ล้มเหลว</span>}
       </div>
 
       {uploading && (
@@ -87,6 +97,12 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
             className="h-full bg-primary transition-all"
             style={{ width: `${progress}%` }}
           />
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
         </div>
       )}
     </div>

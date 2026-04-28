@@ -9,6 +9,7 @@ import {
   lesson as lessonTable,
 } from "@/db/schema/course";
 import { quiz as quizTable, quizQuestion as quizQuestionTable, quizChoice as quizChoiceTable } from "@/db/schema/quiz";
+import { mediaAsset as mediaAssetTable } from "@/db/schema/media";
 import { slugify } from "@/lib/slug";
 
 interface SeedUser {
@@ -180,8 +181,25 @@ async function seedUsers(): Promise<string> {
   return adminId;
 }
 
+// Reusable Bunny Stream video for all seeded lessons.
+// This is a real uploaded video (~4.5 min, 480x360) on Bunny Stream.
+const MOCK_BUNNY_VIDEO_ID = "e749c35d-d564-48cb-b670-bbee94ffa68e";
+
 async function seedCourses(adminId: string): Promise<string[]> {
-  await db.execute(sql`TRUNCATE TABLE "quiz_choice", "quiz_question", "quiz", "lesson", "module", "course" CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE "media_asset", "quiz_choice", "quiz_question", "quiz", "lesson", "module", "course" CASCADE`);
+
+  // Create one shared media asset for all lessons.
+  const [sharedAsset] = await db.insert(mediaAssetTable).values({
+    kind: "video",
+    storage: "bunny_stream",
+    storageKey: MOCK_BUNNY_VIDEO_ID,
+    mimeType: "video/mp4",
+    durationSeconds: 274,
+    status: "ready",
+    createdByUserId: adminId,
+  }).returning({ id: mediaAssetTable.id });
+  const sharedVideoMediaId = sharedAsset!.id;
+  console.warn(`[seed] media asset ${sharedVideoMediaId} -> Bunny ${MOCK_BUNNY_VIDEO_ID}`);
 
   const lessonIds: string[] = [];
   const usedSlugs = new Set<string>();
@@ -223,6 +241,7 @@ async function seedCourses(adminId: string): Promise<string[]> {
           moduleId,
           title: l.title,
           bodyMd: l.bodyMd ?? defaultLessonBody(c.title, m.title, l.title),
+          videoMediaId: sharedVideoMediaId,
           durationSeconds: l.durationSeconds,
           isPreview: l.isPreview ?? false,
           isFree: l.isFree ?? false,

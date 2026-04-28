@@ -6,6 +6,7 @@ import { PublicShell } from "@/components/layouts/public-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
+import { FreeCourseCta } from "@/components/course/free-course-cta";
 import {
   getPublishedCourseBySlug,
   getCourseCurriculum,
@@ -133,9 +134,7 @@ export default async function CourseDetailPage({
                   ))}
                 </ul>
                 {course.isFree ? (
-                  <Button asChild variant="primary" size="lg" className="w-full">
-                    <Link href="/account/enrollments">เริ่มเรียน</Link>
-                  </Button>
+                  <FreeCourseCta courseSlug={course.slug} />
                 ) : (
                   <form action="/checkout/start" method="post">
                     <input type="hidden" name="courseSlug" value={course.slug} />
