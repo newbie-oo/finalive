@@ -4,8 +4,7 @@ import { PublicShell } from "@/components/layouts/public-shell";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/server/auth-session";
 import { getCheckoutPending } from "@/server/repos/checkout";
-
-const fmt = new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" });
+import { formatTHB } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +44,7 @@ export default async function CheckoutPage({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">ยอดที่ต้องโอน</span>
-                <span className="font-medium">{fmt.format(Number(pending.amount))}</span>
+                <span className="font-medium">{formatTHB(pending.amount)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">เลขอ้างอิง</span>

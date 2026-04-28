@@ -2,14 +2,14 @@ import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard } from "@/components/course/course-card";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { listPublishedCourses } from "@/server/repos/course";
-import { offsetSchema } from "@/lib/pagination";
+import { offsetSchema, type SearchParams } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
 export default async function CoursesPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: SearchParams;
 }) {
   const sp = await searchParams;
   const params = offsetSchema.parse({

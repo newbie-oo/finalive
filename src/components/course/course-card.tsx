@@ -1,10 +1,9 @@
 import Link from "next/link";
 import type { PublicCourseSummary } from "@/server/repos/course";
-
-const fmt = new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" });
+import { formatTHB } from "@/lib/format";
 
 export function CourseCard({ course }: { course: PublicCourseSummary }) {
-  const price = course.isFree ? "ฟรี" : fmt.format(Number(course.price));
+  const price = course.isFree ? "ฟรี" : formatTHB(course.price);
   return (
     <Link
       href={`/courses/${course.slug}`}

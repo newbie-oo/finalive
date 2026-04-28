@@ -8,15 +8,7 @@ import {
   getCourseCurriculum,
   type CurriculumLesson,
 } from "@/server/repos/course";
-
-const fmt = new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" });
-
-function durationLabel(seconds: number | null): string {
-  if (!seconds) return "—";
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
+import { formatTHB, formatDuration } from "@/lib/format";
 
 function LessonRow({ lesson, courseSlug }: { lesson: CurriculumLesson; courseSlug: string }) {
   const playable = lesson.isPreview || lesson.isFree;
@@ -27,7 +19,7 @@ function LessonRow({ lesson, courseSlug }: { lesson: CurriculumLesson; courseSlu
         <Icon className="h-4 w-4 text-muted-foreground" />
         {lesson.title}
       </span>
-      <span className="text-xs text-muted-foreground">{durationLabel(lesson.durationSeconds)}</span>
+      <span className="text-xs text-muted-foreground">{formatDuration(lesson.durationSeconds)}</span>
     </div>
   );
   if (playable) {
@@ -50,7 +42,7 @@ export default async function CourseDetailPage({
   if (!course) notFound();
   const curriculum = await getCourseCurriculum(course.id);
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
-  const price = course.isFree ? "ฟรี" : fmt.format(Number(course.price));
+  const price = course.isFree ? "ฟรี" : formatTHB(course.price);
 
   return (
     <PublicShell>

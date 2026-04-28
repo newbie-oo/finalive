@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+// Canonical Next 15+ search-params shape for server components.
+export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
 // --- Offset pagination -----------------------------------------------------
 
 export const offsetSchema = z.object({

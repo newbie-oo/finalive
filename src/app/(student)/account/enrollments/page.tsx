@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/server/auth-session";
 import { listAccountPendings } from "@/server/repos/account";
+import { formatTHB } from "@/lib/format";
 
 const STATUS_LABEL: Record<string, string> = {
   awaiting_payment: "รอชำระเงิน",
@@ -9,8 +10,6 @@ const STATUS_LABEL: Record<string, string> = {
   expired: "หมดอายุ",
   cancelled: "ยกเลิก",
 };
-
-const fmt = new Intl.NumberFormat("th-TH", { style: "currency", currency: "THB" });
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,7 @@ export default async function EnrollmentsPage() {
               <div>
                 <p className="font-medium">{p.courseTitle}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {STATUS_LABEL[p.status] ?? p.status} · {fmt.format(Number(p.amount))} ·{" "}
+                  {STATUS_LABEL[p.status] ?? p.status} · {formatTHB(p.amount)} ·{" "}
                   <span className="font-mono">{p.refCode}</span>
                 </p>
               </div>
