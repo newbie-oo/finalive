@@ -2,22 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Monitor } from "@phosphor-icons/react";
+import { Sun, Moon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
-const ORDER = ["light", "dark", "system"] as const;
+const ORDER = ["light", "dark"] as const;
 type ThemeKey = (typeof ORDER)[number];
 
 const ICONS: Record<ThemeKey, React.ComponentType<{ className?: string }>> = {
   light: Sun,
   dark: Moon,
-  system: Monitor,
 };
 
 const LABELS: Record<ThemeKey, string> = {
   light: "Light",
   dark: "Dark",
-  system: "System",
 };
 
 export function ThemeToggle() {
@@ -29,7 +27,7 @@ export function ThemeToggle() {
 
   const current: ThemeKey = mounted && (ORDER as readonly string[]).includes(theme ?? "")
     ? (theme as ThemeKey)
-    : "system";
+    : "light";
   const Icon = ICONS[current];
 
   function cycle() {
