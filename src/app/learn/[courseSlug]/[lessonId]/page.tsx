@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { BunnyPlayer } from "@/components/course/bunny-player";
 import { CurriculumSidebar } from "@/components/learn/curriculum-sidebar";
 import { LearnShell } from "@/components/learn/learn-shell";
+import { LessonClient } from "@/components/learn/lesson-client";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
 import { checkLessonAccess } from "@/server/services/learn-access";
@@ -79,6 +80,13 @@ export default async function LearnLessonPage({
                 วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)
               </div>
             )}
+
+            <LessonClient
+              lessonId={lessonData.id}
+              courseSlug={courseSlug}
+              nextLessonId={lessonData.nextLessonId}
+              durationSeconds={lessonData.durationSeconds}
+            />
 
             {lessonData.bodyMd ? (
               <article className="prose prose-sm mt-6 max-w-none dark:prose-invert">
