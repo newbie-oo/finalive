@@ -45,7 +45,7 @@ export default async function LearnLessonPage({
 
   return (
     <LearnShell user={session?.user ?? null}>
-      <div className="grid h-[calc(100vh-3.5rem)] grid-cols-1 lg:grid-cols-[280px_1fr]">
+      <div className="grid h-[calc(100dvh-3.5rem)] grid-cols-1 lg:grid-cols-[280px_1fr]">
         <aside className="hidden lg:block">
           <CurriculumSidebar
             courseSlug={courseSlug}

@@ -51,7 +51,7 @@ export default async function CoursesPage({
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-6xl p-8">
+      <section className="mx-auto max-w-6xl p-4 sm:p-8">
         <h1 className="mb-1 text-2xl font-semibold">คอร์สทั้งหมด</h1>
         <Suspense
           fallback={

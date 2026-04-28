@@ -56,13 +56,13 @@ export function UserProfileDropdown({ name, email, image, links = [] }: Props) {
           <Image
             src={image}
             alt={name}
-            width={32}
-            height={32}
+            width={40}
+            height={40}
             unoptimized
             className="rounded-full object-cover"
           />
         ) : (
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
             {getInitials(name)}
           </span>
         )}

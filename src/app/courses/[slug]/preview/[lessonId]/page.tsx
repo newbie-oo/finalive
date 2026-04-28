@@ -18,7 +18,7 @@ export default async function PreviewLessonPage({
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-4xl p-8">
+      <section className="mx-auto max-w-4xl p-4 sm:p-8">
         <p className="text-xs text-muted-foreground">
           <Link href={`/courses/${lesson.courseSlug}`} className="hover:underline">
             ← {lesson.courseTitle}

@@ -43,6 +43,7 @@ export function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon"
+      className="h-11 w-11"
       aria-label={`Theme: ${LABELS[current]} (click to change)`}
       onClick={cycle}
       data-testid="theme-toggle"

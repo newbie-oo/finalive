@@ -12,11 +12,11 @@ export function StudentShell({
 }) {
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex h-14 items-center justify-between border-b border-border px-4">
+      <header className="flex min-h-14 flex-wrap items-center justify-between gap-y-2 border-b border-border px-4 py-2">
         <Link href="/account" className="font-semibold">
           Finalive
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex flex-wrap items-center gap-4 text-sm">
           <Link href="/account/enrollments">คอร์สของฉัน</Link>
           <Link href="/account/certificates">ใบประกาศ</Link>
           <UserProfileDropdown

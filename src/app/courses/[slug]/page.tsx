@@ -70,8 +70,8 @@ export default async function CourseDetailPage({
           </div>
         )}
 
-        <div className="mt-4 rounded-lg border border-border bg-card p-6">
-          <h1 className="text-3xl font-semibold">{course.title}</h1>
+        <div className="mt-4 rounded-lg border border-border bg-card p-4 sm:p-6">
+          <h1 className="text-2xl font-semibold break-words sm:text-3xl">{course.title}</h1>
           <p className="mt-2 text-base text-muted-foreground">{course.summary}</p>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">

@@ -25,7 +25,7 @@ export default async function CheckoutPage({
 
   return (
     <PublicShell>
-      <section className="mx-auto max-w-md p-8">
+      <section className="mx-auto max-w-md p-4 sm:p-8">
         <p className="text-xs text-muted-foreground">
           <Link href={`/courses/${pending.courseSlug}`} className="hover:underline">
             ← {pending.courseTitle}
