@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: finalive-db
+    restart: unless-stopped
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: finalive
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: finalive
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finalive"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  db-test:
+    image: postgres:16-alpine
+    container_name: finalive-db-test
+    ports: ["5433:5432"]
+    environment:
+      POSTGRES_USER: finalive
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: finalive_test
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finalive"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: finalive-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  minio:
+    image: minio/minio
+    container_name: finalive-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniodev
+    command: server /data --console-address ":9001"
+    volumes: [miniodata:/data]
+
+volumes:
+  pgdata:
+  miniodata:
