@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 import { createBunnyVideo, uploadBunnyVideo, deleteBunnyVideo } from "@/server/services/bunny";
 import { unlink } from "node:fs/promises";
 import { canEditCourse } from "@/server/services/course-authz";
+import { getUserRole, normalizeRole } from "@/server/auth-session";
 import { logger } from "@/lib/logger";
 
 const uploadDir = path.join(process.cwd(), "uploads", "video");
@@ -43,7 +44,7 @@ const tusServer = new Server({
 
     const canEdit = await canEditCourse(
       session.user.id,
-      (session.user as { role?: string }).role ?? "user",
+      normalizeRole(getUserRole(session.user)),
       courseId,
     );
     if (!canEdit) {

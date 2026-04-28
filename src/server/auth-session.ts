@@ -18,11 +18,11 @@ export interface SessionContext {
   sessionId: string;
 }
 
-function normalizeRole(role: string | null | undefined): Role {
+export function normalizeRole(role: string | null | undefined): Role {
   return role === "admin" ? "admin" : "user";
 }
 
-function getUserRole(user: unknown): string | null | undefined {
+export function getUserRole(user: unknown): string | null | undefined {
   if (typeof user !== "object" || user === null) return undefined;
   const role = (user as Record<string, unknown>).role;
   if (typeof role === "string" || role === null) return role;
