@@ -42,6 +42,10 @@ export default async function CourseDetailPage({
   if (!course) notFound();
   const curriculum = await getCourseCurriculum(course.id);
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
+  const totalDuration = curriculum.reduce(
+    (sum, m) => sum + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),
+    0,
+  );
   const price = course.isFree ? "ฟรี" : formatTHB(course.price);
 
   return (
@@ -52,41 +56,60 @@ export default async function CourseDetailPage({
             ← คอร์สทั้งหมด
           </Link>
         </p>
-        <h1 className="mt-2 text-3xl font-semibold">{course.title}</h1>
-        <p className="mt-2 text-base text-muted-foreground">{course.summary}</p>
 
-        <div className="mt-4 flex items-center gap-3">
-          <span className="text-lg font-medium">{price}</span>
-          {course.isFree ? (
-            <Button asChild>
-              <Link href="/account/enrollments">เริ่มเรียน</Link>
-            </Button>
-          ) : (
-            <form action="/checkout/start" method="post">
-              <input type="hidden" name="courseSlug" value={course.slug} />
-              <Button type="submit">ลงทะเบียน</Button>
-            </form>
-          )}
+        <div className="mt-4 rounded-lg border border-border bg-card p-6">
+          <h1 className="text-3xl font-semibold">{course.title}</h1>
+          <p className="mt-2 text-base text-muted-foreground">{course.summary}</p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {course.isFree ? (
+              <span className="rounded bg-success px-2 py-1 text-sm font-medium text-success-foreground">
+                ฟรี
+              </span>
+            ) : (
+              <span className="text-lg font-medium">{price}</span>
+            )}
+            <span className="text-sm text-muted-foreground">
+              {curriculum.length} โมดูล · {totalLessons} บทเรียน · {formatDuration(totalDuration)}
+            </span>
+          </div>
+
+          <div className="mt-4">
+            {course.isFree ? (
+              <Button asChild>
+                <Link href="/account/enrollments">เริ่มเรียน</Link>
+              </Button>
+            ) : (
+              <form action="/checkout/start" method="post">
+                <input type="hidden" name="courseSlug" value={course.slug} />
+                <Button type="submit">ลงทะเบียน</Button>
+              </form>
+            )}
+          </div>
         </div>
 
         <h2 className="mt-10 mb-3 text-xl font-semibold">เนื้อหาในคอร์ส</h2>
-        <p className="mb-4 text-xs text-muted-foreground">
-          {curriculum.length} โมดูล · {totalLessons} บทเรียน
-        </p>
 
         {curriculum.length === 0 ? (
           <p className="text-sm text-muted-foreground">ยังไม่มีเนื้อหา</p>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {curriculum.map((m) => (
-              <div key={m.id} className="rounded border border-border">
-                <div className="border-b border-border bg-muted/40 px-3 py-2 text-sm font-medium">
-                  {m.sortOrder}. {m.title}
-                </div>
+              <details key={m.id} className="rounded border border-border group" open>
+                <summary className="cursor-pointer list-none">
+                  <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3 py-2 text-sm font-medium">
+                    <span>
+                      {m.sortOrder}. {m.title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {m.lessons.length} บทเรียน
+                    </span>
+                  </div>
+                </summary>
                 {m.lessons.map((l) => (
                   <LessonRow key={l.id} lesson={l} courseSlug={course.slug} />
                 ))}
-              </div>
+              </details>
             ))}
           </div>
         )}
