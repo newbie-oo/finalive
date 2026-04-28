@@ -25,7 +25,12 @@ vi.mock("@/server/auth-session", () => ({
   })),
 }));
 
-import { acceptSlip, rejectSlip } from "@/server/actions/admin-slip";
+import {
+  acceptSlip,
+  rejectSlip,
+  bulkAcceptSlips,
+  bulkRejectSlips,
+} from "@/server/actions/admin-slip";
 
 async function reset() {
   await db.execute(sql`
@@ -34,22 +39,40 @@ async function reset() {
   `);
 }
 
-async function seedSubmittedSlip(): Promise<{ slipId: string; courseId: string; pendingId: string }> {
-  await db.insert(userTable).values([
-    { id: ADMIN_ID, email: "admin@finalive.dev", name: "Admin", role: "admin" },
-    { id: STUDENT_ID, email: "stu@x.test", name: "Stu", role: "user" },
-  ]);
-  const [c] = await db
-    .insert(course)
-    .values({
-      slug: "c1",
-      title: "Course One",
-      summary: "S",
-      ownerUserId: ADMIN_ID,
-      price: "199.00",
-      createdByUserId: ADMIN_ID,
-    })
-    .returning({ id: course.id });
+async function seedSubmittedSlip(opts?: {
+  refCode?: string;
+  idemKey?: string;
+  studentId?: string;
+}): Promise<{ slipId: string; courseId: string; pendingId: string; studentId: string }> {
+  const studentId = opts?.studentId ?? STUDENT_ID;
+  // Idempotent admin/student insert so callers can seed many slips in a row.
+  await db
+    .insert(userTable)
+    .values([
+      { id: ADMIN_ID, email: "admin@finalive.dev", name: "Admin", role: "admin" },
+      { id: studentId, email: `${studentId}@x.test`, name: "Stu", role: "user" },
+    ])
+    .onConflictDoNothing({ target: userTable.id });
+  const existing = await db
+    .select({ id: course.id })
+    .from(course)
+    .where(eq(course.slug, "c1"))
+    .limit(1);
+  const c =
+    existing[0] ??
+    (
+      await db
+        .insert(course)
+        .values({
+          slug: "c1",
+          title: "Course One",
+          summary: "S",
+          ownerUserId: ADMIN_ID,
+          price: "199.00",
+          createdByUserId: ADMIN_ID,
+        })
+        .returning({ id: course.id })
+    )[0];
   const [m] = await db
     .insert(mediaAsset)
     .values({
@@ -65,10 +88,10 @@ async function seedSubmittedSlip(): Promise<{ slipId: string; courseId: string; 
   const [p] = await db
     .insert(pendingEnrollment)
     .values({
-      userId: STUDENT_ID,
+      userId: studentId,
       courseId: c!.id,
       amount: "199.00",
-      refCode: "FL-12345678",
+      refCode: opts?.refCode ?? "FL-12345678",
       status: "slip_submitted",
       expiresAt: new Date(Date.now() + 86400_000),
     })
@@ -80,10 +103,10 @@ async function seedSubmittedSlip(): Promise<{ slipId: string; courseId: string; 
       imageMediaId: m!.id,
       expectedAmount: "199.00",
       status: "submitted",
-      idempotencyKey: "k1",
+      idempotencyKey: opts?.idemKey ?? "k1",
     })
     .returning({ id: paymentSlip.id });
-  return { slipId: s!.id, courseId: c!.id, pendingId: p!.id };
+  return { slipId: s!.id, courseId: c!.id, pendingId: p!.id, studentId };
 }
 
 describe("acceptSlip", () => {
@@ -176,6 +199,81 @@ describe("acceptSlip", () => {
     });
     await expect(acceptSlip(slipId)).rejects.toMatchObject({
       code: "enrollment_already_active",
+    });
+  });
+});
+
+describe("bulkAcceptSlips / bulkRejectSlips", () => {
+  beforeEach(reset);
+
+  it("bulkAcceptSlips accepts all when each slip is for a different student", async () => {
+    const a = await seedSubmittedSlip({
+      refCode: "FL-A0000001",
+      idemKey: "ka",
+      studentId: randomUUID(),
+    });
+    const b = await seedSubmittedSlip({
+      refCode: "FL-B0000001",
+      idemKey: "kb",
+      studentId: randomUUID(),
+    });
+
+    const result = await bulkAcceptSlips([a.slipId, b.slipId]);
+    expect(result.succeeded.sort()).toEqual([a.slipId, b.slipId].sort());
+    expect(result.failed).toEqual([]);
+
+    const enrolls = await db.select().from(enrollment);
+    expect(enrolls.length).toBe(2);
+  });
+
+  it("bulkAcceptSlips reports per-slip failures without aborting the batch", async () => {
+    const a = await seedSubmittedSlip({
+      refCode: "FL-A0000002",
+      idemKey: "ka2",
+      studentId: randomUUID(),
+    });
+    const b = await seedSubmittedSlip({
+      refCode: "FL-B0000002",
+      idemKey: "kb2",
+      studentId: randomUUID(),
+    });
+    // Pre-accept slip a so the bulk call hits slip_already_reviewed for it.
+    await acceptSlip(a.slipId);
+
+    const result = await bulkAcceptSlips([a.slipId, b.slipId]);
+    expect(result.succeeded).toEqual([b.slipId]);
+    expect(result.failed.length).toBe(1);
+    expect(result.failed[0]?.slipId).toBe(a.slipId);
+    expect(result.failed[0]?.code).toBe("slip_already_reviewed");
+  });
+
+  it("bulkRejectSlips rejects all with the same reason", async () => {
+    const a = await seedSubmittedSlip({
+      refCode: "FL-A0000003",
+      idemKey: "ka3",
+      studentId: randomUUID(),
+    });
+    const b = await seedSubmittedSlip({
+      refCode: "FL-B0000003",
+      idemKey: "kb3",
+      studentId: randomUUID(),
+    });
+
+    const result = await bulkRejectSlips([a.slipId, b.slipId], "stale_slip");
+    expect(result.succeeded.length).toBe(2);
+    expect(result.failed).toEqual([]);
+
+    const slips = await db.select().from(paymentSlip);
+    for (const s of slips) {
+      expect(s.status).toBe("rejected");
+      expect(s.rejectionReason).toBe("stale_slip");
+    }
+  });
+
+  it("bulkAcceptSlips refuses oversized batches", async () => {
+    const ids = Array.from({ length: 51 }, () => randomUUID());
+    await expect(bulkAcceptSlips(ids)).rejects.toMatchObject({
+      code: "validation_failed",
     });
   });
 });

@@ -248,3 +248,52 @@ export async function rejectSlip(input: RejectSlipInput): Promise<RejectSlipResu
 
   return { slipId: input.slipId, pendingId: row.pendingId };
 }
+
+const MAX_BULK = 50;
+
+export interface BulkResult {
+  succeeded: string[];
+  failed: Array<{ slipId: string; code: string; message: string }>;
+}
+
+// Bulk operations run as N independent TXs (not one giant TX) so a single
+// stale slip doesn't poison the batch. Concurrency is intentionally serial
+// to keep the surrounding queue queries predictable for the admin UI.
+async function runBulk(
+  slipIds: string[],
+  fn: (id: string) => Promise<unknown>,
+): Promise<BulkResult> {
+  if (slipIds.length === 0 || slipIds.length > MAX_BULK) {
+    throw new ApiError("validation_failed", `bulk size must be 1..${MAX_BULK}`);
+  }
+  const result: BulkResult = { succeeded: [], failed: [] };
+  for (const id of slipIds) {
+    try {
+      await fn(id);
+      result.succeeded.push(id);
+    } catch (e) {
+      if (e instanceof ApiError) {
+        result.failed.push({ slipId: id, code: e.code, message: e.message });
+      } else {
+        result.failed.push({
+          slipId: id,
+          code: "internal_error",
+          message: e instanceof Error ? e.message : String(e),
+        });
+      }
+    }
+  }
+  return result;
+}
+
+export function bulkAcceptSlips(slipIds: string[]): Promise<BulkResult> {
+  return runBulk(slipIds, (id) => acceptSlip(id));
+}
+
+export function bulkRejectSlips(
+  slipIds: string[],
+  reason: RejectReason,
+  note?: string,
+): Promise<BulkResult> {
+  return runBulk(slipIds, (id) => rejectSlip({ slipId: id, reason, note }));
+}

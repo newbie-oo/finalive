@@ -113,6 +113,25 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
   const [error, setError] = useState<string | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const rejectButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [bulkMode, setBulkMode] = useState<"none" | "reject">("none");
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Drop selections that left the visible queue (filter change / accepted /
+  // rejected) at read time so we never act on phantom IDs.
+  const visibleIds = useMemo(() => new Set(rows.map((r) => r.id)), [rows]);
+  const effectiveSelected = useMemo(
+    () => new Set(Array.from(selected).filter((id) => visibleIds.has(id))),
+    [selected, visibleIds],
+  );
 
   const refresh = useCallback(async () => {
     await qc.invalidateQueries({ queryKey: ["admin-slips"] });
@@ -138,6 +157,68 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
       setBusy(false);
     }
   }, [active, busy, refresh]);
+
+  const bulkAccept = useCallback(async () => {
+    if (effectiveSelected.size === 0 || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/slips/bulk-accept", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ slipIds: Array.from(effectiveSelected) }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        succeeded?: string[];
+        failed?: Array<{ slipId: string; message: string }>;
+        message?: string;
+      };
+      if (!res.ok) {
+        setError(body.message ?? `bulk accept failed (${res.status})`);
+        return;
+      }
+      if (body.failed && body.failed.length > 0) {
+        setError(`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`);
+      }
+      setSelected(new Set());
+      await refresh();
+    } finally {
+      setBusy(false);
+    }
+  }, [effectiveSelected, busy, refresh]);
+
+  const bulkReject = useCallback(
+    async (reason: (typeof REJECT_REASONS)[number]) => {
+      if (effectiveSelected.size === 0 || busy) return;
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await fetch("/api/admin/slips/bulk-reject", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ slipIds: Array.from(effectiveSelected), reason }),
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          succeeded?: string[];
+          failed?: Array<{ slipId: string; message: string }>;
+          message?: string;
+        };
+        if (!res.ok) {
+          setError(body.message ?? `bulk reject failed (${res.status})`);
+          return;
+        }
+        if (body.failed && body.failed.length > 0) {
+          setError(`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`);
+        }
+        setSelected(new Set());
+        setBulkMode("none");
+        await refresh();
+      } finally {
+        setBusy(false);
+      }
+    },
+    [effectiveSelected, busy, refresh],
+  );
 
   const reject = useCallback(
     async (reason: (typeof REJECT_REASONS)[number], note?: string) => {
@@ -187,18 +268,75 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         setRejectOpen(true);
         // Let React commit the dialog before focusing.
         queueMicrotask(() => rejectButtonRef.current?.focus());
-      } else if (e.key === "Escape" && rejectOpen) {
-        e.preventDefault();
-        setRejectOpen(false);
+      } else if (e.key === " ") {
+        // Space toggles selection on the currently active row.
+        if (active) {
+          e.preventDefault();
+          toggleSelected(active.id);
+        }
+      } else if (e.key === "Escape") {
+        if (rejectOpen) {
+          e.preventDefault();
+          setRejectOpen(false);
+        } else if (bulkMode !== "none") {
+          e.preventDefault();
+          setBulkMode("none");
+        }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [moveSelection, accept, rejectOpen]);
+  }, [moveSelection, accept, rejectOpen, active, toggleSelected, bulkMode]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
       <div className="flex max-h-[70vh] flex-col rounded-md border border-border">
+        {effectiveSelected.size > 0 ? (
+          <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/40 px-3 py-2 text-sm">
+            <span>เลือก {effectiveSelected.size}</span>
+            <button
+              type="button"
+              onClick={bulkAccept}
+              disabled={busy}
+              className="rounded-md bg-foreground px-2 py-1 text-xs text-background disabled:opacity-50"
+            >
+              อนุมัติทั้งหมด
+            </button>
+            <button
+              type="button"
+              onClick={() => setBulkMode((v) => (v === "reject" ? "none" : "reject"))}
+              disabled={busy}
+              className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+            >
+              ปฏิเสธทั้งหมด…
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelected(new Set());
+                setBulkMode("none");
+              }}
+              className="ml-auto text-xs text-muted-foreground hover:underline"
+            >
+              ล้างการเลือก
+            </button>
+            {bulkMode === "reject" ? (
+              <div className="flex w-full flex-wrap gap-2 border-t border-border pt-2">
+                {REJECT_REASONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => bulkReject(r)}
+                    className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+                  >
+                    {REJECT_REASON_LABEL[r]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         <ul className="flex flex-col overflow-y-auto">
           {query.isLoading && rows.length === 0 ? (
             <li className="p-4 text-sm text-muted-foreground">กำลังโหลด…</li>
@@ -207,14 +345,25 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           ) : (
             rows.map((slip) => {
               const isActive = slip.id === activeId;
+              const isChecked = effectiveSelected.has(slip.id);
               return (
-                <li key={slip.id}>
+                <li
+                  key={slip.id}
+                  className={`flex items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 ${
+                    isActive ? "bg-muted" : "hover:bg-muted/50"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleSelected(slip.id)}
+                    aria-label={`เลือก ${slip.refCode}`}
+                    className="size-4"
+                  />
                   <Link
                     href={`/admin/slips?status=${status}&selected=${slip.id}`}
                     scroll={false}
-                    className={`flex flex-col gap-0.5 border-b border-border px-3 py-2 text-sm last:border-b-0 ${
-                      isActive ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
+                    className="flex flex-1 flex-col gap-0.5"
                   >
                     <span className="font-medium">{slip.refCode}</span>
                     <span className="text-xs text-muted-foreground">{slip.courseTitle}</span>
@@ -243,7 +392,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
             <div className="flex items-start justify-between gap-2">
               <h2 className="text-lg font-semibold">{active.refCode}</h2>
               <span className="text-xs text-muted-foreground">
-                ปุ่มลัด: <kbd>j</kbd>/<kbd>k</kbd> เลื่อน · <kbd>a</kbd> อนุมัติ · <kbd>r</kbd> ปฏิเสธ
+                ปุ่มลัด: <kbd>j</kbd>/<kbd>k</kbd> เลื่อน · <kbd>Space</kbd> เลือก · <kbd>a</kbd> อนุมัติ · <kbd>r</kbd> ปฏิเสธ
               </span>
             </div>
             <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
