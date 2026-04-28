@@ -29,6 +29,13 @@
       "when": 1777372043828,
       "tag": "0003_pending_slip",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777372224812,
+      "tag": "0004_audit_email",
+      "breakpoints": true
     }
   ]
 }
