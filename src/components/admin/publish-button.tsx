@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/status-chip";
 import { toast } from "sonner";
 import { publishCourseAction } from "@/server/actions/admin-publish";
 
@@ -18,11 +20,7 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
   const [pending, startTransition] = useTransition();
 
   if (currentStatus === "published") {
-    return (
-      <span className="inline-flex items-center rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100">
-        เผยแพร่แล้ว
-      </span>
-    );
+    return <StatusChip tone="success">เผยแพร่แล้ว</StatusChip>;
   }
 
   function handlePublish() {
@@ -45,28 +43,33 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
 
   return (
     <>
-      <Button size="sm" variant="default" onClick={handlePublish} disabled={pending}>
+      <Button size="md" variant="primary" onClick={handlePublish} disabled={pending}>
         {pending ? "กำลังตรวจสอบ…" : "เผยแพร่คอร์ส"}
       </Button>
 
       {showDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded border border-border bg-background p-6 shadow-lg">
-            <h3 className="text-lg font-medium">ไม่สามารถเผยแพร่ได้</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="publish-error-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm"
+        >
+          <Card className="w-full max-w-md shadow-(--shadow-lg)">
+            <h3 id="publish-error-title" className="text-h3">ไม่สามารถเผยแพร่ได้</h3>
+            <p className="mt-1 text-body text-(--foreground-muted)">
               กรุณาแก้ไขข้อผิดพลาดต่อไปนี้ก่อนเผยแพร่
             </p>
-            <ul className="mt-3 list-inside list-disc text-sm text-destructive">
+            <ul className="mt-3 list-inside list-disc text-body text-destructive">
               {errors.map((err, i) => (
                 <li key={i}>{err}</li>
               ))}
             </ul>
-            <div className="mt-4 flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setShowDialog(false)}>
+            <div className="mt-5 flex justify-end">
+              <Button size="md" variant="ghost" onClick={() => setShowDialog(false)}>
                 ปิด
               </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </>

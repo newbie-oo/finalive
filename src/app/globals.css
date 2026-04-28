@@ -193,3 +193,21 @@
     .text-bodylg { font-size: 16px; }
   }
 }
+
+/* Honour user motion preferences — disables transforms, transitions,
+   and animations entirely per WCAG 2.2 AA + handoff motion spec. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Force-visible focus ring, even when focus-visible isn't supported. */
+:focus-visible {
+  outline-color: var(--primary);
+}
