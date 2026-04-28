@@ -64,6 +64,13 @@
       "when": 1777385353276,
       "tag": "0008_quiz_progress_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1777385594601,
+      "tag": "0009_certificate_schema",
+      "breakpoints": true
     }
   ]
 }
