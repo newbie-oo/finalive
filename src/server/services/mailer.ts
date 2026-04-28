@@ -1,12 +1,67 @@
 import "server-only";
+import nodemailer, { type Transporter } from "nodemailer";
+import { render } from "@react-email/components";
+import { getEnv } from "@/lib/env";
+import {
+  VerifyEmail,
+  verifyEmailSubject,
+} from "@/server/email/templates/verify-email";
+import {
+  PasswordReset,
+  passwordResetSubject,
+} from "@/server/email/templates/password-reset";
 
-// Stub — full Nodemailer + EmailShell implementation arrives in commit 1.11.
-// Keeping the same exported signatures so wiring (auth.ts) stays stable.
+declare global {
+  var __finalive_mail_transport: Transporter | undefined;
+}
+
+function getTransport(): Transporter {
+  if (globalThis.__finalive_mail_transport) return globalThis.__finalive_mail_transport;
+  const env = getEnv();
+  const secure = env.SMTP_PORT === 465;
+  globalThis.__finalive_mail_transport = nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure,
+    auth:
+      env.SMTP_USER && env.SMTP_PASS
+        ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
+        : undefined,
+  });
+  return globalThis.__finalive_mail_transport;
+}
+
+export interface SendArgs {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}
+
+export async function sendMail(args: SendArgs): Promise<void> {
+  const env = getEnv();
+  await getTransport().sendMail({
+    from: env.EMAIL_FROM,
+    to: args.to,
+    subject: args.subject,
+    html: args.html,
+    text: args.text,
+  });
+}
 
 export interface VerificationEmailArgs {
   to: string;
   name: string;
   url: string;
+}
+
+export async function sendVerificationEmail(args: VerificationEmailArgs): Promise<void> {
+  const node = VerifyEmail({ name: args.name, url: args.url });
+  const [html, text] = await Promise.all([
+    render(node),
+    render(node, { plainText: true }),
+  ]);
+  await sendMail({ to: args.to, subject: verifyEmailSubject, html, text });
 }
 
 export interface PasswordResetEmailArgs {
@@ -15,14 +70,11 @@ export interface PasswordResetEmailArgs {
   url: string;
 }
 
-export async function sendVerificationEmail(args: VerificationEmailArgs): Promise<void> {
-  if (process.env.NODE_ENV !== "production") {
-    console.warn("[mailer:stub] verify ->", args.to, args.url);
-  }
-}
-
 export async function sendPasswordResetEmail(args: PasswordResetEmailArgs): Promise<void> {
-  if (process.env.NODE_ENV !== "production") {
-    console.warn("[mailer:stub] reset ->", args.to, args.url);
-  }
+  const node = PasswordReset({ name: args.name, url: args.url });
+  const [html, text] = await Promise.all([
+    render(node),
+    render(node, { plainText: true }),
+  ]);
+  await sendMail({ to: args.to, subject: passwordResetSubject, html, text });
 }
