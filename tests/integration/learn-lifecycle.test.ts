@@ -165,7 +165,7 @@ describe("learn lifecycle (enroll → watch → complete)", () => {
     for (let i = 0; i < 2; i++) {
       await upsertLessonProgress(studentId, lessonIds[i]!);
       await markLessonComplete(studentId, lessonIds[i]!);
-      const done = await checkAndMarkCourseComplete(studentId, courseId);
+      const { completed: done } = await checkAndMarkCourseComplete(studentId, courseId);
       expect(done).toBe(false);
     }
 
@@ -184,8 +184,9 @@ describe("learn lifecycle (enroll → watch → complete)", () => {
     // Complete last lesson.
     await upsertLessonProgress(studentId, lessonIds[2]!);
     await markLessonComplete(studentId, lessonIds[2]!);
-    const done = await checkAndMarkCourseComplete(studentId, courseId);
+    const { completed: done, enrollmentId } = await checkAndMarkCourseComplete(studentId, courseId);
     expect(done).toBe(true);
+    expect(enrollmentId).not.toBeNull();
 
     // Verify enrollment completed.
     const [after] = await db
@@ -217,7 +218,7 @@ describe("learn lifecycle (enroll → watch → complete)", () => {
       status: "active",
     });
 
-    const done = await checkAndMarkCourseComplete(studentId, courseId);
+    const { completed: done } = await checkAndMarkCourseComplete(studentId, courseId);
     expect(done).toBe(false);
   });
 });

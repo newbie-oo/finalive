@@ -8,7 +8,7 @@ import { lessonProgress } from "@/db/schema/progress";
 export async function checkAndMarkCourseComplete(
   userId: string,
   courseId: string,
-): Promise<boolean> {
+): Promise<{ completed: boolean; enrollmentId: string | null }> {
   const lessonRows = await db
     .select({ lessonCount: count() })
     .from(lesson)
@@ -22,7 +22,7 @@ export async function checkAndMarkCourseComplete(
     );
 
   const lessonCount = lessonRows[0]?.lessonCount ?? 0;
-  if (lessonCount === 0) return false;
+  if (lessonCount === 0) return { completed: false, enrollmentId: null };
 
   const completedRows = await db
     .select({ completedCount: count() })
@@ -40,9 +40,9 @@ export async function checkAndMarkCourseComplete(
     );
 
   const completedCount = completedRows[0]?.completedCount ?? 0;
-  if (completedCount !== lessonCount) return false;
+  if (completedCount !== lessonCount) return { completed: false, enrollmentId: null };
 
-  await db
+  const [updated] = await db
     .update(enrollment)
     .set({ completedAt: new Date(), updatedAt: new Date() })
     .where(
@@ -51,7 +51,8 @@ export async function checkAndMarkCourseComplete(
         eq(enrollment.courseId, courseId),
         eq(enrollment.status, "active"),
       ),
-    );
+    )
+    .returning({ id: enrollment.id });
 
-  return true;
+  return { completed: true, enrollmentId: updated?.id ?? null };
 }
