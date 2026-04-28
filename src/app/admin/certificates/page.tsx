@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listAllCertificates } from "@/server/repos/certificate";
 import { RevokeButton } from "@/components/admin/revoke-button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,13 @@ export default async function AdminCertificatesPage() {
       <h1 className="text-xl font-semibold">ใบรับรองทั้งหมด</h1>
 
       {certs.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">ยังไม่มีใบรับรอง</p>
+        <div className="mt-6">
+          <EmptyState
+            icon="🏆"
+            title="ยังไม่มีใบรับรอง"
+            description="ใบรับรองจะถูกออกอัตโนมัติเมื่อนักเรียนเรียนจบคอร์สที่ลงทะเบียน"
+          />
+        </div>
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">

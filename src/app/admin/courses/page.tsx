@@ -27,7 +27,7 @@ export default async function AdminCoursesPage() {
             <thead>
               <tr className="border-b text-left">
                 <th className="pb-2 pr-4">ชื่อ</th>
-                <th className="pb-2 pr-4">Slug</th>
+                <th className="pb-2 pr-4">URL</th>
                 <th className="pb-2 pr-4">สถานะ</th>
                 <th className="pb-2 pr-4">ราคา</th>
                 <th className="pb-2"></th>

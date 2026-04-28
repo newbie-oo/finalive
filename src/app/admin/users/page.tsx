@@ -50,7 +50,11 @@ export default async function AdminUsersPage() {
                   </Link>
                 </td>
                 <td className="py-2 pr-4">{u.email}</td>
-                <td className="py-2 pr-4">{u.role}</td>
+                <td className="py-2 pr-4">
+                  <span className={`inline-block rounded px-2 py-0.5 text-xs ${u.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                    {u.role === "admin" ? "ผู้ดูแล" : "นักเรียน"}
+                  </span>
+                </td>
                 <td className="py-2">{u.createdAt?.toLocaleDateString("th-TH")}</td>
               </tr>
             ))}
