@@ -67,6 +67,60 @@ export async function getPublishedCourseBySlug(
   return rows[0] ?? null;
 }
 
+export interface PreviewLesson {
+  id: string;
+  courseSlug: string;
+  courseTitle: string;
+  title: string;
+  bunnyVideoId: string | null;
+  bodyMd: string | null;
+  isPlayable: boolean;
+}
+
+export async function getPreviewLesson(
+  courseSlug: string,
+  lessonId: string,
+): Promise<PreviewLesson | null> {
+  const rows = await db
+    .select({
+      id: lesson.id,
+      title: lesson.title,
+      bodyMd: lesson.bodyMd,
+      isPreview: lesson.isPreview,
+      isFree: lesson.isFree,
+      videoMediaId: lesson.videoMediaId,
+      courseId: course.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+    })
+    .from(lesson)
+    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+    .innerJoin(course, eq(courseModule.courseId, course.id))
+    .where(
+      and(
+        eq(lesson.id, lessonId),
+        eq(course.slug, courseSlug),
+        eq(course.status, "published"),
+        isNull(lesson.deletedAt),
+        isNull(course.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) return null;
+  const playable = row.isPreview || row.isFree;
+  return {
+    id: row.id,
+    courseSlug: row.courseSlug,
+    courseTitle: row.courseTitle,
+    title: row.title,
+    bunnyVideoId: null, // bound after media_asset wiring (Sprint 8)
+    bodyMd: row.bodyMd,
+    isPlayable: playable,
+  };
+}
+
 export interface CurriculumLesson {
   id: string;
   title: string;
