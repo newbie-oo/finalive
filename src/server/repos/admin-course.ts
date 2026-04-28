@@ -1,7 +1,8 @@
 import "server-only";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { course } from "@/db/schema/course";
+import { course, courseModule, lesson } from "@/db/schema/course";
+import { mediaAsset } from "@/db/schema/media";
 
 export interface AdminCourseListItem {
   id: string;
@@ -78,4 +79,163 @@ export async function updateAdminCourse(
     .update(course)
     .set({ ...input, updatedAt: new Date() })
     .where(eq(course.id, courseId));
+}
+
+// ─── Admin Curriculum ───
+
+export interface AdminCurriculumLesson {
+  id: string;
+  title: string;
+  bodyMd: string | null;
+  durationSeconds: number | null;
+  isPreview: boolean;
+  isFree: boolean;
+  sortOrder: number;
+  videoMediaId: string | null;
+  bunnyVideoId: string | null;
+}
+
+export interface AdminCurriculumModule {
+  id: string;
+  title: string;
+  sortOrder: number;
+  lessons: AdminCurriculumLesson[];
+}
+
+export async function getAdminCourseCurriculum(
+  courseId: string,
+): Promise<AdminCurriculumModule[]> {
+  const modules = await db
+    .select({
+      id: courseModule.id,
+      title: courseModule.title,
+      sortOrder: courseModule.sortOrder,
+    })
+    .from(courseModule)
+    .where(and(eq(courseModule.courseId, courseId), isNull(courseModule.deletedAt)))
+    .orderBy(asc(courseModule.sortOrder));
+
+  if (modules.length === 0) return [];
+
+  const lessonsRows = await db
+    .select({
+      id: lesson.id,
+      moduleId: lesson.moduleId,
+      title: lesson.title,
+      bodyMd: lesson.bodyMd,
+      durationSeconds: lesson.durationSeconds,
+      isPreview: lesson.isPreview,
+      isFree: lesson.isFree,
+      sortOrder: lesson.sortOrder,
+      videoMediaId: lesson.videoMediaId,
+      bunnyVideoId:
+        sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
+          "bunny_video_id",
+        ),
+    })
+    .from(lesson)
+    .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
+    .where(isNull(lesson.deletedAt))
+    .orderBy(asc(lesson.sortOrder));
+
+  const byModule = new Map<string, AdminCurriculumLesson[]>();
+  for (const l of lessonsRows) {
+    const list = byModule.get(l.moduleId) ?? [];
+    list.push({
+      id: l.id,
+      title: l.title,
+      bodyMd: l.bodyMd,
+      durationSeconds: l.durationSeconds,
+      isPreview: l.isPreview,
+      isFree: l.isFree,
+      sortOrder: l.sortOrder,
+      videoMediaId: l.videoMediaId,
+      bunnyVideoId: l.bunnyVideoId,
+    });
+    byModule.set(l.moduleId, list);
+  }
+
+  return modules.map((m) => ({
+    id: m.id,
+    title: m.title,
+    sortOrder: m.sortOrder,
+    lessons: byModule.get(m.id) ?? [],
+  }));
+}
+
+export async function getAdminLessonById(lessonId: string) {
+  const rows = await db
+    .select({
+      id: lesson.id,
+      moduleId: lesson.moduleId,
+      title: lesson.title,
+      bodyMd: lesson.bodyMd,
+      durationSeconds: lesson.durationSeconds,
+      isPreview: lesson.isPreview,
+      isFree: lesson.isFree,
+      sortOrder: lesson.sortOrder,
+      videoMediaId: lesson.videoMediaId,
+      bunnyVideoId:
+        sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
+          "bunny_video_id",
+        ),
+    })
+    .from(lesson)
+    .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
+    .where(and(eq(lesson.id, lessonId), isNull(lesson.deletedAt)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function createAdminModule(input: {
+  courseId: string;
+  title: string;
+  sortOrder: number;
+  createdByUserId: string;
+}) {
+  const [row] = await db
+    .insert(courseModule)
+    .values({
+      courseId: input.courseId,
+      title: input.title,
+      sortOrder: input.sortOrder,
+      createdByUserId: input.createdByUserId,
+    })
+    .returning({ id: courseModule.id });
+  return row!.id;
+}
+
+export async function createAdminLesson(input: {
+  moduleId: string;
+  title: string;
+  sortOrder: number;
+  createdByUserId: string;
+}) {
+  const [row] = await db
+    .insert(lesson)
+    .values({
+      moduleId: input.moduleId,
+      title: input.title,
+      sortOrder: input.sortOrder,
+      createdByUserId: input.createdByUserId,
+    })
+    .returning({ id: lesson.id });
+  return row!.id;
+}
+
+export async function updateAdminLesson(
+  lessonId: string,
+  input: {
+    title?: string;
+    bodyMd?: string | null;
+    isPreview?: boolean;
+    isFree?: boolean;
+    durationSeconds?: number | null;
+    videoMediaId?: string | null;
+  },
+) {
+  await db
+    .update(lesson)
+    .set({ ...input, updatedAt: new Date() })
+    .where(eq(lesson.id, lessonId));
 }
