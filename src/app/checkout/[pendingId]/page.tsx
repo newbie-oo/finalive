@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { requireSession } from "@/server/auth-session";
 import { getCheckoutPending } from "@/server/repos/checkout";
 import { formatTHB } from "@/lib/format";
+import { isExpired } from "@/server/services/pending-fsm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,10 @@ export default async function CheckoutPage({
   params: Promise<{ pendingId: string }>;
 }) {
   const { pendingId } = await params;
-  const { user } = await requireSession("/login");
+  const { user } = await requireSession();
   const pending = await getCheckoutPending(pendingId, user.id);
   if (!pending) notFound();
-
-  // eslint-disable-next-line react-hooks/purity -- dynamic RSC; uses request time
-  const expired = pending.expiresAt.getTime() < Date.now();
+  const expired = isExpired(pending.expiresAt);
 
   return (
     <PublicShell>

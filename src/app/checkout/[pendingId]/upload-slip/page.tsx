@@ -4,6 +4,7 @@ import { PublicShell } from "@/components/layouts/public-shell";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/server/auth-session";
 import { getCheckoutPending } from "@/server/repos/checkout";
+import { isSubmitted } from "@/server/services/pending-fsm";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,11 @@ export default async function UploadSlipPage({
   params: Promise<{ pendingId: string }>;
 }) {
   const { pendingId } = await params;
-  const { user } = await requireSession("/login");
+  const { user } = await requireSession();
   const pending = await getCheckoutPending(pendingId, user.id);
   if (!pending) notFound();
 
-  const alreadySubmitted = pending.status === "slip_submitted" || pending.status === "paid";
+  const alreadySubmitted = isSubmitted(pending.status);
 
   return (
     <PublicShell>

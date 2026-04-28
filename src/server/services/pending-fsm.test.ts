@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { canTransition, isTerminal, type PendingStatus } from "./pending-fsm";
+import {
+  canTransition,
+  isTerminal,
+  isActionable,
+  isSubmitted,
+  isExpired,
+  PENDING_STATUS_LABEL,
+  type PendingStatus,
+} from "./pending-fsm";
 
 const ALL: PendingStatus[] = [
   "awaiting_payment",
@@ -24,6 +32,29 @@ describe("pending FSM", () => {
     expect(canTransition("slip_submitted", "expired")).toBe(true);
     expect(canTransition("slip_submitted", "cancelled")).toBe(true);
     expect(canTransition("slip_submitted", "slip_submitted")).toBe(false);
+  });
+
+  it("isActionable is true only for in-flight states", () => {
+    expect(isActionable("awaiting_payment")).toBe(true);
+    expect(isActionable("slip_submitted")).toBe(true);
+    expect(isActionable("paid")).toBe(false);
+    expect(isActionable("expired")).toBe(false);
+    expect(isActionable("cancelled")).toBe(false);
+  });
+
+  it("isSubmitted hides upload form for slip_submitted + paid", () => {
+    expect(isSubmitted("slip_submitted")).toBe(true);
+    expect(isSubmitted("paid")).toBe(true);
+    expect(isSubmitted("awaiting_payment")).toBe(false);
+  });
+
+  it("isExpired compares against now", () => {
+    expect(isExpired(new Date(Date.now() - 1000))).toBe(true);
+    expect(isExpired(new Date(Date.now() + 60_000))).toBe(false);
+  });
+
+  it("PENDING_STATUS_LABEL covers all states", () => {
+    for (const s of ALL) expect(PENDING_STATUS_LABEL[s]).toBeTruthy();
   });
 
   it("terminal states have no out-edges", () => {

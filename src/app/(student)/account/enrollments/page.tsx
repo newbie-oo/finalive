@@ -2,19 +2,16 @@ import Link from "next/link";
 import { requireSession } from "@/server/auth-session";
 import { listAccountPendings } from "@/server/repos/account";
 import { formatTHB } from "@/lib/format";
-
-const STATUS_LABEL: Record<string, string> = {
-  awaiting_payment: "รอชำระเงิน",
-  slip_submitted: "รอ admin ตรวจ",
-  paid: "พร้อมเรียน",
-  expired: "หมดอายุ",
-  cancelled: "ยกเลิก",
-};
+import {
+  PENDING_STATUS_LABEL,
+  isActionable,
+  type PendingStatus,
+} from "@/server/services/pending-fsm";
 
 export const dynamic = "force-dynamic";
 
 export default async function EnrollmentsPage() {
-  const { user } = await requireSession("/login");
+  const { user } = await requireSession();
   const pendings = await listAccountPendings(user.id);
 
   return (
@@ -38,11 +35,11 @@ export default async function EnrollmentsPage() {
               <div>
                 <p className="font-medium">{p.courseTitle}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {STATUS_LABEL[p.status] ?? p.status} · {formatTHB(p.amount)} ·{" "}
+                  {PENDING_STATUS_LABEL[p.status as PendingStatus] ?? p.status} · {formatTHB(p.amount)} ·{" "}
                   <span className="font-mono">{p.refCode}</span>
                 </p>
               </div>
-              {p.status === "awaiting_payment" || p.status === "slip_submitted" ? (
+              {isActionable(p.status) ? (
                 <Link
                   href={`/checkout/${p.pendingId}`}
                   className="text-xs text-primary hover:underline"
