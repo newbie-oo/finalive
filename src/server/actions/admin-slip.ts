@@ -10,23 +10,14 @@ import { requireRole } from "../auth-session";
 import { enqueueEmail } from "../services/email-queue";
 import { logAudit } from "../services/audit";
 import { isUniqueViolation } from "@/lib/pg-error";
+import {
+  REJECT_REASONS,
+  REJECT_REASON_LABEL,
+  type RejectReason,
+} from "@/components/admin/slip-reject-options";
 
-export const REJECT_REASONS = [
-  "blurry",
-  "wrong_amount",
-  "wrong_account",
-  "stale_slip",
-  "other",
-] as const;
-export type RejectReason = (typeof REJECT_REASONS)[number];
-
-export const REJECT_REASON_LABEL: Record<RejectReason, string> = {
-  blurry: "ภาพไม่ชัด",
-  wrong_amount: "ยอดเงินไม่ตรง",
-  wrong_account: "โอนผิดบัญชี",
-  stale_slip: "slip เก่าเกิน",
-  other: "อื่นๆ",
-};
+export { REJECT_REASONS, REJECT_REASON_LABEL };
+export type { RejectReason };
 
 export interface RejectSlipInput {
   slipId: string;

@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
-import { formatTHB } from "@/lib/format";
 import type { SearchParams } from "@/lib/pagination";
-import { SlipList } from "@/components/admin/slip-list";
-import { SlipImageViewer } from "@/components/admin/slip-image-viewer";
+import { SlipQueue } from "@/components/admin/slip-queue";
 
 const STATUS_OPTIONS: Array<{ value: SlipQueueStatus; label: string }> = [
   { value: "submitted", label: "รอตรวจ" },
@@ -30,12 +28,8 @@ export default async function AdminSlipsPage({
   const status = pickStatus(sp.status);
   const selectedId = pickString(sp.selected);
 
-  // SSR the first page so the detail panel can render server-side without
-  // waiting for the client query. The client SlipList re-fetches and takes
-  // over polling once hydrated.
-  const initial = await listPendingSlips({ status, per_page: 50 });
-  const selected =
-    initial.data.find((r) => r.id === selectedId) ?? initial.data[0] ?? null;
+  // Pre-warm cache on the server. The client query takes over after hydration.
+  await listPendingSlips({ status, per_page: 50 });
 
   return (
     <section className="flex flex-col gap-4">
@@ -59,40 +53,7 @@ export default async function AdminSlipsPage({
         </nav>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <SlipList
-          status={status}
-          selectedId={selectedId}
-          initialFirstId={initial.data[0]?.id ?? null}
-        />
-
-        <div className="rounded-md border border-border p-4">
-          {selected ? (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold">{selected.refCode}</h2>
-              <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-                <dt className="text-muted-foreground">คอร์ส</dt>
-                <dd>{selected.courseTitle}</dd>
-                <dt className="text-muted-foreground">ราคา</dt>
-                <dd>{formatTHB(selected.expectedAmount)}</dd>
-                <dt className="text-muted-foreground">นักเรียนแจ้งยอด</dt>
-                <dd>
-                  {selected.reportedAmount ? formatTHB(selected.reportedAmount) : "—"}
-                </dd>
-                <dt className="text-muted-foreground">นักเรียน</dt>
-                <dd className="font-mono text-xs">{selected.studentUserId}</dd>
-                <dt className="text-muted-foreground">ส่งเมื่อ</dt>
-                <dd>{selected.createdAt.toLocaleString("th-TH")}</dd>
-                <dt className="text-muted-foreground">สถานะ</dt>
-                <dd>{selected.status}</dd>
-              </dl>
-              <SlipImageViewer slipId={selected.id} />
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">เลือก slip ทางซ้ายเพื่อดูรายละเอียด</p>
-          )}
-        </div>
-      </div>
+      <SlipQueue status={status} initialSelectedId={selectedId} />
     </section>
   );
 }
