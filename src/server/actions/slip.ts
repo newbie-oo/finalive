@@ -87,9 +87,30 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
 
       // Storage key derives only from values we control — never from the
       // user-supplied filename (which can carry path traversal / RTL overrides).
-      // Original filename is intentionally discarded; we don't need it.
       const ext = sniffed === "image/png" ? "png" : "jpg";
       const storageKey = `slips/${pending.userId}/${pending.id}/${randomUUID()}.${ext}`;
+
+      // 1) Reserve a media_asset row in pending_upload state. This claims the
+      //    storage_key in DB *before* we write the blob, so a janitor cron
+      //    can find orphans by querying media_asset where status='pending_upload'
+      //    AND created_at < now() - 10min, then DELETE both the blob and the row.
+      const [media] = await db
+        .insert(mediaAsset)
+        .values({
+          kind: "image",
+          storage: "r2_private",
+          storageKey,
+          mimeType: sniffed,
+          sizeBytes: input.bytes.byteLength,
+          status: "pending_upload",
+          createdByUserId: user.id,
+        })
+        .returning({ id: mediaAsset.id });
+      if (!media) throw new ApiError("internal_error", "media insert failed");
+      const mediaId = media.id;
+
+      // 2) PUT to R2. If this throws, the pending_upload row stays — janitor
+      //    sweeps both the (non-existent) blob and the row in a follow-up.
       await putObject({
         bucket: "private",
         key: storageKey,
@@ -97,25 +118,21 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
         contentType: sniffed,
       });
 
+      // 3) Single TX: flip media_asset -> ready, insert slip, transition pending,
+      //    enqueue 2 emails, write audit. If this rolls back, R2 already has the
+      //    blob — but the media row is still pending_upload so janitor will
+      //    GC the orphan along with the original row.
       const slipId = await db.transaction(async (tx) => {
-        const [media] = await tx
-          .insert(mediaAsset)
-          .values({
-            kind: "image",
-            storage: "r2_private",
-            storageKey,
-            mimeType: sniffed,
-            sizeBytes: input.bytes.byteLength,
-            createdByUserId: user.id,
-          })
-          .returning({ id: mediaAsset.id });
-        if (!media) throw new ApiError("internal_error", "media insert failed");
+        await tx
+          .update(mediaAsset)
+          .set({ status: "ready" })
+          .where(eq(mediaAsset.id, mediaId));
 
         const [slip] = await tx
           .insert(paymentSlip)
           .values({
             pendingEnrollmentId: pending.id,
-            imageMediaId: media.id,
+            imageMediaId: mediaId,
             expectedAmount: pending.amount,
             reportedAmount: input.reportedAmount ?? null,
             status: "submitted",
