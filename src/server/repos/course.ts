@@ -46,6 +46,24 @@ export async function listPublishedCourses(
   return buildOffsetResponse(rows, total, params);
 }
 
+export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummary[]> {
+  const where = and(eq(course.status, "published"), isNull(course.deletedAt));
+  return db
+    .select({
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      summary: course.summary,
+      price: course.price,
+      isFree: course.isFree,
+      publishedAt: course.publishedAt,
+    })
+    .from(course)
+    .where(where)
+    .orderBy(desc(course.publishedAt))
+    .limit(limit);
+}
+
 export async function getPublishedCourseBySlug(
   slug: string,
 ): Promise<PublicCourseSummary | null> {
