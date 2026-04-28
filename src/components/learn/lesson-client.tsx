@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { CheckCircle, ArrowRight } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 
 interface LessonClientProps {
   lessonId: string;
@@ -76,22 +78,28 @@ export function LessonClient({
   };
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-3">
-      <button
+    <div className="flex flex-wrap items-center gap-3">
+      <Button
         onClick={handleMarkComplete}
         disabled={completed}
-        className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50"
+        variant={completed ? "secondary" : "primary"}
+        size="md"
       >
-        {completed ? "จบบทเรียนแล้ว" : "ทำเครื่องหมายว่าจบแล้ว"}
-      </button>
-      {completed && nextLessonId ? (
-        <Link
-          href={`/learn/${courseSlug}/${nextLessonId}`}
-          className="text-sm text-primary hover:underline"
-        >
-          บทถัดไป →
-        </Link>
-      ) : null}
+        {completed ? (
+          <>
+            <CheckCircle size={16} weight="fill" /> จบบทเรียนแล้ว
+          </>
+        ) : (
+          "ทำเครื่องหมายว่าจบแล้ว"
+        )}
+      </Button>
+      {completed && nextLessonId && (
+        <Button asChild variant="ghost" size="md">
+          <Link href={`/learn/${courseSlug}/${nextLessonId}`}>
+            บทถัดไป <ArrowRight size={14} weight="bold" />
+          </Link>
+        </Button>
+      )}
     </div>
   );
 }

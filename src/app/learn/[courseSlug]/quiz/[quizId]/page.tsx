@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation";
+import { Lock } from "@phosphor-icons/react/dist/ssr";
 import { getQuizById } from "@/server/repos/quiz";
 import { getSession } from "@/server/auth-session";
 import { QuizForm } from "@/components/learn/quiz-form";
 import { getLearnCourse } from "@/server/repos/learn";
+import { LearnShell } from "@/components/learn/learn-shell";
+import { Card } from "@/components/ui/card";
+import { StatusChip } from "@/components/ui/status-chip";
 
 export const dynamic = "force-dynamic";
 
@@ -22,25 +26,36 @@ export default async function QuizPage({
 
   if (!courseData || !quizData) notFound();
 
-  // Verify student is enrolled in the course.
   if (!courseData.isEnrolled) {
     return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8">
-        <h1 className="text-xl font-semibold">ต้องลงทะเบียนก่อน</h1>
-        <p className="text-sm text-muted-foreground">
-          กรุณาลงทะเบียนคอร์สนี้เพื่อทำแบบทดสอบ
-        </p>
-      </div>
+      <LearnShell user={session?.user ?? null}>
+        <section className="mx-auto max-w-md px-6 py-24 text-center">
+          <Lock size={56} weight="light" className="mx-auto text-foreground-subtle" />
+          <h1 className="mt-4 text-h1">ต้องลงทะเบียนก่อน</h1>
+          <p className="mt-2 text-bodylg text-(--foreground-muted)">
+            กรุณาลงทะเบียนคอร์สนี้เพื่อทำแบบทดสอบ
+          </p>
+        </section>
+      </LearnShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-semibold">{quizData.title}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        ผ่านเกณฑ์ {quizData.passScorePct}%
-      </p>
-      <QuizForm quiz={quizData} />
-    </div>
+    <LearnShell user={session?.user ?? null}>
+      <section className="mx-auto max-w-[720px] px-6 py-10">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-h1">{quizData.title}</h1>
+            <p className="mt-1 text-uism text-(--foreground-muted)">
+              ผ่านเกณฑ์ <span className="num font-semibold text-(--foreground)">{quizData.passScorePct}%</span>
+            </p>
+          </div>
+          <StatusChip tone="primary">{quizData.questions.length} ข้อ</StatusChip>
+        </header>
+        <Card>
+          <QuizForm quiz={quizData} />
+        </Card>
+      </section>
+    </LearnShell>
   );
 }

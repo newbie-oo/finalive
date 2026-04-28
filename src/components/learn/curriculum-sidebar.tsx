@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { CheckCircle, PlayCircle, Circle, LockSimple } from "@phosphor-icons/react";
 
 interface SidebarLesson {
   id: string;
@@ -33,15 +34,11 @@ function fmtDuration(seconds: number | null): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function statusIcon(status: string): string {
-  switch (status) {
-    case "completed":
-      return "✓";
-    case "in_progress":
-      return "▶";
-    default:
-      return "○";
-  }
+function StatusIcon({ status, locked }: { status: string; locked: boolean }) {
+  if (locked) return <LockSimple size={14} className="text-(--foreground-subtle)" />;
+  if (status === "completed") return <CheckCircle size={14} weight="fill" className="text-success" />;
+  if (status === "in_progress") return <PlayCircle size={14} weight="fill" className="text-(--primary)" />;
+  return <Circle size={14} className="text-(--foreground-subtle)" />;
 }
 
 export function CurriculumSidebar({
@@ -55,14 +52,14 @@ export function CurriculumSidebar({
   const progressMap = new Map(progress.map((p) => [p.lessonId, p.status]));
 
   return (
-    <nav className="flex h-full flex-col border-r border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold">บทเรียน</h2>
+    <nav className="flex h-full flex-col border-r border-(--border) bg-(--surface)">
+      <div className="border-b border-(--border) px-5 py-4">
+        <h2 className="text-h4">บทเรียน</h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-3">
         {modules.map((mod) => (
-          <div key={mod.id} className="mb-3">
-            <h3 className="px-2 py-1 text-xs font-medium text-muted-foreground">
+          <div key={mod.id} className="mb-4">
+            <h3 className="px-2 py-1.5 text-caption font-semibold uppercase tracking-wide text-foreground-subtle">
               {mod.title}
             </h3>
             <ul className="space-y-0.5">
@@ -71,26 +68,28 @@ export function CurriculumSidebar({
                 const locked = !isEnrolled && !les.isPreview && !les.isFree;
                 const stat = progressMap.get(les.id) ?? "not_started";
                 const baseClass =
-                  "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
                 const stateClass = isActive
-                  ? "bg-primary/10 font-medium text-primary"
+                  ? "bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] font-semibold text-(--primary)"
                   : locked
-                    ? "cursor-not-allowed text-muted-foreground/60"
-                    : "hover:bg-muted";
+                    ? "cursor-not-allowed text-foreground-subtle"
+                    : "text-(--foreground) hover:bg-(--surface-muted)";
                 const inner = (
                   <>
-                    <span
-                      className="w-4 text-center text-xs"
-                      aria-hidden="true"
-                    >
-                      {locked ? "🔒" : statusIcon(stat)}
+                    <span aria-hidden="true" className="inline-flex w-4 justify-center">
+                      <StatusIcon status={stat} locked={locked} />
                     </span>
                     <span className="flex-1 truncate">
                       {locked ? <span className="sr-only">ล็อก: </span> : null}
                       {les.title}
                     </span>
+                    {les.isFree && !les.isPreview && (
+                      <span className="rounded-full bg-success-bg px-1.5 text-[10px] font-medium text-success-foreground">
+                        ฟรี
+                      </span>
+                    )}
                     {les.durationSeconds ? (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="num text-caption text-foreground-subtle">
                         {fmtDuration(les.durationSeconds)}
                       </span>
                     ) : null}

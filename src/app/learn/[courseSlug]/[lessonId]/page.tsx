@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CaretLeft, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { buildHlsUrl } from "@/server/services/bunny";
 import { CurriculumSidebar } from "@/components/learn/curriculum-sidebar";
 import { LearnShell } from "@/components/learn/learn-shell";
@@ -55,41 +58,43 @@ export default async function LearnLessonPage({
             isEnrolled={courseData.isEnrolled}
           />
         </aside>
-        <main className="overflow-y-auto p-6">
-          <div className="mx-auto max-w-4xl">
-            <div className="mb-4 flex items-center justify-between">
+        <main className="overflow-y-auto px-6 py-8 lg:px-10">
+          <div className="mx-auto max-w-[960px] space-y-6">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs text-muted-foreground">
-                  <Link href={`/courses/${courseSlug}`} className="hover:underline">
-                    ← {lessonData.courseTitle}
-                  </Link>
-                </p>
-                <h1 className="mt-1 text-xl font-semibold">{lessonData.title}</h1>
-                <p className="text-xs text-muted-foreground">{lessonData.moduleTitle}</p>
-              </div>
-              {lessonData.nextLessonId ? (
                 <Link
-                  href={`/learn/${courseSlug}/${lessonData.nextLessonId}`}
-                  className="text-sm text-primary hover:underline"
+                  href={`/courses/${courseSlug}`}
+                  className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
                 >
-                  บทถัดไป →
+                  <CaretLeft size={14} /> {lessonData.courseTitle}
                 </Link>
-              ) : null}
+                <h1 className="mt-2 text-h2">{lessonData.title}</h1>
+                <p className="mt-1 text-uism text-foreground-subtle">{lessonData.moduleTitle}</p>
+              </div>
+              {lessonData.nextLessonId && (
+                <Button asChild variant="secondary" size="md">
+                  <Link href={`/learn/${courseSlug}/${lessonData.nextLessonId}`}>
+                    บทถัดไป <ArrowRight size={16} weight="bold" />
+                  </Link>
+                </Button>
+              )}
             </div>
 
-            {lessonData.bunnyVideoId ? (
-              <VidstackPlayer
-                src={buildHlsUrl({ videoId: lessonData.bunnyVideoId })}
-                title={lessonData.title}
-              />
-            ) : (
-              <div
-                role="status"
-                className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground"
-              >
-                ยังไม่มีวิดีโอสำหรับบทเรียนนี้ — กรุณาอ่านเนื้อหาด้านล่าง
-              </div>
-            )}
+            <div className="overflow-hidden rounded-card border border-(--border)">
+              {lessonData.bunnyVideoId ? (
+                <VidstackPlayer
+                  src={buildHlsUrl({ videoId: lessonData.bunnyVideoId })}
+                  title={lessonData.title}
+                />
+              ) : (
+                <div
+                  role="status"
+                  className="flex aspect-video w-full items-center justify-center bg-(--surface-muted) text-body text-(--foreground-muted)"
+                >
+                  ยังไม่มีวิดีโอสำหรับบทเรียนนี้ — กรุณาอ่านเนื้อหาด้านล่าง
+                </div>
+              )}
+            </div>
 
             <LessonClient
               lessonId={lessonData.id}
@@ -98,26 +103,23 @@ export default async function LearnLessonPage({
               durationSeconds={lessonData.durationSeconds}
             />
 
-            {quizMeta ? (
-              <div className="mt-6 rounded border border-border bg-card p-4">
-                <h3 className="font-medium">{quizMeta.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  ทดสอบความเข้าใจหลังจบบทเรียน
-                </p>
-                <Link
-                  href={`/learn/${courseSlug}/quiz/${quizMeta.id}`}
-                  className="mt-3 inline-block rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground"
-                >
-                  ทำแบบทดสอบ →
-                </Link>
-              </div>
-            ) : null}
+            {quizMeta && (
+              <Card className="flex items-center justify-between gap-4 bg-(--surface-muted)">
+                <div>
+                  <h3 className="text-h4">{quizMeta.title}</h3>
+                  <p className="mt-1 text-body text-(--foreground-muted)">ทดสอบความเข้าใจหลังจบบทเรียน</p>
+                </div>
+                <Button asChild variant="primary">
+                  <Link href={`/learn/${courseSlug}/quiz/${quizMeta.id}`}>ทำแบบทดสอบ</Link>
+                </Button>
+              </Card>
+            )}
 
-            {lessonData.bodyMd ? (
-              <div className="mt-6">
+            {lessonData.bodyMd && (
+              <div className="prose-style">
                 <MarkdownView text={lessonData.bodyMd} />
               </div>
-            ) : null}
+            )}
           </div>
         </main>
       </div>
