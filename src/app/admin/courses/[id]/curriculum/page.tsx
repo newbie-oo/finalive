@@ -40,21 +40,21 @@ export default async function AdminCurriculumPage({
   const curriculum = await getAdminCourseCurriculum(id);
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <section className="space-y-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold">จัดการเนื้อหา</h1>
-          <p className="text-sm text-muted-foreground">{course.title}</p>
+          <h1 className="text-h1">จัดการเนื้อหา</h1>
+          <p className="mt-1 text-body text-(--foreground-muted)">{course.title}</p>
         </div>
         <div className="flex gap-2">
           <PublishButton courseId={id} currentStatus={course.status} />
-          <Button size="sm" variant="outline" asChild>
+          <Button asChild variant="ghost" size="md">
             <Link href={`/admin/courses/${id}`}>← กลับไปคอร์ส</Link>
           </Button>
         </div>
-      </div>
+      </header>
 
       <CurriculumTree courseId={id} modules={curriculum} />
-    </div>
+    </section>
   );
 }

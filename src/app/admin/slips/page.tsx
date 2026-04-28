@@ -32,18 +32,28 @@ export default async function AdminSlipsPage({
   await listPendingSlips({ status, per_page: 50 });
 
   return (
-    <section className="flex flex-col gap-4">
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">คิวตรวจสลิป</h1>
-        <nav className="flex gap-2 text-sm">
+    <section className="space-y-6">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-h1">คิวตรวจสลิป</h1>
+          <p className="mt-1 text-body text-(--foreground-muted)">
+            ใช้คีย์ลัด: <kbd className="mono rounded border border-(--border) px-1 text-uism">A</kbd> ยอมรับ ·{" "}
+            <kbd className="mono rounded border border-(--border) px-1 text-uism">R</kbd> ปฏิเสธ ·{" "}
+            <kbd className="mono rounded border border-(--border) px-1 text-uism">S</kbd> ข้าม
+          </p>
+        </div>
+        <nav className="flex flex-wrap gap-2 text-uism" aria-label="ตัวกรองสถานะสลิป">
           {STATUS_OPTIONS.map((opt) => {
             const active = opt.value === status;
             return (
               <Link
                 key={opt.value}
                 href={`/admin/slips?status=${opt.value}`}
-                className={`rounded-md border border-border px-2 py-1 ${
-                  active ? "bg-foreground text-background" : "hover:bg-muted"
+                aria-current={active ? "page" : undefined}
+                className={`rounded-md border px-3 py-1.5 transition-colors ${
+                  active
+                    ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] font-semibold text-(--primary)"
+                    : "border-(--border) text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
                 }`}
               >
                 {opt.label}

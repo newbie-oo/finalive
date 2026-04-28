@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createCourseAction } from "@/server/actions/admin-course";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input, Textarea } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function NewCoursePage() {
   const router = useRouter();
@@ -27,80 +31,54 @@ export default function NewCoursePage() {
   };
 
   return (
-    <div className="mx-auto max-w-xl p-6">
-      <h1 className="text-xl font-semibold">สร้างคอร์สใหม่</h1>
+    <section className="mx-auto max-w-2xl space-y-6">
+      <header>
+        <h1 className="text-h1">สร้างคอร์สใหม่</h1>
+      </header>
 
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Slug</label>
-          <input
-            name="slug"
-            required
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-            placeholder="my-course"
-          />
-        </div>
+      <Card>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <Label htmlFor="slug" required>Slug</Label>
+            <Input id="slug" name="slug" required placeholder="my-course" className="mono" />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">ชื่อคอร์ส</label>
-          <input
-            name="title"
-            required
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </div>
+          <div>
+            <Label htmlFor="title" required>ชื่อคอร์ส</Label>
+            <Input id="title" name="title" required />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">คำอธิบายสั้น</label>
-          <textarea
-            name="summary"
-            required
-            rows={3}
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </div>
+          <div>
+            <Label htmlFor="summary" required>คำอธิบายสั้น</Label>
+            <Textarea id="summary" name="summary" required rows={3} />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium">ราคา</label>
-          <input
-            name="price"
-            type="text"
-            required
-            defaultValue="0.00"
-            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-          />
-        </div>
+          <div>
+            <Label htmlFor="price" required>ราคา</Label>
+            <Input id="price" name="price" type="text" required defaultValue="0.00" className="num" />
+          </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            name="isFree"
-            type="checkbox"
-            value="true"
-            className="h-4 w-4"
-          />
-          <label className="text-sm">คอร์สฟรี</label>
-        </div>
+          <label className="flex items-center gap-2 text-ui">
+            <input name="isFree" type="checkbox" value="true" className="h-4 w-4 accent-(--primary)" />
+            คอร์สฟรี
+          </label>
 
-        {error && (
-          <p className="text-sm text-destructive">เกิดข้อผิดพลาด: {error}</p>
-        )}
+          {error && (
+            <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
+              เกิดข้อผิดพลาด: {error}
+            </p>
+          )}
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
-          >
-            {loading ? "กำลังสร้าง..." : "สร้างคอร์ส"}
-          </button>
-          <Link
-            href="/admin/courses"
-            className="rounded border px-4 py-2 text-sm"
-          >
-            ยกเลิก
-          </Link>
-        </div>
-      </form>
-    </div>
+          <div className="flex gap-3">
+            <Button type="submit" variant="primary" disabled={loading}>
+              {loading ? "กำลังสร้าง..." : "สร้างคอร์ส"}
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/admin/courses">ยกเลิก</Link>
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </section>
   );
 }

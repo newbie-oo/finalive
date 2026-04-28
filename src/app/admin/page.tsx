@@ -1,23 +1,25 @@
 import Link from "next/link";
 import { getAdminDashboardCounts } from "@/server/repos/admin-dashboard";
 
-interface CardProps {
+interface StatCardProps {
   label: string;
   value: number;
   href?: string;
   hint?: string;
 }
 
-function Card({ label, value, href, hint }: CardProps) {
+function StatCard({ label, value, href, hint }: StatCardProps) {
   const inner = (
-    <div className="flex h-full flex-col gap-1 rounded-md border border-border p-4 transition hover:bg-muted/40">
-      <span className="text-xs uppercase tracking-wide text-muted-foreground">{label}</span>
-      <span className="text-3xl font-semibold tabular-nums">{value}</span>
-      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
+    <div className="flex h-full flex-col gap-2 rounded-[12px] border border-(--border) bg-(--surface) p-5 transition-colors hover:border-(--primary)">
+      <span className="text-caption font-semibold uppercase tracking-wide text-foreground-subtle">
+        {label}
+      </span>
+      <span className="num text-h1 font-semibold text-(--foreground)">{value}</span>
+      {hint ? <span className="text-uism text-(--foreground-muted)">{hint}</span> : null}
     </div>
   );
   return href ? (
-    <Link href={href} className="block">
+    <Link href={href} className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)">
       {inner}
     </Link>
   ) : (
@@ -25,48 +27,26 @@ function Card({ label, value, href, hint }: CardProps) {
   );
 }
 
-// Avoid the static cache — counts must reflect what the admin sees right now.
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const c = await getAdminDashboardCounts();
   return (
-    <section className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">แผงควบคุม</h1>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card
-          label="สลิปรอตรวจ"
-          value={c.slipsSubmitted}
-          href="/admin/slips?status=submitted"
-        />
-        <Card
-          label="อนุมัติวันนี้"
-          value={c.slipsAcceptedToday}
-          href="/admin/slips?status=accepted"
-        />
-        <Card
-          label="ปฏิเสธวันนี้"
-          value={c.slipsRejectedToday}
-          href="/admin/slips?status=rejected"
-        />
-        <Card label="นักเรียนกำลังเรียน" value={c.enrollmentsActive} />
-        <Card
-          label="คอร์สเผยแพร่"
-          value={c.coursesPublished}
-          href="/admin/courses"
-        />
-        <Card
-          label="รายได้เดือนนี้"
-          value={c.revenueMtd}
-          hint="บาท"
-        />
-        <Card
-          label="ใบประกาศเดือนนี้"
-          value={c.certsMtd}
-          href="/admin/certificates"
-        />
+    <section className="space-y-6">
+      <header>
+        <h1 className="text-h1">แผงควบคุม</h1>
+        <p className="mt-1 text-body text-(--foreground-muted)">ภาพรวมสถานะระบบและการดำเนินการล่าสุด</p>
+      </header>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="สลิปรอตรวจ" value={c.slipsSubmitted} href="/admin/slips?status=submitted" />
+        <StatCard label="อนุมัติวันนี้" value={c.slipsAcceptedToday} href="/admin/slips?status=accepted" />
+        <StatCard label="ปฏิเสธวันนี้" value={c.slipsRejectedToday} href="/admin/slips?status=rejected" />
+        <StatCard label="นักเรียนกำลังเรียน" value={c.enrollmentsActive} />
+        <StatCard label="คอร์สเผยแพร่" value={c.coursesPublished} href="/admin/courses" />
+        <StatCard label="รายได้เดือนนี้" value={c.revenueMtd} hint="บาท" />
+        <StatCard label="ใบประกาศเดือนนี้" value={c.certsMtd} href="/admin/certificates" />
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-uism text-foreground-subtle">
         ตัวเลข &quot;วันนี้&quot; นับจากเที่ยงคืนตามเครื่อง server
       </p>
     </section>

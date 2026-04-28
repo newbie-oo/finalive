@@ -34,41 +34,41 @@ export default async function AdminCourseEditPage({
   const curriculum = await getCourseCurriculum(id);
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <h1 className="text-xl font-semibold">แก้ไขคอร์ส</h1>
-      <p className="text-sm text-muted-foreground">{course.title}</p>
+    <section className="mx-auto max-w-3xl space-y-8">
+      <header>
+        <h1 className="text-h1">แก้ไขคอร์ส</h1>
+        <p className="mt-1 text-bodylg text-(--foreground-muted)">{course.title}</p>
+      </header>
 
-      <div className="mt-6">
-        <CourseEditForm course={course} coverUrl={coverUrl} />
-      </div>
+      <CourseEditForm course={course} coverUrl={coverUrl} />
 
-      <div className="mt-8">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">เนื้อหาในคอร์ส</h2>
+          <h2 className="text-h3">เนื้อหาในคอร์ส</h2>
           <Link
             href={`/admin/courses/${id}/curriculum`}
-            className="text-sm text-primary hover:underline"
+            className="text-uism font-medium text-(--primary) hover:underline"
           >
             จัดการเนื้อหา →
           </Link>
         </div>
         {curriculum.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">ยังไม่มีโมดูล</p>
+          <p className="text-body text-(--foreground-muted)">ยังไม่มีโมดูล</p>
         ) : (
-          <div className="mt-3 space-y-4">
+          <div className="space-y-3">
             {curriculum.map((mod) => (
-              <div key={mod.id} className="rounded border p-4">
-                <h3 className="font-medium">{mod.title}</h3>
+              <div key={mod.id} className="rounded-card border border-(--border) bg-(--surface) p-5">
+                <h3 className="text-h4">{mod.title}</h3>
                 {mod.lessons.length === 0 ? (
-                  <p className="mt-1 text-xs text-muted-foreground">ยังไม่มีบทเรียน</p>
+                  <p className="mt-2 text-uism text-(--foreground-muted)">ยังไม่มีบทเรียน</p>
                 ) : (
-                  <ul className="mt-2 space-y-1">
+                  <ul className="mt-3 divide-y divide-(--border)">
                     {mod.lessons.map((ls) => (
-                      <li key={ls.id} className="flex items-center justify-between text-sm">
-                        <span>{ls.title}</span>
+                      <li key={ls.id} className="flex items-center justify-between gap-3 py-2 text-body">
+                        <span className="text-(--foreground)">{ls.title}</span>
                         <Link
                           href={`/admin/courses/${id}/lessons/${ls.id}`}
-                          className="text-xs text-primary hover:underline"
+                          className="text-uism font-medium text-(--primary) hover:underline"
                         >
                           แก้ไข →
                         </Link>
@@ -81,6 +81,6 @@ export default async function AdminCourseEditPage({
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 }
