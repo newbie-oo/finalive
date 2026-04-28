@@ -47,3 +47,7 @@ next-env.d.ts
 
 # drizzle journal artifacts (keep migrations/ committed)
 drizzle/meta/_journal_local.json
+
+# Upload temp files
+uploads/video/
+

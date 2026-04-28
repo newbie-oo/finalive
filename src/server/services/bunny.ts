@@ -1,5 +1,6 @@
 import "server-only";
 import crypto from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { getEnv } from "@/lib/env";
 
 export interface BunnyEmbedToken {
@@ -47,4 +48,63 @@ export function buildEmbedUrl(args: EmbedUrlArgs): string {
 
 export function buildHlsUrl(videoId: string): string {
   return `https://vz-cf7a0b15-c66.b-cdn.net/${videoId}/playlist.m3u8`;
+}
+
+// ─── Bunny Stream Upload ───
+
+const BUNNY_API_BASE = "https://video.bunnycdn.com";
+
+function getBunnyHeaders(): Record<string, string> {
+  const env = getEnv();
+  if (!env.BUNNY_API_KEY) throw new Error("BUNNY_API_KEY is not configured");
+  return {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    AccessKey: env.BUNNY_API_KEY,
+  };
+}
+
+export async function createBunnyVideo(title: string): Promise<string> {
+  const env = getEnv();
+  const libraryId = env.BUNNY_LIBRARY_ID;
+  if (!libraryId) throw new Error("BUNNY_LIBRARY_ID is not configured");
+
+  const res = await fetch(`${BUNNY_API_BASE}/library/${libraryId}/videos`, {
+    method: "POST",
+    headers: getBunnyHeaders(),
+    body: JSON.stringify({ title }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "unknown");
+    throw new Error(`Bunny create video failed: ${res.status} ${text}`);
+  }
+
+  const data = (await res.json()) as { guid: string };
+  return data.guid;
+}
+
+export async function uploadBunnyVideo(videoId: string, filePath: string): Promise<void> {
+  const env = getEnv();
+  const libraryId = env.BUNNY_LIBRARY_ID;
+  if (!libraryId) throw new Error("BUNNY_LIBRARY_ID is not configured");
+
+  const fileBuffer = await readFile(filePath);
+
+  const apiKey = env.BUNNY_API_KEY;
+  if (!apiKey) throw new Error("BUNNY_API_KEY is not configured");
+
+  const res = await fetch(`${BUNNY_API_BASE}/library/${libraryId}/videos/${videoId}`, {
+    method: "PUT",
+    headers: {
+      AccessKey: apiKey,
+      "Content-Type": "application/octet-stream",
+    },
+    body: fileBuffer,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "unknown");
+    throw new Error(`Bunny upload video failed: ${res.status} ${text}`);
+  }
 }
