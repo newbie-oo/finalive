@@ -27,6 +27,7 @@ import {
   createLessonAction,
   reorderModulesAction,
   reorderLessonsAction,
+  updateLessonAction,
 } from "@/server/actions/admin-curriculum";
 import type { AdminCurriculumModule, AdminCurriculumLesson } from "@/server/repos/admin-course";
 
@@ -359,7 +360,7 @@ function SortableModule({
 }
 
 function SortableLesson({
-  lesson,
+  lesson: initialLesson,
   courseId,
   isSelected,
   onSelect,
@@ -376,13 +377,28 @@ function SortableLesson({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: lesson.id, data: { type: "lesson" } });
+  } = useSortable({ id: initialLesson.id, data: { type: "lesson" } });
+
+  const [lesson, setLesson] = useState(initialLesson);
+  const [pending, startTransition] = useTransition();
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+
+  function toggleField(field: "isPreview" | "isFree") {
+    const newValue = !lesson[field];
+    setLesson((prev) => ({ ...prev, [field]: newValue }));
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append("courseId", courseId);
+      formData.append("lessonId", lesson.id);
+      formData.append(field, String(newValue));
+      await updateLessonAction(formData);
+    });
+  }
 
   return (
     <button
@@ -404,13 +420,38 @@ function SortableLesson({
         </span>
         {lesson.title}
       </span>
-      <Link
-        href={`/admin/courses/${courseId}/lessons/${lesson.id}`}
-        className="ml-2 text-xs text-primary hover:underline shrink-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        แก้ไข
-      </Link>
+      <span className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={() => toggleField("isPreview")}
+          disabled={pending}
+          className={`rounded px-1.5 py-0.5 text-[10px] ${
+            lesson.isPreview
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          }`}
+          title="ดูตัวอย่าง"
+        >
+          ตัวอย่าง
+        </button>
+        <button
+          onClick={() => toggleField("isFree")}
+          disabled={pending}
+          className={`rounded px-1.5 py-0.5 text-[10px] ${
+            lesson.isFree
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground"
+          }`}
+          title="ฟรี"
+        >
+          ฟรี
+        </button>
+        <Link
+          href={`/admin/courses/${courseId}/lessons/${lesson.id}`}
+          className="ml-1 text-xs text-primary hover:underline"
+        >
+          แก้ไข
+        </Link>
+      </span>
     </button>
   );
 }
