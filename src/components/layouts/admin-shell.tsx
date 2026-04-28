@@ -9,7 +9,6 @@ import {
   Books,
   Users,
   Certificate,
-  Gear,
   CaretLeft,
   CaretRight,
   type Icon,
@@ -34,7 +33,7 @@ const NAV: NavItem[] = [
   { href: "/admin/certificates", label: "ใบประกาศ", icon: Certificate },
 ];
 
-const NAV_FOOT: NavItem[] = [{ href: "/admin/settings", label: "ตั้งค่า", icon: Gear }];
+const NAV_FOOT: NavItem[] = [];
 
 export function AdminShell({
   user,

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { bulkAcceptSlips } from "@/server/actions/admin-slip";
+import { requireRole } from "@/server/auth-session";
 import { ApiError, statusForCode } from "@/lib/api-error";
 
 const bodySchema = z.object({
@@ -8,6 +9,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
+  await requireRole("admin");
   try {
     const json = (await req.json().catch(() => null)) as unknown;
     const { slipIds } = bodySchema.parse(json);
