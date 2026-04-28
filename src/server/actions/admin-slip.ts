@@ -11,6 +11,34 @@ import { enqueueEmail } from "../services/email-queue";
 import { logAudit } from "../services/audit";
 import { isUniqueViolation } from "@/lib/pg-error";
 
+export const REJECT_REASONS = [
+  "blurry",
+  "wrong_amount",
+  "wrong_account",
+  "stale_slip",
+  "other",
+] as const;
+export type RejectReason = (typeof REJECT_REASONS)[number];
+
+export const REJECT_REASON_LABEL: Record<RejectReason, string> = {
+  blurry: "ภาพไม่ชัด",
+  wrong_amount: "ยอดเงินไม่ตรง",
+  wrong_account: "โอนผิดบัญชี",
+  stale_slip: "slip เก่าเกิน",
+  other: "อื่นๆ",
+};
+
+export interface RejectSlipInput {
+  slipId: string;
+  reason: RejectReason;
+  note?: string;
+}
+
+export interface RejectSlipResult {
+  slipId: string;
+  pendingId: string;
+}
+
 export interface AcceptSlipResult {
   slipId: string;
   enrollmentId: string;
@@ -137,4 +165,95 @@ export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
   });
 
   return { slipId, enrollmentId };
+}
+
+export async function rejectSlip(input: RejectSlipInput): Promise<RejectSlipResult> {
+  const { user: admin } = await requireRole("admin");
+
+  const rows = await db
+    .select({
+      slipStatus: paymentSlip.status,
+      pendingId: pendingEnrollment.id,
+      pendingRefCode: pendingEnrollment.refCode,
+      pendingAmount: pendingEnrollment.amount,
+      studentUserId: pendingEnrollment.userId,
+      studentEmail: userTable.email,
+      studentName: userTable.name,
+      courseTitle: course.title,
+      courseSlug: course.slug,
+    })
+    .from(paymentSlip)
+    .innerJoin(pendingEnrollment, eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id))
+    .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
+    .innerJoin(userTable, eq(pendingEnrollment.userId, userTable.id))
+    .where(eq(paymentSlip.id, input.slipId))
+    .limit(1);
+
+  const row = rows[0];
+  if (!row) throw new ApiError("not_found", "slip not found");
+  if (row.slipStatus !== "submitted") {
+    throw new ApiError("slip_already_reviewed", "slip is not pending review");
+  }
+
+  await db.transaction(async (tx) => {
+    const updated = await tx
+      .update(paymentSlip)
+      .set({
+        status: "rejected",
+        rejectionReason: input.reason,
+        rejectionNote: input.note ?? null,
+        reviewedByUserId: admin.id,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(paymentSlip.id, input.slipId), eq(paymentSlip.status, "submitted")))
+      .returning({ id: paymentSlip.id });
+    if (updated.length === 0) {
+      throw new ApiError("slip_already_reviewed", "slip was reviewed by another admin");
+    }
+
+    // Bounce pending back to awaiting_payment so the student can re-upload.
+    await tx
+      .update(pendingEnrollment)
+      .set({ status: "awaiting_payment", updatedAt: new Date() })
+      .where(eq(pendingEnrollment.id, row.pendingId));
+
+    await enqueueEmail(
+      {
+        toEmail: row.studentEmail,
+        template: "slip_rejected",
+        paramsJson: {
+          name: row.studentName,
+          courseTitle: row.courseTitle,
+          courseSlug: row.courseSlug,
+          refCode: row.pendingRefCode,
+          amount: row.pendingAmount,
+          reason: input.reason,
+          reasonLabel: REJECT_REASON_LABEL[input.reason],
+          note: input.note ?? null,
+        },
+        userId: row.studentUserId,
+      },
+      tx,
+    );
+
+    await logAudit(
+      {
+        actorType: "user",
+        actorUserId: admin.id,
+        action: "payment_slip.rejected",
+        targetType: "payment_slip",
+        targetId: input.slipId,
+        afterJson: {
+          pendingId: row.pendingId,
+          refCode: row.pendingRefCode,
+          reason: input.reason,
+          note: input.note ?? null,
+        },
+      },
+      tx,
+    );
+  });
+
+  return { slipId: input.slipId, pendingId: row.pendingId };
 }

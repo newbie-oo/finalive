@@ -25,7 +25,7 @@ vi.mock("@/server/auth-session", () => ({
   })),
 }));
 
-import { acceptSlip } from "@/server/actions/admin-slip";
+import { acceptSlip, rejectSlip } from "@/server/actions/admin-slip";
 
 async function reset() {
   await db.execute(sql`
@@ -127,6 +127,40 @@ describe("acceptSlip", () => {
     const { slipId } = await seedSubmittedSlip();
     await acceptSlip(slipId);
     await expect(acceptSlip(slipId)).rejects.toMatchObject({
+      code: "slip_already_reviewed",
+    });
+  });
+
+  it("rejectSlip flips slip to rejected, bounces pending to awaiting_payment, audits", async () => {
+    const { slipId, pendingId } = await seedSubmittedSlip();
+    const result = await rejectSlip({ slipId, reason: "blurry", note: "ภาพเบลอ" });
+    expect(result.pendingId).toBe(pendingId);
+
+    const [s] = await db.select().from(paymentSlip).where(eq(paymentSlip.id, slipId));
+    expect(s?.status).toBe("rejected");
+    expect(s?.rejectionReason).toBe("blurry");
+    expect(s?.rejectionNote).toBe("ภาพเบลอ");
+
+    const [p] = await db
+      .select()
+      .from(pendingEnrollment)
+      .where(eq(pendingEnrollment.id, pendingId));
+    expect(p?.status).toBe("awaiting_payment");
+
+    const enrolls = await db.select().from(enrollment);
+    expect(enrolls.length).toBe(0);
+
+    const emails = await db.select().from(emailMessage);
+    expect(emails.find((e) => e.template === "slip_rejected")).toBeTruthy();
+
+    const audits = await db.select().from(auditLog);
+    expect(audits.find((a) => a.action === "payment_slip.rejected")).toBeTruthy();
+  });
+
+  it("rejectSlip refuses already-reviewed slip", async () => {
+    const { slipId } = await seedSubmittedSlip();
+    await rejectSlip({ slipId, reason: "other" });
+    await expect(rejectSlip({ slipId, reason: "other" })).rejects.toMatchObject({
       code: "slip_already_reviewed",
     });
   });
