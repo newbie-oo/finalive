@@ -8,7 +8,7 @@ import {
   courseModule as moduleTable,
   lesson as lessonTable,
 } from "@/db/schema/course";
-import { appSetting as appSettingTable } from "@/db/schema/app-setting";
+import { quiz as quizTable, quizQuestion as quizQuestionTable, quizChoice as quizChoiceTable } from "@/db/schema/quiz";
 import { slugify } from "@/lib/slug";
 
 interface SeedUser {
@@ -153,9 +153,10 @@ async function seedUsers(): Promise<string> {
   return adminId;
 }
 
-async function seedCourses(adminId: string): Promise<void> {
-  await db.execute(sql`TRUNCATE TABLE "lesson", "module", "course" CASCADE`);
+async function seedCourses(adminId: string): Promise<string[]> {
+  await db.execute(sql`TRUNCATE TABLE "quiz_choice", "quiz_question", "quiz", "lesson", "module", "course" CASCADE`);
 
+  const lessonIds: string[] = [];
   const usedSlugs = new Set<string>();
   for (const c of SEED_COURSES) {
     const slug = slugify(c.title);
@@ -189,8 +190,9 @@ async function seedCourses(adminId: string): Promise<void> {
 
       for (let li = 0; li < m.lessons.length; li += 1) {
         const l = m.lessons[li]!;
+        const lessonId = randomUUID();
         await db.insert(lessonTable).values({
-          id: randomUUID(),
+          id: lessonId,
           moduleId,
           title: l.title,
           bodyMd: `# ${l.title}\n\nเนื้อหา placeholder สำหรับ seed.`,
@@ -200,14 +202,79 @@ async function seedCourses(adminId: string): Promise<void> {
           sortOrder: li + 1,
           createdByUserId: adminId,
         });
+        lessonIds.push(lessonId);
       }
     }
     console.warn(`[seed] course "${c.title}" -> /${slug}`);
   }
+  return lessonIds;
+}
+
+async function seedQuizzes(adminId: string, lessonIds: string[]): Promise<void> {
+  if (lessonIds.length === 0) return;
+
+  // Create a quiz for the first lesson of the first course (Python For Investing).
+  const targetLessonId = lessonIds[0]!;
+  const quizTitle = "แบบทดสอบท้ายบท: พื้นฐาน Python";
+  const [qz] = await db.insert(quizTable).values({
+    lessonId: targetLessonId,
+    title: quizTitle,
+    passScorePct: 60,
+    createdByUserId: adminId,
+  }).returning({ id: quizTable.id });
+
+  const questions = [
+    { prompt: "Python เป็นภาษา programming ประเภทใด?", choices: [
+      { body: "Compiled", correct: false },
+      { body: "Interpreted", correct: true },
+      { body: "Assembly", correct: false },
+    ]},
+    { prompt: "ตัวแปรในภาษา Python ต้องประกาศ type ก่อนใช้งานหรือไม่?", choices: [
+      { body: "ต้องประกาศเสมอ", correct: false },
+      { body: "ไม่จำเป็นต้องประกาศ", correct: true },
+      { body: "ขึ้นอยู่กับเวอร์ชัน", correct: false },
+    ]},
+    { prompt: "คำสั่งใดใช้สำหรับวน loop ตามจำนวนครั้งที่กำหนด?", choices: [
+      { body: "while", correct: false },
+      { body: "for", correct: true },
+      { body: "if", correct: false },
+    ]},
+    { prompt: "ชนิดข้อมูลใดใน Python ใช้เก็บค่าที่ไม่ซ้ำกัน?", choices: [
+      { body: "list", correct: false },
+      { body: "tuple", correct: false },
+      { body: "set", correct: true },
+    ]},
+    { prompt: "ฟังก์ชัน `len()` ใช้ทำอะไร?", choices: [
+      { body: "นับจำนวนสมาชิก", correct: true },
+      { body: "แปลงตัวเลขเป็นสตริง", correct: false },
+      { body: "หาค่าสูงสุด", correct: false },
+    ]},
+  ];
+
+  for (let qi = 0; qi < questions.length; qi++) {
+    const q = questions[qi]!;
+    const [qRow] = await db.insert(quizQuestionTable).values({
+      quizId: qz!.id,
+      promptMd: q.prompt,
+      sortOrder: qi + 1,
+    }).returning({ id: quizQuestionTable.id });
+
+    for (let ci = 0; ci < q.choices.length; ci++) {
+      const c = q.choices[ci]!;
+      await db.insert(quizChoiceTable).values({
+        questionId: qRow!.id,
+        body: c.body,
+        isCorrect: c.correct,
+        sortOrder: ci + 1,
+      });
+    }
+  }
+
+  console.warn(`[seed] quiz "${quizTitle}" -> ${questions.length} questions`);
 }
 
 async function seedAppSettings(adminId: string): Promise<void> {
-  await db.insert(appSettingTable).values([
+  const settings = [
     {
       key: "bank_account_display",
       valueJson: { text: "กสิกรไทย • 123-4-56789-0 • บจ.ฟิเนไลฟ์" },
@@ -226,14 +293,26 @@ async function seedAppSettings(adminId: string): Promise<void> {
       description: "",
       updatedByUserId: adminId,
     },
-  ]);
-  console.warn("[seed] app_settings inserted");
+  ];
+
+  for (const s of settings) {
+    await db.execute(sql`
+      INSERT INTO app_setting (key, value_json, description, updated_by_user_id)
+      VALUES (${s.key}, ${JSON.stringify(s.valueJson)}::jsonb, ${s.description}, ${adminId})
+      ON CONFLICT (key) DO UPDATE SET
+        value_json = EXCLUDED.value_json,
+        description = EXCLUDED.description,
+        updated_by_user_id = EXCLUDED.updated_by_user_id
+    `);
+  }
+  console.warn("[seed] app_settings upserted");
 }
 
 async function seed(): Promise<void> {
   console.warn("[seed] starting");
   const adminId = await seedUsers();
-  await seedCourses(adminId);
+  const lessonIds = await seedCourses(adminId);
+  await seedQuizzes(adminId, lessonIds);
   await seedAppSettings(adminId);
   console.warn("[seed] done. Sign in with seed credentials (password = 'change-me').");
   process.exit(0);
