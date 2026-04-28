@@ -9,12 +9,26 @@ import { eq } from "drizzle-orm";
 import { createBunnyVideo, uploadBunnyVideo, deleteBunnyVideo } from "@/server/services/bunny";
 import { unlink } from "node:fs/promises";
 import { canEditCourse } from "@/server/services/course-authz";
+import { logger } from "@/lib/logger";
 
 const uploadDir = path.join(process.cwd(), "uploads", "video");
+
+// Cap each upload at 4 GiB. Without this, FileStore happily writes any size
+// onto disk, which is a free DoS on a shared host. Tune via env if needed.
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 * 1024;
+
+async function safeUnlink(filePath: string): Promise<void> {
+  try {
+    await unlink(filePath);
+  } catch {
+    // File may already be cleaned up — best-effort.
+  }
+}
 
 const tusServer = new Server({
   path: "/api/upload/tus",
   datastore: new FileStore({ directory: uploadDir }),
+  maxSize: MAX_UPLOAD_BYTES,
   async onUploadCreate(req, upload) {
     const lessonId = upload.metadata?.lessonId;
     const courseId = upload.metadata?.courseId;
@@ -39,13 +53,20 @@ const tusServer = new Server({
     return { metadata: upload.metadata };
   },
   async onUploadFinish(req, upload) {
+    const filePath = path.join(uploadDir, upload.id);
     const lessonId = upload.metadata?.lessonId;
     const courseId = upload.metadata?.courseId;
-    if (!lessonId || !courseId) return {};
 
-    const title = upload.metadata?.filename || upload.metadata?.name || "Untitled";
-    const filePath = path.join(uploadDir, upload.id);
+    // Wrap the entire body in a try/finally that always unlinks the temp file.
+    // The previous shape early-returned when metadata was missing, leaving the
+    // bytes orphaned on disk and accumulating across uploads.
     try {
+      if (!lessonId || !courseId) {
+        logger.warn("tus.finish.missing_metadata", { uploadId: upload.id });
+        return {};
+      }
+
+      const title = upload.metadata?.filename || upload.metadata?.name || "Untitled";
 
       // Cleanup old video if exists.
       const lessonRows = await db
@@ -65,7 +86,9 @@ const tusServer = new Server({
           try {
             await deleteBunnyVideo(oldAsset.storageKey);
           } catch (err) {
-            console.error("Failed to delete old Bunny video:", err);
+            logger.error("tus.finish.delete_old_bunny_failed", err, {
+              storageKey: oldAsset.storageKey,
+            });
           }
           await db.delete(mediaAsset).where(eq(mediaAsset.id, oldAsset.id));
         }
@@ -91,16 +114,17 @@ const tusServer = new Server({
         .update(lesson)
         .set({ videoMediaId: asset!.id, updatedAt: new Date() })
         .where(eq(lesson.id, lessonId));
+
+      logger.info("tus.finish.applied", {
+        lessonId,
+        videoId,
+        assetId: asset!.id,
+      });
     } catch (err) {
-      console.error("Failed to process upload to Bunny:", err);
-      throw err; // Propagate so TUS client knows upload failed
+      logger.error("tus.finish.failed", err, { uploadId: upload.id, lessonId });
+      throw err; // Propagate so TUS client knows upload failed.
     } finally {
-      // Delete temp file regardless of success/failure.
-      try {
-        await unlink(filePath);
-      } catch {
-        // File may already be cleaned up.
-      }
+      await safeUnlink(filePath);
     }
 
     return {};
