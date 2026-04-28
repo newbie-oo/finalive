@@ -26,7 +26,7 @@
     "storage:up": "docker compose up -d minio",
     "stack:up": "docker compose up -d",
     "stack:down": "docker compose down",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
