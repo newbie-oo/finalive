@@ -74,6 +74,7 @@ export async function updateAdminCourse(
     isFree?: boolean;
     status?: string;
     publishedAt?: Date;
+    coverMediaId?: string | null;
   },
 ) {
   await db

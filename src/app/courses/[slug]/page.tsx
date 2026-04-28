@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { LockSimple, Play } from "@phosphor-icons/react/dist/ssr";
@@ -56,6 +57,18 @@ export default async function CourseDetailPage({
             ← คอร์สทั้งหมด
           </Link>
         </p>
+
+        {course.coverUrl && (
+          <div className="mt-4 overflow-hidden rounded-lg">
+            <Image
+              src={course.coverUrl}
+              alt={course.title}
+              width={1200}
+              height={630}
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        )}
 
         <div className="mt-4 rounded-lg border border-border bg-card p-6">
           <h1 className="text-3xl font-semibold">{course.title}</h1>

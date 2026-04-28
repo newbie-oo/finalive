@@ -82,3 +82,54 @@ export async function updateCourseAction(formData: FormData) {
 
   return { ok: true };
 }
+
+
+import { db } from "@/db/client";
+import { mediaAsset } from "@/db/schema/media";
+import { eq } from "drizzle-orm";
+import { deleteObject } from "@/server/services/r2";
+
+export async function updateCourseCoverAction(formData: FormData) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { ok: false, error: "unauthorized" as const };
+  }
+
+  const courseId = formData.get("courseId") as string;
+  const mediaAssetId = formData.get("mediaAssetId") as string;
+
+  const courseRow = await getAdminCourseById(courseId);
+  if (!courseRow) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  const canEdit = await canEditCourse(session.user.id, session.user.role, courseId);
+  if (!canEdit) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  // Cleanup old cover.
+  const oldCoverMediaId = courseRow.coverMediaId;
+  if (oldCoverMediaId) {
+    const oldAssets = await db
+      .select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
+      .from(mediaAsset)
+      .where(eq(mediaAsset.id, oldCoverMediaId))
+      .limit(1);
+    const oldAsset = oldAssets[0];
+    if (oldAsset) {
+      try {
+        const uuid = oldAsset.storageKey;
+        await deleteObject({ bucket: "public", key: `covers/${uuid}-640.webp` });
+        await deleteObject({ bucket: "public", key: `covers/${uuid}-1200.webp` });
+      } catch (err) {
+        console.error("Failed to delete old cover from R2:", err);
+      }
+      await db.delete(mediaAsset).where(eq(mediaAsset.id, oldAsset.id));
+    }
+  }
+
+  await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
+
+  return { ok: true };
+}

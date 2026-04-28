@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
+import { publicUrl } from "@/server/services/r2";
 import {
   buildOffsetResponse,
   type OffsetParams,
@@ -17,6 +18,7 @@ export interface PublicCourseSummary {
   price: string;
   isFree: boolean;
   publishedAt: Date | null;
+  coverUrl: string | null;
 }
 
 export async function listPublishedCourses(
@@ -34,8 +36,11 @@ export async function listPublishedCourses(
         price: course.price,
         isFree: course.isFree,
         publishedAt: course.publishedAt,
+        coverMediaId: course.coverMediaId,
+        coverStorageKey: mediaAsset.storageKey,
       })
       .from(course)
+      .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
       .where(where)
       .orderBy(desc(course.publishedAt))
       .limit(params.per_page)
@@ -43,8 +48,19 @@ export async function listPublishedCourses(
     db.select({ value: count() }).from(course).where(where),
   ]);
 
+  const mappedRows = rows.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    summary: r.summary,
+    price: r.price,
+    isFree: r.isFree,
+    publishedAt: r.publishedAt,
+    coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+  }));
+
   const total = totalRows[0]?.value ?? 0;
-  return buildOffsetResponse(rows, total, params);
+  return buildOffsetResponse(mappedRows, total, params);
 }
 
 export interface PendingCheckoutInfo {
@@ -59,7 +75,7 @@ export interface PendingCheckoutInfo {
 
 export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummary[]> {
   const where = and(eq(course.status, "published"), isNull(course.deletedAt));
-  return db
+  const rows = await db
     .select({
       id: course.id,
       slug: course.slug,
@@ -68,11 +84,24 @@ export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummar
       price: course.price,
       isFree: course.isFree,
       publishedAt: course.publishedAt,
+      coverStorageKey: mediaAsset.storageKey,
     })
     .from(course)
+    .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
     .where(where)
     .orderBy(desc(course.publishedAt))
     .limit(limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    summary: r.summary,
+    price: r.price,
+    isFree: r.isFree,
+    publishedAt: r.publishedAt,
+    coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+  }));
 }
 
 export async function getPublishedCourseBySlug(
@@ -87,13 +116,27 @@ export async function getPublishedCourseBySlug(
       price: course.price,
       isFree: course.isFree,
       publishedAt: course.publishedAt,
+      coverStorageKey: mediaAsset.storageKey,
     })
     .from(course)
+    .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
     .where(
       and(eq(course.slug, slug), eq(course.status, "published"), isNull(course.deletedAt)),
     )
     .limit(1);
-  return rows[0] ?? null;
+
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    summary: r.summary,
+    price: r.price,
+    isFree: r.isFree,
+    publishedAt: r.publishedAt,
+    coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+  };
 }
 
 export interface PreviewLesson {

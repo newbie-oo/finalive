@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { getAdminCourseById } from "@/server/repos/admin-course";
 import { getCourseCurriculum } from "@/server/repos/course";
 import { CourseEditForm } from "@/components/admin/course-edit-form";
+import { db } from "@/db/client";
+import { mediaAsset } from "@/db/schema/media";
+import { eq } from "drizzle-orm";
+import { publicUrl } from "@/server/services/r2";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +19,18 @@ export default async function AdminCourseEditPage({
   const course = await getAdminCourseById(id);
   if (!course) notFound();
 
+  let coverUrl: string | null = null;
+  if (course.coverMediaId) {
+    const assets = await db
+      .select({ storageKey: mediaAsset.storageKey })
+      .from(mediaAsset)
+      .where(eq(mediaAsset.id, course.coverMediaId))
+      .limit(1);
+    if (assets[0]) {
+      coverUrl = publicUrl(`covers/${assets[0].storageKey}-640.webp`);
+    }
+  }
+
   const curriculum = await getCourseCurriculum(id);
 
   return (
@@ -23,7 +39,7 @@ export default async function AdminCourseEditPage({
       <p className="text-sm text-muted-foreground">{course.title}</p>
 
       <div className="mt-6">
-        <CourseEditForm course={course} />
+        <CourseEditForm course={course} coverUrl={coverUrl} />
       </div>
 
       <div className="mt-8">

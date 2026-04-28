@@ -1,5 +1,5 @@
 import "server-only";
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getEnv } from "@/lib/env";
 
@@ -61,4 +61,19 @@ export async function presignReadUrl(args: SignedReadUrlArgs): Promise<string> {
 export function publicUrl(key: string): string {
   const env = getEnv();
   return `${env.S3_PUBLIC_BASE_URL.replace(/\/$/, "")}/${encodeURI(key)}`;
+}
+
+
+export interface DeleteObjectArgs {
+  bucket: R2Bucket;
+  key: string;
+}
+
+export async function deleteObject(args: DeleteObjectArgs): Promise<void> {
+  await getClient().send(
+    new DeleteObjectCommand({
+      Bucket: bucketName(args.bucket),
+      Key: args.key,
+    }),
+  );
 }

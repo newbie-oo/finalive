@@ -4,15 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { updateCourseAction } from "@/server/actions/admin-course";
+import { CoverImageUpload } from "@/components/admin/cover-image-upload";
 import type { course } from "@/db/schema/course";
 
 type Course = typeof course.$inferSelect;
 
 interface CourseEditFormProps {
   course: Course;
+  coverUrl?: string | null;
 }
 
-export function CourseEditForm({ course }: CourseEditFormProps) {
+export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,11 @@ export function CourseEditForm({ course }: CourseEditFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      <div>
+        <label className="block text-sm font-medium">รูปปกคอร์ส</label>
+        <CoverImageUpload courseId={course.id} currentCoverUrl={coverUrl} />
+      </div>
+
       <div>
         <label className="block text-sm font-medium">ชื่อคอร์ส</label>
         <input
