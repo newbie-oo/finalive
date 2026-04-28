@@ -7,6 +7,7 @@ import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
+import { sniffImageType } from "@/lib/file-sniff";
 import { requireSession } from "../auth-session";
 import { putObject } from "../services/r2";
 import { withIdempotency } from "../services/idempotency";
@@ -15,8 +16,6 @@ import { logAudit } from "../services/audit";
 
 export interface UploadSlipInput {
   pendingId: string;
-  fileName: string;
-  contentType: string;
   bytes: Buffer;
   reportedAmount?: string;
 }
@@ -28,16 +27,19 @@ export interface UploadSlipResult {
 }
 
 const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED = new Set(["image/png", "image/jpeg"]);
 
 export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResult> {
-  const { user } = await requireSession("/login");
+  const { user } = await requireSession();
 
-  if (!ALLOWED.has(input.contentType)) {
-    throw new ApiError("validation_failed", "unsupported file type");
-  }
   if (input.bytes.byteLength === 0 || input.bytes.byteLength > MAX_BYTES) {
     throw new ApiError("validation_failed", "file size out of range");
+  }
+  // Trust magic bytes, not the browser-supplied Content-Type. The sniffed
+  // result is what we store as media_asset.mime_type so admins viewing the
+  // slip get a Content-Type that matches the actual payload.
+  const sniffed = sniffImageType(input.bytes);
+  if (sniffed === "unknown") {
+    throw new ApiError("validation_failed", "file content is not a PNG/JPEG image");
   }
 
   const idemKey = createHash("sha256")
@@ -79,12 +81,16 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
       const courseInfo = courseRows[0];
       if (!courseInfo) throw new ApiError("not_found", "course missing");
 
-      const storageKey = `slips/${pending.userId}/${pending.id}/${randomUUID()}-${input.fileName.slice(-64)}`;
+      // Storage key derives only from values we control — never from the
+      // user-supplied filename (which can carry path traversal / RTL overrides).
+      // Original filename is intentionally discarded; we don't need it.
+      const ext = sniffed === "image/png" ? "png" : "jpg";
+      const storageKey = `slips/${pending.userId}/${pending.id}/${randomUUID()}.${ext}`;
       await putObject({
         bucket: "private",
         key: storageKey,
         body: input.bytes,
-        contentType: input.contentType,
+        contentType: sniffed,
       });
 
       const slipId = await db.transaction(async (tx) => {
@@ -94,7 +100,7 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
             kind: "image",
             storage: "r2_private",
             storageKey,
-            mimeType: input.contentType,
+            mimeType: sniffed,
             sizeBytes: input.bytes.byteLength,
             createdByUserId: user.id,
           })

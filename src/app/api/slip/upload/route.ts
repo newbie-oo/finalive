@@ -26,8 +26,6 @@ export async function POST(req: Request) {
   try {
     const result = await uploadSlip({
       pendingId,
-      fileName: file.name,
-      contentType: file.type,
       bytes: buf,
       reportedAmount: typeof reportedAmount === "string" && reportedAmount.length > 0
         ? reportedAmount
