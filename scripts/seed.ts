@@ -8,6 +8,7 @@ import {
   courseModule as moduleTable,
   lesson as lessonTable,
 } from "@/db/schema/course";
+import { appSetting as appSettingTable } from "@/db/schema/app-setting";
 import { slugify } from "@/lib/slug";
 
 interface SeedUser {
@@ -205,10 +206,35 @@ async function seedCourses(adminId: string): Promise<void> {
   }
 }
 
+async function seedAppSettings(adminId: string): Promise<void> {
+  await db.insert(appSettingTable).values([
+    {
+      key: "bank_account_display",
+      valueJson: { text: "กสิกรไทย • 123-4-56789-0 • บจ.ฟิเนไลฟ์" },
+      description: "แสดงในหน้า /checkout",
+      updatedByUserId: adminId,
+    },
+    {
+      key: "cert_signature_image_url",
+      valueJson: { text: "" },
+      description: "รูป signature ลายเซ็น admin บน cert",
+      updatedByUserId: adminId,
+    },
+    {
+      key: "public_homepage_hero_text",
+      valueJson: { th: "Finalive — เรียนรู้แบบเป็นระบบ" },
+      description: "",
+      updatedByUserId: adminId,
+    },
+  ]);
+  console.warn("[seed] app_settings inserted");
+}
+
 async function seed(): Promise<void> {
   console.warn("[seed] starting");
   const adminId = await seedUsers();
   await seedCourses(adminId);
+  await seedAppSettings(adminId);
   console.warn("[seed] done. Sign in with seed credentials (password = 'change-me').");
   process.exit(0);
 }

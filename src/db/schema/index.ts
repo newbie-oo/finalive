@@ -9,3 +9,4 @@ export * from "./enrollment";
 export * from "./quiz";
 export * from "./progress";
 export * from "./certificate";
+export * from "./app-setting";
