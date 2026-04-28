@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { uploadSlip } from "@/server/actions/slip";
 import { ApiError, statusForCode } from "@/lib/api-error";
+import { checkRateLimit, getClientIP, rateLimitConfigs } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const limit = checkRateLimit(getClientIP(req), "/api/slip/upload", rateLimitConfigs.upload);
+  if (!limit.allowed) {
+    return NextResponse.json({ code: "rate_limited" }, { status: 429 });
+  }
+
   let formData: FormData;
   try {
     formData = await req.formData();
