@@ -6,3 +6,5 @@ export * from "./payment";
 export * from "./idempotency";
 export * from "./audit";
 export * from "./enrollment";
+export * from "./quiz";
+export * from "./progress";

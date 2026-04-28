@@ -1,5 +1,4 @@
-// Integration test setup — runs against db-test (Postgres on :5433).
-// Loads .env.local so env validation passes, then forces DATABASE_URL onto db-test.
+// Integration test setup — loads .env.local so env validation passes.
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -24,7 +23,3 @@ try {
 } catch {
   // .env.local optional — fail later via env validation if vars missing.
 }
-
-// Force test database regardless of .env.local.
-process.env.DATABASE_URL =
-  process.env.DATABASE_URL_TEST ?? "postgres://finalive:test@localhost:5433/finalive_test";

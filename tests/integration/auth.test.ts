@@ -4,7 +4,6 @@ import { db } from "@/db/client";
 import { user } from "@/db/schema/auth";
 
 // Smoke test: Better Auth signUp inserts a row into `user`.
-// Requires `pnpm test:db:up` + applied migrations on db-test.
 describe("auth signUp", () => {
   beforeAll(() => {
     process.env.BETTER_AUTH_SECRET ??= "test-secret-min-16-chars-long-xx";

@@ -21,7 +21,6 @@
     "db:up": "docker compose up -d db",
     "db:logs": "docker compose logs -f db",
     "db:reset": "docker compose down -v db && docker compose up -d db",
-    "test:db:up": "docker compose up -d db-test",
     "mail:up": "docker compose up -d mailpit",
     "storage:up": "docker compose up -d minio",
     "stack:up": "docker compose up -d",
