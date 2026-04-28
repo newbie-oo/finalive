@@ -9,6 +9,8 @@ import {
   updateAdminLesson,
   getAdminCourseById,
   getAdminLessonById,
+  reorderAdminModules,
+  reorderAdminLessons,
 } from "@/server/repos/admin-course";
 import { getCourseCurriculum } from "@/server/repos/course";
 
@@ -153,5 +155,85 @@ export async function updateLessonAction(formData: FormData) {
     bodyMd: updates.bodyMd ?? null,
   });
 
+  return { ok: true };
+}
+
+const reorderModulesSchema = z.object({
+  courseId: z.string().uuid(),
+  moduleIds: z.array(z.string().uuid()),
+});
+
+export async function reorderModulesAction(formData: FormData) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { ok: false, error: "unauthorized" as const };
+  }
+
+  const courseId = formData.get("courseId") as string;
+  const courseRow = await getAdminCourseById(courseId);
+  if (!courseRow) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  const canEdit = await canEditCourse(session.user.id, session.user.role, courseId);
+  if (!canEdit) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const moduleIdsRaw = formData.get("moduleIds") as string;
+  let moduleIds: string[];
+  try {
+    moduleIds = JSON.parse(moduleIdsRaw);
+  } catch {
+    return { ok: false, error: "invalid_input" as const };
+  }
+
+  const parsed = reorderModulesSchema.safeParse({ courseId, moduleIds });
+  if (!parsed.success) {
+    return { ok: false, error: "invalid_input" as const };
+  }
+
+  await reorderAdminModules(courseId, parsed.data.moduleIds);
+  return { ok: true };
+}
+
+const reorderLessonsSchema = z.object({
+  moduleId: z.string().uuid(),
+  lessonIds: z.array(z.string().uuid()),
+});
+
+export async function reorderLessonsAction(formData: FormData) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { ok: false, error: "unauthorized" as const };
+  }
+
+  const moduleId = formData.get("moduleId") as string;
+  const courseId = formData.get("courseId") as string;
+
+  const courseRow = await getAdminCourseById(courseId);
+  if (!courseRow) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  const canEdit = await canEditCourse(session.user.id, session.user.role, courseId);
+  if (!canEdit) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const lessonIdsRaw = formData.get("lessonIds") as string;
+  let lessonIds: string[];
+  try {
+    lessonIds = JSON.parse(lessonIdsRaw);
+  } catch {
+    return { ok: false, error: "invalid_input" as const };
+  }
+
+  const parsed = reorderLessonsSchema.safeParse({ moduleId, lessonIds });
+  if (!parsed.success) {
+    return { ok: false, error: "invalid_input" as const };
+  }
+
+  await reorderAdminLessons(moduleId, parsed.data.lessonIds);
   return { ok: true };
 }

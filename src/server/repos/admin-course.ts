@@ -239,3 +239,28 @@ export async function updateAdminLesson(
     .set({ ...input, updatedAt: new Date() })
     .where(eq(lesson.id, lessonId));
 }
+
+
+export async function reorderAdminModules(
+  courseId: string,
+  moduleIds: string[],
+) {
+  for (let i = 0; i < moduleIds.length; i++) {
+    await db
+      .update(courseModule)
+      .set({ sortOrder: i, updatedAt: new Date() })
+      .where(eq(courseModule.id, moduleIds[i]!));
+  }
+}
+
+export async function reorderAdminLessons(
+  moduleId: string,
+  lessonIds: string[],
+) {
+  for (let i = 0; i < lessonIds.length; i++) {
+    await db
+      .update(lesson)
+      .set({ sortOrder: i, updatedAt: new Date() })
+      .where(eq(lesson.id, lessonIds[i]!));
+  }
+}

@@ -28,6 +28,9 @@
     "seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@phosphor-icons/react": "^2.1.10",
     "@react-email/components": "^0.0.36",
     "@react-pdf/renderer": "^4.1.6",

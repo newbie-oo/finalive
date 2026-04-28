@@ -1,11 +1,33 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { createModuleAction, createLessonAction } from "@/server/actions/admin-curriculum";
+import {
+  createModuleAction,
+  createLessonAction,
+  reorderModulesAction,
+  reorderLessonsAction,
+} from "@/server/actions/admin-curriculum";
 import type { AdminCurriculumModule, AdminCurriculumLesson } from "@/server/repos/admin-course";
 
 interface CurriculumTreeProps {
@@ -13,15 +35,18 @@ interface CurriculumTreeProps {
   modules: AdminCurriculumModule[];
 }
 
-export function CurriculumTree({ courseId, modules }: CurriculumTreeProps) {
+export function CurriculumTree({ courseId, modules: initialModules }: CurriculumTreeProps) {
   const router = useRouter();
+  const [modules, setModules] = useState<AdminCurriculumModule[]>(initialModules);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
-    () => new Set(modules.map((m) => m.id)),
+    () => new Set(initialModules.map((m) => m.id)),
   );
   const [addingModule, setAddingModule] = useState(false);
   const [addingLessonModuleId, setAddingLessonModuleId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const selectedLesson = modules
     .flatMap((m) => m.lessons)
@@ -68,6 +93,84 @@ export function CurriculumTree({ courseId, modules }: CurriculumTreeProps) {
     });
   }
 
+  const debouncedSaveModules = useCallback(
+    (newModules: AdminCurriculumModule[]) => {
+      const key = `modules-${courseId}`;
+      if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
+      debounceRef.current[key] = setTimeout(() => {
+        const formData = new FormData();
+        formData.append("courseId", courseId);
+        formData.append("moduleIds", JSON.stringify(newModules.map((m) => m.id)));
+        startTransition(async () => {
+          const result = await reorderModulesAction(formData);
+          if (!result.ok) {
+            toast.error("บันทึกลำดับโมดูลไม่สำเร็จ");
+          }
+        });
+      }, 500);
+    },
+    [courseId],
+  );
+
+  const debouncedSaveLessons = useCallback(
+    (moduleId: string, newLessons: AdminCurriculumLesson[]) => {
+      const key = `lessons-${moduleId}`;
+      if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
+      debounceRef.current[key] = setTimeout(() => {
+        const formData = new FormData();
+        formData.append("courseId", courseId);
+        formData.append("moduleId", moduleId);
+        formData.append("lessonIds", JSON.stringify(newLessons.map((l) => l.id)));
+        startTransition(async () => {
+          const result = await reorderLessonsAction(formData);
+          if (!result.ok) {
+            toast.error("บันทึกลำดับบทเรียนไม่สำเร็จ");
+          }
+        });
+      }, 500);
+    },
+    [courseId],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    // Check if dragging a module.
+    const activeModuleIndex = modules.findIndex((m) => m.id === activeId);
+    const overModuleIndex = modules.findIndex((m) => m.id === overId);
+
+    if (activeModuleIndex !== -1 && overModuleIndex !== -1) {
+      const newModules = arrayMove(modules, activeModuleIndex, overModuleIndex);
+      setModules(newModules);
+      debouncedSaveModules(newModules);
+      return;
+    }
+
+    // Check if dragging a lesson.
+    const activeModule = modules.find((m) => m.lessons.some((l) => l.id === activeId));
+    const overModule = modules.find((m) => m.lessons.some((l) => l.id === overId));
+
+    if (activeModule && overModule && activeModule.id === overModule.id) {
+      const lessonIndex = activeModule.lessons.findIndex((l) => l.id === activeId);
+      const overLessonIndex = activeModule.lessons.findIndex((l) => l.id === overId);
+      const newLessons = arrayMove(activeModule.lessons, lessonIndex, overLessonIndex);
+      const newModules = modules.map((m) =>
+        m.id === activeModule.id ? { ...m, lessons: newLessons } : m,
+      );
+      setModules(newModules);
+      debouncedSaveLessons(activeModule.id, newLessons);
+    }
+  }
+
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Left: Tree */}
@@ -98,84 +201,33 @@ export function CurriculumTree({ courseId, modules }: CurriculumTreeProps) {
           </form>
         )}
 
-        <div className="flex-1 overflow-auto space-y-2">
-          {modules.length === 0 && (
-            <p className="text-sm text-muted-foreground">ยังไม่มีโมดูล</p>
-          )}
-          {modules.map((mod) => (
-            <div key={mod.id}>
-              <button
-                onClick={() => toggleModule(mod.id)}
-                className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm font-medium hover:bg-muted"
-              >
-                <span>{mod.title}</span>
-                <span className="text-xs text-muted-foreground">
-                  {expandedModules.has(mod.id) ? "▾" : "▸"}
-                </span>
-              </button>
-
-              {expandedModules.has(mod.id) && (
-                <div className="mt-1 ml-3 space-y-0.5 border-l border-border pl-2">
-                  {mod.lessons.map((ls) => (
-                    <button
-                      key={ls.id}
-                      onClick={() => setSelectedLessonId(ls.id)}
-                      className={`flex w-full items-center justify-between rounded px-2 py-1 text-sm ${
-                        selectedLessonId === ls.id
-                          ? "bg-primary/10 text-primary"
-                          : "hover:bg-muted"
-                      }`}
-                    >
-                      <span className="truncate">{ls.title}</span>
-                      <Link
-                        href={`/admin/courses/${courseId}/lessons/${ls.id}`}
-                        className="ml-2 text-xs text-primary hover:underline shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        แก้ไข
-                      </Link>
-                    </button>
-                  ))}
-
-                  {addingLessonModuleId === mod.id ? (
-                    <form onSubmit={handleCreateLesson} className="flex gap-2 py-1">
-                      <input type="hidden" name="courseId" value={courseId} />
-                      <input type="hidden" name="moduleId" value={mod.id} />
-                      <input
-                        name="title"
-                        placeholder="ชื่อบทเรียน"
-                        className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
-                        required
-                        autoFocus
-                      />
-                      <Button size="xs" type="submit" disabled={pending}>
-                        บันทึก
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={() => setAddingLessonModuleId(null)}
-                        type="button"
-                      >
-                        ยกเลิก
-                      </Button>
-                    </form>
-                  ) : (
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      className="w-full justify-start text-xs text-muted-foreground"
-                      onClick={() => setAddingLessonModuleId(mod.id)}
-                      disabled={pending}
-                    >
-                      + เพิ่มบทเรียน
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="flex-1 overflow-auto space-y-2">
+            {modules.length === 0 && (
+              <p className="text-sm text-muted-foreground">ยังไม่มีโมดูล</p>
+            )}
+            <SortableContext
+              items={modules.map((m) => m.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {modules.map((mod) => (
+                <SortableModule
+                  key={mod.id}
+                  mod={mod}
+                  courseId={courseId}
+                  isExpanded={expandedModules.has(mod.id)}
+                  onToggle={() => toggleModule(mod.id)}
+                  selectedLessonId={selectedLessonId}
+                  onSelectLesson={setSelectedLessonId}
+                  addingLessonModuleId={addingLessonModuleId}
+                  setAddingLessonModuleId={setAddingLessonModuleId}
+                  onCreateLesson={handleCreateLesson}
+                  pending={pending}
+                />
+              ))}
+            </SortableContext>
+          </div>
+        </DndContext>
       </div>
 
       {/* Right: Detail */}
@@ -189,6 +241,177 @@ export function CurriculumTree({ courseId, modules }: CurriculumTreeProps) {
         )}
       </div>
     </div>
+  );
+}
+
+function SortableModule({
+  mod,
+  courseId,
+  isExpanded,
+  onToggle,
+  selectedLessonId,
+  onSelectLesson,
+  addingLessonModuleId,
+  setAddingLessonModuleId,
+  onCreateLesson,
+  pending,
+}: {
+  mod: AdminCurriculumModule;
+  courseId: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  selectedLessonId: string | null;
+  onSelectLesson: (id: string | null) => void;
+  addingLessonModuleId: string | null;
+  setAddingLessonModuleId: (id: string | null) => void;
+  onCreateLesson: (e: React.FormEvent<HTMLFormElement>) => void;
+  pending: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: mod.id, data: { type: "module" } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm font-medium hover:bg-muted"
+      >
+        <span className="flex items-center gap-2">
+          <span
+            {...listeners}
+            className="cursor-grab text-muted-foreground active:cursor-grabbing"
+            title="ลากเพื่อจัดลำดับ"
+          >
+            ⋮⋮
+          </span>
+          {mod.title}
+        </span>
+        <span className="text-xs text-muted-foreground">{isExpanded ? "▾" : "▸"}</span>
+      </button>
+
+      {isExpanded && (
+        <div className="mt-1 ml-3 space-y-0.5 border-l border-border pl-2">
+          <SortableContext
+            items={mod.lessons.map((l) => l.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {mod.lessons.map((ls) => (
+              <SortableLesson
+                key={ls.id}
+                lesson={ls}
+                courseId={courseId}
+                isSelected={selectedLessonId === ls.id}
+                onSelect={() => onSelectLesson(ls.id)}
+              />
+            ))}
+          </SortableContext>
+
+          {addingLessonModuleId === mod.id ? (
+            <form onSubmit={onCreateLesson} className="flex gap-2 py-1">
+              <input type="hidden" name="courseId" value={courseId} />
+              <input type="hidden" name="moduleId" value={mod.id} />
+              <input
+                name="title"
+                placeholder="ชื่อบทเรียน"
+                className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
+                required
+                autoFocus
+              />
+              <Button size="xs" type="submit" disabled={pending}>
+                บันทึก
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => setAddingLessonModuleId(null)}
+                type="button"
+              >
+                ยกเลิก
+              </Button>
+            </form>
+          ) : (
+            <Button
+              size="xs"
+              variant="ghost"
+              className="w-full justify-start text-xs text-muted-foreground"
+              onClick={() => setAddingLessonModuleId(mod.id)}
+              disabled={pending}
+            >
+              + เพิ่มบทเรียน
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SortableLesson({
+  lesson,
+  courseId,
+  isSelected,
+  onSelect,
+}: {
+  lesson: AdminCurriculumLesson;
+  courseId: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id, data: { type: "lesson" } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      onClick={onSelect}
+      className={`flex w-full items-center justify-between rounded px-2 py-1 text-sm ${
+        isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
+      }`}
+    >
+      <span className="flex items-center gap-2 truncate">
+        <span
+          {...listeners}
+          className="cursor-grab text-muted-foreground active:cursor-grabbing"
+          title="ลากเพื่อจัดลำดับ"
+        >
+          ⋮⋮
+        </span>
+        {lesson.title}
+      </span>
+      <Link
+        href={`/admin/courses/${courseId}/lessons/${lesson.id}`}
+        className="ml-2 text-xs text-primary hover:underline shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        แก้ไข
+      </Link>
+    </button>
   );
 }
 
