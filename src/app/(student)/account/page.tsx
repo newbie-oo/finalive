@@ -1,10 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useSession } from "@/lib/auth-client";
-import { authClient } from "@/lib/auth-client";
+import { CheckCircle, ShieldCheck } from "@phosphor-icons/react";
+import { useSession, authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError } from "@/components/ui/label";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
 
 const profileSchema = z.object({
   name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -22,10 +28,6 @@ export default function AccountPage() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ProfileForm>({
-    // useSession resolves async — defaultValues only runs once on mount, so
-    // the field stayed empty even when the user did have a name. The `values`
-    // prop (RHF v7+) re-syncs whenever the input changes, so the field
-    // pre-fills as soon as the session loads.
     values: { name: session?.user?.name ?? "" },
   });
 
@@ -52,54 +54,58 @@ export default function AccountPage() {
   }
 
   return (
-    <section className="mx-auto max-w-lg">
-      <h1 className="mb-2 text-xl font-semibold">บัญชีของฉัน</h1>
-      <p className="mb-6 text-sm text-muted-foreground">ภาพรวมของบัญชีและคอร์ส</p>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-lg border p-4">
+    <section className="mx-auto max-w-3xl space-y-8">
+      <header className="flex items-center gap-4">
+        <AvatarInitials name={session?.user?.name ?? "?"} size="xl" />
         <div>
-          <label htmlFor="name" className="mb-1 block text-sm font-medium">
-            ชื่อ
-          </label>
-          <input
-            id="name"
-            type="text"
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            {...register("name")}
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-destructive">{errors.name.message}</p>
+          <h1 className="text-h1">บัญชีของฉัน</h1>
+          <p className="mt-1 text-bodylg text-(--foreground-muted)">ภาพรวมและการตั้งค่าบัญชีของคุณ</p>
+        </div>
+      </header>
+
+      <Card>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <h2 className="text-h3">ข้อมูลบัญชี</h2>
+          <div>
+            <Label htmlFor="name" required>ชื่อ</Label>
+            <Input id="name" type="text" autoComplete="name" invalid={!!errors.name} {...register("name")} />
+            {errors.name && <FieldError>{errors.name.message}</FieldError>}
+          </div>
+
+          <div>
+            <Label>อีเมล</Label>
+            <p className="text-body text-(--foreground)">{session?.user?.email}</p>
+          </div>
+
+          {saved && (
+            <p className="inline-flex items-center gap-2 rounded-md bg-success-bg px-3 py-2 text-uism text-success-foreground">
+              <CheckCircle size={16} weight="fill" /> บันทึกสำเร็จ
+            </p>
           )}
+          {serverError && (
+            <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
+              {serverError}
+            </p>
+          )}
+
+          <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+            {isSubmitting ? "กำลังบันทึก..." : "บันทึก"}
+          </Button>
+        </form>
+      </Card>
+
+      <Card className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <ShieldCheck size={32} weight="duotone" className="text-(--primary)" />
+          <div>
+            <h3 className="text-h4">ความปลอดภัย</h3>
+            <p className="text-body text-(--foreground-muted)">รหัสผ่าน, อุปกรณ์, และการลบบัญชี</p>
+          </div>
         </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            อีเมล
-          </label>
-          <p className="text-sm">{session?.user?.email}</p>
-        </div>
-
-        {saved && <p className="text-sm text-success">บันทึกสำเร็จ</p>}
-        {serverError && (
-          <p role="alert" className="text-sm text-destructive">
-            {serverError}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {isSubmitting ? "กำลังบันทึก..." : "บันทึก"}
-        </button>
-      </form>
-
-      <div className="mt-4">
-        <a href="/account/security" className="text-sm text-primary underline">
-          ตั้งค่าความปลอดภัย
-        </a>
-      </div>
+        <Button asChild variant="secondary">
+          <Link href="/account/security">ตั้งค่า</Link>
+        </Button>
+      </Card>
     </section>
   );
 }

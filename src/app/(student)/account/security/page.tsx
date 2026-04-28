@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { CheckCircle } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 
 const securitySchema = z.object({
   currentPassword: z.string().min(1, "กรุณากรอกรหัสผ่านปัจจุบัน"),
@@ -50,58 +55,61 @@ export default function SecurityPage() {
   }
 
   return (
-    <section className="mx-auto max-w-lg">
-      <h1 className="mb-2 text-xl font-semibold">ความปลอดภัย</h1>
-      <p className="mb-6 text-sm text-muted-foreground">เปลี่ยนรหัสผ่านและจัดการความปลอดภัยบัญชี</p>
+    <section className="mx-auto max-w-2xl space-y-8">
+      <header>
+        <h1 className="text-h1">ความปลอดภัย</h1>
+        <p className="mt-2 text-bodylg text-(--foreground-muted)">
+          เปลี่ยนรหัสผ่านและจัดการความปลอดภัยบัญชี
+        </p>
+      </header>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-lg border p-4">
-        <div>
-          <label htmlFor="currentPassword" className="mb-1 block text-sm font-medium">
-            รหัสผ่านปัจจุบัน
-          </label>
-          <input
-            id="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            {...register("currentPassword")}
-          />
-          {errors.currentPassword && (
-            <p className="mt-1 text-sm text-destructive">{errors.currentPassword.message}</p>
+      <Card>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <h2 className="text-h3">เปลี่ยนรหัสผ่าน</h2>
+          <div>
+            <Label htmlFor="currentPassword" required>รหัสผ่านปัจจุบัน</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              autoComplete="current-password"
+              invalid={!!errors.currentPassword}
+              {...register("currentPassword")}
+            />
+            {errors.currentPassword && <FieldError>{errors.currentPassword.message}</FieldError>}
+          </div>
+
+          <div>
+            <Label htmlFor="newPassword" required>รหัสผ่านใหม่</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              autoComplete="new-password"
+              invalid={!!errors.newPassword}
+              {...register("newPassword")}
+            />
+            {errors.newPassword ? (
+              <FieldError>{errors.newPassword.message}</FieldError>
+            ) : (
+              <FieldHelper>อย่างน้อย 8 ตัวอักษร</FieldHelper>
+            )}
+          </div>
+
+          {saved && (
+            <p className="inline-flex items-center gap-2 rounded-md bg-success-bg px-3 py-2 text-uism text-success-foreground">
+              <CheckCircle size={16} weight="fill" /> เปลี่ยนรหัสผ่านสำเร็จ
+            </p>
           )}
-        </div>
-
-        <div>
-          <label htmlFor="newPassword" className="mb-1 block text-sm font-medium">
-            รหัสผ่านใหม่
-          </label>
-          <input
-            id="newPassword"
-            type="password"
-            autoComplete="new-password"
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            {...register("newPassword")}
-          />
-          {errors.newPassword && (
-            <p className="mt-1 text-sm text-destructive">{errors.newPassword.message}</p>
+          {serverError && (
+            <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
+              {serverError}
+            </p>
           )}
-        </div>
 
-        {saved && <p className="text-sm text-success">เปลี่ยนรหัสผ่านสำเร็จ</p>}
-        {serverError && (
-          <p role="alert" className="text-sm text-destructive">
-            {serverError}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {isSubmitting ? "กำลังบันทึก..." : "เปลี่ยนรหัสผ่าน"}
-        </button>
-      </form>
+          <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+            {isSubmitting ? "กำลังบันทึก..." : "เปลี่ยนรหัสผ่าน"}
+          </Button>
+        </form>
+      </Card>
     </section>
   );
 }
