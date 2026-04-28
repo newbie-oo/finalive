@@ -24,6 +24,7 @@ const envSchema = z.object({
   BUNNY_API_KEY: z.string().optional(),
   BUNNY_CDN_HOSTNAME: z.string().optional(),
   BUNNY_CDN_TOKEN_SECRET: z.string().optional(),
+  BUNNY_WEBHOOK_SECRET: z.string().optional(),
   CRON_SECRET: z.string().optional(),
 });
 

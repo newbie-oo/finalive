@@ -16,6 +16,16 @@ interface BunnyWebhookPayload {
 export async function POST(request: Request) {
   const env = getEnv();
   const libraryId = env.BUNNY_LIBRARY_ID;
+  const webhookSecret = env.BUNNY_WEBHOOK_SECRET;
+
+  // Validate webhook secret if configured.
+  if (webhookSecret) {
+    const url = new URL(request.url);
+    const providedSecret = url.searchParams.get("secret");
+    if (providedSecret !== webhookSecret) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+  }
 
   let payload: BunnyWebhookPayload;
   try {

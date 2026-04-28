@@ -26,6 +26,7 @@ export function StudentShell({
               { href: "/account", label: "บัญชี" },
               { href: "/account/enrollments", label: "คอร์สของฉัน" },
               { href: "/account/certificates", label: "ใบประกาศ" },
+              { href: "/account/security", label: "ความปลอดภัย" },
             ]}
           />
           <ThemeToggle />

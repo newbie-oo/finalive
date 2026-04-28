@@ -24,6 +24,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               links={[
                 { href: "/account", label: "บัญชี" },
                 { href: "/account/enrollments", label: "คอร์สของฉัน" },
+                { href: "/account/security", label: "ความปลอดภัย" },
               ]}
             />
           ) : (
