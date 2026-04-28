@@ -27,9 +27,11 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+// Build-time fallbacks for `next build` page-data collection only.
+// Critical: BETTER_AUTH_SECRET is intentionally absent — secrets must be explicit.
+// If a build runs without a real secret, env validation fails loudly; that's correct.
 const BUILD_FALLBACK: Record<string, string> = {
   DATABASE_URL: "postgres://build:build@localhost:5432/build",
-  BETTER_AUTH_SECRET: "build-time-placeholder-secret-32b",
   BETTER_AUTH_URL: "http://localhost:3000",
   SMTP_HOST: "localhost",
   SMTP_PORT: "1025",
@@ -46,8 +48,15 @@ const BUILD_FALLBACK: Record<string, string> = {
 let cached: Env | null = null;
 
 function isBuildPhase(): boolean {
-  // Next.js sets NEXT_PHASE to phase-production-build during `next build`.
-  return process.env.NEXT_PHASE === "phase-production-build";
+  // Two gates: NEXT_PHASE marker AND non-production NODE_ENV. If a runtime
+  // worker is ever started with NEXT_PHASE leaking through, NODE_ENV=production
+  // still blocks the fallback so secrets can't silently default.
+  if (process.env.NEXT_PHASE !== "phase-production-build") return false;
+  if (process.env.NODE_ENV === "production" && process.env.BETTER_AUTH_SECRET) {
+    // build that has the real secret in env — no need for fallback at all
+    return false;
+  }
+  return true;
 }
 
 export function getEnv(): Env {
@@ -56,6 +65,11 @@ export function getEnv(): Env {
   if (isBuildPhase()) {
     for (const [k, v] of Object.entries(BUILD_FALLBACK)) {
       if (!source[k]) source[k] = v;
+    }
+    // Provide a deterministic placeholder for BETTER_AUTH_SECRET *only* during
+    // the build phase; the runtime path never reaches here.
+    if (!source.BETTER_AUTH_SECRET) {
+      source.BETTER_AUTH_SECRET = "build-time-placeholder-NOT-FOR-RUNTIME-USE";
     }
   }
   const parsed = envSchema.safeParse(source);
