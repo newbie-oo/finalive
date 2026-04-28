@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { getEnv } from "@/lib/env";
+import * as schema from "./schema";
 
 declare global {
   var __finalive_db_client: ReturnType<typeof postgres> | undefined;
@@ -17,5 +18,6 @@ function getClient(): ReturnType<typeof postgres> {
   return globalThis.__finalive_db_client;
 }
 
-export const db = drizzle(getClient());
+export const db = drizzle(getClient(), { schema });
 export type DbClient = typeof db;
+export { schema };
