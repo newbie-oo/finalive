@@ -43,6 +43,13 @@
       "when": 1777380523356,
       "tag": "0005_media_pending_status",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777380586063,
+      "tag": "0006_partial_indexes",
+      "breakpoints": true
     }
   ]
 }

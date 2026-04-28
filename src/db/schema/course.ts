@@ -7,6 +7,7 @@ import {
   numeric,
   timestamp,
   index,
+  uniqueIndex,
   unique,
   check,
 } from "drizzle-orm/pg-core";
@@ -17,7 +18,9 @@ export const course = pgTable(
   "course",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    slug: text("slug").notNull().unique(),
+    // Slug uniqueness is enforced via a partial index below
+    // (WHERE deleted_at IS NULL) so soft-deleted rows can free up their slug.
+    slug: text("slug").notNull(),
     title: text("title").notNull(),
     summary: text("summary").notNull(),
     descriptionMd: text("description_md"),
@@ -40,11 +43,13 @@ export const course = pgTable(
       sql`${t.status} IN ('draft','published','archived')`,
     ),
     priceChk: check("course_price_chk", sql`${t.price} >= 0`),
-    statusPublishedIdx: index("course_status_published_idx").on(
-      t.status,
-      sql`${t.publishedAt} DESC`,
-    ),
+    statusPublishedIdx: index("course_status_published_idx")
+      .on(t.status, sql`${t.publishedAt} DESC`)
+      .where(sql`${t.deletedAt} IS NULL`),
     ownerIdx: index("course_owner_idx").on(t.ownerUserId),
+    slugIdx: uniqueIndex("course_slug_idx")
+      .on(t.slug)
+      .where(sql`${t.deletedAt} IS NULL`),
   }),
 );
 
@@ -66,7 +71,9 @@ export const courseModule = pgTable(
   },
   (t) => ({
     sortUk: unique("module_sort_uk").on(t.courseId, t.sortOrder),
-    courseIdx: index("module_course_idx").on(t.courseId),
+    courseIdx: index("module_course_idx")
+      .on(t.courseId)
+      .where(sql`${t.deletedAt} IS NULL`),
   }),
 );
 
@@ -96,7 +103,9 @@ export const lesson = pgTable(
       "lesson_content_chk",
       sql`${t.bodyMd} IS NOT NULL OR ${t.videoMediaId} IS NOT NULL`,
     ),
-    moduleIdx: index("lesson_module_idx").on(t.moduleId),
+    moduleIdx: index("lesson_module_idx")
+      .on(t.moduleId)
+      .where(sql`${t.deletedAt} IS NULL`),
   }),
 );
 
