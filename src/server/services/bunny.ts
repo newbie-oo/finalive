@@ -44,3 +44,7 @@ export function buildEmbedUrl(args: EmbedUrlArgs): string {
   const { token, expires } = signEmbedToken(args);
   return `https://iframe.mediadelivery.net/embed/${libraryId}/${args.videoId}?token=${token}&expires=${expires}`;
 }
+
+export function buildHlsUrl(videoId: string): string {
+  return `https://vz-cf7a0b15-c66.b-cdn.net/${videoId}/playlist.m3u8`;
+}

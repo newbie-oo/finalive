@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/layouts/public-shell";
-import { BunnyPlayer } from "@/components/course/bunny-player";
+import { VidstackPlayer } from "@/components/course/vidstack-player";
+import { buildHlsUrl } from "@/server/services/bunny";
 import { getPreviewLesson } from "@/server/repos/course";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function PreviewLessonPage({
 
         <div className="mt-4">
           {lesson.bunnyVideoId ? (
-            <BunnyPlayer videoId={lesson.bunnyVideoId} title={lesson.title} />
+            <VidstackPlayer src={buildHlsUrl(lesson.bunnyVideoId)} title={lesson.title} />
           ) : (
             <div className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border text-sm text-muted-foreground">
               วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)

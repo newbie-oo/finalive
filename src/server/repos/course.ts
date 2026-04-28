@@ -1,7 +1,8 @@
 import "server-only";
-import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
+import { mediaAsset } from "@/db/schema/media";
 import {
   buildOffsetResponse,
   type OffsetParams,
@@ -117,6 +118,7 @@ export async function getPreviewLesson(
       isPreview: lesson.isPreview,
       isFree: lesson.isFree,
       videoMediaId: lesson.videoMediaId,
+      bunnyVideoId: sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as("bunny_video_id"),
       courseId: course.id,
       courseSlug: course.slug,
       courseTitle: course.title,
@@ -124,6 +126,7 @@ export async function getPreviewLesson(
     .from(lesson)
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
     .innerJoin(course, eq(courseModule.courseId, course.id))
+    .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
     .where(
       and(
         eq(lesson.id, lessonId),
@@ -143,7 +146,7 @@ export async function getPreviewLesson(
     courseSlug: row.courseSlug,
     courseTitle: row.courseTitle,
     title: row.title,
-    bunnyVideoId: null, // bound after media_asset wiring (Sprint 8)
+    bunnyVideoId: row.bunnyVideoId,
     bodyMd: row.bodyMd,
     isPlayable: playable,
   };

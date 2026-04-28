@@ -1,9 +1,10 @@
 import "server-only";
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { lessonProgress } from "@/db/schema/progress";
+import { mediaAsset } from "@/db/schema/media";
 
 export interface LearnLesson {
   id: string;
@@ -201,6 +202,7 @@ export async function getLearnLesson(
       isPreview: lesson.isPreview,
       isFree: lesson.isFree,
       videoMediaId: lesson.videoMediaId,
+      bunnyVideoId: sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as("bunny_video_id"),
       courseId: course.id,
       courseSlug: course.slug,
       courseTitle: course.title,
@@ -211,6 +213,7 @@ export async function getLearnLesson(
     .from(lesson)
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
     .innerJoin(course, eq(courseModule.courseId, course.id))
+    .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
     .where(
       and(
         eq(lesson.id, lessonId),
@@ -254,7 +257,7 @@ export async function getLearnLesson(
     id: row.id,
     title: row.title,
     bodyMd: row.bodyMd,
-    bunnyVideoId: null, // Sprint 8: wire media_asset.bunny_video_id
+    bunnyVideoId: row.bunnyVideoId,
     durationSeconds: row.durationSeconds,
     isPreview: row.isPreview,
     isFree: row.isFree,

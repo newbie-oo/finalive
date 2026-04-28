@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { BunnyPlayer } from "@/components/course/bunny-player";
+import { VidstackPlayer } from "@/components/course/vidstack-player";
+import { buildHlsUrl } from "@/server/services/bunny";
 import { CurriculumSidebar } from "@/components/learn/curriculum-sidebar";
 import { LearnShell } from "@/components/learn/learn-shell";
 import { LessonClient } from "@/components/learn/lesson-client";
@@ -74,7 +75,10 @@ export default async function LearnLessonPage({
             </div>
 
             {lessonData.bunnyVideoId ? (
-              <BunnyPlayer videoId={lessonData.bunnyVideoId} title={lessonData.title} />
+              <VidstackPlayer
+                src={buildHlsUrl(lessonData.bunnyVideoId)}
+                title={lessonData.title}
+              />
             ) : (
               <div className="flex aspect-video w-full items-center justify-center rounded border border-dashed border-border bg-muted text-sm text-muted-foreground">
                 วิดีโอจะถูกเชื่อมเมื่อ admin upload (สปรินต์ 8)
