@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/logout-button";
 import type { SessionUser } from "@/server/auth-session";
 
 const NAV: Array<{ href: string; label: string }> = [
@@ -36,6 +37,7 @@ export function AdminShell({
           <span className="text-sm text-muted-foreground">
             ผู้ดูแลระบบ · {user.email}
           </span>
+          <LogoutButton />
           <ThemeToggle />
         </header>
         <main className="flex-1 p-4">{children}</main>

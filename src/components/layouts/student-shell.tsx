@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LogoutButton } from "@/components/logout-button";
 import type { SessionUser } from "@/server/auth-session";
 
 export function StudentShell({
@@ -19,6 +20,7 @@ export function StudentShell({
           <Link href="/account/enrollments">คอร์สของฉัน</Link>
           <Link href="/account/certificates">ใบประกาศ</Link>
           <span className="text-muted-foreground">{user.name}</span>
+          <LogoutButton />
           <ThemeToggle />
         </nav>
       </header>
