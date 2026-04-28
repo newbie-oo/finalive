@@ -35,9 +35,20 @@ export default async function CheckoutPage({
 
         {expired ? (
           <div className="mt-6 space-y-4">
-            <div className="rounded border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
-              การชำระเงินหมดอายุแล้ว กรุณาเริ่มใหม่
+            <div
+              role="alert"
+              className="rounded border border-destructive bg-destructive/10 p-4 text-sm text-destructive"
+            >
+              การชำระเงินหมดอายุแล้ว — เลขอ้างอิง{" "}
+              <span className="font-mono">{pending.refCode}</span>{" "}
+              ไม่สามารถใช้ได้ ต้องเริ่มชำระเงินใหม่
             </div>
+            <form action="/checkout/start" method="post">
+              <input type="hidden" name="courseSlug" value={pending.courseSlug} />
+              <Button type="submit" className="w-full">
+                เริ่มชำระเงินใหม่
+              </Button>
+            </form>
             <Button asChild variant="outline" className="w-full">
               <Link href={`/courses/${pending.courseSlug}`}>กลับไปหน้าคอร์ส</Link>
             </Button>
