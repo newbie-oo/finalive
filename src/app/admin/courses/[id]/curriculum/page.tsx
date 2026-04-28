@@ -4,6 +4,7 @@ import { getSession } from "@/server/auth-session";
 import { getAdminCourseById, getAdminCourseCurriculum } from "@/server/repos/admin-course";
 import { canEditCourse } from "@/server/services/course-authz";
 import { CurriculumTree } from "@/components/admin/curriculum-tree";
+import { PublishButton } from "@/components/admin/publish-button";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export default async function AdminCurriculumPage({
           <p className="text-sm text-muted-foreground">{course.title}</p>
         </div>
         <div className="flex gap-2">
+          <PublishButton courseId={id} currentStatus={course.status} />
           <Button size="sm" variant="outline" asChild>
             <Link href={`/admin/courses/${id}`}>← กลับไปคอร์ส</Link>
           </Button>

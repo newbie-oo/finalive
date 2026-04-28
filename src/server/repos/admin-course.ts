@@ -73,6 +73,7 @@ export async function updateAdminCourse(
     price?: string;
     isFree?: boolean;
     status?: string;
+    publishedAt?: Date;
   },
 ) {
   await db
