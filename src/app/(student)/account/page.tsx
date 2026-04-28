@@ -22,7 +22,11 @@ export default function AccountPage() {
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ProfileForm>({
-    defaultValues: { name: session?.user?.name ?? "" },
+    // useSession resolves async — defaultValues only runs once on mount, so
+    // the field stayed empty even when the user did have a name. The `values`
+    // prop (RHF v7+) re-syncs whenever the input changes, so the field
+    // pre-fills as soon as the session loads.
+    values: { name: session?.user?.name ?? "" },
   });
 
   async function onSubmit(data: ProfileForm) {

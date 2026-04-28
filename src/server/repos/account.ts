@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
@@ -14,6 +14,17 @@ export interface AccountPendingItem {
   courseTitle: string;
 }
 
+// Higher number = stickier row when the same course has multiple pendings.
+// "paid" beats everything else so a successful pay doesn't get overshadowed
+// by an earlier expired/awaiting attempt for the same course.
+const STATUS_PRIORITY: Record<string, number> = {
+  paid: 5,
+  slip_submitted: 4,
+  awaiting_payment: 3,
+  expired: 2,
+  cancelled: 1,
+};
+
 export async function listAccountPendings(userId: string): Promise<AccountPendingItem[]> {
   const rows = await db
     .select({
@@ -22,17 +33,26 @@ export async function listAccountPendings(userId: string): Promise<AccountPendin
       refCode: pendingEnrollment.refCode,
       amount: pendingEnrollment.amount,
       expiresAt: pendingEnrollment.expiresAt,
+      courseId: pendingEnrollment.courseId,
       courseSlug: course.slug,
       courseTitle: course.title,
     })
     .from(pendingEnrollment)
     .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
-    .where(
-      and(
-        eq(pendingEnrollment.userId, userId),
-      ),
-    )
+    .where(eq(pendingEnrollment.userId, userId))
     .orderBy(desc(pendingEnrollment.createdAt))
     .limit(50);
-  return rows;
+
+  // Collapse to one row per course. Without this, the page showed the same
+  // course twice when a stale awaiting/expired pending sat alongside a
+  // later paid one — confusing for the student.
+  const byCourse = new Map<string, typeof rows[number]>();
+  for (const r of rows) {
+    const existing = byCourse.get(r.courseId);
+    const score = (s: string) => STATUS_PRIORITY[s] ?? 0;
+    if (!existing || score(r.status) > score(existing.status)) {
+      byCourse.set(r.courseId, r);
+    }
+  }
+  return Array.from(byCourse.values()).map(({ courseId: _ignored, ...rest }) => rest);
 }

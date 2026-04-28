@@ -36,28 +36,38 @@ export default async function EnrollmentsPage() {
         />
       ) : (
         <ul className="space-y-3">
-          {pendings.map((p) => (
-            <li
-              key={p.pendingId}
-              className="flex items-center justify-between rounded border border-border bg-card p-3 text-sm"
-            >
-              <div>
-                <p className="font-medium">{p.courseTitle}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {PENDING_STATUS_LABEL[p.status as PendingStatus] ?? p.status} · {formatTHB(p.amount)} ·{" "}
-                  <span className="font-mono">{p.refCode}</span>
-                </p>
-              </div>
-              {isActionable(p.status) ? (
-                <Link
-                  href={`/checkout/${p.pendingId}`}
-                  className="text-xs text-primary hover:underline"
-                >
-                  ดูรายละเอียด
-                </Link>
-              ) : null}
-            </li>
-          ))}
+          {pendings.map((p) => {
+            const isPaid = p.status === "paid";
+            return (
+              <li
+                key={p.pendingId}
+                className="flex flex-wrap items-center justify-between gap-2 rounded border border-border bg-card p-3 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{p.courseTitle}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {PENDING_STATUS_LABEL[p.status as PendingStatus] ?? p.status} · {formatTHB(p.amount)} ·{" "}
+                    <span className="font-mono">{p.refCode}</span>
+                  </p>
+                </div>
+                {isPaid ? (
+                  <Link
+                    href={`/learn/${p.courseSlug}`}
+                    className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90"
+                  >
+                    เริ่มเรียน →
+                  </Link>
+                ) : isActionable(p.status) ? (
+                  <Link
+                    href={`/checkout/${p.pendingId}`}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    ดูรายละเอียด
+                  </Link>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
