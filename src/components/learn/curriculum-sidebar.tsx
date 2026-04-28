@@ -70,29 +70,53 @@ export function CurriculumSidebar({
                 const isActive = les.id === activeLessonId;
                 const locked = !isEnrolled && !les.isPreview && !les.isFree;
                 const stat = progressMap.get(les.id) ?? "not_started";
+                const baseClass =
+                  "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+                const stateClass = isActive
+                  ? "bg-primary/10 font-medium text-primary"
+                  : locked
+                    ? "cursor-not-allowed text-muted-foreground/60"
+                    : "hover:bg-muted";
+                const inner = (
+                  <>
+                    <span
+                      className="w-4 text-center text-xs"
+                      aria-hidden="true"
+                    >
+                      {locked ? "🔒" : statusIcon(stat)}
+                    </span>
+                    <span className="flex-1 truncate">
+                      {locked ? <span className="sr-only">ล็อก: </span> : null}
+                      {les.title}
+                    </span>
+                    {les.durationSeconds ? (
+                      <span className="text-xs text-muted-foreground">
+                        {fmtDuration(les.durationSeconds)}
+                      </span>
+                    ) : null}
+                  </>
+                );
                 return (
                   <li key={les.id}>
-                    <Link
-                      href={locked ? `#` : `/learn/${courseSlug}/${les.id}`}
-                      className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm ${
-                        isActive
-                          ? "bg-primary/10 font-medium text-primary"
-                          : locked
-                            ? "text-muted-foreground/50"
-                            : "hover:bg-muted"
-                      }`}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <span className="w-4 text-center text-xs">
-                        {locked ? "🔒" : statusIcon(stat)}
-                      </span>
-                      <span className="flex-1 truncate">{les.title}</span>
-                      {les.durationSeconds ? (
-                        <span className="text-xs text-muted-foreground">
-                          {fmtDuration(les.durationSeconds)}
-                        </span>
-                      ) : null}
-                    </Link>
+                    {locked ? (
+                      <button
+                        type="button"
+                        aria-disabled="true"
+                        title="ลงทะเบียนคอร์สเพื่อปลดล็อกบทเรียนนี้"
+                        onClick={(e) => e.preventDefault()}
+                        className={`${baseClass} ${stateClass}`}
+                      >
+                        {inner}
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/learn/${courseSlug}/${les.id}`}
+                        className={`${baseClass} ${stateClass}`}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        {inner}
+                      </Link>
+                    )}
                   </li>
                 );
               })}
