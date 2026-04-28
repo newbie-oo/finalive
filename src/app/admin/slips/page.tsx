@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
 import type { SearchParams } from "@/lib/pagination";
+import { SlipList } from "@/components/admin/slip-list";
 
 const STATUS_OPTIONS: Array<{ value: SlipQueueStatus; label: string }> = [
   { value: "submitted", label: "รอตรวจ" },
@@ -28,9 +29,12 @@ export default async function AdminSlipsPage({
   const status = pickStatus(sp.status);
   const selectedId = pickString(sp.selected);
 
-  const result = await listPendingSlips({ status, per_page: 50 });
+  // SSR the first page so the detail panel can render server-side without
+  // waiting for the client query. The client SlipList re-fetches and takes
+  // over polling once hydrated.
+  const initial = await listPendingSlips({ status, per_page: 50 });
   const selected =
-    result.data.find((r) => r.id === selectedId) ?? result.data[0] ?? null;
+    initial.data.find((r) => r.id === selectedId) ?? initial.data[0] ?? null;
 
   return (
     <section className="flex flex-col gap-4">
@@ -55,31 +59,11 @@ export default async function AdminSlipsPage({
       </header>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <ul className="flex max-h-[70vh] flex-col gap-1 overflow-y-auto rounded-md border border-border">
-          {result.data.length === 0 ? (
-            <li className="p-4 text-sm text-muted-foreground">— ไม่มี slip ในคิวนี้ —</li>
-          ) : (
-            result.data.map((slip) => {
-              const active = slip.id === selected?.id;
-              return (
-                <li key={slip.id}>
-                  <Link
-                    href={`/admin/slips?status=${status}&selected=${slip.id}`}
-                    className={`flex flex-col gap-0.5 border-b border-border px-3 py-2 text-sm last:border-b-0 ${
-                      active ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <span className="font-medium">{slip.refCode}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {slip.courseTitle}
-                    </span>
-                    <span className="text-xs">{formatTHB(slip.expectedAmount)}</span>
-                  </Link>
-                </li>
-              );
-            })
-          )}
-        </ul>
+        <SlipList
+          status={status}
+          selectedId={selectedId}
+          initialFirstId={initial.data[0]?.id ?? null}
+        />
 
         <div className="rounded-md border border-border p-4">
           {selected ? (
@@ -92,9 +76,7 @@ export default async function AdminSlipsPage({
                 <dd>{formatTHB(selected.expectedAmount)}</dd>
                 <dt className="text-muted-foreground">นักเรียนแจ้งยอด</dt>
                 <dd>
-                  {selected.reportedAmount
-                    ? formatTHB(selected.reportedAmount)
-                    : "—"}
+                  {selected.reportedAmount ? formatTHB(selected.reportedAmount) : "—"}
                 </dd>
                 <dt className="text-muted-foreground">นักเรียน</dt>
                 <dd className="font-mono text-xs">{selected.studentUserId}</dd>
@@ -104,7 +86,6 @@ export default async function AdminSlipsPage({
                 <dd>{selected.status}</dd>
               </dl>
               <div className="rounded border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                {/* SlipImageViewer wires here in commit 4.5 */}
                 ภาพ slip จะแสดงที่นี่ (commit 4.5)
               </div>
             </div>
