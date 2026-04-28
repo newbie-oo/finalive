@@ -22,6 +22,13 @@ function normalizeRole(role: string | null | undefined): Role {
   return role === "admin" ? "admin" : "user";
 }
 
+function getUserRole(user: unknown): string | null | undefined {
+  if (typeof user !== "object" || user === null) return undefined;
+  const role = (user as Record<string, unknown>).role;
+  if (typeof role === "string" || role === null) return role;
+  return undefined;
+}
+
 export async function getSession(): Promise<SessionContext | null> {
   const result = await auth.api.getSession({ headers: await headers() });
   if (!result?.user || !result.session) return null;
@@ -31,7 +38,7 @@ export async function getSession(): Promise<SessionContext | null> {
       id: result.user.id,
       email: result.user.email,
       name: result.user.name,
-      role: normalizeRole((result.user as { role?: string | null }).role),
+      role: normalizeRole(getUserRole(result.user)),
       emailVerified: result.user.emailVerified,
     },
   };

@@ -111,8 +111,16 @@ export async function createBunnyVideo(title: string): Promise<string> {
     throw new Error(`Bunny create video failed: ${res.status} ${text}`);
   }
 
-  const data = (await res.json()) as { guid: string };
-  return data.guid;
+  const data = (await res.json()) as unknown;
+  if (
+    typeof data !== "object" ||
+    data === null ||
+    !("guid" in data) ||
+    typeof (data as Record<string, unknown>).guid !== "string"
+  ) {
+    throw new Error("Bunny create video returned unexpected response shape");
+  }
+  return (data as { guid: string }).guid;
 }
 
 export async function uploadBunnyVideo(videoId: string, filePath: string): Promise<void> {
