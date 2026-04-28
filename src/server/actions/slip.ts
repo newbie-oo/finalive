@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/db/client";
 import { pendingEnrollment, paymentSlip } from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
@@ -20,11 +21,13 @@ export interface UploadSlipInput {
   reportedAmount?: string;
 }
 
-export interface UploadSlipResult {
-  slipId: string;
-  pendingId: string;
-  status: "submitted";
-}
+const uploadSlipResultSchema = z.object({
+  slipId: z.string().uuid(),
+  pendingId: z.string().uuid(),
+  status: z.literal("submitted"),
+});
+
+export type UploadSlipResult = z.infer<typeof uploadSlipResultSchema>;
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -51,6 +54,7 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
   return withIdempotency<UploadSlipResult>({
     scope: "slip.upload",
     key: idemKey,
+    schema: uploadSlipResultSchema,
     run: async () => {
       const pendingRows = await db
         .select({
