@@ -65,9 +65,16 @@ export default async function CourseDetailPage({
 
         <div className="mt-4 flex items-center gap-3">
           <span className="text-lg font-medium">{price}</span>
-          <Button asChild>
-            <Link href={`/checkout/${course.slug}`}>ลงทะเบียน</Link>
-          </Button>
+          {course.isFree ? (
+            <Button asChild>
+              <Link href="/account/enrollments">เริ่มเรียน</Link>
+            </Button>
+          ) : (
+            <form action="/checkout/start" method="post">
+              <input type="hidden" name="courseSlug" value={course.slug} />
+              <Button type="submit">ลงทะเบียน</Button>
+            </form>
+          )}
         </div>
 
         <h2 className="mt-10 mb-3 text-xl font-semibold">เนื้อหาในคอร์ส</h2>

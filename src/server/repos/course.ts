@@ -46,6 +46,16 @@ export async function listPublishedCourses(
   return buildOffsetResponse(rows, total, params);
 }
 
+export interface PendingCheckoutInfo {
+  pendingId: string;
+  refCode: string;
+  amount: string;
+  expiresAt: Date;
+  status: string;
+  courseSlug: string;
+  courseTitle: string;
+}
+
 export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummary[]> {
   const where = and(eq(course.status, "published"), isNull(course.deletedAt));
   return db
