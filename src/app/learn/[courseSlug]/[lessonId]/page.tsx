@@ -7,6 +7,7 @@ import { LearnShell } from "@/components/learn/learn-shell";
 import { LessonClient } from "@/components/learn/lesson-client";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
+import { getQuizByLessonId } from "@/server/repos/quiz";
 import { checkLessonAccess } from "@/server/services/learn-access";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +21,10 @@ export default async function LearnLessonPage({
   const session = await getSession();
   const userId = session?.user?.id ?? null;
 
-  const [courseData, lessonData] = await Promise.all([
+  const [courseData, lessonData, quizMeta] = await Promise.all([
     getLearnCourse(courseSlug, userId),
     getLearnLesson(courseSlug, lessonId),
+    getQuizByLessonId(lessonId),
   ]);
 
   if (!courseData || !lessonData) notFound();
@@ -91,6 +93,21 @@ export default async function LearnLessonPage({
               nextLessonId={lessonData.nextLessonId}
               durationSeconds={lessonData.durationSeconds}
             />
+
+            {quizMeta ? (
+              <div className="mt-6 rounded border border-border bg-card p-4">
+                <h3 className="font-medium">{quizMeta.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  ทดสอบความเข้าใจหลังจบบทเรียน
+                </p>
+                <Link
+                  href={`/learn/${courseSlug}/quiz/${quizMeta.id}`}
+                  className="mt-3 inline-block rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground"
+                >
+                  ทำแบบทดสอบ →
+                </Link>
+              </div>
+            ) : null}
 
             {lessonData.bodyMd ? (
               <article className="prose prose-sm mt-6 max-w-none dark:prose-invert">

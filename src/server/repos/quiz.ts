@@ -19,6 +19,15 @@ export interface QuestionWithChoices {
   choices: { id: string; body: string; sortOrder: number }[];
 }
 
+export async function getQuizByLessonId(lessonId: string): Promise<{ id: string; title: string } | null> {
+  const rows = await db
+    .select({ id: quiz.id, title: quiz.title })
+    .from(quiz)
+    .where(and(eq(quiz.lessonId, lessonId), isNull(quiz.deletedAt)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
 export async function getQuizById(quizId: string): Promise<QuizWithQuestions | null> {
   const quizRows = await db
     .select({
