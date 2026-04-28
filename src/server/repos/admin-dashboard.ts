@@ -4,6 +4,7 @@ import { db } from "@/db/client";
 import { paymentSlip } from "@/db/schema/payment";
 import { enrollment } from "@/db/schema/enrollment";
 import { course } from "@/db/schema/course";
+import { certificate } from "@/db/schema/certificate";
 
 export interface AdminDashboardCounts {
   slipsSubmitted: number;
@@ -11,10 +12,19 @@ export interface AdminDashboardCounts {
   slipsRejectedToday: number;
   enrollmentsActive: number;
   coursesPublished: number;
+  revenueMtd: number;
+  certsMtd: number;
 }
 
 function startOfToday(): Date {
   const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function startOfMonth(): Date {
+  const d = new Date();
+  d.setDate(1);
   d.setHours(0, 0, 0, 0);
   return d;
 }
@@ -24,7 +34,9 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
   // 5 small COUNT(*) queries in parallel — cheap, and indexes
   // (slip_status_created_idx, one_active_enrollment partial UK,
   // course_status_published_idx) cover all of them.
-  const [submitted, acceptedToday, rejectedToday, activeEnroll, pubCourses] =
+  const monthStart = startOfMonth();
+
+  const [submitted, acceptedToday, rejectedToday, activeEnroll, pubCourses, revenue, certs] =
     await Promise.all([
       db
         .select({ n: sql<number>`count(*)::int` })
@@ -50,6 +62,16 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
         .select({ n: sql<number>`count(*)::int` })
         .from(course)
         .where(and(eq(course.status, "published"), isNull(course.deletedAt))),
+      db
+        .select({ total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase})::int, 0)` })
+        .from(enrollment)
+        .where(
+          and(eq(enrollment.source, "paid"), gte(enrollment.createdAt, monthStart)),
+        ),
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(certificate)
+        .where(gte(certificate.issuedAt, monthStart)),
     ]);
 
   return {
@@ -58,5 +80,7 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
     slipsRejectedToday: rejectedToday[0]?.n ?? 0,
     enrollmentsActive: activeEnroll[0]?.n ?? 0,
     coursesPublished: pubCourses[0]?.n ?? 0,
+    revenueMtd: revenue[0]?.total ?? 0,
+    certsMtd: certs[0]?.n ?? 0,
   };
 }

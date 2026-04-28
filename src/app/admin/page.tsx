@@ -33,7 +33,7 @@ export default async function AdminDashboardPage() {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">แผงควบคุม</h1>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card
           label="Slip รอตรวจ"
           value={c.slipsSubmitted}
@@ -54,6 +54,16 @@ export default async function AdminDashboardPage() {
           label="คอร์ส published"
           value={c.coursesPublished}
           href="/admin/courses"
+        />
+        <Card
+          label="รายได้เดือนนี้"
+          value={c.revenueMtd}
+          hint="บาท"
+        />
+        <Card
+          label="ใบประกาศเดือนนี้"
+          value={c.certsMtd}
+          href="/admin/certificates"
         />
       </div>
       <p className="text-xs text-muted-foreground">
