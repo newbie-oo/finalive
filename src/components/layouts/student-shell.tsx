@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LogoutButton } from "@/components/logout-button";
+import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import type { SessionUser } from "@/server/auth-session";
 
 export function StudentShell({
@@ -19,8 +19,15 @@ export function StudentShell({
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/account/enrollments">คอร์สของฉัน</Link>
           <Link href="/account/certificates">ใบประกาศ</Link>
-          <span className="text-muted-foreground">{user.name}</span>
-          <LogoutButton />
+          <UserProfileDropdown
+            name={user.name}
+            email={user.email}
+            links={[
+              { href: "/account", label: "บัญชี" },
+              { href: "/account/enrollments", label: "คอร์สของฉัน" },
+              { href: "/account/certificates", label: "ใบประกาศ" },
+            ]}
+          />
           <ThemeToggle />
         </nav>
       </header>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LogoutButton } from "@/components/logout-button";
+import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -17,11 +17,15 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/courses">คอร์ส</Link>
           {session?.user ? (
-            <>
-              <Link href="/account">บัญชี</Link>
-              <span className="text-muted-foreground">{session.user.name}</span>
-              <LogoutButton />
-            </>
+            <UserProfileDropdown
+              name={session.user.name}
+              email={session.user.email}
+              image={(session.user as { image?: string | null }).image}
+              links={[
+                { href: "/account", label: "บัญชี" },
+                { href: "/account/enrollments", label: "คอร์สของฉัน" },
+              ]}
+            />
           ) : (
             <Link href="/login">เข้าสู่ระบบ</Link>
           )}

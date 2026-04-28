@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LogoutButton } from "@/components/logout-button";
+import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import type { SessionUser } from "@/server/auth-session";
 
 const NAV: Array<{ href: string; label: string }> = [
@@ -34,10 +34,14 @@ export function AdminShell({
       </aside>
       <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-border px-4">
-          <span className="text-sm text-muted-foreground">
-            ผู้ดูแลระบบ · {user.email}
-          </span>
-          <LogoutButton />
+          <UserProfileDropdown
+            name={user.name}
+            email={user.email}
+            links={[
+              { href: "/admin", label: "Dashboard" },
+              { href: "/admin/courses", label: "จัดการคอร์ส" },
+            ]}
+          />
           <ThemeToggle />
         </header>
         <main className="flex-1 p-4">{children}</main>
