@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
@@ -21,10 +21,29 @@ export interface PublicCourseSummary {
   coverUrl: string | null;
 }
 
+export interface ListPublishedCoursesParams extends OffsetParams {
+  /** Free-text search across title and summary (case-insensitive). */
+  q?: string;
+  /** When true, restricts to is_free=true courses only. */
+  freeOnly?: boolean;
+}
+
 export async function listPublishedCourses(
-  params: OffsetParams,
+  params: ListPublishedCoursesParams,
 ): Promise<OffsetResponse<PublicCourseSummary>> {
-  const where = and(eq(course.status, "published"), isNull(course.deletedAt));
+  const conditions = [eq(course.status, "published"), isNull(course.deletedAt)];
+
+  const trimmed = params.q?.trim();
+  if (trimmed) {
+    const like = `%${trimmed}%`;
+    const text = or(ilike(course.title, like), ilike(course.summary, like));
+    if (text) conditions.push(text);
+  }
+  if (params.freeOnly) {
+    conditions.push(eq(course.isFree, true));
+  }
+
+  const where = and(...conditions);
 
   const [rows, totalRows] = await Promise.all([
     db
