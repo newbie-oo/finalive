@@ -62,7 +62,7 @@ export default async function QuizPage({
             <div className="text-caption text-(--foreground-muted) mb-1.5 flex items-center gap-1.5">
               <span className="text-(--primary)">{courseData.course.title}</span>
               <span>/</span>
-              <span>บทที่ {quizData.lessonId.slice(0, 4)}</span>
+              <span>บทที่ {quizData.lessonTitle}</span>
             </div>
             <h1 className="text-h2 mb-1.5">{quizData.title}</h1>
             <p className="text-caption text-(--foreground-muted)">

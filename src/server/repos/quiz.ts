@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { quiz, quizQuestion, quizChoice } from "@/db/schema/quiz";
+import { lesson } from "@/db/schema/course";
 import { quizAttempt } from "@/db/schema/progress";
 
 export interface QuizWithQuestions {
@@ -9,6 +10,7 @@ export interface QuizWithQuestions {
   title: string;
   passScorePct: number;
   lessonId: string;
+  lessonTitle: string;
   questions: QuestionWithChoices[];
 }
 
@@ -35,8 +37,10 @@ export async function getQuizById(quizId: string): Promise<QuizWithQuestions | n
       title: quiz.title,
       passScorePct: quiz.passScorePct,
       lessonId: quiz.lessonId,
+      lessonTitle: lesson.title,
     })
     .from(quiz)
+    .innerJoin(lesson, eq(lesson.id, quiz.lessonId))
     .where(and(eq(quiz.id, quizId), isNull(quiz.deletedAt)))
     .limit(1);
 
