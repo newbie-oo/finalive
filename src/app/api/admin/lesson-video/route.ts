@@ -9,31 +9,20 @@ import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
 /**
- * Direct video upload to Bunny.
+ * Admin video upload — two-step flow so the browser uploads directly to Bunny.
  *
- * Why not multipart `formData()`? Next.js 16 caps the buffered FormData
- * body and big videos trip "Failed to parse body as FormData". The TUS
- * proxy that we used before tripped a different bug (DESIGN.md §0
- * #12-13). This endpoint solves both by *not* buffering the body:
+ * Step 1 (server): POST { action: "create", courseId, lessonId, fileName }
+ *   → Server creates Bunny video + DB records, returns uploadUrl + apiKey.
  *
- *   client →   POST /api/admin/lesson-video
- *              ?courseId=…&lessonId=…
- *              Content-Type: video/mp4
- *              X-File-Name: original.mp4
- *              body = raw bytes (ReadableStream)
- *   server →   1. create Bunny video → guid
- *              2. fetch(PUT bunny, body=req.body, duplex="half")
- *                 — the request body streams straight through, never
- *                 buffered in Node memory
- *              3. INSERT media_asset, UPDATE lesson, cleanup old asset
+ * Step 2 (client): XHR PUT uploadUrl
+ *   → Body = raw file bytes, header AccessKey = apiKey.
+ *   → Bunny receives the file directly; server is not in the data path.
  *
- * Browser side runs an XHR with `xhr.send(file)` so onProgress reports
- * upload bytes accurately.
+ * Step 3 (client, on failure): POST { action: "cancel", courseId, lessonId, bunnyVideoId }
+ *   → Server deletes the orphaned Bunny video and restores the previous lesson video.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const MAX_BYTES = 4 * 1024 * 1024 * 1024;
 
 const BUNNY_API_BASE = "https://video.bunnycdn.com";
 
@@ -73,39 +62,29 @@ async function bunnyDelete(guid: string): Promise<void> {
   });
 }
 
+/* ------------------------------------------------------------------ */
+
 export async function POST(req: Request): Promise<Response> {
   const ctx = await requireSession();
   const role = normalizeRole(getUserRole(ctx.user));
 
-  const url = new URL(req.url);
-  const courseId = url.searchParams.get("courseId");
-  const lessonId = url.searchParams.get("lessonId");
-  const fileName = decodeURIComponent(req.headers.get("x-file-name") || "video.mp4");
-  const contentType = req.headers.get("content-type") || "video/mp4";
-  const lengthHeader = req.headers.get("content-length");
-  const fileSize = lengthHeader ? parseInt(lengthHeader, 10) : 0;
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json(
+      { code: "validation_failed", message: "invalid JSON" },
+      { status: 400 },
+    );
+  }
+
+  const action = String(body.action ?? "");
+  const courseId = String(body.courseId ?? "");
+  const lessonId = String(body.lessonId ?? "");
 
   if (!courseId || !lessonId) {
     return NextResponse.json(
-      { code: "validation_failed", message: "missing courseId/lessonId in query" },
-      { status: 400 },
-    );
-  }
-  if (!contentType.startsWith("video/")) {
-    return NextResponse.json(
-      { code: "validation_failed", message: "Content-Type ต้องเป็น video/*" },
-      { status: 400 },
-    );
-  }
-  if (fileSize > MAX_BYTES) {
-    return NextResponse.json(
-      { code: "validation_failed", message: `ไฟล์ใหญ่เกิน ${MAX_BYTES / (1024 ** 3)} GB` },
-      { status: 413 },
-    );
-  }
-  if (!req.body) {
-    return NextResponse.json(
-      { code: "validation_failed", message: "missing body" },
+      { code: "validation_failed", message: "missing courseId/lessonId" },
       { status: 400 },
     );
   }
@@ -114,120 +93,171 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({ code: "forbidden" }, { status: 403 });
   }
 
-  let bunnyVideoId: string | null = null;
-  try {
-    // Buffer the body once. Node's streaming fetch with duplex:"half" was
-    // unreliable here (undici returned "fetch failed" mid-stream). For
-    // typical lesson sizes (a few hundred MB at most) buffering is fine,
-    // and gives us a clean Buffer for Bunny's PUT.
-    const body = Buffer.from(await req.arrayBuffer());
-
-    bunnyVideoId = await bunnyCreate(fileName);
-    logger.info("lesson-video.bunny_created", {
-      videoId: bunnyVideoId,
+  if (action === "create") {
+    return handleCreate({
+      courseId,
       lessonId,
-      bytes: body.length,
+      fileName: String(body.fileName ?? "video.mp4"),
+      userId: ctx.user.id,
     });
+  }
 
-    const env = getEnv();
-    const put = await fetch(
-      `${BUNNY_API_BASE}/library/${env.BUNNY_LIBRARY_ID}/videos/${bunnyVideoId}`,
-      {
-        method: "PUT",
-        headers: {
-          AccessKey: env.BUNNY_API_KEY!,
-          "content-type": "application/octet-stream",
-        },
-        body,
-      },
+  if (action === "cancel") {
+    return handleCancel({
+      courseId,
+      lessonId,
+      bunnyVideoId: String(body.bunnyVideoId ?? ""),
+    });
+  }
+
+  return NextResponse.json(
+    { code: "validation_failed", message: "action must be create or cancel" },
+    { status: 400 },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+interface CreateArgs {
+  courseId: string;
+  lessonId: string;
+  fileName: string;
+  userId: string;
+}
+
+async function handleCreate(args: CreateArgs): Promise<Response> {
+  const { courseId: _courseId, lessonId, fileName, userId } = args;
+
+  const env = getEnv();
+  const lib = env.BUNNY_LIBRARY_ID;
+  const apiKey = env.BUNNY_API_KEY;
+  if (!lib || !apiKey) {
+    return NextResponse.json(
+      { code: "bunny_not_configured", message: "Bunny credentials missing" },
+      { status: 500 },
     );
-    if (!put.ok) {
-      throw new Error(`Bunny upload failed ${put.status}: ${await put.text()}`);
-    }
-    logger.info("lesson-video.bunny_uploaded", { videoId: bunnyVideoId, lessonId });
+  }
 
-    const existing = (
-      await db
-        .select({ videoMediaId: lesson.videoMediaId })
-        .from(lesson)
-        .where(eq(lesson.id, lessonId))
-        .limit(1)
-    )[0];
-    const oldMediaId = existing?.videoMediaId ?? null;
+  let bunnyVideoId: string;
+  try {
+    bunnyVideoId = await bunnyCreate(fileName);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Bunny create failed";
+    logger.error("lesson-video.create_failed", err, { lessonId });
+    return NextResponse.json({ code: "bunny_error", message }, { status: 502 });
+  }
 
-    const [asset] = await db
-      .insert(mediaAsset)
-      .values({
-        kind: "video",
-        storage: "bunny_stream",
-        storageKey: bunnyVideoId,
-        mimeType: contentType,
-        sizeBytes: fileSize || null,
-        // Bytes are at Bunny but encoding/HLS prep takes 1–5 min. Webhook
-        // /api/webhooks/bunny flips this to 'ready' on VideoEncoded.
-        status: "encoding",
-        createdByUserId: ctx.user.id,
-      })
-      .returning({ id: mediaAsset.id });
+  // Remember the old video so we can restore on cancel.
+  const existing = (
+    await db
+      .select({ videoMediaId: lesson.videoMediaId })
+      .from(lesson)
+      .where(eq(lesson.id, lessonId))
+      .limit(1)
+  )[0];
+  const oldMediaId = existing?.videoMediaId ?? null;
+
+  // Insert the new media_asset and link it to the lesson immediately.
+  // The webhook will flip status to 'ready' when Bunny finishes encoding.
+  const [asset] = await db
+    .insert(mediaAsset)
+    .values({
+      kind: "video",
+      storage: "bunny_stream",
+      storageKey: bunnyVideoId,
+      mimeType: "video/mp4",
+      sizeBytes: null,
+      status: "encoding",
+      createdByUserId: userId,
+    })
+    .returning({ id: mediaAsset.id });
+
+  await db
+    .update(lesson)
+    .set({ videoMediaId: asset!.id, updatedAt: new Date() })
+    .where(eq(lesson.id, lessonId));
+
+  logger.info("lesson-video.created", {
+    videoId: bunnyVideoId,
+    lessonId,
+    assetId: asset!.id,
+    oldMediaId,
+  });
+
+  return NextResponse.json({
+    ok: true,
+    bunnyVideoId,
+    uploadUrl: `${BUNNY_API_BASE}/library/${lib}/videos/${bunnyVideoId}`,
+    apiKey,
+    oldMediaId,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+
+interface CancelArgs {
+  courseId: string;
+  lessonId: string;
+  bunnyVideoId: string;
+}
+
+async function handleCancel(args: CancelArgs): Promise<Response> {
+  const { lessonId, bunnyVideoId } = args;
+
+  if (!bunnyVideoId) {
+    return NextResponse.json(
+      { code: "validation_failed", message: "missing bunnyVideoId" },
+      { status: 400 },
+    );
+  }
+
+  // Find the media_asset created for this Bunny video + lesson.
+  const [asset] = await db
+    .select({ id: mediaAsset.id })
+    .from(mediaAsset)
+    .where(
+      and(
+        eq(mediaAsset.storage, "bunny_stream"),
+        eq(mediaAsset.storageKey, bunnyVideoId),
+      ),
+    )
+    .limit(1);
+
+  // Best-effort delete at Bunny.
+  try {
+    await bunnyDelete(bunnyVideoId);
+  } catch (err) {
+    logger.error("lesson-video.cancel_delete_failed", err, { bunnyVideoId });
+  }
+
+  if (asset) {
+    // Restore the lesson's previous video if any.  We look for the most
+    // recent media_asset still referenced by this lesson that is NOT the
+    // one we're cancelling.  If none exists, videoMediaId becomes null.
+    const [prev] = await db
+      .select({ mediaId: lesson.videoMediaId })
+      .from(lesson)
+      .where(
+        and(
+          eq(lesson.id, lessonId),
+          ne(lesson.videoMediaId, asset.id),
+          sql`${lesson.videoMediaId} IS NOT NULL`,
+        ),
+      )
+      .limit(1);
 
     await db
       .update(lesson)
-      .set({ videoMediaId: asset!.id, updatedAt: new Date() })
+      .set({
+        videoMediaId: prev?.mediaId ?? null,
+        updatedAt: new Date(),
+      })
       .where(eq(lesson.id, lessonId));
 
-    // Cleanup old asset only if no other lesson references it (the seed
-    // attaches a single demo video to several preview lessons, so we
-    // can't delete unconditionally).
-    if (oldMediaId) {
-      const old = (
-        await db
-          .select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
-          .from(mediaAsset)
-          .where(eq(mediaAsset.id, oldMediaId))
-          .limit(1)
-      )[0];
-      if (old) {
-        const stillReferenced = (
-          await db
-            .select({ n: sql<number>`count(*)::int` })
-            .from(lesson)
-            .where(
-              and(eq(lesson.videoMediaId, oldMediaId), ne(lesson.id, lessonId)),
-            )
-        )[0]?.n ?? 0;
-        if (stillReferenced === 0) {
-          try {
-            await bunnyDelete(old.storageKey);
-          } catch (err) {
-            logger.error("lesson-video.delete_old_failed", err, {
-              storageKey: old.storageKey,
-            });
-          }
-          await db.delete(mediaAsset).where(eq(mediaAsset.id, old.id));
-        } else {
-          logger.info("lesson-video.shared_asset_kept", {
-            mediaId: oldMediaId,
-            stillReferenced,
-          });
-        }
-      }
-    }
-
-    return NextResponse.json({
-      ok: true,
-      assetId: asset!.id,
-      bunnyVideoId,
-    });
-  } catch (err) {
-    logger.error("lesson-video.failed", err, { lessonId });
-    if (bunnyVideoId) {
-      try {
-        await bunnyDelete(bunnyVideoId);
-      } catch {
-        // best-effort
-      }
-    }
-    const message = err instanceof Error ? err.message : "อัปโหลดไม่สำเร็จ";
-    return NextResponse.json({ code: "internal_error", message }, { status: 500 });
+    await db.delete(mediaAsset).where(eq(mediaAsset.id, asset.id));
   }
+
+  logger.info("lesson-video.cancelled", { bunnyVideoId, lessonId });
+
+  return NextResponse.json({ ok: true });
 }
