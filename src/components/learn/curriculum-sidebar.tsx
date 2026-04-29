@@ -10,6 +10,7 @@ import {
   X,
   Exam,
 } from "@phosphor-icons/react";
+import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 
 interface SidebarLesson {
   id: string;
@@ -116,11 +117,11 @@ export function CurriculumSidebar({
                       {locked ? <span className="sr-only">ล็อก: </span> : null}
                       {les.title}
                     </span>
-                    {les.isFree && !les.isPreview && (
-                      <span className="rounded-full bg-success-bg px-1.5 text-[10px] font-medium text-success-foreground">
-                        ฟรี
-                      </span>
-                    )}
+                    <LessonAccessBadge
+                      isPreview={les.isPreview}
+                      isFree={les.isFree}
+                      size="sm"
+                    />
                     {les.durationSeconds ? (
                       <span className="num text-caption text-foreground-subtle">
                         {fmtDuration(les.durationSeconds)}

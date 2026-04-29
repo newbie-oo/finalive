@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
+import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import {
   getPublishedCourseBySlug,
   getCourseCurriculum,
@@ -40,8 +41,7 @@ function LessonRow({ lesson, courseSlug }: { lesson: CurriculumLesson; courseSlu
         <span className={playable ? "text-(--foreground)" : "text-(--foreground-muted)"}>
           {lesson.title}
         </span>
-        {lesson.isPreview && <StatusChip tone="info">ตัวอย่าง</StatusChip>}
-        {lesson.isFree && !lesson.isPreview && <StatusChip tone="success">ฟรี</StatusChip>}
+        <LessonAccessBadge isPreview={lesson.isPreview} isFree={lesson.isFree} />
       </span>
       <span className="num text-uism text-(--foreground-muted)">
         {formatDuration(lesson.durationSeconds)}
