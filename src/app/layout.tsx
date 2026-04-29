@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { ToasterProvider } from "@/components/providers/toaster-provider";
+import { CookieBanner } from "@/components/layouts/cookie-banner";
 
 const plexThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             {children}
+            <CookieBanner />
             <ToasterProvider />
           </QueryProvider>
         </ThemeProvider>
