@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Stepper } from "@/components/ui/stepper";
 
+// Labels match handoff §Checkout — short and consistent across the 4 pages.
 const STEPS = [
-  { label: "เลือกคอร์ส" },
+  { label: "ลงทะเบียน" },
   { label: "ชำระเงิน" },
-  { label: "อัปโหลดสลิป" },
-  { label: "สถานะ" },
+  { label: "ตรวจสอบ" },
+  { label: "เริ่มเรียน" },
 ];
 
 export function CheckoutShell({
