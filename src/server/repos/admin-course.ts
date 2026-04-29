@@ -225,6 +225,7 @@ export async function createAdminLesson(input: {
     .values({
       moduleId: input.moduleId,
       title: input.title,
+      bodyMd: "",
       sortOrder: input.sortOrder,
       createdByUserId: input.createdByUserId,
     })

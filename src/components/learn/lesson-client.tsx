@@ -69,6 +69,7 @@ export function LessonClient({
         body: JSON.stringify({
           lessonId,
           watchedSeconds: durationSeconds ?? watched,
+          markComplete: true,
         }),
       });
       if (!res.ok) throw new Error("failed");
