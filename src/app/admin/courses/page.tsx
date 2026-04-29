@@ -19,8 +19,29 @@ const STATUS_TONE: Record<string, "neutral" | "success" | "warning"> = {
   archived: "warning",
 };
 
-export default async function AdminCoursesPage() {
-  const courses = await listAdminCourses();
+export default async function AdminCoursesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const q = typeof sp.q === "string" ? sp.q : "";
+  const statusParam = typeof sp.status === "string" ? sp.status : "all";
+  const status: "draft" | "published" | "archived" | "all" =
+    statusParam === "draft" ||
+    statusParam === "published" ||
+    statusParam === "archived"
+      ? statusParam
+      : "all";
+  const courses = await listAdminCourses({ q, status });
+  const filtersActive = q.length > 0 || status !== "all";
+
+  const STATUSES: Array<{ key: "all" | "draft" | "published" | "archived"; label: string }> = [
+    { key: "all", label: "ทั้งหมด" },
+    { key: "published", label: "เผยแพร่" },
+    { key: "draft", label: "ร่าง" },
+    { key: "archived", label: "เก็บถาวร" },
+  ];
 
   return (
     <section className="space-y-6">
@@ -36,8 +57,58 @@ export default async function AdminCoursesPage() {
         </Button>
       </header>
 
+      <form
+        method="get"
+        action="/admin/courses"
+        className="flex flex-wrap items-center gap-3"
+        role="search"
+      >
+        <label htmlFor="admin-courses-q" className="sr-only">
+          ค้นหาคอร์ส
+        </label>
+        <input
+          id="admin-courses-q"
+          type="search"
+          name="q"
+          defaultValue={q}
+          placeholder="ค้นหาด้วยชื่อหรือ slug"
+          className="h-10 w-full rounded-button border border-(--border) bg-(--surface) px-3 text-ui sm:w-72"
+        />
+        <label htmlFor="admin-courses-status" className="sr-only">
+          กรองสถานะ
+        </label>
+        <select
+          id="admin-courses-status"
+          name="status"
+          defaultValue={status}
+          className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui"
+        >
+          {STATUSES.map((s) => (
+            <option key={s.key} value={s.key}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="inline-flex h-10 items-center rounded-button bg-(--accent) px-4 text-ui font-medium text-(--accent-fg)"
+        >
+          ค้นหา
+        </button>
+        {filtersActive && (
+          <Link
+            href="/admin/courses"
+            className="text-uism text-(--foreground-muted) hover:underline"
+          >
+            ล้างตัวกรอง
+          </Link>
+        )}
+      </form>
+
       {courses.length === 0 ? (
-        <p className="text-body text-(--foreground-muted)">ยังไม่มีคอร์ส</p>
+        <p className="text-body text-(--foreground-muted)">
+          {filtersActive ? "ไม่พบคอร์สที่ตรงกับเงื่อนไข" : "ยังไม่มีคอร์ส"}
+        </p>
       ) : (
         <div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
           <table className="w-full text-ui">

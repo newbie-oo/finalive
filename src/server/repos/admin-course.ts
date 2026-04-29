@@ -17,7 +17,29 @@ export interface AdminCourseListItem {
   createdAt: Date;
 }
 
-export async function listAdminCourses(): Promise<AdminCourseListItem[]> {
+export interface ListAdminCoursesOptions {
+  /** Free-text search across title + slug. Case-insensitive. */
+  q?: string;
+  /** Filter by status. Pass "all" or omit to include every status. */
+  status?: "draft" | "published" | "archived" | "all";
+}
+
+export async function listAdminCourses(
+  options: ListAdminCoursesOptions = {},
+): Promise<AdminCourseListItem[]> {
+  const conditions = [isNull(course.deletedAt)];
+
+  if (options.status && options.status !== "all") {
+    conditions.push(eq(course.status, options.status));
+  }
+
+  const trimmed = options.q?.trim();
+  if (trimmed) {
+    const like = `%${trimmed}%`;
+    const text = sql`(${course.title} ILIKE ${like} OR ${course.slug} ILIKE ${like})`;
+    conditions.push(text);
+  }
+
   return db
     .select({
       id: course.id,
@@ -30,7 +52,7 @@ export async function listAdminCourses(): Promise<AdminCourseListItem[]> {
       createdAt: course.createdAt,
     })
     .from(course)
-    .where(isNull(course.deletedAt))
+    .where(and(...conditions))
     .orderBy(desc(course.createdAt));
 }
 
