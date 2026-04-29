@@ -8,6 +8,7 @@ import {
   Circle,
   LockSimple,
   X,
+  Exam,
 } from "@phosphor-icons/react";
 
 interface SidebarLesson {
@@ -17,6 +18,7 @@ interface SidebarLesson {
   isPreview: boolean;
   isFree: boolean;
   sortOrder: number;
+  quizId: string | null;
 }
 
 export interface SidebarModule {
@@ -151,6 +153,24 @@ export function CurriculumSidebar({
                   </li>
                 );
               })}
+              {/* Module quiz link */}
+              {(() => {
+                const quizLesson = mod.lessons.find((l) => l.quizId);
+                if (!quizLesson || !quizLesson.quizId) return null;
+                const locked = !isEnrolled && !quizLesson.isPreview && !quizLesson.isFree;
+                return (
+                  <li>
+                    <Link
+                      href={`/learn/${courseSlug}/quiz/${quizLesson.quizId}`}
+                      className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-uism text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+                      onClick={onClose}
+                    >
+                      <Exam size={14} className="text-primary shrink-0" />
+                      <span className="flex-1 truncate">แบบทดสอบท้ายโมดูล</span>
+                    </Link>
+                  </li>
+                );
+              })()}
             </ul>
           </div>
         ))}

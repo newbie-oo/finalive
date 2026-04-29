@@ -27,6 +27,24 @@ export interface AdminQuiz {
   questions: AdminQuizQuestion[];
 }
 
+export async function createAdminQuiz(input: {
+  lessonId: string;
+  title: string;
+  passScorePct: number;
+  createdByUserId: string;
+}) {
+  const [row] = await db
+    .insert(quiz)
+    .values({
+      lessonId: input.lessonId,
+      title: input.title,
+      passScorePct: input.passScorePct,
+      createdByUserId: input.createdByUserId,
+    })
+    .returning({ id: quiz.id });
+  return row!.id;
+}
+
 export async function getAdminQuizById(quizId: string): Promise<AdminQuiz | null> {
   const quizRows = await db
     .select({

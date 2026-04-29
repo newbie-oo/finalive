@@ -1,10 +1,11 @@
 import "server-only";
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { lessonProgress } from "@/db/schema/progress";
 import { mediaAsset } from "@/db/schema/media";
+import { quiz } from "@/db/schema/quiz";
 
 export interface LearnLesson {
   id: string;
@@ -13,6 +14,7 @@ export interface LearnLesson {
   isPreview: boolean;
   isFree: boolean;
   sortOrder: number;
+  quizId: string | null;
 }
 
 export interface LearnModule {
@@ -83,9 +85,11 @@ export async function getLearnCourse(
       isPreview: lesson.isPreview,
       isFree: lesson.isFree,
       sortOrder: lesson.sortOrder,
+      quizId: quiz.id,
     })
     .from(lesson)
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+    .leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))
     .where(
       and(
         eq(courseModule.courseId, courseRow.id),
@@ -105,6 +109,7 @@ export async function getLearnCourse(
       isPreview: l.isPreview,
       isFree: l.isFree,
       sortOrder: l.sortOrder,
+      quizId: l.quizId ?? null,
     });
     byModule.set(l.moduleId, list);
   }
@@ -134,17 +139,24 @@ export async function getLearnCourse(
       .limit(1);
     isEnrolled = enrollRows.length > 0;
 
-    // Fetch progress for all authenticated users (even if not enrolled),
-    // so preview/free lesson progress is visible in the sidebar.
-    const progRows = await db
-      .select({
-        lessonId: lessonProgress.lessonId,
-        status: lessonProgress.status,
-        watchedSeconds: lessonProgress.watchedSeconds,
-      })
-      .from(lessonProgress)
-      .where(eq(lessonProgress.userId, userId));
-    progress = progRows;
+    // Fetch progress scoped to this course only
+    const lessonIds = lessons.map((l) => l.id);
+    if (lessonIds.length > 0) {
+      const progRows = await db
+        .select({
+          lessonId: lessonProgress.lessonId,
+          status: lessonProgress.status,
+          watchedSeconds: lessonProgress.watchedSeconds,
+        })
+        .from(lessonProgress)
+        .where(
+          and(
+            eq(lessonProgress.userId, userId),
+            inArray(lessonProgress.lessonId, lessonIds),
+          ),
+        );
+      progress = progRows;
+    }
 
     if (isEnrolled) {
       // Resume: most recently updated lesson, preferring in_progress over completed.

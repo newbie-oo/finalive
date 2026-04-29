@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { requireSession } from "@/server/auth-session";
+import { db } from "@/db/client";
+import { lesson, courseModule } from "@/db/schema/course";
 import { updateWatchedSeconds, markLessonComplete } from "@/server/repos/progress";
+import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
+import { issueCertificate } from "@/server/actions/certificate";
 
 const schema = z.object({
   lessonId: z.string().uuid(),
@@ -26,12 +31,31 @@ export async function POST(req: Request) {
   }
 
   const { lessonId, watchedSeconds, markComplete } = parsed.data;
+  const isComplete = markComplete || watchedSeconds >= COMPLETE_SENTINEL;
 
-  if (markComplete || watchedSeconds >= COMPLETE_SENTINEL) {
+  if (isComplete) {
     await markLessonComplete(user.id, lessonId);
+
+    // Check if course is now fully completed and issue certificate.
+    const [lessonRow] = await db
+      .select({ courseId: courseModule.courseId })
+      .from(lesson)
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .where(eq(lesson.id, lessonId))
+      .limit(1);
+
+    if (lessonRow) {
+      const { completed, enrollmentId } = await checkAndMarkCourseComplete(
+        user.id,
+        lessonRow.courseId,
+      );
+      if (completed && enrollmentId) {
+        await issueCertificate(enrollmentId);
+      }
+    }
   } else {
     await updateWatchedSeconds(user.id, lessonId, watchedSeconds);
   }
 
-  return NextResponse.json({ ok: true, completed: markComplete || watchedSeconds >= COMPLETE_SENTINEL });
+  return NextResponse.json({ ok: true, completed: isComplete });
 }

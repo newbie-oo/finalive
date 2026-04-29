@@ -231,7 +231,14 @@ async function seedUsers(): Promise<string> {
 // This is a real uploaded video (~4.5 min, 480x360) on Bunny Stream.
 const MOCK_BUNNY_VIDEO_ID = "e749c35d-d564-48cb-b670-bbee94ffa68e";
 
-async function seedCourses(adminId: string): Promise<string[]> {
+interface LessonMeta {
+  lessonId: string;
+  courseTitle: string;
+  moduleTitle: string;
+  lessonTitle: string;
+}
+
+async function seedCourses(adminId: string): Promise<LessonMeta[]> {
   await db.execute(sql`TRUNCATE TABLE "media_asset", "quiz_choice", "quiz_question", "quiz", "lesson", "module", "course" CASCADE`);
 
   // Create one shared media asset for all lessons.
@@ -247,7 +254,7 @@ async function seedCourses(adminId: string): Promise<string[]> {
   const sharedVideoMediaId = sharedAsset!.id;
   console.warn(`[seed] media asset ${sharedVideoMediaId} -> Bunny ${MOCK_BUNNY_VIDEO_ID}`);
 
-  const lessonIds: string[] = [];
+  const metas: LessonMeta[] = [];
   const usedSlugs = new Set<string>();
   for (const c of SEED_COURSES) {
     const slug = c.slug;
@@ -294,75 +301,223 @@ async function seedCourses(adminId: string): Promise<string[]> {
           sortOrder: li + 1,
           createdByUserId: adminId,
         });
-        lessonIds.push(lessonId);
+        metas.push({ lessonId, courseTitle: c.title, moduleTitle: m.title, lessonTitle: l.title });
       }
     }
     console.warn(`[seed] course "${c.title}" -> /${slug}`);
   }
-  return lessonIds;
+  return metas;
 }
 
-async function seedQuizzes(adminId: string, lessonIds: string[]): Promise<void> {
-  if (lessonIds.length === 0) return;
+async function seedQuizzes(adminId: string, metas: LessonMeta[]): Promise<void> {
+  if (metas.length === 0) return;
 
-  // Quiz attached to lesson 1 of course 1 (การวิเคราะห์งบการเงินขั้นพื้นฐาน).
-  const targetLessonId = lessonIds[0]!;
-  const quizTitle = "แบบทดสอบท้ายบท: ทำความรู้จักงบการเงิน";
-  const [qz] = await db.insert(quizTable).values({
-    lessonId: targetLessonId,
-    title: quizTitle,
-    passScorePct: 60,
-    createdByUserId: adminId,
-  }).returning({ id: quizTable.id });
-
-  const questions = [
-    { prompt: "งบการเงินหลักที่บริษัทจดทะเบียนต้องเปิดเผยมีกี่งบ?", choices: [
-      { body: "2 งบ", correct: false },
-      { body: "3 งบ", correct: true },
-      { body: "5 งบ", correct: false },
-    ]},
-    { prompt: "สมการบัญชีพื้นฐาน (Accounting equation) คืออะไร?", choices: [
-      { body: "รายได้ = ต้นทุน + กำไร", correct: false },
-      { body: "สินทรัพย์ = หนี้สิน + ส่วนของผู้ถือหุ้น", correct: true },
-      { body: "กำไรสุทธิ = รายได้ − ค่าใช้จ่าย", correct: false },
-    ]},
-    { prompt: "งบกระแสเงินสดแบ่งกิจกรรมเป็นกี่ประเภท?", choices: [
-      { body: "2 (ดำเนินงาน, ลงทุน)", correct: false },
-      { body: "3 (ดำเนินงาน, ลงทุน, จัดหาเงิน)", correct: true },
-      { body: "4 (ดำเนินงาน, ลงทุน, จัดหาเงิน, ภาษี)", correct: false },
-    ]},
-    { prompt: "ROE คืออัตราส่วนวัดอะไร?", choices: [
-      { body: "ความสามารถสร้างกำไรเทียบกับสินทรัพย์", correct: false },
-      { body: "ความสามารถสร้างกำไรเทียบกับส่วนของผู้ถือหุ้น", correct: true },
-      { body: "ความสามารถจ่ายหนี้ระยะสั้น", correct: false },
-    ]},
-    { prompt: "ถ้า Current ratio < 1 หมายความว่าอย่างไร?", choices: [
-      { body: "บริษัทกำลังเติบโต", correct: false },
-      { body: "หนี้สินหมุนเวียนมากกว่าสินทรัพย์หมุนเวียน — เสี่ยงสภาพคล่อง", correct: true },
-      { body: "บริษัทมีกำไรลดลง", correct: false },
-    ]},
-  ];
-
-  for (let qi = 0; qi < questions.length; qi++) {
-    const q = questions[qi]!;
-    const [qRow] = await db.insert(quizQuestionTable).values({
-      quizId: qz!.id,
-      promptMd: q.prompt,
-      sortOrder: qi + 1,
-    }).returning({ id: quizQuestionTable.id });
-
-    for (let ci = 0; ci < q.choices.length; ci++) {
-      const c = q.choices[ci]!;
-      await db.insert(quizChoiceTable).values({
-        questionId: qRow!.id,
-        body: c.body,
-        isCorrect: c.correct,
-        sortOrder: ci + 1,
-      });
-    }
+  // Group by (courseTitle, moduleTitle) and pick the last lesson of each module.
+  const moduleMap = new Map<string, LessonMeta>();
+  for (const m of metas) {
+    const key = `${m.courseTitle}|${m.moduleTitle}`;
+    // Since metas are inserted in sortOrder order, the last one wins.
+    moduleMap.set(key, m);
   }
 
-  console.warn(`[seed] quiz "${quizTitle}" -> ${questions.length} questions`);
+  const bank: Record<string, { prompt: string; choices: { body: string; correct: boolean }[] }[]> = {
+    default: [
+      { prompt: "ข้อใดถูกต้องเกี่ยวกับหัวข้อที่เรียนในบทนี้?", choices: [
+        { body: "เป็นความรู้พื้นฐานที่ต้องเข้าใจก่อนศึกษาลึก", correct: true },
+        { body: "ไม่จำเป็นต้องใช้ในชีวิตจริง", correct: false },
+        { body: "ใช้ได้เฉพาะในต่างประเทศ", correct: false },
+      ]},
+      { prompt: "จุดประสงค์หลักของบทนี้คืออะไร?", choices: [
+        { body: "ให้ผู้เรียนเข้าใจแนวคิดหลักและนำไปใช้ได้จริง", correct: true },
+        { body: "จำสูตรคณิตศาสตร์ให้ได้มากที่สุด", correct: false },
+        { body: "สอบผ่านอย่างเดียว", correct: false },
+      ]},
+      { prompt: "เครื่องมือหรือแนวทางที่แนะนำในบทนี้สามารถนำไปใช้ได้?", choices: [
+        { body: "เฉพาะองค์กรขนาดใหญ่", correct: false },
+        { body: "ทั้งบุคคลทั่วไปและองค์กร", correct: true },
+        { body: "ใช้ไม่ได้จริง", correct: false },
+      ]},
+      { prompt: "หลังจากเรียนบทนี้แล้ว คุณควรทำอะไรต่อ?", choices: [
+        { body: "ฝึกฝนด้วยตัวอย่างจริงและทบทวนบ่อย ๆ", correct: true },
+        { body: "จำไว้แล้วไม่ต้องทบทวน", correct: false },
+        { body: "ข้ามไปเรียนคอร์สอื่นเลย", correct: false },
+      ]},
+      { prompt: "ข้อใดเป็นข้อควรระวังเมื่อนำความรู้จากบทนี้ไปใช้?", choices: [
+        { body: "ต้องปรับให้เหมาะสมกับสถานการณ์จริง", correct: true },
+        { body: "ใช้ตามตำราโดยไม่คิด", correct: false },
+        { body: "ไม่ต้องสนใจข้อมูลรอง", correct: false },
+      ]},
+    ],
+    "การวิเคราะห์งบการเงินขั้นพื้นฐาน": [
+      { prompt: "งบการเงินหลักที่บริษัทจดทะเบียนต้องเปิดเผยมีกี่งบ?", choices: [
+        { body: "2 งบ", correct: false },
+        { body: "3 งบ", correct: true },
+        { body: "5 งบ", correct: false },
+      ]},
+      { prompt: "สมการบัญชีพื้นฐาน (Accounting equation) คืออะไร?", choices: [
+        { body: "รายได้ = ต้นทุน + กำไร", correct: false },
+        { body: "สินทรัพย์ = หนี้สิน + ส่วนของผู้ถือหุ้น", correct: true },
+        { body: "กำไรสุทธิ = รายได้ − ค่าใช้จ่าย", correct: false },
+      ]},
+      { prompt: "งบกระแสเงินสดแบ่งกิจกรรมเป็นกี่ประเภท?", choices: [
+        { body: "2 (ดำเนินงาน, ลงทุน)", correct: false },
+        { body: "3 (ดำเนินงาน, ลงทุน, จัดหาเงิน)", correct: true },
+        { body: "4 (ดำเนินงาน, ลงทุน, จัดหาเงิน, ภาษี)", correct: false },
+      ]},
+      { prompt: "ROE คืออัตราส่วนวัดอะไร?", choices: [
+        { body: "ความสามารถสร้างกำไรเทียบกับสินทรัพย์", correct: false },
+        { body: "ความสามารถสร้างกำไรเทียบกับส่วนของผู้ถือหุ้น", correct: true },
+        { body: "ความสามารถจ่ายหนี้ระยะสั้น", correct: false },
+      ]},
+      { prompt: "ถ้า Current ratio < 1 หมายความว่าอย่างไร?", choices: [
+        { body: "บริษัทกำลังเติบโต", correct: false },
+        { body: "หนี้สินหมุนเวียนมากกว่าสินทรัพย์หมุนเวียน — เสี่ยงสภาพคล่อง", correct: true },
+        { body: "บริษัทมีกำไรลดลง", correct: false },
+      ]},
+    ],
+    "เริ่มต้นลงทุนหุ้นไทยใน 30 วัน": [
+      { prompt: "ตลาดหลักทรัพย์แห่งประเทศไทย ใช้ตัวย่ออะไร?", choices: [
+        { body: "SET", correct: true },
+        { body: "NASDAQ", correct: false },
+        { body: "NYSE", correct: false },
+      ]},
+      { prompt: "หุ้นประเภทไหนเน้นจ่ายเงินปันผลสม่ำเสมอ?", choices: [
+        { body: "Growth stock", correct: false },
+        { body: "Dividend stock", correct: true },
+        { body: "Speculative stock", correct: false },
+      ]},
+      { prompt: "ค่าธรรมเนียมซื้อขายหุ้นที่ต้องจ่ายให้โบรกเกอร์เรียกว่า?", choices: [
+        { body: "Commission", correct: true },
+        { body: "Tax", correct: false },
+        { body: "Dividend", correct: false },
+      ]},
+      { prompt: "P/E สูงเกินไปอาจบ่งบอกถึงอะไร?", choices: [
+        { body: "หุ้นถูกเกินไป", correct: false },
+        { body: "ตลาดคาดหวังการเติบโตสูง หรืออาจแพงเกินจริง", correct: true },
+        { body: "บริษัทขาดทุน", correct: false },
+      ]},
+      { prompt: "การกระจายการลงทุน (Diversification) มีเป้าหมายหลักคือ?", choices: [
+        { body: "เพิ่มผลตอบแทนให้สูงสุด", correct: false },
+        { body: "ลดความเสี่ยงโดยรวมของพอร์ต", correct: true },
+        { body: "ซื้อหุ้นให้ได้มากที่สุด", correct: false },
+      ]},
+    ],
+    "Excel สำหรับนักวิเคราะห์การเงิน": [
+      { prompt: "สูตร XLOOKUP ใช้แทนสูตรใดที่ต้องระบุ column index?", choices: [
+        { body: "VLOOKUP", correct: true },
+        { body: "SUM", correct: false },
+        { body: "COUNTIF", correct: false },
+      ]},
+      { prompt: "สูตร PMT ใช้คำนวณอะไร?", choices: [
+        { body: "ผลตอบแทนการลงทุน", correct: false },
+        { body: "เงินผ่อนต่องวด", correct: true },
+        { body: "ยอดขายรวม", correct: false },
+      ]},
+      { prompt: "IRR ย่อมาจากอะไร?", choices: [
+        { body: "Internal Rate of Return", correct: true },
+        { body: "Interest Rate of Revenue", correct: false },
+        { body: "Investment Return Ratio", correct: false },
+      ]},
+      { prompt: "Pivot Table เหมาะกับงานประเภทใด?", choices: [
+        { body: "สร้างกราฟสวย ๆ", correct: false },
+        { body: "สรุปและวิเคราะห์ข้อมูลจำนวนมาก", correct: true },
+        { body: "พิมพ์รายงาน", correct: false },
+      ]},
+      { prompt: "NPV > 0 หมายความว่าอย่างไร?", choices: [
+        { body: "โครงการน่าลงทุน", correct: true },
+        { body: "โครงการขาดทุน", correct: false },
+        { body: "ไม่สามารถตัดสินใจได้", correct: false },
+      ]},
+    ],
+    "DCF Valuation ขั้นสูง สำหรับคนทำงานจริง": [
+      { prompt: "WACC ย่อมาจาก?", choices: [
+        { body: "Weighted Average Cost of Capital", correct: true },
+        { body: "World Asset Capital Cost", correct: false },
+        { body: "Working Average Cash Cost", correct: false },
+      ]},
+      { prompt: "Free Cash Flow to Firm (FCFF) คือกระแสเงินสดที่เหลือให้?", choices: [
+        { body: "ผู้ถือหุ้นเท่านั้น", correct: false },
+        { body: "ทุกกลุ่มผู้มีส่วนได้เสีย (หุ้น + หนี้)", correct: true },
+        { body: "พนักงาน", correct: false },
+      ]},
+      { prompt: "Terminal value ใช้ประมาณมูลค่าหุ้นช่วงใด?", choices: [
+        { body: "ช่วงที่เหลือหลังจากระยะ explicit forecast", correct: true },
+        { body: "ปีแรกที่ลงทุน", correct: false },
+        { body: "ช่วงที่บริษัทขาดทุน", correct: false },
+      ]},
+      { prompt: "Sensitivity analysis มีประโยชน์อย่างไร?", choices: [
+        { body: "ดูว่าผลลัพธ์เปลี่ยนเมื่อสมมติฐานเปลี่ยน", correct: true },
+        { body: "ทำนายราคาหุ้นได้แม่นยำ 100%", correct: false },
+        { body: "ลดจำนวนตัวแปรในโมเดล", correct: false },
+      ]},
+      { prompt: "Discount rate ที่ใช้ใน DCF สะท้อนอะไร?", choices: [
+        { body: "ความเสี่ยงและต้นทุนของเงินทุน", correct: true },
+        { body: "อัตราเงินเฟ้อเท่านั้น", correct: false },
+        { body: "ภาษีเงินได้", correct: false },
+      ]},
+    ],
+    "การวางแผนภาษีสำหรับฟรีแลนซ์และเจ้าของกิจการ": [
+      { prompt: "เงินได้ประเภทที่ 1 ตามมาตรา 40 คือ?", choices: [
+        { body: "เงินเดือน", correct: true },
+        { body: "เงินปันผล", correct: false },
+        { body: "ค่าลิขสิทธิ์", correct: false },
+      ]},
+      { prompt: "ค่าลดหย่อนส่วนตัวปัจจุบัน (2568) อยู่ที่เท่าไร?", choices: [
+        { body: "60,000 บาท", correct: true },
+        { body: "30,000 บาท", correct: false },
+        { body: "100,000 บาท", correct: false },
+      ]},
+      { prompt: "ฟรีแลนซ์ต้องยื่นภาษีด้วยแบบฟอร์มใด?", choices: [
+        { body: "ภ.ง.ด. 90 หรือ ภ.ง.ด. 91", correct: true },
+        { body: "ภ.ง.ด. 1", correct: false },
+        { body: "ภ.ง.ด. 50", correct: false },
+      ]},
+      { prompt: "VAT ที่ต้องจดเมื่อรายได้เกินกำหนดอยู่ที่?", choices: [
+        { body: "1.8 ล้านบาทต่อปี", correct: true },
+        { body: "1 ล้านบาทต่อปี", correct: false },
+        { body: "3 ล้านบาทต่อปี", correct: false },
+      ]},
+      { prompt: "ข้อใดเป็นวิธีลดหย่อนภาษีที่ถูกต้อง?", choices: [
+        { body: "ออมใน RMF / SSF", correct: true },
+        { body: "ไม่ยื่นภาษี", correct: false },
+        { body: "ซื้อของฟุ่มเฟือย", correct: false },
+      ]},
+    ],
+  };
+
+  let quizCount = 0;
+  for (const meta of moduleMap.values()) {
+    const questions = (bank[meta.courseTitle] || bank.default)!;
+    const quizTitle = `แบบทดสอบ: ${meta.moduleTitle}`;
+    const [qz] = await db.insert(quizTable).values({
+      lessonId: meta.lessonId,
+      title: quizTitle,
+      passScorePct: 60,
+      createdByUserId: adminId,
+    }).returning({ id: quizTable.id });
+
+    for (let qi = 0; qi < questions.length; qi++) {
+      const q = questions[qi]!;
+      const [qRow] = await db.insert(quizQuestionTable).values({
+        quizId: qz!.id,
+        promptMd: q.prompt,
+        sortOrder: qi + 1,
+      }).returning({ id: quizQuestionTable.id });
+
+      for (let ci = 0; ci < q.choices.length; ci++) {
+        const c = q.choices[ci]!;
+        await db.insert(quizChoiceTable).values({
+          questionId: qRow!.id,
+          body: c.body,
+          isCorrect: c.correct,
+          sortOrder: ci + 1,
+        });
+      }
+    }
+    quizCount++;
+  }
+
+  console.warn(`[seed] ${quizCount} quizzes created`);
 }
 
 async function seedAppSettings(adminId: string): Promise<void> {
@@ -411,8 +566,8 @@ async function seedAppSettings(adminId: string): Promise<void> {
 async function seed(): Promise<void> {
   console.warn("[seed] starting");
   const adminId = await seedUsers();
-  const lessonIds = await seedCourses(adminId);
-  await seedQuizzes(adminId, lessonIds);
+  const metas = await seedCourses(adminId);
+  await seedQuizzes(adminId, metas);
   await seedAppSettings(adminId);
   console.warn("[seed] done. Sign in with seed credentials (password = 'change-me').");
   process.exit(0);

@@ -11,6 +11,7 @@ import { MobileCurriculumDrawer } from "./mobile-curriculum-drawer";
 import { LessonClient } from "./lesson-client";
 import { MarkdownView } from "@/lib/markdown";
 import type { SidebarModule } from "./curriculum-sidebar";
+import { Certificate, ArrowRight } from "@phosphor-icons/react";
 
 interface LearnPageClientProps {
   courseSlug: string;
@@ -90,6 +91,26 @@ export function LearnPageClient({
       <div className="flex flex-1 min-h-0">
         {/* Main content */}
         <main className="flex-1 overflow-y-auto min-w-0">
+          {/* Course complete banner */}
+          {doneLessons >= totalLessons && totalLessons > 0 && (
+            <div className="mx-4 mt-4 rounded-[14px] border border-success bg-success/10 p-4 lg:mx-8 lg:mt-6">
+              <div className="flex items-start gap-3">
+                <Certificate size={24} weight="fill" className="mt-0.5 shrink-0 text-success" />
+                <div className="flex-1">
+                  <h3 className="text-h4 text-success">จบคอร์สแล้ว! 🎉</h3>
+                  <p className="mt-1 text-body text-(--foreground-muted)">
+                    คุณเรียนครบทุกบทเรียนแล้ว ใบประกาศนียบัตรพร้อมให้ดาวน์โหลด
+                  </p>
+                  <Button asChild variant="ghost" size="sm" className="mt-2 text-success">
+                    <Link href="/account/certificates">
+                      ดูใบประกาศ <ArrowRight size={14} weight="bold" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Player */}
           <div className="bg-black flex justify-center lg:p-4">
             <div className="w-full max-w-[1100px]">
@@ -133,6 +154,14 @@ export function LearnPageClient({
               <button className="border-b-2 border-(--primary) px-0 py-3 text-ui font-medium text-(--primary)">
                 เนื้อหา
               </button>
+              {quizId && (
+                <Link
+                  href={`/learn/${courseSlug}/quiz/${quizId}`}
+                  className="px-0 py-3 text-ui font-medium text-(--foreground-muted) hover:text-(--foreground)"
+                >
+                  แบบทดสอบ
+                </Link>
+              )}
             </div>
 
             {/* Lesson body */}
@@ -164,18 +193,6 @@ export function LearnPageClient({
               nextLessonId={nextLessonId}
               durationSeconds={durationSeconds}
             />
-
-            {quizId && (
-              <div className="mt-6 rounded-[14px] border border-(--border) bg-(--surface-muted) p-4 flex items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-h4">แบบทดสอบท้ายบท</h3>
-                  <p className="mt-1 text-body text-(--foreground-muted)">ทดสอบความเข้าใจหลังจบบทเรียน</p>
-                </div>
-                <Button asChild variant="primary" size="md">
-                  <Link href={`/learn/${courseSlug}/quiz/${quizId}`}>ทำแบบทดสอบ</Link>
-                </Button>
-              </div>
-            )}
           </div>
         </main>
 

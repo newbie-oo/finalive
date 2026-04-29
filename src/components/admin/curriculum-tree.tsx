@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useCallback } from "react";
+import { useState, useTransition, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +29,7 @@ import {
   reorderLessonsAction,
   updateLessonAction,
 } from "@/server/actions/admin-curriculum";
+import { createQuizAction } from "@/server/actions/admin-quiz";
 import type { AdminCurriculumModule, AdminCurriculumLesson } from "@/server/repos/admin-course";
 
 interface CurriculumTreeProps {
@@ -48,6 +49,18 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
   const [pending, startTransition] = useTransition();
 
   const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Sync with server data when parent re-renders (e.g. after router.refresh()).
+  useEffect(() => {
+    setModules(initialModules);
+    setExpandedModules((prev) => {
+      const next = new Set(prev);
+      for (const m of initialModules) {
+        if (!next.has(m.id)) next.add(m.id);
+      }
+      return next;
+    });
+  }, [initialModules]);
 
   const selectedLesson = modules
     .flatMap((m) => m.lessons)
@@ -455,6 +468,11 @@ function SortableLesson({
         >
           ฟรี
         </button>
+        {lesson.quizId && (
+          <span className="rounded bg-success/20 px-1.5 py-0.5 text-[10px] text-success" title="มีแบบทดสอบ">
+            ข้อสอบ
+          </span>
+        )}
         <Link
           href={`/admin/courses/${courseId}/lessons/${lesson.id}`}
           className="ml-1 text-xs text-primary hover:underline"
@@ -473,6 +491,25 @@ function LessonDetailPanel({
   courseId: string;
   lesson: AdminCurriculumLesson;
 }) {
+  const router = useRouter();
+  const [creatingQuiz, startCreateQuiz] = useTransition();
+
+  function handleCreateQuiz() {
+    startCreateQuiz(async () => {
+      const result = await createQuizAction({
+        lessonId: lesson.id,
+        title: `แบบทดสอบ: ${lesson.title}`,
+        passScorePct: 60,
+      });
+      if (result.ok && result.quizId) {
+        toast.success("สร้างแบบทดสอบสำเร็จ");
+        router.push(`/admin/courses/${courseId}/quizzes/${result.quizId}`);
+      } else {
+        toast.error("สร้างแบบทดสอบไม่สำเร็จ");
+      }
+    });
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -497,6 +534,21 @@ function LessonDetailPanel({
 
         <dt className="text-muted-foreground">ลำดับ</dt>
         <dd>{lesson.sortOrder}</dd>
+
+        <dt className="text-muted-foreground">แบบทดสอบ</dt>
+        <dd>
+          {lesson.quizId ? (
+            <Button size="xs" variant="ghost" asChild>
+              <Link href={`/admin/courses/${courseId}/quizzes/${lesson.quizId}`}>
+                แก้ไขแบบทดสอบ →
+              </Link>
+            </Button>
+          ) : (
+            <Button size="xs" variant="outline" onClick={handleCreateQuiz} disabled={creatingQuiz}>
+              {creatingQuiz ? "กำลังสร้าง…" : "+ สร้างแบบทดสอบ"}
+            </Button>
+          )}
+        </dd>
       </dl>
 
       {lesson.bodyMd && (

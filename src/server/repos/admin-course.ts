@@ -3,6 +3,7 @@ import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
+import { quiz } from "@/db/schema/quiz";
 
 export interface AdminCourseListItem {
   id: string;
@@ -95,6 +96,7 @@ export interface AdminCurriculumLesson {
   sortOrder: number;
   videoMediaId: string | null;
   bunnyVideoId: string | null;
+  quizId: string | null;
 }
 
 export interface AdminCurriculumModule {
@@ -134,9 +136,11 @@ export async function getAdminCourseCurriculum(
         sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
           "bunny_video_id",
         ),
+      quizId: quiz.id,
     })
     .from(lesson)
     .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
+    .leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))
     .where(isNull(lesson.deletedAt))
     .orderBy(asc(lesson.sortOrder));
 
@@ -153,6 +157,7 @@ export async function getAdminCourseCurriculum(
       sortOrder: l.sortOrder,
       videoMediaId: l.videoMediaId,
       bunnyVideoId: l.bunnyVideoId,
+      quizId: l.quizId ?? null,
     });
     byModule.set(l.moduleId, list);
   }
@@ -181,9 +186,11 @@ export async function getAdminLessonById(lessonId: string) {
         sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
           "bunny_video_id",
         ),
+      quizId: quiz.id,
     })
     .from(lesson)
     .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
+    .leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))
     .where(and(eq(lesson.id, lessonId), isNull(lesson.deletedAt)))
     .limit(1);
   return rows[0] ?? null;

@@ -1,9 +1,16 @@
 "use server";
 
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { getSession } from "@/server/auth-session";
 import { canEditCourse } from "@/server/services/course-authz";
-import { getAdminQuizById, saveAdminQuiz } from "@/server/repos/admin-quiz";
+import { db } from "@/db/client";
+import { lesson, courseModule } from "@/db/schema/course";
+import {
+  getAdminQuizById,
+  saveAdminQuiz,
+  createAdminQuiz,
+} from "@/server/repos/admin-quiz";
 
 const saveQuizSchema = z.object({
   quizId: z.string().uuid(),
@@ -48,4 +55,48 @@ export async function saveQuizAction(input: z.infer<typeof saveQuizSchema>) {
   });
 
   return { ok: true };
+}
+
+const createQuizSchema = z.object({
+  lessonId: z.string().uuid(),
+  title: z.string().min(1).max(200),
+  passScorePct: z.number().int().min(1).max(100).default(60),
+});
+
+export async function createQuizAction(input: z.infer<typeof createQuizSchema>) {
+  const session = await getSession();
+  if (!session?.user?.id) {
+    return { ok: false, error: "unauthorized" as const };
+  }
+
+  const parsed = createQuizSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "invalid_input" as const };
+  }
+
+  // Verify lesson belongs to a course the user can edit.
+  const [row] = await db
+    .select({ courseId: courseModule.courseId })
+    .from(lesson)
+    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+    .where(eq(lesson.id, parsed.data.lessonId))
+    .limit(1);
+
+  if (!row) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  const canEdit = await canEditCourse(session.user.id, session.user.role, row.courseId);
+  if (!canEdit) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const quizId = await createAdminQuiz({
+    lessonId: parsed.data.lessonId,
+    title: parsed.data.title,
+    passScorePct: parsed.data.passScorePct,
+    createdByUserId: session.user.id,
+  });
+
+  return { ok: true, quizId };
 }

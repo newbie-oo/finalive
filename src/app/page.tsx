@@ -90,7 +90,7 @@ export default async function Home() {
               )}
             </div>
 
-            {/* Trust row */}
+            {/* Trust row — TODO: wire to real aggregates when analytics table lands */}
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
               <TrustStat value="8,900+" label="นักเรียนที่ลงทะเบียน" />
               <span className="hidden h-8 w-px bg-(--border) sm:block" aria-hidden />
@@ -278,7 +278,7 @@ function TrustStat({
 
 function HeroVisual() {
   return (
-    <div className="relative ml-auto hidden w-full max-w-[540px] grid-cols-2 gap-5 md:grid">
+    <div className="relative ml-auto hidden w-full max-w-[540px] select-none grid-cols-2 gap-5 md:grid" style={{ pointerEvents: "none" }}>
       {/* Big featured card */}
       <div
         className="col-span-2 overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-lg)"
