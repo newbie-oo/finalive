@@ -468,11 +468,7 @@ function SortableLesson({
         >
           ฟรี
         </button>
-        {lesson.quizId && (
-          <span className="rounded bg-success/20 px-1.5 py-0.5 text-[10px] text-success" title="มีแบบทดสอบ">
-            ข้อสอบ
-          </span>
-        )}
+        <LessonQuizInlineAction courseId={courseId} lesson={lesson} />
         <Link
           href={`/admin/courses/${courseId}/lessons/${lesson.id}`}
           className="ml-1 text-xs text-primary hover:underline"
@@ -481,6 +477,55 @@ function SortableLesson({
         </Link>
       </span>
     </div>
+  );
+}
+
+function LessonQuizInlineAction({
+  courseId,
+  lesson,
+}: {
+  courseId: string;
+  lesson: AdminCurriculumLesson;
+}) {
+  const router = useRouter();
+  const [creating, startCreate] = useTransition();
+
+  if (lesson.quizId) {
+    return (
+      <Link
+        href={`/admin/courses/${courseId}/quizzes/${lesson.quizId}`}
+        className="rounded bg-success/20 px-1.5 py-0.5 text-[10px] text-success hover:bg-success/30"
+        title="แก้ไขแบบทดสอบ"
+      >
+        ข้อสอบ →
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={creating}
+      onClick={() => {
+        startCreate(async () => {
+          const result = await createQuizAction({
+            lessonId: lesson.id,
+            title: `แบบทดสอบ: ${lesson.title}`,
+            passScorePct: 60,
+          });
+          if (result.ok && result.quizId) {
+            toast.success("สร้างแบบทดสอบสำเร็จ");
+            router.push(`/admin/courses/${courseId}/quizzes/${result.quizId}`);
+          } else {
+            toast.error("สร้างแบบทดสอบไม่สำเร็จ");
+          }
+        });
+      }}
+      className="rounded border border-dashed border-muted-foreground/40 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
+      title="สร้างแบบทดสอบให้บทเรียนนี้"
+    >
+      {creating ? "กำลังสร้าง…" : "+ ข้อสอบ"}
+    </button>
   );
 }
 
