@@ -20,8 +20,10 @@ import { FreeCourseCta } from "@/components/course/free-course-cta";
 import {
   getPublishedCourseBySlug,
   getCourseCurriculum,
+  isUserEnrolledInCourse,
   type CurriculumLesson,
 } from "@/server/repos/course";
+import { getSession } from "@/server/auth-session";
 import { formatTHB, formatDuration } from "@/lib/format";
 
 function LessonRow({ lesson, courseSlug }: { lesson: CurriculumLesson; courseSlug: string }) {
@@ -75,6 +77,11 @@ export default async function CourseDetailPage({
   const { slug } = await params;
   const course = await getPublishedCourseBySlug(slug);
   if (!course) notFound();
+  const session = await getSession();
+  const userId = session?.user?.id ?? null;
+  const isEnrolled = userId
+    ? await isUserEnrolledInCourse(userId, course.id)
+    : false;
   const curriculum = await getCourseCurriculum(course.id, { includeEmptyModules: false });
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const totalDuration = curriculum.reduce(
@@ -82,6 +89,9 @@ export default async function CourseDetailPage({
     0,
   );
   const price = course.isFree ? "ฟรี" : formatTHB(course.price);
+  const hasPreviewableLesson = curriculum.some((m) =>
+    m.lessons.some((l) => l.isPreview || l.isFree),
+  );
 
   return (
     <PublicShell>
@@ -181,7 +191,11 @@ export default async function CourseDetailPage({
                     })}
                   </ul>
 
-                  {course.isFree ? (
+                  {isEnrolled ? (
+                    <Button asChild variant="primary" size="lg" className="w-full">
+                      <Link href={`/learn/${course.slug}`}>เข้าเรียน</Link>
+                    </Button>
+                  ) : course.isFree ? (
                     <FreeCourseCta courseSlug={course.slug} />
                   ) : (
                     <form action="/checkout/start" method="post">
@@ -191,7 +205,10 @@ export default async function CourseDetailPage({
                       </Button>
                     </form>
                   )}
-                  {curriculum.some((m) => m.lessons.some((l) => l.isPreview || l.isFree)) && (
+                  {/* Hide redundant preview CTA: already-enrolled students go
+                      straight to /learn, and free courses make every lesson
+                      previewable so the link is noise. */}
+                  {!isEnrolled && !course.isFree && hasPreviewableLesson && (
                     <Link
                       href={`#curriculum`}
                       className="block w-full text-center text-ui font-medium text-(--primary) hover:underline"

@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
+import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
 import { publicUrl } from "@/server/services/r2";
 import {
@@ -291,4 +292,27 @@ export async function getCourseCurriculum(
   }));
 
   return includeEmptyModules ? result : result.filter((m) => m.lessons.length > 0);
+}
+
+/**
+ * Returns true when the given user has any non-cancelled enrollment for the
+ * given course. Used by /courses/[slug] to swap "ลงทะเบียน" → "เข้าเรียน"
+ * once the student is in.
+ */
+export async function isUserEnrolledInCourse(
+  userId: string,
+  courseId: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ id: enrollment.id })
+    .from(enrollment)
+    .where(
+      and(
+        eq(enrollment.userId, userId),
+        eq(enrollment.courseId, courseId),
+        eq(enrollment.status, "active"),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
 }
