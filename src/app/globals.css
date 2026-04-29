@@ -211,3 +211,90 @@
 :focus-visible {
   outline-color: var(--primary);
 }
+
+/* Prose-style markdown typography for lesson/quiz body content */
+@layer utilities {
+  .prose-style {
+    color: var(--foreground);
+  }
+  .prose-style h2 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+    color: var(--foreground);
+  }
+  .prose-style h3 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: var(--foreground);
+  }
+  .prose-style h4 {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 1.25em;
+    margin-bottom: 0.4em;
+    color: var(--foreground);
+  }
+  .prose-style p {
+    margin-bottom: 1em;
+    line-height: 1.75;
+    color: var(--foreground-muted);
+  }
+  .prose-style p strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .prose-style ul,
+  .prose-style ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+    line-height: 1.75;
+    color: var(--foreground-muted);
+  }
+  .prose-style ul {
+    list-style-type: disc;
+  }
+  .prose-style ol {
+    list-style-type: decimal;
+  }
+  .prose-style li {
+    margin-bottom: 0.35em;
+  }
+  .prose-style li::marker {
+    color: var(--foreground-subtle);
+  }
+  .prose-style blockquote {
+    margin: 1.25em 0;
+    padding: 0.75em 1em;
+    border-left: 3px solid var(--primary);
+    background: var(--surface-muted);
+    border-radius: 0 8px 8px 0;
+    color: var(--foreground-muted);
+  }
+  .prose-style blockquote p {
+    margin: 0;
+  }
+  .prose-style code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--surface-muted);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--primary);
+  }
+  .prose-style hr {
+    margin: 1.5em 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+  .prose-style > *:first-child {
+    margin-top: 0 !important;
+  }
+}

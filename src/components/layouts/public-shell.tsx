@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { List, X, EnvelopeSimple, ChatCircle } from "@phosphor-icons/react";
+import { List, X, YoutubeLogo } from "@phosphor-icons/react";
 import { useSession } from "@/lib/auth-client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
@@ -24,8 +24,7 @@ const FOOTER_COLS: Array<{ heading: string; links: Array<{ label: string; href: 
   {
     heading: "เกี่ยวกับ",
     links: [
-      { label: "ผู้สอน", href: "/#about" },
-      { label: "ติดต่อเรา", href: "mailto:hello@finalive.co" },
+      { label: "ผู้สอน", href: "/instructor" },
     ],
   },
   {
@@ -69,6 +68,15 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
+            <a
+              href="https://www.youtube.com/@armrileyquant"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
+            >
+              <YoutubeLogo size={18} weight="fill" />
+            </a>
             <ThemeToggle />
             {session?.user ? (
               <UserProfileDropdown
@@ -159,11 +167,14 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
                 คอร์สวิเคราะห์การเงินและการลงทุน สำหรับคนทำงานสายการเงิน
               </p>
               <div className="mt-4 flex gap-2">
-                <a href="mailto:hello@finalive.co" aria-label="email" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)">
-                  <EnvelopeSimple size={16} />
-                </a>
-                <a href="#" aria-label="line" className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)">
-                  <ChatCircle size={16} />
+                <a
+                  href="https://www.youtube.com/@armrileyquant"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)"
+                >
+                  <YoutubeLogo size={16} weight="fill" />
                 </a>
               </div>
             </div>
@@ -185,9 +196,6 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           <div className="mt-10 flex flex-col justify-between gap-3 border-t border-(--border) pt-6 md:flex-row">
             <div className="text-caption text-(--foreground-subtle)">
               © {new Date().getFullYear()} Finalive · สงวนลิขสิทธิ์
-            </div>
-            <div className="text-caption text-(--foreground-subtle)">
-              ติดต่อ: hello@finalive.co
             </div>
           </div>
         </div>
