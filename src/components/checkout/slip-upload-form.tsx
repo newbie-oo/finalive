@@ -33,8 +33,15 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
       setPreview(null);
       return;
     }
-    if (!f.type.startsWith("image/")) {
-      toast.error("รองรับเฉพาะไฟล์รูปภาพ (PNG หรือ JPG)");
+    // Browser-reported MIME is loose; the server re-validates via magic
+    // bytes (see src/lib/file-sniff.ts). This client-side check is just
+    // for early UX feedback.
+    const allowed =
+      f.type.startsWith("image/") || f.type === "application/pdf";
+    const looksHeic =
+      /\.(heic|heif)$/i.test(f.name) || /heic|heif/i.test(f.type);
+    if (!allowed && !looksHeic) {
+      toast.error("รองรับเฉพาะ PNG, JPG, PDF, HEIC");
       return;
     }
     if (f.size > MAX_SLIP_BYTES) {
@@ -42,9 +49,15 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
       return;
     }
     setFile(f);
-    const reader = new FileReader();
-    reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(f);
+    // Only image files render an inline preview; PDFs and HEIC are listed
+    // by name (HEIC won't decode in <img> on most browsers anyway).
+    if (f.type.startsWith("image/") && !looksHeic) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(f);
+    } else {
+      setPreview(null);
+    }
   }, []);
 
   const onDrop = useCallback(
@@ -102,14 +115,16 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
         ) : (
           <div className="space-y-1.5">
             <p className="text-h4 text-(--foreground)">ลากไฟล์มาวาง หรือคลิกเลือก</p>
-            <p className="text-uism text-(--foreground-muted)">PNG / JPG ขนาดไม่เกิน 5 MB</p>
+            <p className="text-uism text-(--foreground-muted)">
+              PNG / JPG / PDF / HEIC ขนาดไม่เกิน 5 MB
+            </p>
           </div>
         )}
         <input
           id="slip-file"
           name="slip"
           type="file"
-          accept="image/png,image/jpeg"
+          accept="image/png,image/jpeg,image/heic,image/heif,application/pdf,.heic,.heif"
           required
           className="sr-only"
           onChange={(e) => handleFile(e.target.files?.[0] ?? null)}

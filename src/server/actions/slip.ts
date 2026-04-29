@@ -8,7 +8,7 @@ import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
-import { sniffImageType } from "@/lib/file-sniff";
+import { sniffSlipFile } from "@/lib/file-sniff";
 import { requireSession } from "../auth-session";
 import { putObject } from "../services/r2";
 import { withIdempotency } from "../services/idempotency";
@@ -40,9 +40,12 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
   // Trust magic bytes, not the browser-supplied Content-Type. The sniffed
   // result is what we store as media_asset.mime_type so admins viewing the
   // slip get a Content-Type that matches the actual payload.
-  const sniffed = sniffImageType(input.bytes);
+  const sniffed = sniffSlipFile(input.bytes);
   if (sniffed === "unknown") {
-    throw new ApiError("validation_failed", "file content is not a PNG/JPEG image");
+    throw new ApiError(
+      "validation_failed",
+      "file content must be PNG, JPEG, PDF, or HEIC",
+    );
   }
 
   const idemKey = createHash("sha256")
@@ -87,7 +90,18 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
 
       // Storage key derives only from values we control — never from the
       // user-supplied filename (which can carry path traversal / RTL overrides).
-      const ext = sniffed === "image/png" ? "png" : "jpg";
+      // sniffed is narrowed above (the "unknown" branch already threw), so
+      // this map only needs the four real types.
+      const extByMime: Record<
+        Exclude<typeof sniffed, "unknown">,
+        string
+      > = {
+        "image/png": "png",
+        "image/jpeg": "jpg",
+        "image/heic": "heic",
+        "application/pdf": "pdf",
+      };
+      const ext = extByMime[sniffed as Exclude<typeof sniffed, "unknown">];
       const storageKey = `slips/${pending.userId}/${pending.id}/${randomUUID()}.${ext}`;
 
       // 1) Reserve a media_asset row in pending_upload state. This claims the
@@ -97,7 +111,7 @@ export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResu
       const [media] = await db
         .insert(mediaAsset)
         .values({
-          kind: "image",
+          kind: sniffed === "application/pdf" ? "pdf" : "image",
           storage: "r2_private",
           storageKey,
           mimeType: sniffed,
