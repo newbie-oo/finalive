@@ -3,6 +3,7 @@
 import { useState, useTransition, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { Play, Clock } from "@phosphor-icons/react";
 import { updateLessonAction } from "@/server/actions/admin-curriculum";
 import { VideoUploader } from "@/components/admin/video-uploader";
 import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
@@ -116,6 +117,27 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
 
         <div>
           <label className="mb-1 block text-sm font-medium">วิดีโอ</label>
+          {lesson.bunnyVideoId ? (
+            <div className="mb-3 rounded-[10px] border border-(--border) bg-(--surface-muted) p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+                  <Play size={18} weight="fill" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-ui font-medium text-(--foreground)">มีวิดีโอแล้ว</div>
+                  <div className="text-caption text-(--foreground-muted)">
+                    Bunny ID: <span className="mono">{lesson.bunnyVideoId}</span>
+                  </div>
+                </div>
+                {lesson.durationSeconds && (
+                  <div className="flex items-center gap-1 text-caption text-(--foreground-muted)">
+                    <Clock size={12} />
+                    <span className="num">{Math.floor(lesson.durationSeconds / 60)}:{(lesson.durationSeconds % 60).toString().padStart(2, "0")}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
           <VideoUploader
             courseId={courseId}
             lessonId={lesson.id}

@@ -80,7 +80,7 @@ export async function POST(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const courseId = url.searchParams.get("courseId");
   const lessonId = url.searchParams.get("lessonId");
-  const fileName = req.headers.get("x-file-name") || "video.mp4";
+  const fileName = decodeURIComponent(req.headers.get("x-file-name") || "video.mp4");
   const contentType = req.headers.get("content-type") || "video/mp4";
   const lengthHeader = req.headers.get("content-length");
   const fileSize = lengthHeader ? parseInt(lengthHeader, 10) : 0;

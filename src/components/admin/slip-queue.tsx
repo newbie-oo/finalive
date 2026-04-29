@@ -88,7 +88,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     [query.data],
   );
 
-  const activeId = initialSelectedId ?? rows[0]?.id;
+  const activeId = initialSelectedId ?? (status === "submitted" ? rows[0]?.id : undefined);
   const active = rows.find((r) => r.id === activeId) ?? null;
   const activeIndex = active ? rows.findIndex((r) => r.id === active.id) : -1;
 

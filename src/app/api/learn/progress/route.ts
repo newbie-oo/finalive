@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSession } from "@/server/auth-session";
-import { updateWatchedSeconds } from "@/server/repos/progress";
+import { updateWatchedSeconds, markLessonComplete } from "@/server/repos/progress";
 
 const schema = z.object({
   lessonId: z.string().uuid(),
   watchedSeconds: z.number().int().min(0),
+  markComplete: z.boolean().optional(),
 });
+
+const COMPLETE_SENTINEL = 999_000;
 
 export async function POST(req: Request) {
   const { user } = await requireSession();
@@ -22,6 +25,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ code: "validation_failed" }, { status: 400 });
   }
 
-  await updateWatchedSeconds(user.id, parsed.data.lessonId, parsed.data.watchedSeconds);
-  return NextResponse.json({ ok: true });
+  const { lessonId, watchedSeconds, markComplete } = parsed.data;
+
+  if (markComplete || watchedSeconds >= COMPLETE_SENTINEL) {
+    await markLessonComplete(user.id, lessonId);
+  } else {
+    await updateWatchedSeconds(user.id, lessonId, watchedSeconds);
+  }
+
+  return NextResponse.json({ ok: true, completed: markComplete || watchedSeconds >= COMPLETE_SENTINEL });
 }

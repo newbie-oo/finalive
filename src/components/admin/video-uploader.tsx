@@ -47,7 +47,7 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
       const xhr = new XMLHttpRequest();
       xhr.open("POST", url);
       xhr.setRequestHeader("content-type", file.type || "video/mp4");
-      xhr.setRequestHeader("x-file-name", file.name);
+      xhr.setRequestHeader("x-file-name", encodeURIComponent(file.name));
       xhr.upload.onprogress = (ev) => {
         if (!ev.lengthComputable) return;
         const pct = Math.round((ev.loaded / ev.total) * 100);

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { Button } from "@/components/ui/button";
@@ -52,8 +53,21 @@ export function LearnPageClient({
   watchedSeconds,
   hlsUrl,
 }: LearnPageClientProps) {
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // Listen for video completion event from VidstackPlayer
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent;
+      if (custom.detail?.lessonId === lessonId) {
+        router.refresh();
+      }
+    };
+    window.addEventListener("lesson-completed", handler);
+    return () => window.removeEventListener("lesson-completed", handler);
+  }, [router, lessonId]);
 
   return (
     <div className="flex h-[100dvh] flex-col bg-(--background)">
@@ -85,6 +99,8 @@ export function LearnPageClient({
                   title={lessonTitle}
                   currentTime={watchedSeconds}
                   lessonId={lessonId}
+                  nextLessonId={nextLessonId}
+                  courseSlug={courseSlug}
                 />
               ) : (
                 <div

@@ -134,17 +134,19 @@ export async function getLearnCourse(
       .limit(1);
     isEnrolled = enrollRows.length > 0;
 
-    if (isEnrolled) {
-      const progRows = await db
-        .select({
-          lessonId: lessonProgress.lessonId,
-          status: lessonProgress.status,
-          watchedSeconds: lessonProgress.watchedSeconds,
-        })
-        .from(lessonProgress)
-        .where(eq(lessonProgress.userId, userId));
-      progress = progRows;
+    // Fetch progress for all authenticated users (even if not enrolled),
+    // so preview/free lesson progress is visible in the sidebar.
+    const progRows = await db
+      .select({
+        lessonId: lessonProgress.lessonId,
+        status: lessonProgress.status,
+        watchedSeconds: lessonProgress.watchedSeconds,
+      })
+      .from(lessonProgress)
+      .where(eq(lessonProgress.userId, userId));
+    progress = progRows;
 
+    if (isEnrolled) {
       // Resume: most recently updated lesson, preferring in_progress over completed.
       // Done at the DB to keep status priority + updatedAt sorting consistent.
       const [resume] = await db

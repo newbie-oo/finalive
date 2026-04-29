@@ -35,26 +35,42 @@ export async function updateWatchedSeconds(
   lessonId: string,
   watchedSeconds: number,
 ): Promise<void> {
+  const now = new Date();
   await db
-    .update(lessonProgress)
-    .set({
+    .insert(lessonProgress)
+    .values({
+      userId,
+      lessonId,
+      status: "in_progress",
       watchedSeconds: Math.max(0, watchedSeconds),
-      lastWatchedAt: new Date(),
-      updatedAt: new Date(),
+      lastWatchedAt: now,
     })
-    .where(
-      and(eq(lessonProgress.userId, userId), eq(lessonProgress.lessonId, lessonId)),
-    );
+    .onConflictDoUpdate({
+      target: [lessonProgress.userId, lessonProgress.lessonId],
+      set: {
+        watchedSeconds: Math.max(0, watchedSeconds),
+        lastWatchedAt: now,
+        updatedAt: now,
+      },
+    });
 }
 
 export async function markLessonComplete(
   userId: string,
   lessonId: string,
 ): Promise<void> {
+  const now = new Date();
   await db
-    .update(lessonProgress)
-    .set({ status: "completed", updatedAt: new Date() })
-    .where(
-      and(eq(lessonProgress.userId, userId), eq(lessonProgress.lessonId, lessonId)),
-    );
+    .insert(lessonProgress)
+    .values({
+      userId,
+      lessonId,
+      status: "completed",
+      watchedSeconds: 0,
+      lastWatchedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [lessonProgress.userId, lessonProgress.lessonId],
+      set: { status: "completed", updatedAt: now },
+    });
 }
