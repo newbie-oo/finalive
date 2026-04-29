@@ -4,10 +4,13 @@ import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { pendingEnrollment, paymentSlip } from "@/db/schema/payment";
+import { user as userTable } from "@/db/schema/auth";
 import { listPendingSlips, countPendingSlipsByStatus } from "@/server/repos/slip";
 
 async function reset() {
-  await db.execute(sql`TRUNCATE payment_slip, pending_enrollment, media_asset, course CASCADE`);
+  await db.execute(
+    sql`TRUNCATE payment_slip, pending_enrollment, media_asset, course, "user" CASCADE`,
+  );
 }
 
 async function seed(opts: { count: number }) {
@@ -24,6 +27,12 @@ async function seed(opts: { count: number }) {
   if (!c) throw new Error("course insert failed");
 
   for (let i = 0; i < opts.count; i++) {
+    await db.insert(userTable).values({
+      id: `u${i}`,
+      email: `s${i}@t`,
+      name: `Student ${i}`,
+      role: "user",
+    });
     const [m] = await db
       .insert(mediaAsset)
       .values({

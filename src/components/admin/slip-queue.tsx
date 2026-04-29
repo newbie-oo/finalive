@@ -24,6 +24,8 @@ interface SlipRow {
   pendingId: string;
   refCode: string;
   studentUserId: string;
+  studentName: string | null;
+  studentEmail: string | null;
   courseId: string;
   courseSlug: string;
   courseTitle: string;
@@ -365,9 +367,13 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                     scroll={false}
                     className="flex flex-1 flex-col gap-0.5"
                   >
-                    <span className="font-medium">{slip.refCode}</span>
+                    <span className="font-medium">
+                      {slip.studentName || slip.studentEmail || slip.refCode}
+                    </span>
                     <span className="text-xs text-muted-foreground">{slip.courseTitle}</span>
-                    <span className="text-xs">{formatTHB(slip.expectedAmount)}</span>
+                    <span className="text-xs tabular-nums">
+                      {formatTHB(slip.expectedAmount)} · <span className="font-mono text-[11px]">{slip.refCode}</span>
+                    </span>
                   </Link>
                 </li>
               );
@@ -400,12 +406,21 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               <dd>{active.courseTitle}</dd>
               <dt className="text-muted-foreground">ราคา</dt>
               <dd>{formatTHB(active.expectedAmount)}</dd>
-              <dt className="text-muted-foreground">นักเรียนแจ้งยอด</dt>
-              <dd>
-                {active.reportedAmount ? formatTHB(active.reportedAmount) : "—"}
-              </dd>
+              {active.reportedAmount ? (
+                <>
+                  <dt className="text-muted-foreground">นักเรียนแจ้งยอด</dt>
+                  <dd>{formatTHB(active.reportedAmount)}</dd>
+                </>
+              ) : null}
               <dt className="text-muted-foreground">นักเรียน</dt>
-              <dd className="font-mono text-xs">{active.studentUserId}</dd>
+              <dd>
+                {active.studentName || active.studentEmail || active.studentUserId}
+                {active.studentEmail && active.studentName ? (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {active.studentEmail}
+                  </span>
+                ) : null}
+              </dd>
               <dt className="text-muted-foreground">ส่งเมื่อ</dt>
               <dd>{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
               <dt className="text-muted-foreground">สถานะ</dt>

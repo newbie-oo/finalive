@@ -3,6 +3,7 @@ import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
+import { user as userTable } from "@/db/schema/auth";
 import {
   buildCursorResponse,
   decodeCursor,
@@ -64,6 +65,8 @@ export async function listPendingSlips(
       pendingId: pendingEnrollment.id,
       refCode: pendingEnrollment.refCode,
       studentUserId: pendingEnrollment.userId,
+      studentName: userTable.name,
+      studentEmail: userTable.email,
       courseId: course.id,
       courseSlug: course.slug,
       courseTitle: course.title,
@@ -71,6 +74,7 @@ export async function listPendingSlips(
     .from(paymentSlip)
     .innerJoin(pendingEnrollment, eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id))
     .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
+    .innerJoin(userTable, eq(pendingEnrollment.userId, userTable.id))
     .where(where)
     .orderBy(desc(paymentSlip.createdAt), desc(paymentSlip.id))
     .limit(params.per_page);
