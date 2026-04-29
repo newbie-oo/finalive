@@ -17,6 +17,9 @@ const registerSchema = z.object({
   name: z.string().min(1, "กรุณากรอกชื่อ"),
   email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
   password: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"),
+  acceptTerms: z.literal(true, {
+    errorMap: () => ({ message: "กรุณายอมรับข้อตกลงและนโยบายความเป็นส่วนตัว" }),
+  }),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -121,6 +124,29 @@ export default function RegisterPage() {
             ) : (
               <FieldHelper>อย่างน้อย 8 ตัวอักษร</FieldHelper>
             )}
+          </div>
+
+          <div>
+            <label className="flex items-start gap-2 text-uism">
+              <input
+                id="acceptTerms"
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-(--primary)"
+                aria-invalid={!!errors.acceptTerms}
+                {...register("acceptTerms")}
+              />
+              <span className="text-(--foreground-muted)">
+                ฉันยอมรับ{" "}
+                <Link href="/legal/terms" target="_blank" className="text-(--primary) hover:underline">
+                  ข้อตกลงการใช้งาน
+                </Link>{" "}
+                และ{" "}
+                <Link href="/legal/privacy" target="_blank" className="text-(--primary) hover:underline">
+                  นโยบายความเป็นส่วนตัว
+                </Link>
+              </span>
+            </label>
+            {errors.acceptTerms && <FieldError>{errors.acceptTerms.message}</FieldError>}
           </div>
 
           {serverError && (
