@@ -13,6 +13,7 @@ export function NewCourseForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFree, setIsFree] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,12 +55,32 @@ export function NewCourseForm() {
           </div>
 
           <div>
-            <Label htmlFor="price" required>ราคา</Label>
-            <Input id="price" name="price" type="text" required defaultValue="0.00" className="num" />
+            <Label htmlFor="price" required={!isFree}>ราคา</Label>
+            <Input
+              id="price"
+              name="price"
+              type="text"
+              required={!isFree}
+              disabled={isFree}
+              defaultValue="0.00"
+              className="num"
+            />
+            {isFree && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                ปลดล็อกช่อง “คอร์สฟรี” ก่อนหากต้องการตั้งราคา
+              </p>
+            )}
           </div>
 
           <label className="flex items-center gap-2 text-ui">
-            <input name="isFree" type="checkbox" value="true" className="h-4 w-4 accent-(--primary)" />
+            <input
+              name="isFree"
+              type="checkbox"
+              value="true"
+              checked={isFree}
+              onChange={(e) => setIsFree(e.target.checked)}
+              className="h-4 w-4 accent-(--primary)"
+            />
             คอร์สฟรี
           </label>
 

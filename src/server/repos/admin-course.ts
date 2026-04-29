@@ -50,13 +50,16 @@ export async function createAdminCourse(input: {
   isFree: boolean;
   ownerUserId: string;
 }) {
+  // Invariant: a free course cannot have a non-zero price. Force price to 0
+  // when isFree=true so admins can't accidentally save a contradictory state.
+  const price = input.isFree ? "0.00" : input.price;
   const [row] = await db
     .insert(course)
     .values({
       slug: input.slug,
       title: input.title,
       summary: input.summary,
-      price: input.price,
+      price,
       isFree: input.isFree,
       ownerUserId: input.ownerUserId,
       createdByUserId: input.ownerUserId,
@@ -78,9 +81,19 @@ export async function updateAdminCourse(
     coverMediaId?: string | null;
   },
 ) {
+  const updates: typeof input = { ...input };
+
+  // Same invariant on update: if the caller is flipping isFree=true, zero out
+  // price (whether or not they passed a price field). If isFree is not part of
+  // this update, trust the caller — db state already enforces the previous
+  // invariant via the create path.
+  if (updates.isFree === true) {
+    updates.price = "0.00";
+  }
+
   await db
     .update(course)
-    .set({ ...input, updatedAt: new Date() })
+    .set({ ...updates, updatedAt: new Date() })
     .where(eq(course.id, courseId));
 }
 

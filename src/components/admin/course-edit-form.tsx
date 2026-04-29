@@ -18,6 +18,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFree, setIsFree] = useState(course.isFree);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,9 +71,15 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           name="price"
           type="text"
           defaultValue={course.price}
-          required
-          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          required={!isFree}
+          disabled={isFree}
+          className="mt-1 w-full rounded border px-3 py-2 text-sm disabled:bg-muted disabled:text-muted-foreground"
         />
+        {isFree && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            ปลดล็อกช่อง “คอร์สฟรี” ก่อนหากต้องการตั้งราคา
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -80,7 +87,8 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           name="isFree"
           type="checkbox"
           value="true"
-          defaultChecked={course.isFree}
+          checked={isFree}
+          onChange={(e) => setIsFree(e.target.checked)}
           className="h-4 w-4"
         />
         <label className="text-sm">คอร์สฟรี</label>
