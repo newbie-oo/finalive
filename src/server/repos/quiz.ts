@@ -87,12 +87,20 @@ export interface SubmitAttemptInput {
   answers: Record<string, string>; // questionId -> choiceId
 }
 
+export interface QuestionResult {
+  questionId: string;
+  selectedChoiceId: string;
+  correctChoiceId: string;
+  isCorrect: boolean;
+}
+
 export interface SubmitAttemptResult {
   attemptId: string;
   scorePct: number;
   passed: boolean;
   totalQuestions: number;
   correctCount: number;
+  questionResults: QuestionResult[];
 }
 
 export async function submitQuizAttempt(input: SubmitAttemptInput): Promise<SubmitAttemptResult> {
@@ -122,10 +130,13 @@ export async function submitQuizAttempt(input: SubmitAttemptInput): Promise<Subm
   }
 
   let correctCount = 0;
+  const questionResults: QuestionResult[] = [];
   for (const q of questions) {
-    if (input.answers[q.id] === correctMap.get(q.id)) {
-      correctCount += 1;
-    }
+    const selectedChoiceId = input.answers[q.id] ?? "";
+    const correctChoiceId = correctMap.get(q.id) ?? "";
+    const isCorrect = selectedChoiceId === correctChoiceId && selectedChoiceId !== "";
+    if (isCorrect) correctCount += 1;
+    questionResults.push({ questionId: q.id, selectedChoiceId, correctChoiceId, isCorrect });
   }
 
   const totalQuestions = questions.length;
@@ -157,5 +168,6 @@ export async function submitQuizAttempt(input: SubmitAttemptInput): Promise<Subm
     passed,
     totalQuestions,
     correctCount,
+    questionResults,
   };
 }

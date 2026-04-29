@@ -14,6 +14,7 @@ import {
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard } from "@/components/course/course-card";
 import { listFeaturedCourses } from "@/server/repos/course";
+import { getSession } from "@/server/auth-session";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,8 @@ const STEPS = [
 
 export default async function Home() {
   const featured = await listFeaturedCourses(4);
+  const session = await getSession();
+  const isLoggedIn = !!session?.user;
 
   return (
     <PublicShell>
@@ -70,12 +73,21 @@ export default async function Home() {
               >
                 ดูคอร์สทั้งหมด <ArrowRight size={16} weight="bold" />
               </Link>
-              <Link
-                href="/register"
-                className="inline-flex h-12 items-center rounded-button border border-(--border) bg-(--surface-muted) px-6 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken)"
-              >
-                ลงทะเบียนฟรี
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/account/enrollments"
+                  className="inline-flex h-12 items-center rounded-button border border-(--border) bg-(--surface-muted) px-6 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken)"
+                >
+                  คอร์สของฉัน
+                </Link>
+              ) : (
+                <Link
+                  href="/register"
+                  className="inline-flex h-12 items-center rounded-button border border-(--border) bg-(--surface-muted) px-6 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken)"
+                >
+                  ลงทะเบียนฟรี
+                </Link>
+              )}
             </div>
 
             {/* Trust row */}
@@ -108,9 +120,9 @@ export default async function Home() {
                 ดูทั้งหมด <ArrowRight size={14} weight="bold" />
               </Link>
             </div>
-            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
               {featured.map((c) => (
-                <li key={c.id}>
+                <li key={c.id} className="h-full">
                   <CourseCard course={c} />
                 </li>
               ))}
@@ -193,19 +205,30 @@ export default async function Home() {
           <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-center md:gap-8">
             <div>
               <h2 className="text-h2 max-w-[640px] text-white">
-                พร้อมเริ่มเรียนแล้วใช่ไหม?
+                {isLoggedIn ? "พร้อมเรียนต่อใช่ไหม?" : "พร้อมเริ่มเรียนแล้วใช่ไหม?"}
               </h2>
               <p className="mt-2.5 max-w-[540px] text-bodylg text-white/80">
-                ลงทะเบียนฟรีวันนี้ เริ่มจากคอร์สตัวอย่าง — ดูได้ทันทีไม่ต้องชำระเงิน
+                {isLoggedIn
+                  ? "เข้าสู่คอร์สของคุณและเรียนต่อจากจุดที่ค้างไว้"
+                  : "ลงทะเบียนฟรีวันนี้ เริ่มจากคอร์สตัวอย่าง — ดูได้ทันทีไม่ต้องชำระเงิน"}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/register"
-                className="inline-flex h-12 items-center gap-2 rounded-button bg-(--accent) px-6 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
-              >
-                ลงทะเบียนฟรี <ArrowRight size={16} weight="bold" />
-              </Link>
+              {isLoggedIn ? (
+                <Link
+                  href="/account/enrollments"
+                  className="inline-flex h-12 items-center gap-2 rounded-button bg-(--accent) px-6 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+                >
+                  คอร์สของฉัน <ArrowRight size={16} weight="bold" />
+                </Link>
+              ) : (
+                <Link
+                  href="/register"
+                  className="inline-flex h-12 items-center gap-2 rounded-button bg-(--accent) px-6 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+                >
+                  ลงทะเบียนฟรี <ArrowRight size={16} weight="bold" />
+                </Link>
+              )}
               <Link
                 href="/courses"
                 className="inline-flex h-12 items-center rounded-button border border-white/25 bg-white/10 px-6 text-ui font-medium text-white transition-colors hover:bg-white/20"

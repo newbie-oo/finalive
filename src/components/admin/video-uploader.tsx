@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { EncodingStatus } from "./encoding-status";
 
 interface VideoUploaderProps {
   courseId: string;
@@ -10,21 +11,19 @@ interface VideoUploaderProps {
   onUploadComplete?: () => void;
 }
 
-/**
- * Direct upload to /api/admin/lesson-video. Cap progress at 99% until the
- * server confirms a 2xx — `xhr.upload.onprogress` only sees bytes-out, not
- * the Bunny PUT + DB writes finishing on the server (DESIGN.md §5.13).
- */
 export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bunnyVideoId, setBunnyVideoId] = useState<string | null>(null);
 
   const reset = () => {
     setUploading(false);
     setProgress(0);
     setProcessing(false);
+    setError(null);
+    setBunnyVideoId(null);
   };
 
   const handleFileChange = useCallback(
@@ -40,10 +39,8 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
       setUploading(true);
       setProgress(0);
       setProcessing(false);
+      setBunnyVideoId(null);
 
-      // Stream the raw bytes (no multipart wrapping) so Next 16's FormData
-      // limit isn't in the path. courseId/lessonId go on the URL, the
-      // filename on a header — server forwards body straight to Bunny.
       const url = `/api/admin/lesson-video?courseId=${encodeURIComponent(
         courseId,
       )}&lessonId=${encodeURIComponent(lessonId)}`;
@@ -54,12 +51,9 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
       xhr.upload.onprogress = (ev) => {
         if (!ev.lengthComputable) return;
         const pct = Math.round((ev.loaded / ev.total) * 100);
-        // Cap at 99 until the server confirms the response — the last 1%
-        // is "Bunny PUT + DB writes finishing", which onProgress can't see.
         setProgress(Math.min(pct, 99));
       };
       xhr.upload.onload = () => {
-        // Bytes left our browser; the server is now busy with Bunny.
         setProcessing(true);
       };
       xhr.onerror = () => {
@@ -74,6 +68,14 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
           setUploading(false);
           setProcessing(false);
           setError(null);
+          try {
+            const body = JSON.parse(xhr.responseText) as { bunnyVideoId?: string };
+            if (body.bunnyVideoId) {
+              setBunnyVideoId(body.bunnyVideoId);
+            }
+          } catch {
+            // ignore parse error
+          }
           toast.success("อัปโหลดเสร็จแล้ว วิดีโอกำลังเข้ารหัสที่ Bunny (1–5 นาที)");
           onUploadComplete?.();
           return;
@@ -138,6 +140,16 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
             style={{ width: `${progress}%` }}
           />
         </div>
+      )}
+
+      {bunnyVideoId && !uploading && (
+        <EncodingStatus
+          videoId={bunnyVideoId}
+          onReady={() => {
+            toast.success("วิดีโอพร้อมเล่นแล้ว");
+            onUploadComplete?.();
+          }}
+        />
       )}
 
       {error && (

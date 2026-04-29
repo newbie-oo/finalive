@@ -208,6 +208,7 @@ export interface GetLearnLessonResult {
   courseTitle: string;
   moduleTitle: string;
   nextLessonId: string | null;
+  prevLessonId: string | null;
 }
 
 export async function getLearnLesson(
@@ -269,6 +270,24 @@ export async function getLearnLesson(
 
   const nextLessonId = nextRow?.id ?? null;
 
+  // Previous lesson
+  const [prevRow] = await db
+    .select({ id: lesson.id })
+    .from(lesson)
+    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+    .where(
+      and(
+        eq(courseModule.courseId, row.courseId),
+        isNull(lesson.deletedAt),
+        isNull(courseModule.deletedAt),
+        sql`(${courseModule.sortOrder}, ${lesson.sortOrder}) < (${row.moduleSortOrder}, ${row.lessonSortOrder})`,
+      ),
+    )
+    .orderBy(desc(courseModule.sortOrder), desc(lesson.sortOrder))
+    .limit(1);
+
+  const prevLessonId = prevRow?.id ?? null;
+
   return {
     id: row.id,
     title: row.title,
@@ -282,5 +301,6 @@ export async function getLearnLesson(
     courseTitle: row.courseTitle,
     moduleTitle: row.moduleTitle,
     nextLessonId,
+    prevLessonId,
   };
 }

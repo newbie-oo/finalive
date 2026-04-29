@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { CheckCircle, ArrowRight } from "@phosphor-icons/react";
@@ -19,6 +20,7 @@ export function LessonClient({
   nextLessonId,
   durationSeconds,
 }: LessonClientProps) {
+  const router = useRouter();
   const [started, setStarted] = useState(false);
   const [watched, setWatched] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -72,6 +74,7 @@ export function LessonClient({
       if (!res.ok) throw new Error("failed");
       setCompleted(true);
       toast.success("จบบทเรียนแล้ว");
+      router.refresh();
     } catch {
       toast.error("บันทึกไม่สำเร็จ");
     }

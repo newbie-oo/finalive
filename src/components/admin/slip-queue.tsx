@@ -14,6 +14,18 @@ import { formatTHB } from "@/lib/format";
 import type { SlipQueueStatus } from "@/server/repos/slip";
 import { SlipImageViewer } from "./slip-image-viewer";
 import { REJECT_REASONS, REJECT_REASON_LABEL } from "./slip-reject-options";
+import {
+  Check,
+  X,
+  CaretUp,
+  CaretDown,
+  Eye,
+  Clock,
+  CheckCircle,
+  Prohibit,
+  Coins,
+  ArrowCounterClockwise,
+} from "@phosphor-icons/react";
 
 interface SlipRow {
   id: string;
@@ -127,8 +139,6 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     });
   }, []);
 
-  // Drop selections that left the visible queue (filter change / accepted /
-  // rejected) at read time so we never act on phantom IDs.
   const visibleIds = useMemo(() => new Set(rows.map((r) => r.id)), [rows]);
   const effectiveSelected = useMemo(
     () => new Set(Array.from(selected).filter((id) => visibleIds.has(id))),
@@ -248,8 +258,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     [active, busy, refresh],
   );
 
-  // Hotkeys: j/k navigate, Enter no-op (already focused), a accept, r open reject.
-  // Skip when typing in inputs or when the reject popover holds focus.
+  // Hotkeys
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -268,10 +277,11 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
       } else if (e.key === "r") {
         e.preventDefault();
         setRejectOpen(true);
-        // Let React commit the dialog before focusing.
         queueMicrotask(() => rejectButtonRef.current?.focus());
+      } else if (e.key === "s") {
+        e.preventDefault();
+        moveSelection(1);
       } else if (e.key === " ") {
-        // Space toggles selection on the currently active row.
         if (active) {
           e.preventDefault();
           toggleSelected(active.id);
@@ -283,179 +293,251 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         } else if (bulkMode !== "none") {
           e.preventDefault();
           setBulkMode("none");
+        } else if (activeId) {
+          const next = new URLSearchParams(sp.toString());
+          next.delete("selected");
+          router.replace(`/admin/slips?${next.toString()}`, { scroll: false });
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [moveSelection, accept, rejectOpen, active, toggleSelected, bulkMode]);
+  }, [moveSelection, accept, rejectOpen, active, toggleSelected, bulkMode, activeId, sp, router]);
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-      <div className="flex max-h-[70vh] flex-col rounded-md border border-border">
-        {effectiveSelected.size > 0 ? (
-          <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/40 px-3 py-2 text-sm">
-            <span>เลือก {effectiveSelected.size}</span>
-            <button
-              type="button"
-              onClick={bulkAccept}
-              disabled={busy}
-              className="rounded-md bg-foreground px-2 py-1 text-xs text-background disabled:opacity-50"
-            >
-              อนุมัติทั้งหมด
-            </button>
-            <button
-              type="button"
-              onClick={() => setBulkMode((v) => (v === "reject" ? "none" : "reject"))}
-              disabled={busy}
-              className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
-            >
-              ปฏิเสธทั้งหมด…
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSelected(new Set());
-                setBulkMode("none");
-              }}
-              className="ml-auto text-xs text-muted-foreground hover:underline"
-            >
-              ล้างการเลือก
-            </button>
-            {bulkMode === "reject" ? (
-              <div className="flex w-full flex-wrap gap-2 border-t border-border pt-2">
-                {REJECT_REASONS.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => bulkReject(r)}
-                    className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted disabled:opacity-50"
+    <div className="relative" style={{ minHeight: "calc(100vh - 3.5rem - 3rem)" }}>
+      {/* Table */}
+      <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-hidden">
+        <table className="w-full border-collapse" style={{ tableLayout: "fixed" }}>
+          <thead>
+            <tr className="border-b border-(--border) bg-(--surface-muted)">
+              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 140 }}>
+                รหัส
+              </th>
+              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)">
+                ผู้เรียน
+              </th>
+              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)">
+                คอร์ส
+              </th>
+              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 110 }}>
+                จำนวน
+              </th>
+              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 100 }}>
+                เวลา
+              </th>
+              <th className="px-3 py-2.5" style={{ width: 80 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {query.isLoading && rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-4 text-caption text-(--foreground-muted)">กำลังโหลด…</td>
+              </tr>
+            ) : rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-4 text-caption text-(--foreground-muted)">— ไม่มีสลิปในคิวนี้ —</td>
+              </tr>
+            ) : (
+              rows.map((slip) => {
+                const isActive = slip.id === activeId;
+                return (
+                  <tr
+                    key={slip.id}
+                    className="cursor-pointer border-b border-(--border) transition-colors"
+                    style={{
+                      background: isActive
+                        ? "color-mix(in srgb, var(--primary) 6%, transparent)"
+                        : "transparent",
+                    }}
+                    onClick={() => select(slip.id)}
                   >
-                    {REJECT_REASON_LABEL[r]}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-        <ul className="flex flex-col overflow-y-auto">
-          {query.isLoading && rows.length === 0 ? (
-            <li className="p-4 text-sm text-muted-foreground">กำลังโหลด…</li>
-          ) : rows.length === 0 ? (
-            <li className="p-4 text-sm text-muted-foreground">— ไม่มีสลิปในคิวนี้ —</li>
-          ) : (
-            rows.map((slip) => {
-              const isActive = slip.id === activeId;
-              const isChecked = effectiveSelected.has(slip.id);
-              return (
-                <li
-                  key={slip.id}
-                  className={`flex items-center gap-2 border-b border-border px-3 py-2 text-sm last:border-b-0 ${
-                    isActive ? "bg-muted" : "hover:bg-muted/50"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleSelected(slip.id)}
-                    aria-label={`เลือก ${slip.refCode}`}
-                    className="size-4"
-                  />
-                  <Link
-                    href={`/admin/slips?status=${status}&selected=${slip.id}`}
-                    scroll={false}
-                    className="flex flex-1 flex-col gap-0.5"
-                  >
-                    <span className="font-medium">
-                      {slip.studentName || slip.studentEmail || slip.refCode}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{slip.courseTitle}</span>
-                    <span className="text-xs tabular-nums">
-                      {formatTHB(slip.expectedAmount)} · <span className="font-mono text-[11px]">{slip.refCode}</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })
-          )}
-        </ul>
+                    <td className="px-3 py-2.5">
+                      <span className="mono text-[12px] text-(--foreground-muted)">{slip.refCode}</span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[11px] font-semibold text-white">
+                          {(slip.studentName || "?").trim().charAt(0)}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-ui font-medium text-(--foreground)">
+                            {slip.studentName || slip.studentEmail || slip.refCode}
+                          </div>
+                          {slip.studentEmail && (
+                            <div className="truncate text-caption text-(--foreground-muted)">{slip.studentEmail}</div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="truncate text-ui text-(--foreground)">{slip.courseTitle}</div>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <span className="num text-[13px] font-semibold">{formatTHB(slip.expectedAmount)}</span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <span className="text-caption text-(--foreground-muted)">
+                        {new Date(slip.createdAt).toLocaleDateString("th-TH")}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          select(slip.id);
+                        }}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-[8px] px-2.5 text-uism text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+                      >
+                        <Eye size={14} /> ดู
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
         {query.hasNextPage ? (
           <button
             type="button"
             onClick={() => query.fetchNextPage()}
             disabled={query.isFetchingNextPage}
-            className="border-t border-border px-3 py-2 text-sm hover:bg-muted/50 disabled:opacity-50"
+            className="w-full border-t border-(--border) px-3 py-2.5 text-sm text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) disabled:opacity-50"
           >
             {query.isFetchingNextPage ? "กำลังโหลด…" : "โหลดเพิ่ม"}
           </button>
         ) : null}
       </div>
 
-      <div className="rounded-md border border-border p-4">
-        {active ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-2">
-              <h2 className="text-lg font-semibold">{active.refCode}</h2>
-              <span className="text-xs text-muted-foreground">
-                ปุ่มลัด: <kbd>j</kbd>/<kbd>k</kbd> เลื่อน · <kbd>Space</kbd> เลือก · <kbd>a</kbd> อนุมัติ · <kbd>r</kbd> ปฏิเสธ
-              </span>
-            </div>
-            <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-              <dt className="text-muted-foreground">คอร์ส</dt>
-              <dd>{active.courseTitle}</dd>
-              <dt className="text-muted-foreground">ราคา</dt>
-              <dd>{formatTHB(active.expectedAmount)}</dd>
-              {active.reportedAmount ? (
-                <>
-                  <dt className="text-muted-foreground">นักเรียนแจ้งยอด</dt>
-                  <dd>{formatTHB(active.reportedAmount)}</dd>
-                </>
-              ) : null}
-              <dt className="text-muted-foreground">นักเรียน</dt>
-              <dd>
-                {active.studentName || active.studentEmail || active.studentUserId}
-                {active.studentEmail && active.studentName ? (
-                  <span className="ml-2 text-xs text-muted-foreground">
-                    {active.studentEmail}
-                  </span>
-                ) : null}
-              </dd>
-              <dt className="text-muted-foreground">ส่งเมื่อ</dt>
-              <dd>{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
-              <dt className="text-muted-foreground">สถานะ</dt>
-              <dd>{active.status}</dd>
-            </dl>
-
-            <SlipImageViewer slipId={active.id} />
-
-            {error ? (
-              <div className="rounded border border-destructive bg-destructive/10 p-2 text-sm text-destructive">
-                {error}
+      {/* Slip Detail Sheet */}
+      {active && (
+        <div
+          className="absolute inset-0 z-40 flex justify-end"
+          style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              const next = new URLSearchParams(sp.toString());
+              next.delete("selected");
+              router.replace(`/admin/slips?${next.toString()}`, { scroll: false });
+            }
+          }}
+        >
+          <div
+            className="flex h-full w-full max-w-[540px] flex-col bg-(--surface) shadow-lg"
+            style={{ borderLeft: "1px solid var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Sheet header */}
+            <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <SlipStatusChip status={active.status} />
+                <span className="mono text-[13px] text-(--foreground-muted)">{active.refCode}</span>
               </div>
-            ) : null}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => moveSelection(-1)}
+                  className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+                  aria-label="ก่อนหน้า"
+                >
+                  <CaretUp size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSelection(1)}
+                  className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+                  aria-label="ถัดไป"
+                >
+                  <CaretDown size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = new URLSearchParams(sp.toString());
+                    next.delete("selected");
+                    router.replace(`/admin/slips?${next.toString()}`, { scroll: false });
+                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+                  aria-label="ปิด"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
 
-            {active.status === "submitted" ? (
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={accept}
-                  disabled={busy}
-                  className="rounded-md bg-foreground px-3 py-1.5 text-sm text-background disabled:opacity-50"
-                >
-                  อนุมัติ (a)
-                </button>
-                <button
-                  type="button"
-                  ref={rejectButtonRef}
-                  onClick={() => setRejectOpen((v) => !v)}
-                  disabled={busy}
-                  className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:opacity-50"
-                >
-                  ปฏิเสธ (r)
-                </button>
-                {rejectOpen ? (
-                  <div className="w-full rounded-md border border-border p-3">
+            {/* Sheet body */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Image viewer */}
+              <div className="border-b border-(--border) bg-(--surface-sunken) p-5">
+                {/* Prominent amount badge */}
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">ยอดชำระ</span>
+                  <span className="num inline-flex items-baseline gap-1 rounded-[10px] bg-(--primary) px-3 py-1.5 text-[18px] font-bold text-white">
+                    <Coins size={16} weight="bold" />
+                    {parseInt(active.expectedAmount, 10).toLocaleString("th-TH")}
+                    <span className="text-[12px] font-medium">บาท</span>
+                  </span>
+                </div>
+                <SlipImageViewer slipId={active.id} />
+              </div>
+
+              {/* Meta panel */}
+              <div className="flex flex-col gap-4 p-5">
+                {/* Student card */}
+                <div className="flex items-center gap-3 rounded-[14px] border border-(--border) bg-(--surface) p-3.5">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[14px] font-semibold text-white">
+                    {(active.studentName || "?").trim().slice(0, 2)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-ui font-semibold text-(--foreground)">
+                      {active.studentName || "ไม่ระบุชื่อ"}
+                    </div>
+                    <div className="text-caption text-(--foreground-muted)">{active.studentEmail}</div>
+                  </div>
+                </div>
+
+                {/* Course card */}
+                <div className="flex items-center gap-3 rounded-[14px] border border-(--border) bg-(--surface) p-3.5">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+                    <Coins size={20} weight="bold" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-ui font-semibold text-(--foreground)">{active.courseTitle}</div>
+                    <div className="text-caption text-(--foreground-muted)">คอร์สเดี่ยว · เข้าถึงตลอดชีพ</div>
+                  </div>
+                </div>
+
+                {/* Submitted info */}
+                <div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
+                  <div className="mb-3 text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">
+                    ข้อมูลการชำระ
+                  </div>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[13px]">
+                    <dt className="text-(--foreground-muted)">ส่งเมื่อ</dt>
+                    <dd className="num">{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
+                    <dt className="text-(--foreground-muted)">ราคา</dt>
+                    <dd className="num font-semibold text-(--foreground)">{formatTHB(active.expectedAmount)}</dd>
+                    {active.reportedAmount && (
+                      <>
+                        <dt className="text-(--foreground-muted)">นักเรียนแจ้งยอด</dt>
+                        <dd className="num">{formatTHB(active.reportedAmount)}</dd>
+                      </>
+                    )}
+                    <dt className="text-(--foreground-muted)">รหัสอ้างอิง</dt>
+                    <dd className="mono text-(--foreground)">{active.refCode}</dd>
+                  </dl>
+                </div>
+
+                {error && (
+                  <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                    {error}
+                  </div>
+                )}
+
+                {rejectOpen && active.status === "submitted" && (
+                  <div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
                     <p className="mb-2 text-sm font-medium">เลือกเหตุผล</p>
                     <div className="flex flex-wrap gap-2">
                       {REJECT_REASONS.map((r) => (
@@ -464,25 +546,91 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                           type="button"
                           disabled={busy}
                           onClick={() => reject(r)}
-                          className="rounded-md border border-border px-2 py-1 text-sm hover:bg-muted disabled:opacity-50"
+                          className="rounded-[8px] border border-(--border) bg-(--surface) px-2.5 py-1.5 text-sm transition-colors hover:bg-(--surface-muted) disabled:opacity-50"
                         >
                           {REJECT_REASON_LABEL[r]}
                         </button>
                       ))}
                     </div>
                   </div>
-                ) : null}
+                )}
+              </div>
+            </div>
+
+            {/* Sticky action bar */}
+            {active.status === "submitted" ? (
+              <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
+                <button
+                  type="button"
+                  onClick={() => moveSelection(1)}
+                  disabled={busy}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-(--border) bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken) disabled:opacity-50"
+                >
+                  ข้าม
+                  <span className="mono rounded border border-(--border) bg-(--surface) px-1 py-0.5 text-[10px]">S</span>
+                </button>
+                <button
+                  type="button"
+                  ref={rejectButtonRef}
+                  onClick={() => setRejectOpen((v) => !v)}
+                  disabled={busy}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-(--destructive) py-3 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C] disabled:opacity-50"
+                >
+                  <Prohibit size={16} weight="bold" />
+                  ปฏิเสธ
+                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">R</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => accept()}
+                  disabled={busy}
+                  className="flex flex-[1.4] items-center justify-center gap-1.5 rounded-[10px] bg-(--accent) py-3 text-ui font-semibold text-white transition-colors hover:bg-(--accent-hover) disabled:opacity-50"
+                >
+                  <CheckCircle size={16} weight="bold" />
+                  อนุมัติ
+                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">A</span>
+                </button>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                slip นี้ผ่านการตรวจแล้ว ({active.status})
-              </p>
+              <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
+                <div className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground-muted)">
+                  <ArrowCounterClockwise size={16} />
+                  สลิปนี้ถูก{active.status === "approved" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
+                </div>
+              </div>
             )}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">เลือกสลิปทางซ้ายเพื่อดูรายละเอียด</p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SlipStatusChip({ status }: { status: string }) {
+  if (status === "approved") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-(--success-bg) px-2.5 py-0.5 text-[12px] font-medium text-(--success)">
+        <CheckCircle size={11} weight="fill" /> อนุมัติแล้ว
+      </span>
+    );
+  }
+  if (status === "rejected") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-(--destructive-bg) px-2.5 py-0.5 text-[12px] font-medium text-(--destructive)">
+        <Prohibit size={11} weight="fill" /> ปฏิเสธแล้ว
+      </span>
+    );
+  }
+  if (status === "submitted") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-(--warning-bg) px-2.5 py-0.5 text-[12px] font-medium text-(--warning-fg)">
+        <Clock size={11} weight="fill" /> รอตรวจ
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-(--surface-muted) px-2.5 py-0.5 text-[12px] font-medium text-(--foreground-muted)">
+      <Clock size={11} /> {status}
+    </span>
   );
 }

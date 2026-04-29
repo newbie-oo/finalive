@@ -31,7 +31,7 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5">
-        <h3 className="text-h4 text-(--foreground) group-hover:text-(--primary)">{course.title}</h3>
+        <h3 className="line-clamp-2 text-h4 text-(--foreground) group-hover:text-(--primary)">{course.title}</h3>
         <p className="line-clamp-2 text-body text-(--foreground-muted)">{course.summary}</p>
         <span className="num mt-auto pt-2 text-h4 font-semibold text-(--foreground)">{price}</span>
       </div>

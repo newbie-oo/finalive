@@ -1,14 +1,6 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { CaretLeft, ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import { VidstackPlayer } from "@/components/course/vidstack-player";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { buildHlsUrl } from "@/server/services/bunny";
-import { CurriculumSidebar } from "@/components/learn/curriculum-sidebar";
-import { LearnShell } from "@/components/learn/learn-shell";
-import { LessonClient } from "@/components/learn/lesson-client";
-import { MarkdownView } from "@/lib/markdown";
+import { LearnPageClient } from "@/components/learn/learn-page-client";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
 import { getQuizByLessonId } from "@/server/repos/quiz";
@@ -47,82 +39,34 @@ export default async function LearnLessonPage({
     redirect(`/courses/${courseSlug}`);
   }
 
+  const totalLessons = courseData.modules.reduce(
+    (acc, m) => acc + m.lessons.length,
+    0,
+  );
+  const doneLessons = courseData.progress.filter((p) => p.status === "completed").length;
+  const currentProgress = courseData.progress.find((p) => p.lessonId === lessonId);
+  const watchedSeconds = currentProgress?.watchedSeconds ?? 0;
+
   return (
-    <LearnShell user={session?.user ?? null}>
-      <div className="grid h-[calc(100dvh-3.5rem)] grid-cols-1 lg:grid-cols-[280px_1fr]">
-        <aside className="hidden lg:block">
-          <CurriculumSidebar
-            courseSlug={courseSlug}
-            modules={courseData.modules}
-            progress={courseData.progress}
-            isEnrolled={courseData.isEnrolled}
-          />
-        </aside>
-        <main className="overflow-y-auto px-6 py-8 lg:px-10">
-          <div className="mx-auto max-w-[960px] space-y-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <Link
-                  href={`/courses/${courseSlug}`}
-                  className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
-                >
-                  <CaretLeft size={14} /> {lessonData.courseTitle}
-                </Link>
-                <h1 className="mt-2 text-h2">{lessonData.title}</h1>
-                <p className="mt-1 text-uism text-foreground-subtle">{lessonData.moduleTitle}</p>
-              </div>
-              {lessonData.nextLessonId && (
-                <Button asChild variant="secondary" size="md">
-                  <Link href={`/learn/${courseSlug}/${lessonData.nextLessonId}`}>
-                    บทถัดไป <ArrowRight size={16} weight="bold" />
-                  </Link>
-                </Button>
-              )}
-            </div>
-
-            <div className="overflow-hidden rounded-card border border-(--border)">
-              {lessonData.bunnyVideoId ? (
-                <VidstackPlayer
-                  src={buildHlsUrl({ videoId: lessonData.bunnyVideoId })}
-                  title={lessonData.title}
-                />
-              ) : (
-                <div
-                  role="status"
-                  className="flex aspect-video w-full items-center justify-center bg-(--surface-muted) text-body text-(--foreground-muted)"
-                >
-                  ยังไม่มีวิดีโอสำหรับบทเรียนนี้ — กรุณาอ่านเนื้อหาด้านล่าง
-                </div>
-              )}
-            </div>
-
-            <LessonClient
-              lessonId={lessonData.id}
-              courseSlug={courseSlug}
-              nextLessonId={lessonData.nextLessonId}
-              durationSeconds={lessonData.durationSeconds}
-            />
-
-            {quizMeta && (
-              <Card className="flex items-center justify-between gap-4 bg-(--surface-muted)">
-                <div>
-                  <h3 className="text-h4">{quizMeta.title}</h3>
-                  <p className="mt-1 text-body text-(--foreground-muted)">ทดสอบความเข้าใจหลังจบบทเรียน</p>
-                </div>
-                <Button asChild variant="primary">
-                  <Link href={`/learn/${courseSlug}/quiz/${quizMeta.id}`}>ทำแบบทดสอบ</Link>
-                </Button>
-              </Card>
-            )}
-
-            {lessonData.bodyMd && (
-              <div className="prose-style">
-                <MarkdownView text={lessonData.bodyMd} />
-              </div>
-            )}
-          </div>
-        </main>
-      </div>
-    </LearnShell>
+    <LearnPageClient
+      courseSlug={courseSlug}
+      courseTitle={lessonData.courseTitle}
+      lessonId={lessonData.id}
+      lessonTitle={lessonData.title}
+      moduleTitle={lessonData.moduleTitle}
+      lessonBodyMd={lessonData.bodyMd}
+      bunnyVideoId={lessonData.bunnyVideoId}
+      durationSeconds={lessonData.durationSeconds}
+      nextLessonId={lessonData.nextLessonId}
+      prevLessonId={lessonData.prevLessonId}
+      quizId={quizMeta?.id ?? null}
+      modules={courseData.modules}
+      progress={courseData.progress}
+      isEnrolled={courseData.isEnrolled}
+      totalLessons={totalLessons}
+      doneLessons={doneLessons}
+      watchedSeconds={watchedSeconds}
+      hlsUrl={lessonData.bunnyVideoId ? buildHlsUrl({ videoId: lessonData.bunnyVideoId }) : null}
+    />
   );
 }

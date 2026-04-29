@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { CheckCircle, PlayCircle, Circle, LockSimple } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  PlayCircle,
+  Circle,
+  LockSimple,
+  X,
+} from "@phosphor-icons/react";
 
 interface SidebarLesson {
   id: string;
@@ -13,7 +19,7 @@ interface SidebarLesson {
   sortOrder: number;
 }
 
-interface SidebarModule {
+export interface SidebarModule {
   id: string;
   title: string;
   sortOrder: number;
@@ -25,6 +31,8 @@ interface CurriculumSidebarProps {
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
   isEnrolled: boolean;
+  totalLessons?: number;
+  onClose?: () => void;
 }
 
 function fmtDuration(seconds: number | null): string {
@@ -35,10 +43,10 @@ function fmtDuration(seconds: number | null): string {
 }
 
 function StatusIcon({ status, locked }: { status: string; locked: boolean }) {
-  if (locked) return <LockSimple size={14} className="text-(--foreground-subtle)" />;
+  if (locked) return <LockSimple size={14} className="text-foreground-subtle" />;
   if (status === "completed") return <CheckCircle size={14} weight="fill" className="text-success" />;
-  if (status === "in_progress") return <PlayCircle size={14} weight="fill" className="text-(--primary)" />;
-  return <Circle size={14} className="text-(--foreground-subtle)" />;
+  if (status === "in_progress") return <PlayCircle size={14} weight="fill" className="text-primary" />;
+  return <Circle size={14} className="text-foreground-subtle" />;
 }
 
 export function CurriculumSidebar({
@@ -46,16 +54,39 @@ export function CurriculumSidebar({
   modules,
   progress,
   isEnrolled,
+  totalLessons,
+  onClose,
 }: CurriculumSidebarProps) {
   const params = useParams();
   const activeLessonId = params.lessonId as string;
   const progressMap = new Map(progress.map((p) => [p.lessonId, p.status]));
 
+  const lessonCount = totalLessons ?? modules.reduce((acc, m) => acc + m.lessons.length, 0);
+
   return (
-    <nav className="flex h-full flex-col border-r border-(--border) bg-(--surface)">
-      <div className="border-b border-(--border) px-5 py-4">
-        <h2 className="text-h4">บทเรียน</h2>
+    <nav className="flex h-full flex-col bg-(--surface)">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-(--border) px-5 py-4">
+        <div>
+          <h2 className="text-h4" style={{ margin: 0 }}>หลักสูตร</h2>
+          <div className="text-caption text-(--foreground-muted)">
+            <span className="num">{modules.length}</span> บท ·{" "}
+            <span className="num">{lessonCount}</span> บทเรียน
+          </div>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+            aria-label="ปิด"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
+
+      {/* Lesson list */}
       <div className="flex-1 overflow-y-auto p-3">
         {modules.map((mod) => (
           <div key={mod.id} className="mb-4">
@@ -68,7 +99,7 @@ export function CurriculumSidebar({
                 const locked = !isEnrolled && !les.isPreview && !les.isFree;
                 const stat = progressMap.get(les.id) ?? "not_started";
                 const baseClass =
-                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
+                  "flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
                 const stateClass = isActive
                   ? "bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] font-semibold text-(--primary)"
                   : locked
@@ -112,6 +143,7 @@ export function CurriculumSidebar({
                         href={`/learn/${courseSlug}/${les.id}`}
                         className={`${baseClass} ${stateClass}`}
                         aria-current={isActive ? "page" : undefined}
+                        onClick={onClose}
                       >
                         {inner}
                       </Link>
