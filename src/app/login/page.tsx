@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { signIn } from "@/lib/auth-client";
@@ -20,8 +20,22 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+// Default landing after login = "คอร์สของฉัน". Going to /account (profile
+// form) post-login was confusing — students expect to see their courses, not
+// a settings page.
+const DEFAULT_NEXT = "/account/enrollments";
+
+// Only allow internal redirect targets to defend against open-redirect attacks.
+function safeNext(raw: string | null): string {
+  if (!raw) return DEFAULT_NEXT;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return DEFAULT_NEXT;
+  return raw;
+}
+
 export default function LoginPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = safeNext(params.get("next"));
   const [serverError, setServerError] = useState<string | null>(null);
   const {
     register,
@@ -51,7 +65,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/account");
+    router.push(next);
     router.refresh();
   }
 
