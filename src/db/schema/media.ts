@@ -13,9 +13,11 @@ export const mediaAsset = pgTable(
     width: integer("width"),
     height: integer("height"),
     durationSeconds: integer("duration_seconds"),
-    // Lifecycle: pending_upload (row created before remote PUT) -> ready (PUT confirmed).
-    // A janitor cron sweeps pending_upload rows older than ~10 minutes against the
-    // remote storage, deleting orphaned blobs (and the row).
+    // Lifecycle:
+    //   pending_upload — row created before remote PUT (orphan-cleaned by cron)
+    //   encoding       — Bunny PUT done, awaiting VideoEncoded webhook
+    //   ready          — playable
+    //   failed         — Bunny reported a transcode failure
     status: text("status").notNull().default("ready"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdByUserId: text("created_by_user_id").notNull(),
@@ -23,7 +25,7 @@ export const mediaAsset = pgTable(
   (t) => ({
     statusChk: check(
       "media_asset_status_chk",
-      sql`${t.status} IN ('pending_upload','ready')`,
+      sql`${t.status} IN ('pending_upload','encoding','ready','failed')`,
     ),
     storageLookup: index("media_asset_storage_lookup").on(t.storage, t.storageKey),
     pendingIdx: index("media_asset_pending_idx")

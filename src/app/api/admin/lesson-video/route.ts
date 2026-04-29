@@ -163,7 +163,9 @@ export async function POST(req: Request): Promise<Response> {
         storageKey: bunnyVideoId,
         mimeType: contentType,
         sizeBytes: fileSize || null,
-        status: "ready",
+        // Bytes are at Bunny but encoding/HLS prep takes 1–5 min. Webhook
+        // /api/webhooks/bunny flips this to 'ready' on VideoEncoded.
+        status: "encoding",
         createdByUserId: ctx.user.id,
       })
       .returning({ id: mediaAsset.id });

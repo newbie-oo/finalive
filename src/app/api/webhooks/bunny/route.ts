@@ -54,9 +54,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_library" }, { status: 403 });
   }
 
-  // Only process when video is active (Status === 1).
-  if (payload.Status !== 1) {
-    return NextResponse.json({ ok: true, note: "ignored_non_active" });
+  // Bunny Stream webhook status codes:
+  //   1 Uploaded   — bytes received, not yet encoded; carries Length
+  //   4 Finished   — encoding done, playable (HLS ready)
+  //   5 Error      — transcode failure
+  //   6 UploadFail — upload itself failed
+  // Anything else is ignored.
+  const status = payload.Status ?? -1;
+  if (![1, 4, 5, 6].includes(status)) {
+    return NextResponse.json({ ok: true, note: "ignored_status" });
   }
 
   const durationSeconds = payload.Length ? Math.round(payload.Length) : null;
@@ -65,6 +71,7 @@ export async function POST(request: Request) {
     .select({
       id: mediaAsset.id,
       currentDuration: mediaAsset.durationSeconds,
+      currentStatus: mediaAsset.status,
     })
     .from(mediaAsset)
     .where(
@@ -80,26 +87,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "asset_not_found" }, { status: 404 });
   }
 
-  // Idempotency: if duration is already what the webhook reports, skip the
-  // writes. Bunny may redeliver the same Status=1 event; this keeps the
-  // handler a no-op on replay without needing a separate dedupe table.
-  if (asset.currentDuration === durationSeconds) {
+  // Map Bunny status → media_asset lifecycle. Status=1 (Uploaded) keeps
+  // the asset in 'encoding' until Status=4 fires.
+  const newAssetStatus =
+    status === 4 ? "ready" : status === 5 || status === 6 ? "failed" : null;
+
+  // Idempotency: if nothing would change, skip the writes. Bunny redelivers
+  // the same event on retries; this keeps replay cheap without a dedupe
+  // table.
+  const durationChanged =
+    durationSeconds !== null && asset.currentDuration !== durationSeconds;
+  const statusChanged =
+    newAssetStatus !== null && asset.currentStatus !== newAssetStatus;
+  if (!durationChanged && !statusChanged) {
     return NextResponse.json({ ok: true, note: "already_applied" });
   }
 
-  await db
-    .update(mediaAsset)
-    .set({ durationSeconds })
-    .where(eq(mediaAsset.id, asset.id));
+  const assetUpdate: { durationSeconds?: number | null; status?: string } = {};
+  if (durationChanged) assetUpdate.durationSeconds = durationSeconds;
+  if (statusChanged) assetUpdate.status = newAssetStatus!;
+  await db.update(mediaAsset).set(assetUpdate).where(eq(mediaAsset.id, asset.id));
 
-  await db
-    .update(lesson)
-    .set({ durationSeconds, updatedAt: new Date() })
-    .where(eq(lesson.videoMediaId, asset.id));
+  if (durationChanged) {
+    await db
+      .update(lesson)
+      .set({ durationSeconds, updatedAt: new Date() })
+      .where(eq(lesson.videoMediaId, asset.id));
+  }
 
   logger.info("bunny.webhook.applied", {
     videoGuid,
+    bunnyStatus: status,
     durationSeconds,
+    assetStatus: newAssetStatus,
     assetId: asset.id,
   });
 
