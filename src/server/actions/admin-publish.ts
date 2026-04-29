@@ -1,10 +1,14 @@
 "use server";
 
 import { z } from "zod";
+import { eq, isNull, and } from "drizzle-orm";
+import { db } from "@/db/client";
+import { lesson, courseModule } from "@/db/schema/course";
 import { getSession } from "@/server/auth-session";
 import { canEditCourse } from "@/server/services/course-authz";
 import { getAdminCourseById, updateAdminCourse } from "@/server/repos/admin-course";
 import { getCourseCurriculum } from "@/server/repos/course";
+import { isPlaceholderBody, isInsufficientBody } from "@/server/lib/lesson-content";
 
 const publishSchema = z.object({
   courseId: z.string().uuid(),
@@ -47,10 +51,37 @@ export async function publishCourseAction(formData: FormData) {
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   if (totalLessons === 0) errors.push("ยังไม่มีบทเรียน");
 
-  for (const mod of curriculum) {
-    for (const _ls of mod.lessons) {
-      // Note: we don't have bodyMd in curriculum data; skip content check for now.
-      void _ls;
+  // Content readiness check: pull bodyMd for every lesson in the course and
+  // reject placeholder/empty bodies. Without this gate admins can publish
+  // courses whose lessons still contain seed-script lorem-ipsum filler.
+  if (totalLessons > 0) {
+    const lessonRows = await db
+      .select({
+        id: lesson.id,
+        title: lesson.title,
+        bodyMd: lesson.bodyMd,
+        videoMediaId: lesson.videoMediaId,
+        moduleId: lesson.moduleId,
+      })
+      .from(lesson)
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .where(
+        and(
+          eq(courseModule.courseId, courseId),
+          isNull(lesson.deletedAt),
+          isNull(courseModule.deletedAt),
+        ),
+      );
+
+    for (const ls of lessonRows) {
+      if (isPlaceholderBody(ls.bodyMd)) {
+        errors.push(`บทเรียน "${ls.title}" ยังเป็นเนื้อหา placeholder จาก seed`);
+        continue;
+      }
+      // A lesson is allowed to skip body content if it has a video instead.
+      if (!ls.videoMediaId && isInsufficientBody(ls.bodyMd)) {
+        errors.push(`บทเรียน "${ls.title}" เนื้อหาว่างหรือสั้นเกินไป`);
+      }
     }
   }
 
