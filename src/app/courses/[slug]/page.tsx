@@ -75,7 +75,7 @@ export default async function CourseDetailPage({
   const { slug } = await params;
   const course = await getPublishedCourseBySlug(slug);
   if (!course) notFound();
-  const curriculum = await getCourseCurriculum(course.id);
+  const curriculum = await getCourseCurriculum(course.id, { includeEmptyModules: false });
   const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
   const totalDuration = curriculum.reduce(
     (sum, m) => sum + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),

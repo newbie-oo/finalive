@@ -211,7 +211,19 @@ export interface CurriculumModule {
   lessons: CurriculumLesson[];
 }
 
-export async function getCourseCurriculum(courseId: string): Promise<CurriculumModule[]> {
+export interface GetCourseCurriculumOptions {
+  /**
+   * Include modules that contain zero lessons. Default `true` for admin views.
+   * Public views should pass `false` to hide empty modules from learners.
+   */
+  includeEmptyModules?: boolean;
+}
+
+export async function getCourseCurriculum(
+  courseId: string,
+  options: GetCourseCurriculumOptions = {},
+): Promise<CurriculumModule[]> {
+  const { includeEmptyModules = true } = options;
   const modules = await db
     .select({
       id: courseModule.id,
@@ -252,10 +264,12 @@ export async function getCourseCurriculum(courseId: string): Promise<CurriculumM
     byModule.set(l.moduleId, list);
   }
 
-  return modules.map((m) => ({
+  const result = modules.map((m) => ({
     id: m.id,
     title: m.title,
     sortOrder: m.sortOrder,
     lessons: byModule.get(m.id) ?? [],
   }));
+
+  return includeEmptyModules ? result : result.filter((m) => m.lessons.length > 0);
 }

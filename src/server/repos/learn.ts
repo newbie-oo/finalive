@@ -114,12 +114,14 @@ export async function getLearnCourse(
     byModule.set(l.moduleId, list);
   }
 
-  const curriculum: LearnModule[] = modules.map((m) => ({
-    id: m.id,
-    title: m.title,
-    sortOrder: m.sortOrder,
-    lessons: byModule.get(m.id) ?? [],
-  }));
+  const curriculum: LearnModule[] = modules
+    .map((m) => ({
+      id: m.id,
+      title: m.title,
+      sortOrder: m.sortOrder,
+      lessons: byModule.get(m.id) ?? [],
+    }))
+    .filter((m) => m.lessons.length > 0);
 
   let isEnrolled = false;
   let progress: LearnProgress[] = [];
