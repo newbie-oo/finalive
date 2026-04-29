@@ -22,9 +22,7 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-caption text-(--foreground-muted)">
-            ไม่มีรูปปก
-          </div>
+          <CoverFallback title={course.title} />
         )}
         {course.isFree && (
           <span className="absolute left-3 top-3">
@@ -38,6 +36,28 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
         <span className="num mt-auto pt-2 text-h4 font-semibold text-(--foreground)">{price}</span>
       </div>
     </Link>
+  );
+}
+
+function CoverFallback({ title }: { title: string }) {
+  // Indigo→violet gradient with the course's leading Thai/Latin character. Per
+  // DESIGN.md §5.4 — replaces the bare "ไม่มีรูปปก" placeholder so cards never
+  // look broken when a cover hasn't been uploaded.
+  const initial = (title.trim().charAt(0) || "F").toUpperCase();
+  return (
+    <div className="relative flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
+      <div
+        aria-hidden
+        className="absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-[#F97316]/20 blur-2xl"
+      />
+      <div
+        aria-hidden
+        className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-[#818CF8]/30 blur-2xl"
+      />
+      <span className="relative font-semibold text-white" style={{ fontSize: 56, letterSpacing: "-0.02em" }}>
+        {initial}
+      </span>
+    </div>
   );
 }
 
