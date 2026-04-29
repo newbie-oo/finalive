@@ -1,25 +1,31 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 interface SlipUploadFormProps {
   pendingId: string;
-  amount: string;
 }
 
 const MAX_SLIP_BYTES = 5 * 1024 * 1024;
 
-export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
+/**
+ * Slip upload UX:
+ *  - The drop-zone is a `<label htmlFor>` so clicking it natively opens the
+ *    file picker. The previous `<button>` wrapper trapped the synthetic
+ *    click and the picker never opened.
+ *  - Drag-and-drop also handled on the same label.
+ *  - Amount field removed — the system already knows what amount the
+ *    student owes (it's printed on the page above), so making the user
+ *    re-type it is redundant. The server falls back to the pending's
+ *    expected amount when the field isn't sent.
+ */
+export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [reportedAmount, setReportedAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback((f: File | null) => {
     if (!f) {
@@ -71,14 +77,12 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
     >
       <input type="hidden" name="pendingId" value={pendingId} />
 
-      <button
-        type="button"
+      <label
+        htmlFor="slip-file"
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        onClick={() => inputRef.current?.click()}
-        aria-label="เลือกไฟล์สลิป — ลากไฟล์มาวาง หรือคลิกเลือก"
-        className={`relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) ${
+        className={`relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center rounded-card border-2 border-dashed p-6 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--primary) ${
           dragOver
             ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
             : preview
@@ -102,7 +106,7 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
           </div>
         )}
         <input
-          ref={inputRef}
+          id="slip-file"
           name="slip"
           type="file"
           accept="image/png,image/jpeg"
@@ -110,7 +114,7 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
           className="sr-only"
           onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
         />
-      </button>
+      </label>
 
       {file && (
         <div className="flex items-center justify-between rounded-md border border-(--border) bg-(--surface) px-3 py-2 text-uism">
@@ -124,21 +128,6 @@ export function SlipUploadForm({ pendingId, amount }: SlipUploadFormProps) {
           </button>
         </div>
       )}
-
-      <div>
-        <Label htmlFor="reportedAmount">ยอดที่โอน (THB) — ไม่บังคับ</Label>
-        <Input
-          id="reportedAmount"
-          name="reportedAmount"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder={amount}
-          value={reportedAmount}
-          onChange={(e) => setReportedAmount(e.target.value)}
-          className="num"
-        />
-      </div>
 
       <Button type="submit" variant="accent" size="lg" disabled={!file || submitting} className="w-full">
         {submitting ? "กำลังส่ง…" : "ส่งสลิป"}

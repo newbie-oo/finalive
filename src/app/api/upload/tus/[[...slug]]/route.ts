@@ -30,6 +30,18 @@ const tusServer = new Server({
   path: "/api/upload/tus",
   datastore: new FileStore({ directory: uploadDir }),
   maxSize: MAX_UPLOAD_BYTES,
+  // Without this, @tus/server swallows handler errors as opaque 500s and the
+  // browser only sees "Internal Server Error". Surface the real reason in the
+  // server log + as a body so we can diagnose without tailing process stdio.
+  onResponseError: (...args: unknown[]) => {
+    const err = args[args.length - 1];
+    const e = err as Error & { status_code?: number; body?: string };
+    logger.error("tus.response_error", err);
+    return {
+      status_code: e.status_code ?? 500,
+      body: e.body ?? (e.message || "Upload failed"),
+    };
+  },
   async onUploadCreate(req, upload) {
     const lessonId = upload.metadata?.lessonId;
     const courseId = upload.metadata?.courseId;

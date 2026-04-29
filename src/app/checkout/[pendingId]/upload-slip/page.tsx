@@ -46,7 +46,7 @@ export default async function UploadSlipPage({
           </Card>
         ) : (
           <Card className="mt-6">
-            <SlipUploadForm pendingId={pending.id} amount={pending.amount} />
+            <SlipUploadForm pendingId={pending.id} />
           </Card>
         )}
       </div>
