@@ -8,7 +8,7 @@ import {
   defaultLayoutIcons,
 } from "@vidstack/react/player/layouts/default";
 import type { MediaTimeUpdateEventDetail } from "@vidstack/react";
-import { CheckCircle, ArrowRight, Repeat } from "@phosphor-icons/react";
+import { CheckCircle, ArrowRight, Repeat, WarningCircle } from "@phosphor-icons/react";
 
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
@@ -35,6 +35,15 @@ export function VidstackPlayer({
   const lastSaveRef = useRef(0);
   const hasEndedRef = useRef(false);
   const [showCompleteOverlay, setShowCompleteOverlay] = useState(false);
+  const [hasFatalError, setHasFatalError] = useState(false);
+
+  const handleError = useCallback(() => {
+    // Vidstack/HLS fatal errors (e.g. signed URL 404 because the upstream
+    // Bunny asset was deleted) used to bubble up as an uncaught exception
+    // and leave the player in a broken state. Swap to a quiet fallback
+    // panel instead.
+    setHasFatalError(true);
+  }, []);
 
   const saveProgress = useCallback(
     (seconds: number) => {
@@ -83,6 +92,26 @@ export function VidstackPlayer({
     setShowCompleteOverlay(false);
   }, []);
 
+  if (hasFatalError) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-3 rounded border border-(--border) bg-(--surface-muted) px-6 py-12 text-center">
+        <WarningCircle size={40} weight="duotone" className="text-(--foreground-muted)" />
+        <h3 className="text-h3 text-(--foreground)">วิดีโอนี้ยังไม่พร้อมใช้งาน</h3>
+        <p className="max-w-md text-body text-(--foreground-muted)">
+          เราไม่สามารถโหลดวิดีโอนี้ได้ในตอนนี้ กรุณาลองใหม่อีกครั้ง
+          หรือแจ้งทีมงานที่{" "}
+          <a
+            href="mailto:hello@finalive.dev"
+            className="text-(--primary) hover:underline"
+          >
+            hello@finalive.dev
+          </a>{" "}
+          เราจะเร่งแก้ไขให้เร็วที่สุด
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full">
       <MediaPlayer
@@ -108,6 +137,7 @@ export function VidstackPlayer({
         }}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
+        onError={handleError}
       >
         <MediaProvider />
         <DefaultVideoLayout icons={defaultLayoutIcons} />
