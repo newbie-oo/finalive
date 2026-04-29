@@ -6,7 +6,7 @@ import { user } from "@/db/schema/auth";
 import { enrollment, adminGrant } from "@/db/schema/enrollment";
 import { course } from "@/db/schema/course";
 import { eq, desc } from "drizzle-orm";
-import { listAdminCourses } from "@/server/repos/admin-course";
+import { listGrantableCoursesForUser } from "@/server/repos/admin-course";
 import { GrantDialog } from "@/components/admin/grant-dialog";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { Card } from "@/components/ui/card";
@@ -66,7 +66,7 @@ export default async function AdminUserDetailPage({
     .where(eq(adminGrant.studentUserId, id))
     .orderBy(desc(adminGrant.grantedAt));
 
-  const courses = await listAdminCourses();
+  const courses = await listGrantableCoursesForUser(id);
 
   return (
     <section className="mx-auto max-w-3xl space-y-6">

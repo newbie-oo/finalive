@@ -1,7 +1,8 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
+import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
 
@@ -31,6 +32,35 @@ export async function listAdminCourses(): Promise<AdminCourseListItem[]> {
     .from(course)
     .where(isNull(course.deletedAt))
     .orderBy(desc(course.createdAt));
+}
+
+/**
+ * Courses an admin can grant to a specific student. Filters out:
+ * - drafts and archived courses (admins should only gift production catalog)
+ * - courses the student is already enrolled in (any non-cancelled enrollment)
+ */
+export async function listGrantableCoursesForUser(
+  studentUserId: string,
+): Promise<{ id: string; title: string }[]> {
+  const enrolledRows = await db
+    .select({ courseId: enrollment.courseId })
+    .from(enrollment)
+    .where(eq(enrollment.userId, studentUserId));
+  const enrolledIds = enrolledRows.map((r) => r.courseId);
+
+  const where = enrolledIds.length
+    ? and(
+        eq(course.status, "published"),
+        isNull(course.deletedAt),
+        notInArray(course.id, enrolledIds),
+      )
+    : and(eq(course.status, "published"), isNull(course.deletedAt));
+
+  return db
+    .select({ id: course.id, title: course.title })
+    .from(course)
+    .where(where)
+    .orderBy(asc(course.title));
 }
 
 export async function getAdminCourseById(courseId: string) {
