@@ -212,6 +212,12 @@
   outline-color: var(--primary);
 }
 
+/* Tiptap ProseMirror text-align support */
+.ProseMirror [style*="text-align: left"] { text-align: left; }
+.ProseMirror [style*="text-align: center"] { text-align: center; }
+.ProseMirror [style*="text-align: right"] { text-align: right; }
+.ProseMirror [style*="text-align: justify"] { text-align: justify; }
+
 /* Prose-style markdown typography for lesson/quiz body content */
 @layer utilities {
   .prose-style {
