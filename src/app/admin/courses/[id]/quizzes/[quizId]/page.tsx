@@ -50,7 +50,7 @@ export default async function AdminQuizEditPage({
         </Link>
       </div>
 
-      <QuizBuilder quizId={quizId} initialQuestions={quiz.questions} />
+      <QuizBuilder quizId={quizId} initialPassScorePct={quiz.passScorePct} initialQuestions={quiz.questions} />
     </div>
   );
 }

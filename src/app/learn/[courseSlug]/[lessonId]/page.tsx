@@ -16,25 +16,26 @@ export default async function LearnLessonPage({
   const { courseSlug, lessonId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? null;
+  const isAdmin = session?.user?.role === "admin";
 
   const [courseData, lessonData, quizMeta] = await Promise.all([
-    getLearnCourse(courseSlug, userId),
-    getLearnLesson(courseSlug, lessonId),
+    getLearnCourse(courseSlug, userId, { allowUnpublished: isAdmin }),
+    getLearnLesson(courseSlug, lessonId, { allowUnpublished: isAdmin }),
     getQuizByLessonId(lessonId),
   ]);
 
   if (!courseData || !lessonData) notFound();
-
   const access = checkLessonAccess(
     { isPreview: lessonData.isPreview, isFree: lessonData.isFree },
     { isFree: courseData.course.isFree },
     courseData.isEnrolled,
     userId !== null,
+    isAdmin,
   );
 
   if (!access.ok) {
     if (access.reason === "login_required") {
-      redirect(`/login?redirect=${encodeURIComponent(`/learn/${courseSlug}/${lessonId}`)}`);
+      redirect(`/login?next=${encodeURIComponent(`/learn/${courseSlug}/${lessonId}`)}`);
     }
     redirect(`/courses/${courseSlug}`);
   }
@@ -63,6 +64,7 @@ export default async function LearnLessonPage({
       modules={courseData.modules}
       progress={courseData.progress}
       isEnrolled={courseData.isEnrolled}
+      isAdmin={isAdmin}
       totalLessons={totalLessons}
       doneLessons={doneLessons}
       watchedSeconds={watchedSeconds}

@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/server/auth-session";
 import { createAdminCourse, updateAdminCourse } from "@/server/repos/admin-course";
 import { canEditCourse } from "@/server/services/course-authz";
@@ -10,7 +11,9 @@ const createSchema = z.object({
   slug: z.string().min(1).max(100),
   title: z.string().min(1).max(200),
   summary: z.string().min(1).max(500),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/),
+  // Price may be omitted when the course is free — disabled <input> elements
+  // don't get serialised into FormData, so we fall back to "0.00".
+  price: z.string().regex(/^\d+(\.\d{1,2})?$/).optional(),
   isFree: z.coerce.boolean(),
 });
 
@@ -20,11 +23,12 @@ export async function createCourseAction(formData: FormData) {
     return { ok: false, error: "unauthorized" as const };
   }
 
+  const rawPrice = formData.get("price");
   const parsed = createSchema.safeParse({
     slug: formData.get("slug"),
     title: formData.get("title"),
     summary: formData.get("summary"),
-    price: formData.get("price"),
+    price: rawPrice ?? undefined,
     isFree: formData.get("isFree"),
   });
 
@@ -32,10 +36,20 @@ export async function createCourseAction(formData: FormData) {
     return { ok: false, error: "invalid_input" as const };
   }
 
+  // Free courses always reset price to 0; the repo enforces this too,
+  // but normalising here keeps the type narrow.
+  const price = parsed.data.isFree ? "0.00" : parsed.data.price ?? "0.00";
   const courseId = await createAdminCourse({
-    ...parsed.data,
+    slug: parsed.data.slug,
+    title: parsed.data.title,
+    summary: parsed.data.summary,
+    isFree: parsed.data.isFree,
+    price,
     ownerUserId: session.user.id,
   });
+
+  revalidatePath("/admin/courses");
+  revalidatePath("/courses");
 
   return { ok: true, courseId };
 }
@@ -79,6 +93,12 @@ export async function updateCourseAction(formData: FormData) {
 
   const { courseId: _, ...updates } = parsed.data;
   await updateAdminCourse(courseId, updates);
+
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
+  revalidatePath(`/courses/${courseRow.slug}`);
+  revalidatePath("/courses");
 
   return { ok: true };
 }
@@ -130,6 +150,11 @@ export async function updateCourseCoverAction(formData: FormData) {
   }
 
   await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
+
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/courses/${courseRow.slug}`);
+  revalidatePath("/courses");
 
   return { ok: true };
 }

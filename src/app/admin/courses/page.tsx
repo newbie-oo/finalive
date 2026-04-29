@@ -118,6 +118,7 @@ export default async function AdminCoursesPage({
                 <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">URL</th>
                 <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">สถานะ</th>
                 <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">ราคา</th>
+                <th className="px-5 py-3 text-right text-uism font-semibold text-(--foreground-muted)">ผู้เรียน</th>
                 <th className="px-5 py-3" aria-label="actions" />
               </tr>
             </thead>
@@ -133,6 +134,9 @@ export default async function AdminCoursesPage({
                   </td>
                   <td className="num px-5 py-4 text-(--foreground)">
                     {c.isFree ? "ฟรี" : formatTHB(c.price)}
+                  </td>
+                  <td className="num px-5 py-4 text-right text-(--foreground)">
+                    {c.enrollmentCount.toLocaleString("th-TH")}
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link

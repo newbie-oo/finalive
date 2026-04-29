@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Users } from "@phosphor-icons/react/dist/ssr";
 import type { PublicCourseSummary } from "@/server/repos/course";
 import { formatTHB } from "@/lib/format";
 import { StatusChip } from "@/components/ui/status-chip";
@@ -33,7 +34,13 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="line-clamp-2 text-h4 text-(--foreground) group-hover:text-(--primary)">{course.title}</h3>
         <p className="line-clamp-2 text-body text-(--foreground-muted)">{course.summary}</p>
-        <span className="num mt-auto pt-2 text-h4 font-semibold text-(--foreground)">{price}</span>
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <span className="num text-h4 font-semibold text-(--foreground)">{price}</span>
+          <span className="inline-flex items-center gap-1 text-uism text-(--foreground-muted)">
+            <Users size={14} />
+            <span className="num">{course.enrollmentCount.toLocaleString("th-TH")}</span> ผู้เรียน
+          </span>
+        </div>
       </div>
     </Link>
   );

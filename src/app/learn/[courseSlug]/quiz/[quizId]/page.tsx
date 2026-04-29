@@ -16,15 +16,16 @@ export default async function QuizPage({
   const { courseSlug, quizId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? null;
+  const isAdmin = session?.user?.role === "admin";
 
   const [courseData, quizData] = await Promise.all([
-    getLearnCourse(courseSlug, userId),
+    getLearnCourse(courseSlug, userId, { allowUnpublished: isAdmin }),
     getQuizById(quizId),
   ]);
 
   if (!courseData || !quizData) notFound();
 
-  if (!courseData.isEnrolled) {
+  if (!courseData.isEnrolled && !isAdmin) {
     return (
       <LearnShell user={session?.user ?? null}>
         <section className="mx-auto max-w-md px-6 py-24 text-center">

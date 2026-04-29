@@ -1,12 +1,16 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/server/auth-session";
 import { canEditCourse } from "@/server/services/course-authz";
 import {
   createAdminModule,
   createAdminLesson,
   updateAdminLesson,
+  updateAdminModule,
+  deleteAdminModule,
+  deleteAdminLesson,
   getAdminCourseById,
   getAdminLessonById,
   reorderAdminModules,
@@ -53,6 +57,9 @@ export async function createModuleAction(formData: FormData) {
     sortOrder: nextSortOrder,
     createdByUserId: session.user.id,
   });
+
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
+  revalidatePath(`/courses/${courseRow.slug}`);
 
   return { ok: true, moduleId };
 }
@@ -101,6 +108,8 @@ export async function createLessonAction(formData: FormData) {
     sortOrder: nextSortOrder,
     createdByUserId: session.user.id,
   });
+
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
 
   return { ok: true, lessonId };
 }
@@ -155,6 +164,9 @@ export async function updateLessonAction(formData: FormData) {
     bodyMd: updates.bodyMd ?? null,
   });
 
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
+  revalidatePath(`/admin/courses/${courseId}/lessons/${lessonId}`);
+
   return { ok: true };
 }
 
@@ -194,6 +206,7 @@ export async function reorderModulesAction(formData: FormData) {
   }
 
   await reorderAdminModules(courseId, parsed.data.moduleIds);
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
   return { ok: true };
 }
 
@@ -235,5 +248,127 @@ export async function reorderLessonsAction(formData: FormData) {
   }
 
   await reorderAdminLessons(moduleId, parsed.data.lessonIds);
+  revalidatePath(`/admin/courses/${courseId}/curriculum`);
+  return { ok: true };
+}
+
+const updateModuleSchema = z.object({
+  courseId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  title: z.string().min(1).max(200),
+});
+
+export async function updateModuleAction(input: z.infer<typeof updateModuleSchema>) {
+  const session = await getSession();
+  if (!session?.user?.id) return { ok: false, error: "unauthorized" as const };
+  const parsed = updateModuleSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" as const };
+
+  const courseRow = await getAdminCourseById(parsed.data.courseId);
+  if (!courseRow) return { ok: false, error: "not_found" as const };
+  if (!(await canEditCourse(session.user.id, session.user.role, parsed.data.courseId))) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  // Ensure the module belongs to this course before mutating it.
+  const curriculum = await getCourseCurriculum(parsed.data.courseId);
+  if (!curriculum.some((m) => m.id === parsed.data.moduleId)) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  await updateAdminModule(parsed.data.moduleId, { title: parsed.data.title });
+  revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
+  return { ok: true };
+}
+
+const deleteModuleSchema = z.object({
+  courseId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+});
+
+export async function deleteModuleAction(input: z.infer<typeof deleteModuleSchema>) {
+  const session = await getSession();
+  if (!session?.user?.id) return { ok: false, error: "unauthorized" as const };
+  const parsed = deleteModuleSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" as const };
+
+  const courseRow = await getAdminCourseById(parsed.data.courseId);
+  if (!courseRow) return { ok: false, error: "not_found" as const };
+  if (!(await canEditCourse(session.user.id, session.user.role, parsed.data.courseId))) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const curriculum = await getCourseCurriculum(parsed.data.courseId);
+  if (!curriculum.some((m) => m.id === parsed.data.moduleId)) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  await deleteAdminModule(parsed.data.moduleId);
+  revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
+  revalidatePath(`/courses/${courseRow.slug}`);
+  return { ok: true };
+}
+
+const renameLessonSchema = z.object({
+  courseId: z.string().uuid(),
+  lessonId: z.string().uuid(),
+  title: z.string().min(1).max(200),
+});
+
+export async function renameLessonAction(input: z.infer<typeof renameLessonSchema>) {
+  const session = await getSession();
+  if (!session?.user?.id) return { ok: false, error: "unauthorized" as const };
+  const parsed = renameLessonSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" as const };
+
+  const courseRow = await getAdminCourseById(parsed.data.courseId);
+  if (!courseRow) return { ok: false, error: "not_found" as const };
+  if (!(await canEditCourse(session.user.id, session.user.role, parsed.data.courseId))) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const lessonRow = await getAdminLessonById(parsed.data.lessonId);
+  if (!lessonRow) return { ok: false, error: "not_found" as const };
+
+  // Authorise via curriculum scope to confirm the lesson belongs to this course.
+  const curriculum = await getCourseCurriculum(parsed.data.courseId);
+  if (!curriculum.some((m) => m.id === lessonRow.moduleId)) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  await updateAdminLesson(parsed.data.lessonId, { title: parsed.data.title });
+  revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
+  revalidatePath(`/admin/courses/${parsed.data.courseId}/lessons/${parsed.data.lessonId}`);
+  return { ok: true };
+}
+
+const deleteLessonSchema = z.object({
+  courseId: z.string().uuid(),
+  lessonId: z.string().uuid(),
+});
+
+export async function deleteLessonAction(input: z.infer<typeof deleteLessonSchema>) {
+  const session = await getSession();
+  if (!session?.user?.id) return { ok: false, error: "unauthorized" as const };
+  const parsed = deleteLessonSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" as const };
+
+  const courseRow = await getAdminCourseById(parsed.data.courseId);
+  if (!courseRow) return { ok: false, error: "not_found" as const };
+  if (!(await canEditCourse(session.user.id, session.user.role, parsed.data.courseId))) {
+    return { ok: false, error: "forbidden" as const };
+  }
+
+  const lessonRow = await getAdminLessonById(parsed.data.lessonId);
+  if (!lessonRow) return { ok: false, error: "not_found" as const };
+
+  const curriculum = await getCourseCurriculum(parsed.data.courseId);
+  if (!curriculum.some((m) => m.id === lessonRow.moduleId)) {
+    return { ok: false, error: "not_found" as const };
+  }
+
+  await deleteAdminLesson(parsed.data.lessonId);
+  revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
+  revalidatePath(`/courses/${courseRow.slug}`);
   return { ok: true };
 }

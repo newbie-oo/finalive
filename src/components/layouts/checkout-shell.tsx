@@ -49,7 +49,7 @@ export function CheckoutShell({
 
       <footer className="border-t border-(--border) py-6">
         <div className="mx-auto max-w-[1200px] px-6 text-caption text-(--foreground-subtle)">
-          ต้องการความช่วยเหลือ? ติดต่อ hello@finalive.co
+          ต้องการความช่วยเหลือ? ติดต่อ hello@finalive.dev
         </div>
       </footer>
     </div>

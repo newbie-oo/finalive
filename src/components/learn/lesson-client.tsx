@@ -12,6 +12,9 @@ interface LessonClientProps {
   courseSlug: string;
   nextLessonId: string | null;
   durationSeconds: number | null;
+  /** When true, suppress all progress writes — admin previews must not
+   * accrue completion, otherwise the certificate banner activates. */
+  isAdmin?: boolean;
 }
 
 export function LessonClient({
@@ -19,14 +22,16 @@ export function LessonClient({
   courseSlug,
   nextLessonId,
   durationSeconds,
+  isAdmin = false,
 }: LessonClientProps) {
   const router = useRouter();
   const [started, setStarted] = useState(false);
   const [watched, setWatched] = useState(0);
   const [completed, setCompleted] = useState(false);
 
-  // Call /api/learn/start once on mount.
+  // Call /api/learn/start once on mount — skipped for admin previews.
   useEffect(() => {
+    if (isAdmin) return;
     let cancelled = false;
     fetch("/api/learn/start", {
       method: "POST",
@@ -42,11 +47,11 @@ export function LessonClient({
     return () => {
       cancelled = true;
     };
-  }, [lessonId]);
+  }, [lessonId, isAdmin]);
 
   // Throttled progress post (15s interval).
   useEffect(() => {
-    if (!started) return;
+    if (!started || isAdmin) return;
     const id = setInterval(() => {
       setWatched((prev) => {
         const next = prev + 15;
@@ -59,9 +64,13 @@ export function LessonClient({
       });
     }, 15_000);
     return () => clearInterval(id);
-  }, [started, lessonId]);
+  }, [started, lessonId, isAdmin]);
 
   const handleMarkComplete = async () => {
+    if (isAdmin) {
+      toast.info("admin preview — ไม่บันทึกความคืบหน้า");
+      return;
+    }
     try {
       const res = await fetch("/api/learn/progress", {
         method: "POST",

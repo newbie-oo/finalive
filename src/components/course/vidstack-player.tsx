@@ -21,6 +21,10 @@ export interface VidstackPlayerProps {
   lessonId?: string;
   nextLessonId?: string | null;
   courseSlug?: string;
+  /** When true, suppress all progress writes — admin previews must not
+   * accrue completion records that would later trigger the certificate
+   * banner. */
+  suppressProgress?: boolean;
 }
 
 export function VidstackPlayer({
@@ -31,6 +35,7 @@ export function VidstackPlayer({
   lessonId,
   nextLessonId,
   courseSlug,
+  suppressProgress = false,
 }: VidstackPlayerProps) {
   const lastSaveRef = useRef(0);
   const hasEndedRef = useRef(false);
@@ -47,14 +52,14 @@ export function VidstackPlayer({
 
   const saveProgress = useCallback(
     (seconds: number) => {
-      if (!lessonId) return;
+      if (!lessonId || suppressProgress) return;
       fetch("/api/learn/progress", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ lessonId, watchedSeconds: Math.floor(seconds) }),
       }).catch(() => {});
     },
-    [lessonId],
+    [lessonId, suppressProgress],
   );
 
   const handleTimeUpdate = useCallback(
@@ -72,20 +77,20 @@ export function VidstackPlayer({
     if (hasEndedRef.current) return;
     hasEndedRef.current = true;
     setShowCompleteOverlay(true);
-    // Save final progress and auto-mark complete
-    if (lessonId) {
+    // Save final progress and auto-mark complete — admin previews skip
+    // this so they never accrue completion records.
+    if (lessonId && !suppressProgress) {
       fetch("/api/learn/progress", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ lessonId, watchedSeconds: 999_999 }),
       })
         .then(() => {
-          // Dispatch a custom event so the parent page can refresh
           window.dispatchEvent(new CustomEvent("lesson-completed", { detail: { lessonId } }));
         })
         .catch(() => {});
     }
-  }, [lessonId]);
+  }, [lessonId, suppressProgress]);
 
   const handleReplay = useCallback(() => {
     hasEndedRef.current = false;
@@ -113,7 +118,7 @@ export function VidstackPlayer({
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" data-testid="video-player">
       <MediaPlayer
         src={src}
         viewType="video"

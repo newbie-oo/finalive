@@ -111,6 +111,7 @@ export async function getAdminQuizById(quizId: string): Promise<AdminQuiz | null
 export async function saveAdminQuiz(
   quizId: string,
   input: {
+    passScorePct: number;
     questions: Array<{
       id?: string;
       promptMd: string;
@@ -119,6 +120,12 @@ export async function saveAdminQuiz(
   },
 ) {
   await db.transaction(async (tx) => {
+    // Update pass score first.
+    await tx
+      .update(quiz)
+      .set({ passScorePct: input.passScorePct, updatedAt: new Date() })
+      .where(eq(quiz.id, quizId));
+
     // Fetch existing questions.
     const existingQuestions = await tx
       .select({ id: quizQuestion.id })
@@ -126,7 +133,19 @@ export async function saveAdminQuiz(
       .where(and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)));
 
     const existingQuestionIds = new Set(existingQuestions.map((q) => q.id));
-    const keptQuestionIds = new Set<string>();
+
+    // Determine kept vs removed questions BEFORE upserting to avoid
+    // unique constraint violations on (quizId, sortOrder).
+    const keptQuestionIds = new Set(
+      input.questions.map((q) => q.id).filter((id): id is string => !!id && existingQuestionIds.has(id)),
+    );
+    const removedQuestionIds = existingQuestionIds.difference(keptQuestionIds);
+    if (removedQuestionIds.size > 0) {
+      await tx
+        .update(quizQuestion)
+        .set({ deletedAt: new Date() })
+        .where(inArray(quizQuestion.id, Array.from(removedQuestionIds)));
+    }
 
     // Upsert questions.
     for (let qi = 0; qi < input.questions.length; qi++) {
@@ -151,8 +170,6 @@ export async function saveAdminQuiz(
         questionId = inserted!.id;
       }
 
-      keptQuestionIds.add(questionId);
-
       // Fetch existing choices for this question.
       const existingChoices = await tx
         .select({ id: quizChoice.id })
@@ -162,13 +179,23 @@ export async function saveAdminQuiz(
         );
 
       const existingChoiceIds = new Set(existingChoices.map((c) => c.id));
-      const keptChoiceIds = new Set<string>();
+
+      // Determine kept vs removed choices BEFORE upserting.
+      const keptChoiceIds = new Set(
+        q.choices.map((c) => c.id).filter((id): id is string => !!id && existingChoiceIds.has(id)),
+      );
+      const removedChoiceIds = existingChoiceIds.difference(keptChoiceIds);
+      if (removedChoiceIds.size > 0) {
+        await tx
+          .update(quizChoice)
+          .set({ deletedAt: new Date() })
+          .where(inArray(quizChoice.id, Array.from(removedChoiceIds)));
+      }
 
       // Upsert choices.
       for (let ci = 0; ci < q.choices.length; ci++) {
         const c = q.choices[ci]!;
         if (c.id && existingChoiceIds.has(c.id)) {
-          keptChoiceIds.add(c.id);
           await tx
             .update(quizChoice)
             .set({
@@ -179,7 +206,7 @@ export async function saveAdminQuiz(
             })
             .where(eq(quizChoice.id, c.id));
         } else {
-          const [inserted] = await tx
+          await tx
             .insert(quizChoice)
             .values({
               questionId,
@@ -188,27 +215,8 @@ export async function saveAdminQuiz(
               sortOrder: ci,
             })
             .returning({ id: quizChoice.id });
-          keptChoiceIds.add(inserted!.id);
         }
       }
-
-      // Soft-delete removed choices.
-      const removedChoiceIds = existingChoiceIds.difference(keptChoiceIds);
-      if (removedChoiceIds.size > 0) {
-        await tx
-          .update(quizChoice)
-          .set({ deletedAt: new Date() })
-          .where(inArray(quizChoice.id, Array.from(removedChoiceIds)));
-      }
-    }
-
-    // Soft-delete removed questions.
-    const removedQuestionIds = existingQuestionIds.difference(keptQuestionIds);
-    if (removedQuestionIds.size > 0) {
-      await tx
-        .update(quizQuestion)
-        .set({ deletedAt: new Date() })
-        .where(inArray(quizQuestion.id, Array.from(removedQuestionIds)));
     }
   });
 }

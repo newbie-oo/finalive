@@ -15,6 +15,8 @@ export interface AdminCourseListItem {
   price: string;
   publishedAt: Date | null;
   createdAt: Date;
+  /** Count of active enrollments — surfaced to admins on the courses list. */
+  enrollmentCount: number;
 }
 
 export interface ListAdminCoursesOptions {
@@ -40,7 +42,19 @@ export async function listAdminCourses(
     conditions.push(text);
   }
 
-  return db
+  // Subquery: active enrollments per course. Kept inline to avoid a global
+  // import shape that would force dependents to know about the join.
+  const enrollCount = db
+    .select({
+      courseId: enrollment.courseId,
+      count: sql<number>`count(*)::int`.as("admin_enrollment_count"),
+    })
+    .from(enrollment)
+    .where(eq(enrollment.status, "active"))
+    .groupBy(enrollment.courseId)
+    .as("admin_enrollment_count");
+
+  const rows = await db
     .select({
       id: course.id,
       slug: course.slug,
@@ -50,10 +64,14 @@ export async function listAdminCourses(
       price: course.price,
       publishedAt: course.publishedAt,
       createdAt: course.createdAt,
+      enrollmentCount: enrollCount.count,
     })
     .from(course)
+    .leftJoin(enrollCount, eq(enrollCount.courseId, course.id))
     .where(and(...conditions))
     .orderBy(desc(course.createdAt));
+
+  return rows.map((r) => ({ ...r, enrollmentCount: r.enrollmentCount ?? 0 }));
 }
 
 /**
@@ -296,6 +314,65 @@ export async function createAdminLesson(input: {
     })
     .returning({ id: lesson.id });
   return row!.id;
+}
+
+export async function updateAdminModule(
+  moduleId: string,
+  input: { title?: string },
+) {
+  await db
+    .update(courseModule)
+    .set({ ...input, updatedAt: new Date() })
+    .where(eq(courseModule.id, moduleId));
+}
+
+/**
+ * Soft-deletes a module and every lesson under it. We rely on cascading
+ * soft-deletes (deletedAt) rather than hard-deletes so progress/enrollment
+ * audit history stays intact. Quizzes attached to those lessons are also
+ * tombstoned.
+ */
+export async function deleteAdminModule(moduleId: string) {
+  const now = new Date();
+  await db.transaction(async (tx) => {
+    // Tombstone the module itself
+    await tx
+      .update(courseModule)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(eq(courseModule.id, moduleId));
+
+    // Tombstone its lessons
+    const lessonRows = await tx
+      .select({ id: lesson.id })
+      .from(lesson)
+      .where(and(eq(lesson.moduleId, moduleId), isNull(lesson.deletedAt)));
+    const lessonIds = lessonRows.map((r) => r.id);
+    if (lessonIds.length > 0) {
+      await tx
+        .update(lesson)
+        .set({ deletedAt: now, updatedAt: now })
+        .where(inArray(lesson.id, lessonIds));
+      // Tombstone quizzes whose lesson is gone
+      await tx
+        .update(quiz)
+        .set({ deletedAt: now, updatedAt: now })
+        .where(and(inArray(quiz.lessonId, lessonIds), isNull(quiz.deletedAt)));
+    }
+  });
+}
+
+export async function deleteAdminLesson(lessonId: string) {
+  const now = new Date();
+  await db.transaction(async (tx) => {
+    await tx
+      .update(lesson)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(eq(lesson.id, lessonId));
+    await tx
+      .update(quiz)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(and(eq(quiz.lessonId, lessonId), isNull(quiz.deletedAt)));
+  });
 }
 
 export async function updateAdminLesson(

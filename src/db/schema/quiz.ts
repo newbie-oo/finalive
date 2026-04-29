@@ -6,7 +6,9 @@ import {
   integer,
   timestamp,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { lesson } from "./course";
 
 export const quiz = pgTable(
@@ -43,7 +45,11 @@ export const quizQuestion = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => ({
-    sortUk: unique("qq_sort_uk").on(t.quizId, t.sortOrder),
+    // Partial unique: ignores soft-deleted rows so saveAdminQuiz can soft-delete
+    // a question and immediately insert a replacement at the same sort_order.
+    sortUk: uniqueIndex("qq_sort_uk")
+      .on(t.quizId, t.sortOrder)
+      .where(sql`${t.deletedAt} is null`),
   }),
 );
 
@@ -62,7 +68,9 @@ export const quizChoice = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => ({
-    sortUk: unique("qc_sort_uk").on(t.questionId, t.sortOrder),
+    sortUk: uniqueIndex("qc_sort_uk")
+      .on(t.questionId, t.sortOrder)
+      .where(sql`${t.deletedAt} is null`),
   }),
 );
 

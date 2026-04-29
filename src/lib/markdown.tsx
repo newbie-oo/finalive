@@ -1,19 +1,60 @@
 import { Fragment, type ReactNode } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 /**
- * Tiny markdown renderer for trusted lesson/quiz body text.
+ * Rich-text / markdown renderer for lesson/quiz body text.
  *
- * Why hand-rolled: we only need a handful of constructs (headings,
- * paragraphs, blockquotes, ordered/unordered lists, inline `code` and
- * **bold** / *em*). Pulling in `react-markdown` + remark-gfm + rehype
- * to render < 5 element types is overkill, and we control the input
- * (it comes from seeds and admin-authored lessons).
+ * Tiptap-authored content is HTML; legacy seed content may still be
+ * Markdown. We detect by leading `<` and route accordingly.
  *
- * Output is plain JSX — no `dangerouslySetInnerHTML`, so XSS via raw
- * HTML is structurally impossible. Inline code/links pass through
- * `String` so `<` and `>` are escaped automatically by React.
+ * HTML branch: even though only admins can author lesson bodies, we still
+ * sanitize with DOMPurify before rendering — defense in depth in case a
+ * compromised admin account or a future API path injects something nasty.
+ * The allow-list mirrors what Tiptap's StarterKit produces.
  */
+const ALLOWED_TAGS = [
+  "p",
+  "br",
+  "strong",
+  "em",
+  "s",
+  "code",
+  "blockquote",
+  "h1",
+  "h2",
+  "h3",
+  "ul",
+  "ol",
+  "li",
+  "a",
+  "hr",
+  "pre",
+];
+const ALLOWED_ATTR = ["href", "target", "rel"];
+
+export function sanitizeRichHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    // Force any user-supplied link to safe defaults.
+    ADD_ATTR: ["target"],
+  });
+}
+
 export function MarkdownView({ text }: { text: string }) {
+  const trimmed = text.trim();
+  // If the content starts with an HTML tag, render as sanitized HTML
+  // (Tiptap output). Otherwise fall back to the legacy markdown parser.
+  const looksLikeHtml = /^</.test(trimmed);
+  if (looksLikeHtml) {
+    return (
+      <article
+        className="prose prose-sm max-w-none dark:prose-invert"
+        dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(text) }}
+      />
+    );
+  }
+
   const blocks = parseBlocks(text);
   return (
     <article className="prose prose-sm max-w-none dark:prose-invert">

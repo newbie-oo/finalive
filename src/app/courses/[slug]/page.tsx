@@ -11,6 +11,7 @@ import {
   Certificate as CertificateIcon,
   Devices,
   Infinity as InfinityIcon,
+  Users,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { Button } from "@/components/ui/button";
@@ -75,10 +76,11 @@ export default async function CourseDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const course = await getPublishedCourseBySlug(slug);
-  if (!course) notFound();
   const session = await getSession();
   const userId = session?.user?.id ?? null;
+  const isAdmin = session?.user?.role === "admin";
+  const course = await getPublishedCourseBySlug(slug, { includeUnpublished: isAdmin });
+  if (!course) notFound();
   const isEnrolled = userId
     ? await isUserEnrolledInCourse(userId, course.id)
     : false;
@@ -114,6 +116,11 @@ export default async function CourseDetailPage({
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <StatusChip tone="primary">การเงินและการลงทุน</StatusChip>
                 {course.isFree && <StatusChip tone="success">ฟรี</StatusChip>}
+                {isAdmin && course.status !== "published" && (
+                  <StatusChip tone="warning">
+                    {course.status === "draft" ? "ร่าง · admin preview" : "เก็บถาวร · admin preview"}
+                  </StatusChip>
+                )}
               </div>
               <h1 className="text-h1 break-words text-(--foreground)">{course.title}</h1>
               <p className="mt-4 text-bodylg text-(--foreground-muted)">{course.summary}</p>
@@ -143,6 +150,10 @@ export default async function CourseDetailPage({
                 </span>
                 <span>
                   <span className="num">{curriculum.length}</span> โมดูล
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Users size={16} />
+                  <span className="num">{course.enrollmentCount.toLocaleString("th-TH")}</span> ผู้เรียน
                 </span>
               </div>
             </div>
@@ -191,7 +202,11 @@ export default async function CourseDetailPage({
                     })}
                   </ul>
 
-                  {isEnrolled ? (
+                  {isAdmin ? (
+                    <Button asChild variant="primary" size="lg" className="w-full">
+                      <Link href={`/learn/${course.slug}`}>เข้าเรียน (admin preview)</Link>
+                    </Button>
+                  ) : isEnrolled ? (
                     <Button asChild variant="primary" size="lg" className="w-full">
                       <Link href={`/learn/${course.slug}`}>เข้าเรียน</Link>
                     </Button>

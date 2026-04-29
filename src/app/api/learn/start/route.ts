@@ -7,6 +7,9 @@ const schema = z.object({ lessonId: z.string().uuid() });
 
 export async function POST(req: Request) {
   const { user } = await requireSession();
+  if ((user as { role?: string }).role === "admin") {
+    return NextResponse.json({ ok: true, ignored: "admin_preview" });
+  }
   let body: unknown;
   try {
     body = await req.json();

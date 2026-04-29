@@ -56,14 +56,18 @@ export function NewCourseForm() {
 
           <div>
             <Label htmlFor="price" required={!isFree}>ราคา</Label>
+            {/* readOnly + aria-disabled rather than disabled — disabled
+                inputs aren't serialized into FormData, which previously
+                caused "invalid_input" when isFree=true. */}
             <Input
               id="price"
               name="price"
               type="text"
               required={!isFree}
-              disabled={isFree}
+              readOnly={isFree}
+              aria-disabled={isFree}
               defaultValue="0.00"
-              className="num"
+              className={"num" + (isFree ? " bg-muted text-muted-foreground" : "")}
             />
             {isFree && (
               <p className="mt-1 text-xs text-muted-foreground">

@@ -3,10 +3,18 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import type { SessionUser } from "@/server/auth-session";
 
-const NAV = [
+const STUDENT_NAV = [
   { href: "/courses", label: "คอร์ส" },
+  { href: "/instructor", label: "ผู้สอน" },
   { href: "/account/enrollments", label: "คอร์สของฉัน" },
   { href: "/account/certificates", label: "ใบประกาศ" },
+];
+
+const ADMIN_NAV = [
+  { href: "/courses", label: "คอร์ส" },
+  { href: "/instructor", label: "ผู้สอน" },
+  { href: "/admin", label: "แผงควบคุม" },
+  { href: "/account/enrollments", label: "คอร์สของฉัน" },
 ];
 
 export function StudentShell({
@@ -31,7 +39,7 @@ export function StudentShell({
             <span className="text-[18px] font-semibold tracking-tight">Finalive</span>
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="หลัก">
-            {NAV.map((n) => (
+            {(user.role === "admin" ? ADMIN_NAV : STUDENT_NAV).map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
@@ -49,7 +57,10 @@ export function StudentShell({
               links={[
                 { href: "/account", label: "บัญชี" },
                 { href: "/account/enrollments", label: "คอร์สของฉัน" },
-                { href: "/account/certificates", label: "ใบประกาศ" },
+                ...(user.role === "admin"
+                  ? [{ href: "/admin", label: "แผงควบคุม" }]
+                  : [{ href: "/account/certificates", label: "ใบประกาศ" }]
+                ),
                 { href: "/account/security", label: "ความปลอดภัย" },
               ]}
             />

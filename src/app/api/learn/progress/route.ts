@@ -18,6 +18,12 @@ const COMPLETE_SENTINEL = 999_000;
 
 export async function POST(req: Request) {
   const { user } = await requireSession();
+  // Admin previews must not record progress — otherwise an admin walking
+  // through a course would auto-complete and trigger a certificate flow
+  // they can never redeem.
+  if ((user as { role?: string }).role === "admin") {
+    return NextResponse.json({ ok: true, ignored: "admin_preview" });
+  }
   let body: unknown;
   try {
     body = await req.json();

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function AccountCertificatesPage() {
   const session = await getSession();
   if (!session?.user?.id) {
-    redirect("/login?redirect=/account/certificates");
+    redirect("/login?next=/account/certificates");
   }
 
   const certs = await listCertificatesByUserId(session.user.id);

@@ -19,6 +19,13 @@ export async function issueCertificate(enrollmentId: string) {
     return { ok: false, error: "unauthorized" as const };
   }
 
+  // Admins preview courses without paying or enrolling — by design they
+  // never earn a certificate. Refuse here regardless of enrollment state so
+  // a legacy enrollment from before the role flip still cannot mint one.
+  if (session.user.role === "admin") {
+    return { ok: false, error: "admin_no_cert" as const };
+  }
+
   // Idempotent: return existing certificate.
   const existing = await getCertificateByEnrollmentId(enrollmentId);
   if (existing) {

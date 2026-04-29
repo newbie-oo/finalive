@@ -11,6 +11,17 @@ import {
   type OffsetResponse,
 } from "@/lib/pagination";
 
+// Reusable subquery: active enrollments per course.
+const enrollmentCountSubq = db
+  .select({
+    courseId: enrollment.courseId,
+    count: sql<number>`count(*)::int`.as("count"),
+  })
+  .from(enrollment)
+  .where(eq(enrollment.status, "active"))
+  .groupBy(enrollment.courseId)
+  .as("enrollment_count");
+
 export interface PublicCourseSummary {
   id: string;
   slug: string;
@@ -20,6 +31,10 @@ export interface PublicCourseSummary {
   isFree: boolean;
   publishedAt: Date | null;
   coverUrl: string | null;
+  enrollmentCount: number;
+  /** Course lifecycle: 'draft' | 'published' | 'archived'. Surfaced so admin
+   * views can chip non-published courses. */
+  status: string;
 }
 
 export interface ListPublishedCoursesParams extends OffsetParams {
@@ -55,12 +70,15 @@ export async function listPublishedCourses(
         summary: course.summary,
         price: course.price,
         isFree: course.isFree,
+        status: course.status,
         publishedAt: course.publishedAt,
         coverMediaId: course.coverMediaId,
         coverStorageKey: mediaAsset.storageKey,
+        enrollmentCount: enrollmentCountSubq.count,
       })
       .from(course)
       .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
+      .leftJoin(enrollmentCountSubq, eq(enrollmentCountSubq.courseId, course.id))
       .where(where)
       .orderBy(desc(course.publishedAt))
       .limit(params.per_page)
@@ -75,8 +93,10 @@ export async function listPublishedCourses(
     summary: r.summary,
     price: r.price,
     isFree: r.isFree,
+    status: r.status,
     publishedAt: r.publishedAt,
     coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+    enrollmentCount: r.enrollmentCount ?? 0,
   }));
 
   const total = totalRows[0]?.value ?? 0;
@@ -103,11 +123,14 @@ export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummar
       summary: course.summary,
       price: course.price,
       isFree: course.isFree,
+      status: course.status,
       publishedAt: course.publishedAt,
       coverStorageKey: mediaAsset.storageKey,
+      enrollmentCount: enrollmentCountSubq.count,
     })
     .from(course)
     .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
+    .leftJoin(enrollmentCountSubq, eq(enrollmentCountSubq.courseId, course.id))
     .where(where)
     .orderBy(desc(course.publishedAt))
     .limit(limit);
@@ -119,14 +142,28 @@ export async function listFeaturedCourses(limit = 3): Promise<PublicCourseSummar
     summary: r.summary,
     price: r.price,
     isFree: r.isFree,
+    status: r.status,
     publishedAt: r.publishedAt,
     coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+    enrollmentCount: r.enrollmentCount ?? 0,
   }));
+}
+
+export interface GetCourseBySlugOptions {
+  /** When true, return draft/archived courses too. Admin views pass true so
+   * they can preview unpublished content; public views must keep this false. */
+  includeUnpublished?: boolean;
 }
 
 export async function getPublishedCourseBySlug(
   slug: string,
+  options: GetCourseBySlugOptions = {},
 ): Promise<PublicCourseSummary | null> {
+  const conditions = [eq(course.slug, slug), isNull(course.deletedAt)];
+  if (!options.includeUnpublished) {
+    conditions.push(eq(course.status, "published"));
+  }
+
   const rows = await db
     .select({
       id: course.id,
@@ -135,14 +172,15 @@ export async function getPublishedCourseBySlug(
       summary: course.summary,
       price: course.price,
       isFree: course.isFree,
+      status: course.status,
       publishedAt: course.publishedAt,
       coverStorageKey: mediaAsset.storageKey,
+      enrollmentCount: enrollmentCountSubq.count,
     })
     .from(course)
     .leftJoin(mediaAsset, eq(course.coverMediaId, mediaAsset.id))
-    .where(
-      and(eq(course.slug, slug), eq(course.status, "published"), isNull(course.deletedAt)),
-    )
+    .leftJoin(enrollmentCountSubq, eq(enrollmentCountSubq.courseId, course.id))
+    .where(and(...conditions))
     .limit(1);
 
   const r = rows[0];
@@ -154,8 +192,10 @@ export async function getPublishedCourseBySlug(
     summary: r.summary,
     price: r.price,
     isFree: r.isFree,
+    status: r.status,
     publishedAt: r.publishedAt,
     coverUrl: r.coverStorageKey ? publicUrl(`covers/${r.coverStorageKey}-640.webp`) : null,
+    enrollmentCount: r.enrollmentCount ?? 0,
   };
 }
 

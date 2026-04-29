@@ -1,7 +1,11 @@
+import { redirect } from "next/navigation";
 import { StudentShell } from "@/components/layouts/student-shell";
-import { requireSession } from "@/server/auth-session";
+import { getSession } from "@/server/auth-session";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
-  const { user } = await requireSession();
-  return <StudentShell user={user}>{children}</StudentShell>;
+  const session = await getSession();
+  if (!session?.user) {
+    redirect("/login");
+  }
+  return <StudentShell user={session.user}>{children}</StudentShell>;
 }

@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useTransition, useCallback, useRef, useEffect } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play, Clock } from "@phosphor-icons/react";
+import { Play, Clock, FloppyDisk } from "@phosphor-icons/react";
 import { updateLessonAction } from "@/server/actions/admin-curriculum";
 import { VideoUploader } from "@/components/admin/video-uploader";
+import { TiptapEditor } from "@/components/admin/tiptap-editor";
+import { useUnsavedChangesWarning } from "@/lib/use-unsaved-changes";
 import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
 
 interface LessonEditorProps {
@@ -14,48 +17,34 @@ interface LessonEditorProps {
 }
 
 export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
+  const router = useRouter();
   const [title, setTitle] = useState(lesson.title);
   const [bodyMd, setBodyMd] = useState(lesson.bodyMd ?? "");
   const [isPreview, setIsPreview] = useState(lesson.isPreview);
   const [isFree, setIsFree] = useState(lesson.isFree);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-  const [, startTransition] = useTransition();
+  const [isDirty, setIsDirty] = useState(false);
+  const [saving, startSave] = useTransition();
+  useUnsavedChangesWarning(isDirty);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function handleSave() {
+    startSave(async () => {
+      const formData = new FormData();
+      formData.append("courseId", courseId);
+      formData.append("lessonId", lesson.id);
+      formData.append("title", title);
+      formData.append("bodyMd", bodyMd);
+      formData.append("isPreview", String(isPreview));
+      formData.append("isFree", String(isFree));
 
-  const autoSave = useCallback(
-    (updates: { title?: string; bodyMd?: string; isPreview?: boolean; isFree?: boolean }) => {
-      setSaveStatus("saving");
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        const formData = new FormData();
-        formData.append("courseId", courseId);
-        formData.append("lessonId", lesson.id);
-        if (updates.title !== undefined) formData.append("title", updates.title);
-        if (updates.bodyMd !== undefined) formData.append("bodyMd", updates.bodyMd);
-        if (updates.isPreview !== undefined) formData.append("isPreview", String(updates.isPreview));
-        if (updates.isFree !== undefined) formData.append("isFree", String(updates.isFree));
-
-        startTransition(async () => {
-          const result = await updateLessonAction(formData);
-          if (result.ok) {
-            setSaveStatus("saved");
-            setTimeout(() => setSaveStatus("idle"), 2000);
-          } else {
-            setSaveStatus("idle");
-            toast.error("บันทึกไม่สำเร็จ");
-          }
-        });
-      }, 1000);
-    },
-    [courseId, lesson.id],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
+      const result = await updateLessonAction(formData);
+      if (result.ok) {
+        setIsDirty(false);
+        toast.success("บันทึกสำเร็จ");
+      } else {
+        toast.error("บันทึกไม่สำเร็จ");
+      }
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -63,9 +52,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
         <div>
           <h1 className="text-xl font-semibold">แก้ไขบทเรียน</h1>
           <p className="text-sm text-muted-foreground">
-            {saveStatus === "saving" && "กำลังบันทึก…"}
-            {saveStatus === "saved" && "บันทึกแล้ว"}
-            {saveStatus === "idle" && "แก้ไขแล้วบันทึกอัตโนมัติ"}
+            {isDirty ? "มีการเปลี่ยนแปลงยังไม่บันทึก" : "บันทึกแล้ว"}
           </p>
         </div>
         <Link
@@ -84,7 +71,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              autoSave({ title: e.target.value });
+              setIsDirty(true);
             }}
             className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
           />
@@ -97,7 +84,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
               checked={isPreview}
               onChange={(e) => {
                 setIsPreview(e.target.checked);
-                autoSave({ isPreview: e.target.checked });
+                setIsDirty(true);
               }}
             />
             ดูตัวอย่างได้
@@ -108,7 +95,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
               checked={isFree}
               onChange={(e) => {
                 setIsFree(e.target.checked);
-                autoSave({ isFree: e.target.checked });
+                setIsDirty(true);
               }}
             />
             ฟรี
@@ -135,29 +122,92 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
                     <span className="num">{Math.floor(lesson.durationSeconds / 60)}:{(lesson.durationSeconds % 60).toString().padStart(2, "0")}</span>
                   </div>
                 )}
+                <ReencodeButton courseId={courseId} lessonId={lesson.id} />
               </div>
             </div>
           ) : null}
           <VideoUploader
             courseId={courseId}
             lessonId={lesson.id}
-            onUploadComplete={() => window.location.reload()}
+            onUploadComplete={() => {
+              // Pull the fresh lesson row (with the duration the Bunny webhook
+              // wrote on encode) instead of a hard reload — preserves any
+              // unsaved title/body edits in the form above.
+              router.refresh();
+            }}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">เนื้อหา (Markdown)</label>
-          <textarea
+          <label className="mb-1 block text-sm font-medium">เนื้อหา</label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            ตัวแก้ไขแบบ rich-text — กล่องเครื่องมือด้านบนสำหรับจัดรูปแบบ
+          </p>
+          <TiptapEditor
             value={bodyMd}
-            onChange={(e) => {
-              setBodyMd(e.target.value);
-              autoSave({ bodyMd: e.target.value });
+            onChange={(html) => {
+              setBodyMd(html);
+              setIsDirty(true);
             }}
-            rows={20}
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm font-mono"
           />
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !isDirty}
+            className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+          >
+            <FloppyDisk size={16} />
+            {saving ? "กำลังบันทึก…" : "บันทึก"}
+          </button>
+          {isDirty && (
+            <span className="text-sm text-muted-foreground">มีการเปลี่ยนแปลงยังไม่ได้บันทึก</span>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * Triggers Bunny `reencode` for the lesson's video. Used as a recovery
+ * lever when Bunny's HLS output ends up shorter than the source — the
+ * source MP4 is fine, but the renditions need rebuilding. Marks the
+ * mediaAsset back to 'encoding' so the UI shows the spinner again.
+ */
+function ReencodeButton({ courseId, lessonId }: { courseId: string; lessonId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={async () => {
+        if (!confirm(
+          "เข้ารหัสวิดีโอใหม่ที่ Bunny?\nใช้เมื่อความยาวที่เล่นได้สั้นกว่าไฟล์ต้นฉบับ — ใช้เวลา 1–5 นาที",
+        )) return;
+        setBusy(true);
+        try {
+          const res = await fetch("/api/admin/reencode-video", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ lessonId, courseId }),
+          });
+          if (!res.ok) throw new Error(`http ${res.status}`);
+          toast.success("ส่งคำสั่งเข้ารหัสใหม่แล้ว");
+          router.refresh();
+        } catch {
+          toast.error("เข้ารหัสใหม่ไม่สำเร็จ");
+        } finally {
+          setBusy(false);
+        }
+      }}
+      className="rounded border border-(--border) px-2 py-1 text-caption text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground) disabled:opacity-50"
+      title="สั่งให้ Bunny เข้ารหัสวิดีโอใหม่"
+    >
+      {busy ? "กำลังส่ง…" : "เข้ารหัสใหม่"}
+    </button>
   );
 }

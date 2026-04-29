@@ -28,6 +28,7 @@ interface LearnPageClientProps {
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
   isEnrolled: boolean;
+  isAdmin?: boolean;
   totalLessons: number;
   doneLessons: number;
   watchedSeconds: number;
@@ -49,6 +50,7 @@ export function LearnPageClient({
   modules,
   progress,
   isEnrolled,
+  isAdmin = false,
   totalLessons,
   doneLessons,
   watchedSeconds,
@@ -91,8 +93,10 @@ export function LearnPageClient({
       <div className="flex flex-1 min-h-0">
         {/* Main content */}
         <main className="flex-1 overflow-y-auto min-w-0">
-          {/* Course complete banner */}
-          {doneLessons >= totalLessons && totalLessons > 0 && (
+          {/* Course complete banner — hidden for admin previews. Admins
+              never enroll, so completing every lesson should not surface a
+              certificate CTA they cannot redeem. */}
+          {!isAdmin && doneLessons >= totalLessons && totalLessons > 0 && (
             <div className="mx-4 mt-4 rounded-[14px] border border-success bg-success/10 p-4 lg:mx-8 lg:mt-6">
               <div className="flex items-start gap-3">
                 <Certificate size={24} weight="fill" className="mt-0.5 shrink-0 text-success" />
@@ -122,6 +126,7 @@ export function LearnPageClient({
                   lessonId={lessonId}
                   nextLessonId={nextLessonId}
                   courseSlug={courseSlug}
+                  suppressProgress={isAdmin}
                 />
               ) : (
                 <div
@@ -192,6 +197,7 @@ export function LearnPageClient({
               courseSlug={courseSlug}
               nextLessonId={nextLessonId}
               durationSeconds={durationSeconds}
+              isAdmin={isAdmin}
             />
           </div>
         </main>

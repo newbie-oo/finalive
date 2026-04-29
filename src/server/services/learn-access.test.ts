@@ -52,4 +52,15 @@ describe("checkLessonAccess truth table", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("purchase_required");
   });
+
+  it("returns ok for admin even when not enrolled", () => {
+    const result = checkLessonAccess(
+      { isPreview: false, isFree: false },
+      { isFree: false },
+      false,
+      true,
+      true,
+    );
+    expect(result.ok).toBe(true);
+  });
 });

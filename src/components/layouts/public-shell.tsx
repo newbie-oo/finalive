@@ -8,10 +8,29 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import { Button } from "@/components/ui/button";
 
-const NAV = [
+interface NavItem {
+  href: string;
+  label: string;
+  // 'always' shows for everyone; 'auth' only when logged in;
+  // 'admin' only for the admin role.
+  visibility?: "always" | "auth" | "admin";
+}
+
+const NAV: NavItem[] = [
   { href: "/courses", label: "คอร์ส" },
+  { href: "/instructor", label: "ผู้สอน" },
   { href: "/#about", label: "เกี่ยวกับ" },
+  { href: "/account/enrollments", label: "คอร์สของฉัน", visibility: "auth" },
+  { href: "/admin", label: "Admin Panel", visibility: "admin" },
 ];
+
+function visibleNav(role: string | undefined, isAuthed: boolean): NavItem[] {
+  return NAV.filter((n) => {
+    if (n.visibility === "admin") return role === "admin";
+    if (n.visibility === "auth") return isAuthed;
+    return true;
+  });
+}
 
 const FOOTER_COLS: Array<{ heading: string; links: Array<{ label: string; href: string }> }> = [
   {
@@ -36,9 +55,20 @@ const FOOTER_COLS: Array<{ heading: string; links: Array<{ label: string; href: 
   },
 ];
 
-export function PublicShell({ children }: { children: React.ReactNode }) {
+interface PublicShellProps {
+  children: React.ReactNode;
+  /** When true, suppress the public footer — used by admin/full-bleed shells. */
+  hideFooter?: boolean;
+  /** When true, drop the global max-w container around the main slot so admin
+   * sidebar layouts can fill the viewport. */
+  unboundedMain?: boolean;
+}
+
+export function PublicShell({ children, hideFooter, unboundedMain }: PublicShellProps) {
   const { data: session } = useSession();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const navItems = visibleNav(role, !!session?.user);
 
   return (
     <div className="flex min-h-full flex-col">
@@ -56,15 +86,22 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="หลัก">
-            {NAV.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className="rounded-nav px-3.5 py-2 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
-              >
-                {n.label}
-              </Link>
-            ))}
+            {navItems.map((n) => {
+              const isAdminLink = n.visibility === "admin";
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  className={
+                    isAdminLink
+                      ? "rounded-nav border border-(--primary)/30 bg-(--primary)/10 px-3 py-1.5 text-ui font-semibold text-(--primary) transition-colors hover:bg-(--primary)/15"
+                      : "rounded-nav px-3.5 py-2 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
+                  }
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
@@ -86,7 +123,10 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
                 links={[
                   { href: "/account", label: "บัญชี" },
                   { href: "/account/enrollments", label: "คอร์สของฉัน" },
-                  { href: "/account/certificates", label: "ใบประกาศ" },
+                  ...( (session.user as { role?: string }).role === "admin"
+                    ? [{ href: "/admin", label: "แผงควบคุม" }]
+                    : [{ href: "/account/certificates", label: "ใบประกาศ" }]
+                  ),
                   { href: "/account/security", label: "ความปลอดภัย" },
                 ]}
               />
@@ -116,7 +156,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         {drawerOpen && (
           <div className="border-t border-(--border) bg-(--surface) md:hidden">
             <nav className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4" aria-label="เมนูมือถือ">
-              {NAV.map((n) => (
+              {navItems.map((n) => (
                 <Link
                   key={n.href}
                   href={n.href}
@@ -153,8 +193,9 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
         )}
       </header>
 
-      <main id="main" className="flex-1">{children}</main>
+      <main id="main" className={unboundedMain ? "flex-1 min-h-0" : "flex-1"}>{children}</main>
 
+      {hideFooter ? null : (
       <footer className="border-t border-(--border) bg-(--surface-muted) py-12">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
@@ -200,6 +241,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

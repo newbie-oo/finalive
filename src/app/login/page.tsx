@@ -20,12 +20,8 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-// Default landing after login depends on role:
-//   admin → /admin (work surface)
-//   student → /account/enrollments ("คอร์สของฉัน")
-// Going to /account (profile form) was confusing — students expect to see
-// their courses, not a settings page.
-const STUDENT_DEFAULT = "/account/enrollments";
+// Default landing after login: home page for students, admin dashboard for admins.
+const STUDENT_DEFAULT = "/";
 const ADMIN_DEFAULT = "/admin";
 
 function defaultFor(role: string | null | undefined): string {

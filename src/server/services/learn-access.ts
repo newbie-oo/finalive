@@ -18,7 +18,10 @@ export function checkLessonAccess(
   course: CourseAccess,
   isEnrolled: boolean,
   isAuthenticated: boolean,
+  isAdmin = false,
 ): AccessResult {
+  // Admins can view any lesson without enrollment.
+  if (isAdmin) return { ok: true };
   // Preview or free lessons are always accessible.
   if (lesson.isPreview || lesson.isFree) return { ok: true };
   // Entirely free courses are always accessible.

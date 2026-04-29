@@ -85,6 +85,10 @@ export const lesson = pgTable(
       .notNull()
       .references(() => courseModule.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    // Stores either Markdown (legacy seed data) or sanitized HTML
+    // (Tiptap-authored). MarkdownView auto-detects by leading `<` and
+    // routes to the appropriate renderer. Column kept as `body_md` for
+    // backward compatibility — see lib/markdown.tsx for rendering.
     bodyMd: text("body_md"),
     videoMediaId: uuid("video_media_id").references(() => mediaAsset.id),
     durationSeconds: integer("duration_seconds"),

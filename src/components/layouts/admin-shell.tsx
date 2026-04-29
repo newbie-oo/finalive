@@ -13,8 +13,7 @@ import {
   CaretRight,
   type Icon,
 } from "@phosphor-icons/react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { UserProfileDropdown } from "@/components/user-profile-dropdown";
+import { PublicShell } from "@/components/layouts/public-shell";
 import { cn } from "@/lib/utils";
 import type { SessionUser } from "@/server/auth-session";
 
@@ -56,95 +55,95 @@ export function AdminShell({
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname?.startsWith(href);
 
+  const activeLabel = nav.find((n) => isActive(n.href))?.label ?? "แอดมิน";
+
   return (
-    <div className="flex min-h-full">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-(--primary) focus:px-3 focus:py-2 focus:text-(--primary-fg)"
-      >
-        ข้ามไปยังเนื้อหา
-      </a>
-      <aside
-        className={cn(
-          "sticky top-0 hidden h-screen shrink-0 flex-col border-r border-(--border) bg-(--surface-muted) transition-[width] duration-200 md:flex",
-          collapsed ? "w-16" : "w-60",
-        )}
-      >
-        <div
+    <PublicShell hideFooter unboundedMain>
+      <div className="flex min-h-[calc(100dvh-4rem)]">
+        <aside
           className={cn(
-            "flex h-14 items-center border-b border-(--border)",
-            collapsed ? "justify-center" : "px-5",
+            "sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-(--border) bg-(--surface-muted) transition-[width] duration-200 md:flex",
+            collapsed ? "w-16" : "w-60",
           )}
         >
-          <Link href="/admin" className="flex items-center gap-2 text-(--foreground)">
-            <span className="h-2.5 w-2.5 rounded-full bg-(--primary)" aria-hidden />
-            {!collapsed && (
-              <span className="text-base font-semibold">
-                Finalive
-                <span className="ml-1 text-[11px] font-medium text-(--foreground-muted)">admin</span>
-              </span>
+          <div
+            className={cn(
+              "flex h-12 items-center border-b border-(--border)",
+              collapsed ? "justify-center" : "px-4",
             )}
-          </Link>
-        </div>
-
-        <nav className="flex flex-1 flex-col gap-0.5 py-3" aria-label="แอดมิน">
-          {nav.map((n) => (
-            <NavLink key={n.href} item={n} active={!!isActive(n.href)} collapsed={collapsed} />
-          ))}
-        </nav>
-
-        {/* Sidebar footer — admin profile (handoff §Admin Shell). */}
-        {!collapsed && (
-          <div className="border-t border-(--border) p-3">
-            <div className="flex items-center gap-2.5 rounded-nav px-2 py-2">
-              <div className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-uism font-semibold text-white">
-                {(user.name || "A").trim().charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-uism font-semibold text-(--foreground)">
-                  {user.name}
-                </div>
-                <div className="truncate text-caption text-(--foreground-muted)">
-                  {user.email}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-4 border-b border-(--border) bg-(--background)/95 px-6 backdrop-blur">
-          <div className="flex items-center gap-3">
+          >
             <button
               type="button"
-              className="hidden h-9 w-9 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground) md:inline-flex"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)"
               aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
               onClick={() => setCollapsed((c) => !c)}
             >
               {collapsed ? <CaretRight size={16} /> : <CaretLeft size={16} />}
             </button>
+            {!collapsed && (
+              <span className="ml-2 text-uism font-semibold uppercase tracking-wide text-(--foreground-subtle)">
+                Admin
+              </span>
+            )}
+          </div>
+
+          <nav className="flex flex-1 flex-col gap-0.5 py-3" aria-label="แอดมิน">
+            {nav.map((n) => (
+              <NavLink key={n.href} item={n} active={!!isActive(n.href)} collapsed={collapsed} />
+            ))}
+          </nav>
+
+          {!collapsed && (
+            <div className="border-t border-(--border) p-3">
+              <div className="flex items-center gap-2.5 rounded-nav px-2 py-2">
+                <div className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-uism font-semibold text-white">
+                  {(user.name || "A").trim().charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-uism font-semibold text-(--foreground)">
+                    {user.name}
+                  </div>
+                  <div className="truncate text-caption text-(--foreground-muted)">
+                    {user.email}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center justify-between border-b border-(--border) px-6 py-3 md:px-8">
             <h1 className="text-ui font-medium text-(--foreground-muted) md:text-sm">
-              {nav.find((n) => isActive(n.href))?.label ?? "แอดมิน"}
+              {activeLabel}
             </h1>
+            <nav className="flex items-center gap-1 overflow-x-auto md:hidden" aria-label="แอดมินมือถือ">
+              {nav.map((n) => (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  aria-current={isActive(n.href) ? "page" : undefined}
+                  className={cn(
+                    "rounded-nav px-2 py-1 text-caption",
+                    isActive(n.href)
+                      ? "bg-(--primary)/10 font-semibold text-(--primary)"
+                      : "text-(--foreground-muted) hover:bg-(--surface-muted)",
+                  )}
+                >
+                  {n.label}
+                  {n.badge ? (
+                    <span className="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-(--accent) px-1 text-[10px] font-semibold text-(--accent-fg)">
+                      {n.badge}
+                    </span>
+                  ) : null}
+                </Link>
+              ))}
+            </nav>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <UserProfileDropdown
-              name={user.name}
-              email={user.email}
-              links={[
-                { href: "/admin", label: "แผงควบคุม" },
-                { href: "/admin/courses", label: "จัดการคอร์ส" },
-              ]}
-            />
-          </div>
-        </header>
-        <main id="main" className="flex-1 px-6 py-6 md:px-8 md:py-7">
-          {children}
-        </main>
+          <div className="flex-1 px-6 py-6 md:px-8 md:py-7">{children}</div>
+        </div>
       </div>
-    </div>
+    </PublicShell>
   );
 }
 

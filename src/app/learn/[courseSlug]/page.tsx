@@ -11,7 +11,10 @@ export default async function LearnCoursePage({
 }) {
   const { courseSlug } = await params;
   const session = await getSession();
-  const data = await getLearnCourse(courseSlug, session?.user?.id ?? null);
+  const isAdmin = session?.user?.role === "admin";
+  const data = await getLearnCourse(courseSlug, session?.user?.id ?? null, {
+    allowUnpublished: isAdmin,
+  });
   if (!data) notFound();
 
   if (!data.resumeLessonId) {

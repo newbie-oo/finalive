@@ -45,10 +45,21 @@ export interface GetLearnCourseResult {
   resumeLessonId: string | null;
 }
 
+export interface GetLearnCourseOptions {
+  /** Allow draft/archived courses through. Set true for admin views. */
+  allowUnpublished?: boolean;
+}
+
 export async function getLearnCourse(
   courseSlug: string,
   userId: string | null,
+  options: GetLearnCourseOptions = {},
 ): Promise<GetLearnCourseResult | null> {
+  const courseConditions = [eq(course.slug, courseSlug), isNull(course.deletedAt)];
+  if (!options.allowUnpublished) {
+    courseConditions.push(eq(course.status, "published"));
+  }
+
   const courseRows = await db
     .select({
       id: course.id,
@@ -57,9 +68,7 @@ export async function getLearnCourse(
       isFree: course.isFree,
     })
     .from(course)
-    .where(
-      and(eq(course.slug, courseSlug), eq(course.status, "published"), isNull(course.deletedAt)),
-    )
+    .where(and(...courseConditions))
     .limit(1);
 
   const courseRow = courseRows[0];
@@ -230,7 +239,17 @@ export interface GetLearnLessonResult {
 export async function getLearnLesson(
   courseSlug: string,
   lessonId: string,
+  options: GetLearnCourseOptions = {},
 ): Promise<GetLearnLessonResult | null> {
+  const conditions = [
+    eq(lesson.id, lessonId),
+    eq(course.slug, courseSlug),
+    isNull(lesson.deletedAt),
+    isNull(course.deletedAt),
+  ];
+  if (!options.allowUnpublished) {
+    conditions.push(eq(course.status, "published"));
+  }
   const rows = await db
     .select({
       id: lesson.id,
@@ -253,15 +272,7 @@ export async function getLearnLesson(
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
     .innerJoin(course, eq(courseModule.courseId, course.id))
     .leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
-    .where(
-      and(
-        eq(lesson.id, lessonId),
-        eq(course.slug, courseSlug),
-        eq(course.status, "published"),
-        isNull(lesson.deletedAt),
-        isNull(course.deletedAt),
-      ),
-    )
+    .where(and(...conditions))
     .limit(1);
 
   const row = rows[0];

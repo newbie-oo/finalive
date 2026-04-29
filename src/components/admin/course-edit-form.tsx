@@ -72,8 +72,12 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           type="text"
           defaultValue={course.price}
           required={!isFree}
-          disabled={isFree}
-          className="mt-1 w-full rounded border px-3 py-2 text-sm disabled:bg-muted disabled:text-muted-foreground"
+          readOnly={isFree}
+          aria-disabled={isFree}
+          className={
+            "mt-1 w-full rounded border px-3 py-2 text-sm" +
+            (isFree ? " bg-muted text-muted-foreground" : "")
+          }
         />
         {isFree && (
           <p className="mt-1 text-xs text-muted-foreground">
@@ -83,6 +87,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        <input type="hidden" name="isFree" value="" />
         <input
           name="isFree"
           type="checkbox"
