@@ -9,7 +9,7 @@ const ONE_PX_PNG = Buffer.from(
 
 const STUDENT = { email: "student-b@finalive.dev", password: "change-me" };
 const ADMIN = { email: "admin@finalive.dev", password: "change-me" };
-const COURSE_SLUG = "python-for-investing";
+const COURSE_SLUG = "fin-statement-basics";
 
 async function resetStudentPending(): Promise<void> {
   // Reset DB so each test starts with a fresh pending (no prior slip).
@@ -43,7 +43,7 @@ test.describe("checkout UI (4.5.11–4.5.13)", () => {
 
     // Assertions on checkout page
     await expect(page.getByRole("heading", { name: "ชำระเงิน" })).toBeVisible();
-    await expect(page.locator("span.font-medium").filter({ hasText: "Python For Investing" })).toBeVisible();
+    await expect(page.locator("span.font-medium").filter({ hasText: "การวิเคราะห์งบการเงินขั้นพื้นฐาน" })).toBeVisible();
     await expect(page.getByText(/฿1,290\.00/).first()).toBeVisible();
     await expect(page.getByText(/FL-/)).toBeVisible(); // ref code
     await expect(page.getByText(/\d{2}:\d{2}:\d{2}/)).toBeVisible(); // countdown

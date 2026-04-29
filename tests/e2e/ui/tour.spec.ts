@@ -85,8 +85,8 @@ test.describe("exploratory tour", () => {
     const stops: { url: string; name: string }[] = [
       { url: "/", name: "01-home" },
       { url: "/courses", name: "02-courses" },
-      { url: "/courses/python-for-investing", name: "03-course-detail" },
-      { url: "/courses/free-intro-course", name: "04-free-course" },
+      { url: "/courses/fin-statement-basics", name: "03-course-detail" },
+      { url: "/courses/excel-finance", name: "04-free-course" },
       { url: "/login", name: "05-login" },
       { url: "/register", name: "06-register" },
       { url: "/forgot-password", name: "07-forgot-password" },
@@ -119,7 +119,7 @@ test.describe("exploratory tour", () => {
       { url: "/account/enrollments", name: "11-enrollments" },
       { url: "/account/certificates", name: "12-certificates" },
       { url: "/account/security", name: "13-security" },
-      { url: "/learn/python-for-investing", name: "14-learn-course" },
+      { url: "/learn/fin-statement-basics", name: "14-learn-course" },
     ];
 
     const allReasons: Record<string, string[]> = {};

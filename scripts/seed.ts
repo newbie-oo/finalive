@@ -10,7 +10,6 @@ import {
 } from "@/db/schema/course";
 import { quiz as quizTable, quizQuestion as quizQuestionTable, quizChoice as quizChoiceTable } from "@/db/schema/quiz";
 import { mediaAsset as mediaAssetTable } from "@/db/schema/media";
-import { slugify } from "@/lib/slug";
 
 interface SeedUser {
   email: string;
@@ -37,6 +36,7 @@ interface SeedModule {
   lessons: SeedLesson[];
 }
 interface SeedCourse {
+  slug: string;
   title: string;
   summary: string;
   price: string;
@@ -44,83 +44,129 @@ interface SeedCourse {
   modules: SeedModule[];
 }
 
+// Realistic finance/investing catalog mirroring claude-design-ui SAMPLE_COURSES.
+// Brand is Finalive — a finance LMS — so demos and screenshots should look
+// believable to a Thai finance professional. Slugs are stable because /courses
+// pages are linked by slug; do not rename without checking outbound links.
 const SEED_COURSES: SeedCourse[] = [
   {
-    title: "Python For Investing",
-    summary: "เริ่มต้น Python สำหรับการลงทุน — pandas, yfinance, backtest พื้นฐาน",
-    price: "1290.00",
+    slug: "fin-statement-basics",
+    title: "การวิเคราะห์งบการเงินขั้นพื้นฐาน",
+    summary:
+      "อ่านและตีความงบดุล งบกำไรขาดทุน และงบกระแสเงินสดของบริษัทจดทะเบียน — เน้นใช้งานจริงสำหรับนักลงทุนและคนทำงานสายการเงิน",
+    price: "2490.00",
     modules: [
       {
-        title: "พื้นฐาน Python",
+        title: "ทำความรู้จักงบการเงิน",
         lessons: [
-          { title: "ติดตั้ง Python + VSCode", durationSeconds: 360, isPreview: true, isFree: true },
-          { title: "ตัวแปรและชนิดข้อมูล", durationSeconds: 540 },
-          { title: "Loops และ List", durationSeconds: 600 },
+          { title: "งบการเงินคืออะไร และทำไมต้องอ่านเป็น", durationSeconds: 420, isPreview: true, isFree: true },
+          { title: "งบดุล: สินทรัพย์ หนี้สิน ส่วนของผู้ถือหุ้น", durationSeconds: 540 },
+          { title: "งบกำไรขาดทุน: รายได้ ต้นทุน กำไรสุทธิ", durationSeconds: 510 },
+          { title: "งบกระแสเงินสด: 3 กิจกรรมที่ต้องเข้าใจ", durationSeconds: 600 },
         ],
       },
       {
-        title: "การลงทุนด้วยข้อมูล",
+        title: "อัตราส่วนทางการเงินที่สำคัญ",
         lessons: [
-          { title: "ดาวน์โหลดราคาด้วย yfinance", durationSeconds: 480 },
-          { title: "Backtest กลยุทธ์ง่ายๆ", durationSeconds: 720 },
+          { title: "Liquidity ratios (Current, Quick)", durationSeconds: 480 },
+          { title: "Profitability ratios (ROE, ROA, Net margin)", durationSeconds: 540 },
+          { title: "Leverage ratios (D/E, Interest coverage)", durationSeconds: 510 },
+          { title: "Workshop: เปรียบเทียบ 2 บริษัทคู่แข่งจริง", durationSeconds: 720 },
         ],
       },
     ],
   },
   {
-    title: "การออกแบบ UX สำหรับ B2B",
-    summary: "framework ออกแบบ UX สำหรับ tool ภายในองค์กรและ SaaS B2B",
-    price: "990.00",
+    slug: "thai-stock-30days",
+    title: "เริ่มต้นลงทุนหุ้นไทยใน 30 วัน",
+    summary:
+      "เส้นทางจากศูนย์สู่นักลงทุนรายย่อยที่อ่านบริษัทเป็น เลือกหุ้นได้เอง และมีพอร์ตของตัวเอง — พร้อมเทมเพลต watchlist",
+    price: "1990.00",
     modules: [
       {
-        title: "เข้าใจผู้ใช้องค์กร",
+        title: "พื้นฐานก่อนเปิดพอร์ต",
         lessons: [
-          { title: "Stakeholder map", durationSeconds: 420, isPreview: true, isFree: true },
-          { title: "Job stories vs user stories", durationSeconds: 540 },
+          { title: "ตลาดหุ้นไทยทำงานยังไง — SET, mai, settlement", durationSeconds: 540, isPreview: true, isFree: true },
+          { title: "เปิดพอร์ตกับโบรกเกอร์ และค่าธรรมเนียมที่ต้องรู้", durationSeconds: 420 },
+          { title: "ประเภทหุ้น: growth / dividend / value", durationSeconds: 510 },
+        ],
+      },
+      {
+        title: "วิเคราะห์หุ้นรายตัว",
+        lessons: [
+          { title: "อ่านแบบ 56-1 One Report ใน 15 นาที", durationSeconds: 720 },
+          { title: "P/E, P/BV, dividend yield ใช้ยังไงให้ถูก", durationSeconds: 540 },
+          { title: "Workshop: เลือกหุ้น 3 ตัวเข้า watchlist", durationSeconds: 600 },
         ],
       },
     ],
   },
   {
-    title: "TypeScript Mastery",
-    summary: "ลึกถึง type system ของ TS — generics, conditional, utility types",
-    price: "1590.00",
-    modules: [
-      {
-        title: "Type system",
-        lessons: [
-          { title: "Type vs Interface", durationSeconds: 480, isPreview: true, isFree: true },
-          { title: "Generics", durationSeconds: 600 },
-          { title: "Conditional types", durationSeconds: 720 },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Free Intro Course",
-    summary: "ตัวอย่างคอร์สฟรี เพื่อทดสอบโฟลว์การเรียนของแพลตฟอร์ม",
+    slug: "excel-finance",
+    title: "Excel สำหรับนักวิเคราะห์การเงิน",
+    summary:
+      "คอร์สฟรีสอน Excel เฉพาะสำหรับงานการเงิน — สูตรที่ใช้จริง XLOOKUP, INDEX/MATCH, PMT, IRR, NPV และ pivot table",
     price: "0.00",
     isFree: true,
     modules: [
       {
-        title: "เริ่มต้น",
+        title: "สูตร Excel ที่ใช้จริงในงานการเงิน",
         lessons: [
-          { title: "ภาพรวม", durationSeconds: 240, isPreview: true, isFree: true },
-          { title: "เริ่มเรียน", durationSeconds: 360, isFree: true },
+          { title: "ทำไมต้องใช้ Excel ในงานการเงิน", durationSeconds: 300, isPreview: true, isFree: true },
+          { title: "XLOOKUP กับ INDEX/MATCH ต่างกันยังไง", durationSeconds: 420, isFree: true },
+          { title: "PMT, PV, FV — คำนวณเงินกู้และเงินออม", durationSeconds: 480, isFree: true },
+          { title: "IRR และ NPV — ตัดสินใจลงทุนโครงการ", durationSeconds: 540, isFree: true },
+        ],
+      },
+      {
+        title: "จัดการข้อมูลเป็นมืออาชีพ",
+        lessons: [
+          { title: "Pivot Table แบบเข้าใจจริง ไม่ใช่จำสูตร", durationSeconds: 600, isFree: true },
+          { title: "Workshop: ทำงบกำไรขาดทุนรายเดือนจาก raw data", durationSeconds: 720, isFree: true },
         ],
       },
     ],
   },
   {
-    title: "Public Speaking ระดับมืออาชีพ",
-    summary: "เทคนิคการพูดต่อหน้าสาธารณะ — โครงสร้างเรื่อง น้ำเสียง การควบคุมเวที",
-    price: "790.00",
+    slug: "dcf-valuation",
+    title: "DCF Valuation ขั้นสูง สำหรับคนทำงานจริง",
+    summary:
+      "ประเมินมูลค่าหุ้นและธุรกิจด้วยวิธี Discounted Cash Flow แบบที่นักวิเคราะห์มืออาชีพใช้จริง พร้อม Excel template ที่ทำงานได้ทันที",
+    price: "3990.00",
     modules: [
       {
-        title: "โครงสร้างคำพูด",
+        title: "พื้นฐาน DCF",
         lessons: [
-          { title: "Hook 30 วินาทีแรก", durationSeconds: 360, isPreview: true, isFree: true },
-          { title: "การปิด: call to action", durationSeconds: 420 },
+          { title: "Time value of money และ discount rate", durationSeconds: 480, isPreview: true, isFree: true },
+          { title: "WACC: คำนวณยังไงให้ถูกต้อง", durationSeconds: 600 },
+          { title: "Free Cash Flow to Firm vs to Equity", durationSeconds: 540 },
+        ],
+      },
+      {
+        title: "สร้างโมเดล DCF จริง",
+        lessons: [
+          { title: "Forecast revenue และ margins 5 ปี", durationSeconds: 720 },
+          { title: "Working capital และ CapEx assumptions", durationSeconds: 660 },
+          { title: "Terminal value: Gordon vs Exit multiple", durationSeconds: 600 },
+          { title: "Sensitivity analysis และ scenario", durationSeconds: 540 },
+          { title: "Workshop: ประเมินมูลค่าหุ้นจริงในตลาด", durationSeconds: 900 },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "tax-planning-freelancer",
+    title: "การวางแผนภาษีสำหรับฟรีแลนซ์และเจ้าของกิจการ",
+    summary:
+      "เข้าใจภาษีเงินได้บุคคลธรรมดา ภาษีหัก ณ ที่จ่าย VAT และวิธีลดหย่อนถูกกฎหมาย — สำหรับคนที่ไม่ได้เรียนบัญชีมาก่อน",
+    price: "1490.00",
+    modules: [
+      {
+        title: "ภาษีบุคคลธรรมดาฉบับเข้าใจง่าย",
+        lessons: [
+          { title: "เงินได้ 8 ประเภทตามมาตรา 40", durationSeconds: 540, isPreview: true, isFree: true },
+          { title: "ค่าลดหย่อนที่คนส่วนใหญ่ไม่รู้", durationSeconds: 480 },
+          { title: "ยื่น ภ.ง.ด. 90/91 ขั้นตอนละเอียด", durationSeconds: 600 },
         ],
       },
     ],
@@ -204,7 +250,7 @@ async function seedCourses(adminId: string): Promise<string[]> {
   const lessonIds: string[] = [];
   const usedSlugs = new Set<string>();
   for (const c of SEED_COURSES) {
-    const slug = slugify(c.title);
+    const slug = c.slug;
     if (usedSlugs.has(slug)) throw new Error(`duplicate slug ${slug}`);
     usedSlugs.add(slug);
 
@@ -259,9 +305,9 @@ async function seedCourses(adminId: string): Promise<string[]> {
 async function seedQuizzes(adminId: string, lessonIds: string[]): Promise<void> {
   if (lessonIds.length === 0) return;
 
-  // Create a quiz for the first lesson of the first course (Python For Investing).
+  // Quiz attached to lesson 1 of course 1 (การวิเคราะห์งบการเงินขั้นพื้นฐาน).
   const targetLessonId = lessonIds[0]!;
-  const quizTitle = "แบบทดสอบท้ายบท: พื้นฐาน Python";
+  const quizTitle = "แบบทดสอบท้ายบท: ทำความรู้จักงบการเงิน";
   const [qz] = await db.insert(quizTable).values({
     lessonId: targetLessonId,
     title: quizTitle,
@@ -270,30 +316,30 @@ async function seedQuizzes(adminId: string, lessonIds: string[]): Promise<void> 
   }).returning({ id: quizTable.id });
 
   const questions = [
-    { prompt: "Python เป็นภาษา programming ประเภทใด?", choices: [
-      { body: "Compiled", correct: false },
-      { body: "Interpreted", correct: true },
-      { body: "Assembly", correct: false },
+    { prompt: "งบการเงินหลักที่บริษัทจดทะเบียนต้องเปิดเผยมีกี่งบ?", choices: [
+      { body: "2 งบ", correct: false },
+      { body: "3 งบ", correct: true },
+      { body: "5 งบ", correct: false },
     ]},
-    { prompt: "ตัวแปรในภาษา Python ต้องประกาศ type ก่อนใช้งานหรือไม่?", choices: [
-      { body: "ต้องประกาศเสมอ", correct: false },
-      { body: "ไม่จำเป็นต้องประกาศ", correct: true },
-      { body: "ขึ้นอยู่กับเวอร์ชัน", correct: false },
+    { prompt: "สมการบัญชีพื้นฐาน (Accounting equation) คืออะไร?", choices: [
+      { body: "รายได้ = ต้นทุน + กำไร", correct: false },
+      { body: "สินทรัพย์ = หนี้สิน + ส่วนของผู้ถือหุ้น", correct: true },
+      { body: "กำไรสุทธิ = รายได้ − ค่าใช้จ่าย", correct: false },
     ]},
-    { prompt: "คำสั่งใดใช้สำหรับวน loop ตามจำนวนครั้งที่กำหนด?", choices: [
-      { body: "while", correct: false },
-      { body: "for", correct: true },
-      { body: "if", correct: false },
+    { prompt: "งบกระแสเงินสดแบ่งกิจกรรมเป็นกี่ประเภท?", choices: [
+      { body: "2 (ดำเนินงาน, ลงทุน)", correct: false },
+      { body: "3 (ดำเนินงาน, ลงทุน, จัดหาเงิน)", correct: true },
+      { body: "4 (ดำเนินงาน, ลงทุน, จัดหาเงิน, ภาษี)", correct: false },
     ]},
-    { prompt: "ชนิดข้อมูลใดใน Python ใช้เก็บค่าที่ไม่ซ้ำกัน?", choices: [
-      { body: "list", correct: false },
-      { body: "tuple", correct: false },
-      { body: "set", correct: true },
+    { prompt: "ROE คืออัตราส่วนวัดอะไร?", choices: [
+      { body: "ความสามารถสร้างกำไรเทียบกับสินทรัพย์", correct: false },
+      { body: "ความสามารถสร้างกำไรเทียบกับส่วนของผู้ถือหุ้น", correct: true },
+      { body: "ความสามารถจ่ายหนี้ระยะสั้น", correct: false },
     ]},
-    { prompt: "ฟังก์ชัน `len()` ใช้ทำอะไร?", choices: [
-      { body: "นับจำนวนสมาชิก", correct: true },
-      { body: "แปลงตัวเลขเป็นสตริง", correct: false },
-      { body: "หาค่าสูงสุด", correct: false },
+    { prompt: "ถ้า Current ratio < 1 หมายความว่าอย่างไร?", choices: [
+      { body: "บริษัทกำลังเติบโต", correct: false },
+      { body: "หนี้สินหมุนเวียนมากกว่าสินทรัพย์หมุนเวียน — เสี่ยงสภาพคล่อง", correct: true },
+      { body: "บริษัทมีกำไรลดลง", correct: false },
     ]},
   ];
 

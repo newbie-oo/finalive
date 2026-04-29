@@ -32,7 +32,7 @@ test.describe("a11y smoke", () => {
     await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
     await page.waitForURL(/\/account/);
 
-    await page.goto("/courses/python-for-investing");
+    await page.goto("/courses/fin-statement-basics");
     await page.getByRole("button", { name: "ลงทะเบียน" }).click();
     await page.waitForURL(/\/checkout\/[a-f0-9-]{36}$/);
 
@@ -51,7 +51,7 @@ test.describe("a11y smoke", () => {
 
     // Enter learn for a course where student-a is not enrolled — only a
     // preview lesson is reachable. Locked lessons must render as buttons.
-    await page.goto("/learn/typescript-mastery");
+    await page.goto("/learn/dcf-valuation");
 
     const locked = page.locator('button[aria-disabled="true"]').first();
     await expect(locked).toBeVisible();

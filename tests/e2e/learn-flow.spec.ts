@@ -2,7 +2,7 @@ import { test, expect, request as pwRequest } from "@playwright/test";
 import { execSync } from "node:child_process";
 
 const STUDENT = { email: "student-a@finalive.dev", password: "change-me" };
-const COURSE_SLUG = "python-for-investing";
+const COURSE_SLUG = "fin-statement-basics";
 
 function psql(sql: string): void {
   execSync(
@@ -59,7 +59,7 @@ test.describe("learn flow", () => {
     const learn = await studentCtx.get(`/learn/${COURSE_SLUG}`);
     expect(learn.status()).toBe(200);
     const html = await learn.text();
-    expect(html).toMatch(/Python For Investing/i);
+    expect(html).toMatch(/การวิเคราะห์งบการเงินขั้นพื้นฐาน/i);
 
     // 4. Visit first lesson page (look up the id — seed UUIDs are randomised per run).
     const firstLessonId = firstLessonIdFor(COURSE_SLUG);
@@ -78,12 +78,12 @@ test.describe("learn flow", () => {
       SELECT l.id FROM lesson l
       JOIN module m ON l.module_id = m.id
       JOIN course c ON m.course_id = c.id
-      WHERE c.slug = 'python-for-investing'
+      WHERE c.slug = 'fin-statement-basics'
         AND l.is_preview = true AND l.deleted_at IS NULL
       ORDER BY m.sort_order, l.sort_order LIMIT 1
     `);
     test.skip(!previewLessonId, "no preview lesson found");
-    await page.goto(`/courses/python-for-investing/preview/${previewLessonId}`);
+    await page.goto(`/courses/fin-statement-basics/preview/${previewLessonId}`);
     await page.waitForURL(/\/preview\//);
 
     // Lesson title is always rendered, even when no video has been uploaded.

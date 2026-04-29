@@ -2,7 +2,7 @@ import { test, expect, request as pwRequest } from "@playwright/test";
 import { execSync } from "node:child_process";
 
 const STUDENT = { email: "student-a@finalive.dev", password: "change-me" };
-const COURSE_SLUG = "python-for-investing";
+const COURSE_SLUG = "fin-statement-basics";
 
 // Look up the seeded quiz id at runtime — UUIDs are randomised per `pnpm seed`.
 function quizIdForCourse(slug: string): string {

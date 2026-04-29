@@ -19,7 +19,7 @@ import { execSync } from "node:child_process";
 
 const STUDENT = { email: "student-a@finalive.dev", password: "change-me" };
 const ADMIN = { email: "admin@finalive.dev", password: "change-me" };
-const COURSE_SLUG = "python-for-investing";
+const COURSE_SLUG = "fin-statement-basics";
 
 // Tiny valid PNG (1x1 red pixel) so the file-sniff layer accepts the upload.
 const ONE_PX_PNG = Buffer.from(

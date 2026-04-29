@@ -13,7 +13,7 @@ test("courses page responds 200", async ({ page }) => {
 
 test("course detail page responds 200", async ({ page }) => {
   // This assumes at least one published course exists in the seeded db.
-  const response = await page.goto("/courses/python-for-investing");
+  const response = await page.goto("/courses/fin-statement-basics");
   expect(response?.status()).toBe(200);
 });
 

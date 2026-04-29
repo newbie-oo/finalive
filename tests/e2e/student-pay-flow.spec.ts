@@ -17,7 +17,7 @@ test.describe("student pay flow (smoke)", () => {
 
   test("/checkout/start without auth redirects to /login", async ({ request }) => {
     const r = await request.post("/checkout/start", {
-      form: { courseSlug: "python-for-investing" },
+      form: { courseSlug: "fin-statement-basics" },
       maxRedirects: 0,
     });
     // requireSession redirects to /login. The redirect chain is followed
