@@ -25,7 +25,7 @@ interface NavItem {
   badge?: number;
 }
 
-const NAV: NavItem[] = [
+const BASE_NAV: NavItem[] = [
   { href: "/admin", label: "แดชบอร์ด", icon: Gauge },
   { href: "/admin/slips", label: "ตรวจสลิป", icon: Receipt },
   { href: "/admin/courses", label: "คอร์ส", icon: Books },
@@ -33,17 +33,25 @@ const NAV: NavItem[] = [
   { href: "/admin/certificates", label: "ใบประกาศ", icon: Certificate },
 ];
 
-const NAV_FOOT: NavItem[] = [];
-
 export function AdminShell({
   user,
+  pendingSlipCount,
   children,
 }: {
   user: SessionUser;
+  pendingSlipCount?: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+
+  // Decorate nav with live counts. The badge only renders when > 0 so an
+  // empty queue doesn't dot the sidebar.
+  const nav = BASE_NAV.map((n) =>
+    n.href === "/admin/slips" && pendingSlipCount && pendingSlipCount > 0
+      ? { ...n, badge: pendingSlipCount }
+      : n,
+  );
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname?.startsWith(href);
@@ -80,14 +88,29 @@ export function AdminShell({
         </div>
 
         <nav className="flex flex-1 flex-col gap-0.5 py-3" aria-label="แอดมิน">
-          {NAV.map((n) => (
-            <NavLink key={n.href} item={n} active={!!isActive(n.href)} collapsed={collapsed} />
-          ))}
-          <div className="my-3 h-px bg-(--border)" />
-          {NAV_FOOT.map((n) => (
+          {nav.map((n) => (
             <NavLink key={n.href} item={n} active={!!isActive(n.href)} collapsed={collapsed} />
           ))}
         </nav>
+
+        {/* Sidebar footer — admin profile (handoff §Admin Shell). */}
+        {!collapsed && (
+          <div className="border-t border-(--border) p-3">
+            <div className="flex items-center gap-2.5 rounded-nav px-2 py-2">
+              <div className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-uism font-semibold text-white">
+                {(user.name || "A").trim().charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-uism font-semibold text-(--foreground)">
+                  {user.name}
+                </div>
+                <div className="truncate text-caption text-(--foreground-muted)">
+                  {user.email}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -102,7 +125,7 @@ export function AdminShell({
               {collapsed ? <CaretRight size={16} /> : <CaretLeft size={16} />}
             </button>
             <h1 className="text-ui font-medium text-(--foreground-muted) md:text-sm">
-              {NAV.find((n) => isActive(n.href))?.label ?? "แอดมิน"}
+              {nav.find((n) => isActive(n.href))?.label ?? "แอดมิน"}
             </h1>
           </div>
           <div className="flex items-center gap-2">
@@ -141,14 +164,21 @@ function NavLink({
       title={collapsed ? item.label : undefined}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "relative mx-2 flex items-center gap-3 rounded-md text-ui transition-colors",
-        collapsed ? "justify-center p-2.5" : "px-3 py-2.5",
+        "relative mx-2 flex h-10 items-center gap-3 rounded-nav text-ui transition-colors",
+        collapsed ? "justify-center" : "px-3",
         active
-          ? "bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] font-semibold text-(--primary)"
+          ? "bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] font-semibold text-(--primary)"
           : "text-(--foreground) hover:bg-(--surface)",
       )}
     >
-      <Ic size={18} weight={active ? "bold" : "regular"} />
+      {/* Active indicator: 3px border-left in primary, per handoff §Admin Shell. */}
+      {active && !collapsed && (
+        <span
+          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-(--primary)"
+          aria-hidden
+        />
+      )}
+      <Ic size={20} weight={active ? "bold" : "regular"} />
       {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
       {item.badge !== undefined && !collapsed && (
         <span className="tabular-nums inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-(--accent) px-1.5 text-[11px] font-semibold text-(--accent-fg)">
