@@ -11,16 +11,9 @@ interface VideoUploaderProps {
 }
 
 /**
- * Direct multipart upload to /api/admin/lesson-video. Replaces the previous
- * @tus/server pipeline that consistently 500'd on the final PATCH (the
- * synchronous Bunny call inside the chunk handler was the failure surface;
- * see DESIGN.md §0 #12-13). The simpler endpoint pushes once to Bunny on
- * the server and is what `pnpm seed:media` already uses successfully.
- *
- * UX rules (DESIGN.md §5.13):
- *  - progress reaches 100% only after `onload` fires with a 2xx response
- *  - errors are surfaced as toasts AND a persistent inline banner with a
- *    retry path; the previous version silently passed 100% even on 500s
+ * Direct upload to /api/admin/lesson-video. Cap progress at 99% until the
+ * server confirms a 2xx — `xhr.upload.onprogress` only sees bytes-out, not
+ * the Bunny PUT + DB writes finishing on the server (DESIGN.md §5.13).
  */
 export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false);
