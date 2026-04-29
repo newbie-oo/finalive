@@ -20,22 +20,29 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-// Default landing after login = "คอร์สของฉัน". Going to /account (profile
-// form) post-login was confusing — students expect to see their courses, not
-// a settings page.
-const DEFAULT_NEXT = "/account/enrollments";
+// Default landing after login depends on role:
+//   admin → /admin (work surface)
+//   student → /account/enrollments ("คอร์สของฉัน")
+// Going to /account (profile form) was confusing — students expect to see
+// their courses, not a settings page.
+const STUDENT_DEFAULT = "/account/enrollments";
+const ADMIN_DEFAULT = "/admin";
+
+function defaultFor(role: string | null | undefined): string {
+  return role === "admin" ? ADMIN_DEFAULT : STUDENT_DEFAULT;
+}
 
 // Only allow internal redirect targets to defend against open-redirect attacks.
-function safeNext(raw: string | null): string {
-  if (!raw) return DEFAULT_NEXT;
-  if (!raw.startsWith("/") || raw.startsWith("//")) return DEFAULT_NEXT;
+function safeNext(raw: string | null, fallback: string): string {
+  if (!raw) return fallback;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
   return raw;
 }
 
 export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = safeNext(params.get("next"));
+  const rawNext = params.get("next");
   const [serverError, setServerError] = useState<string | null>(null);
   const {
     register,
@@ -65,6 +72,9 @@ export default function LoginPage() {
       return;
     }
 
+    // Role lives on the user object that better-auth returns from signIn.
+    const role = (result.data as { user?: { role?: string } } | null)?.user?.role;
+    const next = safeNext(rawNext, defaultFor(role));
     router.push(next);
     router.refresh();
   }
