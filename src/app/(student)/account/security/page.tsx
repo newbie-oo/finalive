@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, SignOut } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,8 +19,11 @@ const securitySchema = z.object({
 type SecurityForm = z.infer<typeof securitySchema>;
 
 export default function SecurityPage() {
+  const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [revokingAll, setRevokingAll] = useState(false);
+  const [revokeError, setRevokeError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -27,6 +31,41 @@ export default function SecurityPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<SecurityForm>();
+
+  async function handleLogoutAllDevices() {
+    if (
+      !confirm(
+        "ออกจากระบบทุกอุปกรณ์? เซสชันบนอุปกรณ์ทั้งหมดจะถูกตัด รวมถึงอุปกรณ์นี้",
+      )
+    ) {
+      return;
+    }
+    setRevokingAll(true);
+    setRevokeError(null);
+    try {
+      // /revoke-sessions terminates every session for the current user, this
+      // device included — same effect as clicking "ออกจากระบบ" on every
+      // device manually. Better Auth route name follows the proxy mapping
+      // from the server endpoint.
+      const res = await fetch("/api/auth/revoke-sessions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      });
+      if (!res.ok) {
+        setRevokeError("ไม่สามารถออกจากระบบได้ในตอนนี้");
+        setRevokingAll(false);
+        return;
+      }
+      // Force a full reload so the now-revoked session cookie is cleared and
+      // every other open tab also bounces to /login on its next request.
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setRevokeError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+      setRevokingAll(false);
+    }
+  }
 
   async function onSubmit(data: SecurityForm) {
     setSaved(false);
@@ -109,6 +148,34 @@ export default function SecurityPage() {
             {isSubmitting ? "กำลังบันทึก..." : "เปลี่ยนรหัสผ่าน"}
           </Button>
         </form>
+      </Card>
+
+      <Card>
+        <div className="space-y-3">
+          <h2 className="text-h3">เซสชัน</h2>
+          <p className="text-body text-(--foreground-muted)">
+            หากคุณสงสัยว่าบัญชีถูกเข้าใช้งานจากอุปกรณ์อื่น
+            กดปุ่มด้านล่างเพื่อออกจากระบบทุกอุปกรณ์รวมถึงอุปกรณ์นี้
+          </p>
+          {revokeError && (
+            <p
+              role="alert"
+              className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
+            >
+              {revokeError}
+            </p>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            disabled={revokingAll}
+            onClick={handleLogoutAllDevices}
+          >
+            <SignOut size={16} className="mr-1" />
+            {revokingAll ? "กำลังออกจากระบบ..." : "ออกจากระบบทุกอุปกรณ์"}
+          </Button>
+        </div>
       </Card>
     </section>
   );
