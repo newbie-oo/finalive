@@ -25,7 +25,8 @@
     "storage:up": "docker compose up -d minio",
     "stack:up": "docker compose up -d",
     "stack:down": "docker compose down",
-    "seed": "tsx --env-file=.env scripts/seed.ts"
+    "seed": "tsx --env-file=.env scripts/seed.ts",
+    "seed:media": "tsx --env-file=.env.local scripts/seed-real-media.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
