@@ -14,6 +14,7 @@ import {
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard } from "@/components/course/course-card";
 import { listFeaturedCourses } from "@/server/repos/course";
+import { getPublicHomeStats } from "@/server/repos/stats";
 import { getSession } from "@/server/auth-session";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +41,15 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const featured = await listFeaturedCourses(4);
-  const session = await getSession();
+  const [featured, stats, session] = await Promise.all([
+    listFeaturedCourses(4),
+    getPublicHomeStats(),
+    getSession(),
+  ]);
   const isLoggedIn = !!session?.user;
+  const formattedStudents = stats.activeStudents >= 100
+    ? `${stats.activeStudents.toLocaleString("en-US")}+`
+    : `${stats.activeStudents}`;
 
   return (
     <PublicShell>
@@ -90,13 +97,13 @@ export default async function Home() {
               )}
             </div>
 
-            {/* Trust row — TODO: wire to real aggregates when analytics table lands */}
+            {/* Trust row — sourced from getPublicHomeStats() to avoid the
+                misleading hardcoded numbers flagged in QA. Rating omitted
+                until a ratings/reviews table exists. */}
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-              <TrustStat value="8,900+" label="นักเรียนที่ลงทะเบียน" />
+              <TrustStat value={formattedStudents} label="นักเรียนที่ลงทะเบียน" />
               <span className="hidden h-8 w-px bg-(--border) sm:block" aria-hidden />
-              <TrustStat value="4.9" suffix="/ 5" label="คะแนนเฉลี่ยจากผู้เรียน" />
-              <span className="hidden h-8 w-px bg-(--border) sm:block" aria-hidden />
-              <TrustStat value="12" label="คอร์สเปิดสอน" />
+              <TrustStat value={String(stats.publishedCourses)} label="คอร์สเปิดสอน" />
             </div>
           </div>
 

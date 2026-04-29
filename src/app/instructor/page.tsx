@@ -1,13 +1,20 @@
 import Link from "next/link";
-import { YoutubeLogo, Certificate, GraduationCap, BookOpen } from "@phosphor-icons/react/dist/ssr";
+import { YoutubeLogo, GraduationCap, BookOpen } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { getPublicHomeStats } from "@/server/repos/stats";
 
 export const metadata = {
   title: "ผู้สอน — Finalive",
   description: "เรียนรู้เกี่ยวกับผู้สอนและที่มาของ Finalive",
 };
 
-export default function InstructorPage() {
+export const dynamic = "force-dynamic";
+
+export default async function InstructorPage() {
+  const stats = await getPublicHomeStats();
+  const formattedStudents = stats.activeStudents >= 100
+    ? `${stats.activeStudents.toLocaleString("en-US")}+`
+    : `${stats.activeStudents}`;
   return (
     <PublicShell>
       <section className="mx-auto max-w-[720px] px-6 py-16 md:py-24">
@@ -45,22 +52,18 @@ export default function InstructorPage() {
           </p>
         </article>
 
-        {/* Stats / highlights */}
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        {/* Stats — sourced from getPublicHomeStats(); rating omitted until a
+            ratings table exists. */}
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
           <HighlightCard
             icon={BookOpen}
-            value="12+"
+            value={String(stats.publishedCourses)}
             label="คอร์สเปิดสอน"
           />
           <HighlightCard
             icon={GraduationCap}
-            value="8,900+"
+            value={formattedStudents}
             label="นักเรียนที่ลงทะเบียน"
-          />
-          <HighlightCard
-            icon={Certificate}
-            value="4.9/5"
-            label="คะแนนจากผู้เรียน"
           />
         </div>
 
