@@ -210,6 +210,7 @@ export function LearnPageClient({
               modules={modules}
               progress={progress}
               isEnrolled={isEnrolled}
+              isAdmin={isAdmin}
               totalLessons={totalLessons}
             />
           </aside>
@@ -224,6 +225,7 @@ export function LearnPageClient({
         modules={modules}
         progress={progress}
         isEnrolled={isEnrolled}
+        isAdmin={isAdmin}
       />
     </div>
   );

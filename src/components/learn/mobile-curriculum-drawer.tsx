@@ -9,11 +9,13 @@ interface MobileCurriculumDrawerProps {
   modules: Parameters<typeof CurriculumSidebar>[0]["modules"];
   progress: Parameters<typeof CurriculumSidebar>[0]["progress"];
   isEnrolled: boolean;
+  isAdmin?: boolean;
 }
 
 export function MobileCurriculumDrawer({
   open,
   onClose,
+  isAdmin,
   ...sidebarProps
 }: MobileCurriculumDrawerProps) {
   if (!open) return null;
@@ -38,7 +40,7 @@ export function MobileCurriculumDrawer({
           <div className="h-1 w-8 rounded-full bg-(--border-strong)" />
         </div>
         <div className="flex-1 overflow-hidden">
-          <CurriculumSidebar {...sidebarProps} onClose={onClose} />
+          <CurriculumSidebar {...sidebarProps} isAdmin={isAdmin} onClose={onClose} />
         </div>
       </div>
     </div>

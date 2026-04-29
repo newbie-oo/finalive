@@ -34,6 +34,7 @@ interface CurriculumSidebarProps {
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
   isEnrolled: boolean;
+  isAdmin?: boolean;
   totalLessons?: number;
   onClose?: () => void;
 }
@@ -57,6 +58,7 @@ export function CurriculumSidebar({
   modules,
   progress,
   isEnrolled,
+  isAdmin = false,
   totalLessons,
   onClose,
 }: CurriculumSidebarProps) {
@@ -99,7 +101,7 @@ export function CurriculumSidebar({
             <ul className="space-y-0.5">
               {mod.lessons.map((les) => {
                 const isActive = les.id === activeLessonId;
-                const locked = !isEnrolled && !les.isPreview && !les.isFree;
+                const locked = !isAdmin && !isEnrolled && !les.isPreview && !les.isFree;
                 const stat = progressMap.get(les.id) ?? "not_started";
                 const baseClass =
                   "flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
@@ -158,7 +160,7 @@ export function CurriculumSidebar({
               {(() => {
                 const quizLesson = mod.lessons.find((l) => l.quizId);
                 if (!quizLesson || !quizLesson.quizId) return null;
-                const locked = !isEnrolled && !quizLesson.isPreview && !quizLesson.isFree;
+                const locked = !isAdmin && !isEnrolled && !quizLesson.isPreview && !quizLesson.isFree;
                 return (
                   <li>
                     <Link
