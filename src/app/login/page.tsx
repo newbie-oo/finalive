@@ -11,12 +11,12 @@ import { AuthCard } from "@/components/layouts/auth-card";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError } from "@/components/ui/label";
-import { Eye, EyeSlash } from "@phosphor-icons/react";
 
 const loginSchema = z.object({
-  email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
-  password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
+	email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
+	password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -26,135 +26,143 @@ const STUDENT_DEFAULT = "/";
 const ADMIN_DEFAULT = "/admin";
 
 function defaultFor(role: string | null | undefined): string {
-  return role === "admin" ? ADMIN_DEFAULT : STUDENT_DEFAULT;
+	return role === "admin" ? ADMIN_DEFAULT : STUDENT_DEFAULT;
 }
 
 // Only allow internal redirect targets to defend against open-redirect attacks.
 function safeNext(raw: string | null, fallback: string): string {
-  if (!raw) return fallback;
-  if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
-  return raw;
+	if (!raw) return fallback;
+	if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
+	return raw;
 }
 
 export default function LoginPage() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const rawNext = params.get("next");
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>();
+	const router = useRouter();
+	const params = useSearchParams();
+	const rawNext = params.get("next");
+	const [serverError, setServerError] = useState<string | null>(null);
+	const {
+		register,
+		handleSubmit,
+		setError,
+		formState: { errors, isSubmitting },
+	} = useForm<LoginForm>();
 
-  async function onSubmit(data: LoginForm) {
-    setServerError(null);
-    const parsed = loginSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as keyof LoginForm;
-        setError(field, { message: issue.message });
-      }
-      return;
-    }
+	async function onSubmit(data: LoginForm) {
+		setServerError(null);
+		const parsed = loginSchema.safeParse(data);
+		if (!parsed.success) {
+			for (const issue of parsed.error.issues) {
+				const field = issue.path[0] as keyof LoginForm;
+				setError(field, { message: issue.message });
+			}
+			return;
+		}
 
-    const result = await signIn.email({
-      email: parsed.data.email,
-      password: parsed.data.password,
-    });
+		const result = await signIn.email({
+			email: parsed.data.email,
+			password: parsed.data.password,
+		});
 
-    if (result.error) {
-      const errorCode = (result.error as { code?: string }).code;
-      if (errorCode === "EMAIL_NOT_VERIFIED") {
-        setServerError("อีเมลยังไม่ได้รับการยืนยัน กรุณาตรวจสอบกล่องจดหมายของคุณ");
-      } else {
-        setServerError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-      }
-      return;
-    }
+		if (result.error) {
+			const errorCode = (result.error as { code?: string }).code;
+			if (errorCode === "EMAIL_NOT_VERIFIED") {
+				setServerError("อีเมลยังไม่ได้รับการยืนยัน กรุณาตรวจสอบกล่องจดหมายของคุณ");
+			} else {
+				setServerError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+			}
+			return;
+		}
 
-    // Role lives on the user object that better-auth returns from signIn.
-    const role = (result.data as { user?: { role?: string } } | null)?.user?.role;
-    const next = safeNext(rawNext, defaultFor(role));
-    router.push(next);
-    router.refresh();
-  }
+		// Role lives on the user object that better-auth returns from signIn.
+		const role = (result.data as { user?: { role?: string } } | null)?.user
+			?.role;
+		const next = safeNext(rawNext, defaultFor(role));
+		router.push(next);
+		router.refresh();
+	}
 
-  return (
-    <PublicShell>
-      <AuthCard
-        title="เข้าสู่ระบบ"
-        subtitle="ยินดีต้อนรับกลับมา"
-        footer={
-          <>
-            ยังไม่มีบัญชี?{" "}
-            <Link href="/register" className="font-medium text-(--primary) hover:underline">
-              สมัครสมาชิก
-            </Link>
-          </>
-        }
-      >
-        <GoogleSignInButton mode="login" />
-        <div className="flex items-center gap-3">
-          <div className="h-px flex-1 bg-(--border)" />
-          <span className="text-uism text-(--foreground-muted)">หรือ</span>
-          <div className="h-px flex-1 bg-(--border)" />
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="email" required>อีเมล</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              invalid={!!errors.email}
-              {...register("email")}
-            />
-            {errors.email && <FieldError>{errors.email.message}</FieldError>}
-          </div>
+	return (
+		<PublicShell>
+			<AuthCard
+				title="เข้าสู่ระบบ"
+				subtitle="ยินดีต้อนรับกลับมา"
+				footer={
+					<>
+						ยังไม่มีบัญชี?{" "}
+						<Link
+							href="/register"
+							className="font-medium text-(--primary) hover:underline"
+						>
+							สมัครสมาชิก
+						</Link>
+					</>
+				}
+			>
+				<GoogleSignInButton mode="login" />
+				<div className="flex items-center gap-3">
+					<div className="h-px flex-1 bg-(--border)" />
+					<span className="text-uism text-(--foreground-muted)">หรือ</span>
+					<div className="h-px flex-1 bg-(--border)" />
+				</div>
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+					<div>
+						<Label htmlFor="email" required>
+							อีเมล
+						</Label>
+						<Input
+							id="email"
+							type="email"
+							autoComplete="email"
+							invalid={!!errors.email}
+							{...register("email")}
+						/>
+						{errors.email && <FieldError>{errors.email.message}</FieldError>}
+					</div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" required>รหัสผ่าน</Label>
-              <Link href="/forgot-password" className="mb-1.5 text-uism text-(--primary) hover:underline">
-                ลืมรหัสผ่าน?
-              </Link>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                invalid={!!errors.password}
-                className="pr-10"
-                {...register("password")}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
-                tabIndex={-1}
-                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
-              >
-                {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.password && <FieldError>{errors.password.message}</FieldError>}
-          </div>
+					<div>
+						<div className="flex items-center justify-between">
+							<Label htmlFor="password" required>
+								รหัสผ่าน
+							</Label>
+							<Link
+								href="/forgot-password"
+								className="mb-1.5 text-uism text-(--primary) hover:underline"
+							>
+								ลืมรหัสผ่าน?
+							</Link>
+						</div>
+						<PasswordInput
+							id="password"
+							autoComplete="current-password"
+							invalid={!!errors.password}
+							{...register("password")}
+						/>
+						{errors.password && (
+							<FieldError>{errors.password.message}</FieldError>
+						)}
+					</div>
 
-          {serverError && (
-            <p role="alert" className="rounded-md bg-(--destructive-bg) px-3 py-2 text-uism text-(--destructive-fg)">
-              {serverError}
-            </p>
-          )}
+					{serverError && (
+						<p
+							role="alert"
+							className="rounded-md bg-(--destructive-bg) px-3 py-2 text-uism text-(--destructive-fg)"
+						>
+							{serverError}
+						</p>
+					)}
 
-          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-          </Button>
-        </form>
-      </AuthCard>
-    </PublicShell>
-  );
+					<Button
+						type="submit"
+						variant="primary"
+						size="lg"
+						className="w-full"
+						disabled={isSubmitting}
+					>
+						{isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+					</Button>
+				</form>
+			</AuthCard>
+		</PublicShell>
+	);
 }
