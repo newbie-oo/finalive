@@ -2,8 +2,6 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
-	LockSimple,
-	Play,
 	CaretRight,
 	CheckCircle,
 	BookOpen,
@@ -18,65 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
-import { Accordion, AccordionItem } from "@/components/ui/accordion";
-import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
+import { CourseTabs } from "./course-tabs";
 import {
 	getPublishedCourseBySlug,
 	getCourseCurriculum,
 	isUserEnrolledInCourse,
-	type CurriculumLesson,
 } from "@/server/repos/course";
 import { getSession } from "@/server/auth-session";
 import { formatTHB, formatDuration } from "@/lib/format";
-
-function LessonRow({
-	lesson,
-	courseSlug,
-}: {
-	lesson: CurriculumLesson;
-	courseSlug: string;
-}) {
-	const playable = lesson.isPreview || lesson.isFree;
-	const Icon = playable ? Play : LockSimple;
-	const inner = (
-		<div className="flex items-center justify-between border-b border-(--border) px-4 py-3 text-body last:border-b-0">
-			<span className="flex items-center gap-3">
-				<Icon
-					size={16}
-					weight={playable ? "fill" : "regular"}
-					className={
-						playable ? "text-(--primary)" : "text-(--foreground-subtle)"
-					}
-				/>
-				<span
-					className={
-						playable ? "text-(--foreground)" : "text-(--foreground-muted)"
-					}
-				>
-					{lesson.title}
-				</span>
-				<LessonAccessBadge
-					isPreview={lesson.isPreview}
-					isFree={lesson.isFree}
-				/>
-			</span>
-			<span className="num text-uism text-(--foreground-muted)">
-				{formatDuration(lesson.durationSeconds)}
-			</span>
-		</div>
-	);
-	if (playable) {
-		return (
-			<Link
-				href={`/courses/${courseSlug}/preview/${lesson.id}`}
-				className="block transition-colors hover:bg-(--surface-muted)"
-			>
-				{inner}
-			</Link>
-		);
-	}
-	return <div>{inner}</div>;
-}
 
 const INCLUDES: Array<{
 	icon: React.ComponentType<{
@@ -162,7 +109,10 @@ export default async function CourseDetailPage({
 							</p>
 
 							{/* Instructor row */}
-							<div className="mt-6 flex items-center gap-3">
+							<a
+								href="#instructor"
+								className="mt-6 inline-flex items-center gap-3 rounded-card border border-transparent p-1 transition-colors hover:border-(--border) hover:bg-(--surface-muted)"
+							>
 								<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-ui font-semibold text-white">
 									อา
 								</div>
@@ -174,7 +124,7 @@ export default async function CourseDetailPage({
 										นักวิเคราะห์การเงิน · CFA Charterholder
 									</div>
 								</div>
-							</div>
+							</a>
 
 							{/* Meta row */}
 							<div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-uism text-(--foreground-muted)">
@@ -307,54 +257,12 @@ export default async function CourseDetailPage({
 				</div>
 			</section>
 
-			{/* Curriculum — module accordion. */}
-			<section id="curriculum" className="py-16 md:py-20">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
-						<div>
-							<h2 className="text-h2">เนื้อหาในคอร์ส</h2>
-							<p className="mt-2 text-body text-(--foreground-muted)">
-								<span className="num">{curriculum.length}</span> โมดูล ·
-								<span className="num"> {totalLessons}</span> บทเรียน ·
-								เวลาเรียนรวม {formatDuration(totalDuration)}
-							</p>
-							{curriculum.length === 0 ? (
-								<p className="mt-6 text-body text-(--foreground-muted)">
-									ยังไม่มีเนื้อหา
-								</p>
-							) : (
-								<Accordion className="mt-6">
-									{curriculum.map((m, idx) => (
-										<AccordionItem
-											key={m.id}
-											defaultOpen={idx === 0}
-											header={
-												<span className="flex w-full items-center justify-between">
-													<span>
-														{m.sortOrder}. {m.title}
-													</span>
-													<span className="text-uism text-(--foreground-muted)">
-														<span className="num">{m.lessons.length}</span>{" "}
-														บทเรียน
-													</span>
-												</span>
-											}
-										>
-											{m.lessons.map((l) => (
-												<LessonRow
-													key={l.id}
-													lesson={l}
-													courseSlug={course.slug}
-												/>
-											))}
-										</AccordionItem>
-									))}
-								</Accordion>
-							)}
-						</div>
-					</div>
-				</div>
-			</section>
+			<CourseTabs
+				curriculum={curriculum}
+				courseSlug={course.slug}
+				totalLessons={totalLessons}
+				totalDuration={totalDuration}
+			/>
 		</PublicShell>
 	);
 }
