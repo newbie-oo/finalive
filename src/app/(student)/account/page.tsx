@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CheckCircle, SignOut, Warning } from "@phosphor-icons/react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { deleteCurrentAccountAction } from "@/server/actions/delete-account";
+import { userHasCredentialAccount } from "@/server/actions/user-account";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,12 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 export default function AccountPage() {
   const router = useRouter();
   const { data: session, refetch } = useSession();
+  const [hasCredential, setHasCredential] = useState(false);
+
+  useEffect(() => {
+    userHasCredentialAccount().then(setHasCredential);
+  }, []);
+
   return (
     <section className="mx-auto max-w-3xl space-y-8">
       <header className="flex items-center gap-4">
@@ -45,7 +52,7 @@ export default function AccountPage() {
         onSaved={refetch}
       />
 
-      <ChangePasswordSection />
+      {hasCredential && <ChangePasswordSection />}
 
       <SessionSection
         onAllRevoked={() => {
