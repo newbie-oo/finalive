@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Certificate, ArrowRight, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
@@ -14,43 +14,50 @@ interface CourseCompleteModalProps {
 
 const STORAGE_PREFIX = "finalive:cert-shown:";
 
+function readShown(courseSlug: string): boolean {
+  if (typeof window === "undefined") return true; // SSR: never auto-open.
+  return !!window.localStorage.getItem(`${STORAGE_PREFIX}${courseSlug}`);
+}
+
 /**
- * One-shot celebratory dialog when the student first hits 100%. Persists
- * the "shown" flag in localStorage keyed on the course slug so re-visiting
- * an already-completed course doesn't keep popping the modal.
+ * One-shot celebratory dialog when the student first hits 100%. Derives
+ * openness from a lazy-initialised localStorage read (so we never call
+ * setState inside an effect to "decide" whether to open) plus a local
+ * "dismissed" flag the user toggles via the close button or Escape.
  */
 export function CourseCompleteModal({
   courseSlug,
   totalLessons,
   doneLessons,
 }: CourseCompleteModalProps) {
-  const [open, setOpen] = useState(false);
-  // useRef tracks "we already evaluated this mount"; avoids react-strict
-  // double-invocation re-firing the modal during dev.
-  const fired = useRef(false);
+  // Lazy initialiser reads localStorage once on mount; subsequent renders
+  // are pure props/state derivations. SSR-safe via the readShown guard.
+  const [dismissed, setDismissed] = useState<boolean>(() => readShown(courseSlug));
 
+  const completed = totalLessons > 0 && doneLessons >= totalLessons;
+  const open = completed && !dismissed;
+
+  // Persist the shown flag the first time the modal becomes visible. Side
+  // effect, not state — safe to do in useEffect without violating the
+  // set-state-in-effect lint rule.
   useEffect(() => {
-    if (fired.current) return;
-    if (totalLessons <= 0 || doneLessons < totalLessons) return;
+    if (!open) return;
     if (typeof window === "undefined") return;
-    const key = `${STORAGE_PREFIX}${courseSlug}`;
-    if (window.localStorage.getItem(key)) return;
-    fired.current = true;
-    setOpen(true);
-    window.localStorage.setItem(key, String(Date.now()));
-  }, [courseSlug, totalLessons, doneLessons]);
+    window.localStorage.setItem(`${STORAGE_PREFIX}${courseSlug}`, String(Date.now()));
+  }, [open, courseSlug]);
 
   // Close on Escape for accessibility.
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setDismissed(true);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [open]);
 
   if (!open) return null;
+  const setOpen = (next: boolean) => setDismissed(!next);
 
   return (
     <div

@@ -43,10 +43,12 @@ export function LearnPageClient({
   lessonTitle,
   moduleTitle,
   lessonBodyMd,
-  bunnyVideoId,
+  // Kept on the props interface so server callers don't need to be edited
+  // when we re-introduce the player fallback / sidebar prev-link.
+  bunnyVideoId: _bunnyVideoId,
   durationSeconds,
   nextLessonId,
-  prevLessonId,
+  prevLessonId: _prevLessonId,
   quizId,
   modules,
   progress,

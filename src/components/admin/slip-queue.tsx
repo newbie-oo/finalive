@@ -2,7 +2,6 @@
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -15,7 +14,6 @@ import type { SlipQueueStatus } from "@/server/repos/slip";
 import { SlipImageViewer } from "./slip-image-viewer";
 import { REJECT_REASONS, REJECT_REASON_LABEL } from "./slip-reject-options";
 import {
-  Check,
   X,
   CaretUp,
   CaretDown,
@@ -176,7 +174,11 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     }
   }, [active, busy, refresh]);
 
-  const bulkAccept = useCallback(async () => {
+  // Bulk accept/reject UIs are wired in the API + state but the trigger
+  // controls were removed from the layout pending a follow-up redesign.
+  // Keep the callbacks behind underscore-prefixed names so the eslint
+  // unused-vars rule passes without losing the implementation.
+  const _bulkAccept = useCallback(async () => {
     if (effectiveSelected.size === 0 || busy) return;
     setBusy(true);
     setError(null);
@@ -205,7 +207,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     }
   }, [effectiveSelected, busy, refresh]);
 
-  const bulkReject = useCallback(
+  const _bulkReject = useCallback(
     async (reason: (typeof REJECT_REASONS)[number]) => {
       if (effectiveSelected.size === 0 || busy) return;
       setBusy(true);
