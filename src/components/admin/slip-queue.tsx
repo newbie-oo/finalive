@@ -88,7 +88,11 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     [query.data],
   );
 
-  const activeId = initialSelectedId ?? (status === "submitted" ? rows[0]?.id : undefined);
+  // Only open the detail panel when the URL says so (?selected=...). The
+  // previous code auto-selected rows[0] on the submitted tab, which made
+  // the panel look stuck open on every fresh load and prevented closing
+  // by clicking elsewhere.
+  const activeId = initialSelectedId;
   const active = rows.find((r) => r.id === activeId) ?? null;
   const activeIndex = active ? rows.findIndex((r) => r.id === active.id) : -1;
 
@@ -304,10 +308,22 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     return () => window.removeEventListener("keydown", handler);
   }, [moveSelection, accept, rejectOpen, active, toggleSelected, bulkMode, activeId, sp, router]);
 
+  const clearSelection = useCallback(() => {
+    const next = new URLSearchParams(sp.toString());
+    next.delete("selected");
+    router.replace(
+      `/admin/slips${next.toString() ? `?${next.toString()}` : ""}`,
+      { scroll: false },
+    );
+  }, [router, sp]);
+
   return (
-    <div className="relative" style={{ minHeight: "calc(100vh - 3.5rem - 3rem)" }}>
+    <div
+      className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_540px] lg:items-start"
+      style={{ minHeight: "calc(100vh - 3.5rem - 3rem)" }}
+    >
       {/* Table */}
-      <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-hidden">
+      <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-hidden min-w-0">
         <table className="w-full border-collapse" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr className="border-b border-(--border) bg-(--surface-muted)">
@@ -411,23 +427,13 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         ) : null}
       </div>
 
-      {/* Slip Detail Sheet */}
-      {active && (
-        <div
-          className="absolute inset-0 z-40 flex justify-end"
-          style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              const next = new URLSearchParams(sp.toString());
-              next.delete("selected");
-              router.replace(`/admin/slips?${next.toString()}`, { scroll: false });
-            }
-          }}
-        >
+      {/* Slip Detail — desktop split-pane (always rendered as sibling, with
+          empty state when no selection); mobile uses a fullscreen overlay
+          dialog so the table doesn't shrink to nothing on small screens. */}
+      <aside className="hidden min-w-0 lg:block lg:sticky lg:top-20">
+        {active ? (
           <div
-            className="flex h-full w-full max-w-[540px] flex-col bg-(--surface) shadow-lg"
-            style={{ borderLeft: "1px solid var(--border)" }}
-            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[14px] border border-(--border) bg-(--surface) shadow-sm"
           >
             {/* Sheet header */}
             <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
@@ -454,11 +460,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    const next = new URLSearchParams(sp.toString());
-                    next.delete("selected");
-                    router.replace(`/admin/slips?${next.toString()}`, { scroll: false });
-                  }}
+                  onClick={clearSelection}
                   className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
                   aria-label="ปิด"
                 >
@@ -600,9 +602,219 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               </div>
             )}
           </div>
+        ) : (
+          <div className="flex h-full min-h-[480px] flex-col items-center justify-center gap-2 rounded-[14px] border border-dashed border-(--border) bg-(--surface) p-10 text-center">
+            <p className="text-ui font-medium text-(--foreground)">
+              เลือกสลิปจากรายการเพื่อดูรายละเอียด
+            </p>
+            <p className="text-uism text-(--foreground-muted)">
+              คีย์ลัด: <span className="mono">j/k</span> เลื่อน · <span className="mono">a</span> อนุมัติ · <span className="mono">r</span> ปฏิเสธ · <span className="mono">Esc</span> ปิด
+            </p>
+          </div>
+        )}
+      </aside>
+
+      {/* Mobile fallback: render as a fullscreen overlay sheet so the table
+          can still hand off to the detail view on small screens. Reuses the
+          same controls + state as desktop. */}
+      {active && (
+        <div
+          className="fixed inset-0 z-40 flex justify-end lg:hidden"
+          style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) clearSelection();
+          }}
+        >
+          <div
+            className="flex h-full w-full max-w-[540px] flex-col bg-(--surface) shadow-lg"
+            style={{ borderLeft: "1px solid var(--border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MobileSlipSheet
+              active={active}
+              busy={busy}
+              error={error}
+              rejectOpen={rejectOpen}
+              setRejectOpen={setRejectOpen}
+              accept={accept}
+              reject={reject}
+              moveSelection={moveSelection}
+              onClose={clearSelection}
+              rejectButtonRef={rejectButtonRef}
+            />
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+interface MobileSlipSheetProps {
+  active: SlipRow;
+  busy: boolean;
+  error: string | null;
+  rejectOpen: boolean;
+  setRejectOpen: (v: boolean | ((b: boolean) => boolean)) => void;
+  accept: () => Promise<void> | void;
+  reject: (
+    reason: (typeof REJECT_REASONS)[number],
+    note?: string,
+  ) => Promise<void> | void;
+  moveSelection: (delta: 1 | -1) => void;
+  onClose: () => void;
+  rejectButtonRef: React.RefObject<HTMLButtonElement | null>;
+}
+
+// Simplified copy of the desktop detail layout for the mobile overlay path.
+// Kept as a small inline component so the desktop branch stays readable —
+// the two trees diverge in a few props (no aside wrapper, hard close button)
+// and would be noisy with a single render branch.
+function MobileSlipSheet({
+  active,
+  busy,
+  error,
+  rejectOpen,
+  setRejectOpen,
+  accept,
+  reject,
+  moveSelection,
+  onClose,
+  rejectButtonRef,
+}: MobileSlipSheetProps) {
+  return (
+    <>
+      <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <SlipStatusChip status={active.status} />
+          <span className="mono text-[13px] text-(--foreground-muted)">{active.refCode}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => moveSelection(-1)}
+            className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+            aria-label="ก่อนหน้า"
+          >
+            <CaretUp size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={() => moveSelection(1)}
+            className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+            aria-label="ถัดไป"
+          >
+            <CaretDown size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+            aria-label="ปิด"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="border-b border-(--border) bg-(--surface-sunken) p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">
+              ยอดชำระ
+            </span>
+            <span className="num inline-flex items-baseline gap-1 rounded-[10px] bg-(--primary) px-3 py-1.5 text-[18px] font-bold text-white">
+              <Coins size={16} weight="bold" />
+              {parseInt(active.expectedAmount, 10).toLocaleString("th-TH")}
+              <span className="text-[12px] font-medium">บาท</span>
+            </span>
+          </div>
+          <SlipImageViewer slipId={active.id} />
+        </div>
+        <div className="flex flex-col gap-4 p-5">
+          <div className="flex items-center gap-3 rounded-[14px] border border-(--border) bg-(--surface) p-3.5">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[14px] font-semibold text-white">
+              {(active.studentName || "?").trim().slice(0, 2)}
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="text-ui font-semibold text-(--foreground)">
+                {active.studentName || "ไม่ระบุชื่อ"}
+              </div>
+              <div className="text-caption text-(--foreground-muted)">{active.studentEmail}</div>
+            </div>
+          </div>
+          <div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[13px]">
+              <dt className="text-(--foreground-muted)">คอร์ส</dt>
+              <dd className="text-(--foreground)">{active.courseTitle}</dd>
+              <dt className="text-(--foreground-muted)">ส่งเมื่อ</dt>
+              <dd className="num">{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
+              <dt className="text-(--foreground-muted)">ราคา</dt>
+              <dd className="num font-semibold text-(--foreground)">{formatTHB(active.expectedAmount)}</dd>
+              <dt className="text-(--foreground-muted)">รหัสอ้างอิง</dt>
+              <dd className="mono text-(--foreground)">{active.refCode}</dd>
+            </dl>
+          </div>
+          {error && (
+            <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {rejectOpen && active.status === "submitted" && (
+            <div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
+              <p className="mb-2 text-sm font-medium">เลือกเหตุผล</p>
+              <div className="flex flex-wrap gap-2">
+                {REJECT_REASONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => reject(r)}
+                    className="rounded-[8px] border border-(--border) bg-(--surface) px-2.5 py-1.5 text-sm transition-colors hover:bg-(--surface-muted) disabled:opacity-50"
+                  >
+                    {REJECT_REASON_LABEL[r]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      {active.status === "submitted" ? (
+        <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
+          <button
+            type="button"
+            onClick={() => moveSelection(1)}
+            disabled={busy}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-(--border) bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken) disabled:opacity-50"
+          >
+            ข้าม
+          </button>
+          <button
+            type="button"
+            ref={rejectButtonRef}
+            onClick={() => setRejectOpen((v) => !v)}
+            disabled={busy}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-(--destructive) py-3 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C] disabled:opacity-50"
+          >
+            <Prohibit size={16} weight="bold" /> ปฏิเสธ
+          </button>
+          <button
+            type="button"
+            onClick={() => accept()}
+            disabled={busy}
+            className="flex flex-[1.4] items-center justify-center gap-1.5 rounded-[10px] bg-(--accent) py-3 text-ui font-semibold text-white transition-colors hover:bg-(--accent-hover) disabled:opacity-50"
+          >
+            <CheckCircle size={16} weight="bold" /> อนุมัติ
+          </button>
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
+          <div className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground-muted)">
+            <ArrowCounterClockwise size={16} />
+            สลิปนี้ถูก{active.status === "approved" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
