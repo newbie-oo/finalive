@@ -649,7 +649,10 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           same controls + state as desktop. */}
       {active && (
         <div
-          className="fixed inset-0 z-40 flex justify-end lg:hidden"
+          // z-[60] so the mobile dialog sits above the public shell's
+          // sticky header (z-50) — otherwise the close button at the top
+          // of the sheet was hidden under the brand bar on small screens.
+          className="fixed inset-0 z-[60] flex justify-end lg:hidden"
           style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
           onClick={(e) => {
             if (e.target === e.currentTarget) clearSelection();
