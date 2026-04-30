@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { Trash } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 interface SlipUploadFormProps {
@@ -137,8 +138,10 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
           <button
             type="button"
             onClick={() => handleFile(null)}
-            className="ml-2 text-(--foreground-muted) hover:text-destructive"
+            aria-label="ลบไฟล์"
+            className="ml-2 inline-flex items-center gap-1 rounded-md border border-(--border) bg-(--surface) px-2 py-1 text-uism text-(--foreground-muted) transition-colors hover:border-(--destructive) hover:text-(--destructive-fg)"
           >
+            <Trash size={14} weight="bold" />
             ลบ
           </button>
         </div>

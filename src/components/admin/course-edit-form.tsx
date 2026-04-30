@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LockSimple } from "@phosphor-icons/react";
 import { updateCourseAction } from "@/server/actions/admin-course";
 import { CoverImageUpload } from "@/components/admin/cover-image-upload";
 import type { course } from "@/db/schema/course";
@@ -66,7 +67,19 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">ราคา</label>
+        <label className="block text-sm font-medium">
+          <span className="inline-flex items-center gap-1.5">
+            ราคา
+            {isFree && (
+              <LockSimple
+                size={12}
+                weight="fill"
+                className="text-muted-foreground"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+        </label>
         <input
           name="price"
           type="text"
@@ -76,7 +89,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           aria-disabled={isFree}
           className={
             "mt-1 w-full rounded border px-3 py-2 text-sm" +
-            (isFree ? " bg-muted text-muted-foreground" : "")
+            (isFree ? " bg-muted text-muted-foreground cursor-not-allowed" : "")
           }
         />
         {isFree && (

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CheckCircle, SignOut, Warning } from "@phosphor-icons/react";
+import { CheckCircle, SignOut, Warning, Eye, EyeSlash } from "@phosphor-icons/react";
 import { authClient, useSession } from "@/lib/auth-client";
 import { deleteCurrentAccountAction } from "@/server/actions/delete-account";
 import { userHasCredentialAccount } from "@/server/actions/user-account";
@@ -152,6 +152,8 @@ function ProfileSection({
 function ChangePasswordSection() {
   const [saved, setSaved] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const {
     register,
     handleSubmit,
@@ -192,26 +194,50 @@ function ChangePasswordSection() {
         </p>
         <div>
           <Label htmlFor="currentPassword" required>รหัสผ่านปัจจุบัน</Label>
-          <Input
-            id="currentPassword"
-            type="password"
-            autoComplete="current-password"
-            invalid={!!errors.currentPassword}
-            {...register("currentPassword")}
-          />
+          <div className="relative">
+            <Input
+              id="currentPassword"
+              type={showCurrent ? "text" : "password"}
+              autoComplete="current-password"
+              invalid={!!errors.currentPassword}
+              className="pr-10"
+              {...register("currentPassword")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrent((v) => !v)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
+              tabIndex={-1}
+              aria-label={showCurrent ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+            >
+              {showCurrent ? <EyeSlash size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {errors.currentPassword && (
             <FieldError>{errors.currentPassword.message}</FieldError>
           )}
         </div>
         <div>
           <Label htmlFor="newPassword" required>รหัสผ่านใหม่</Label>
-          <Input
-            id="newPassword"
-            type="password"
-            autoComplete="new-password"
-            invalid={!!errors.newPassword}
-            {...register("newPassword")}
-          />
+          <div className="relative">
+            <Input
+              id="newPassword"
+              type={showNew ? "text" : "password"}
+              autoComplete="new-password"
+              invalid={!!errors.newPassword}
+              className="pr-10"
+              {...register("newPassword")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowNew((v) => !v)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
+              tabIndex={-1}
+              aria-label={showNew ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+            >
+              {showNew ? <EyeSlash size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           {errors.newPassword ? (
             <FieldError>{errors.newPassword.message}</FieldError>
           ) : (

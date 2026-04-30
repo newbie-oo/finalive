@@ -224,12 +224,9 @@ export default async function CourseDetailPage({
                       straight to /learn, and free courses make every lesson
                       previewable so the link is noise. */}
                   {!isEnrolled && !course.isFree && hasPreviewableLesson && (
-                    <Link
-                      href={`#curriculum`}
-                      className="block w-full text-center text-ui font-medium text-(--primary) hover:underline"
-                    >
-                      ดูตัวอย่างฟรี
-                    </Link>
+                    <Button asChild variant="ghost" size="md" className="w-full">
+                      <Link href="#curriculum">ดูตัวอย่างฟรี</Link>
+                    </Button>
                   )}
                 </div>
               </Card>

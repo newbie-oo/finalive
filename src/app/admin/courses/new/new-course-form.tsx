@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LockSimple } from "@phosphor-icons/react";
 import { createCourseAction } from "@/server/actions/admin-course";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,7 +56,19 @@ export function NewCourseForm() {
           </div>
 
           <div>
-            <Label htmlFor="price" required={!isFree}>ราคา</Label>
+            <Label htmlFor="price" required={!isFree}>
+              <span className="inline-flex items-center gap-1.5">
+                ราคา
+                {isFree && (
+                  <LockSimple
+                    size={12}
+                    weight="fill"
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                )}
+              </span>
+            </Label>
             {/* readOnly + aria-disabled rather than disabled — disabled
                 inputs aren't serialized into FormData, which previously
                 caused "invalid_input" when isFree=true. */}
@@ -67,7 +80,7 @@ export function NewCourseForm() {
               readOnly={isFree}
               aria-disabled={isFree}
               defaultValue="0.00"
-              className={"num" + (isFree ? " bg-muted text-muted-foreground" : "")}
+              className={"num" + (isFree ? " bg-muted text-muted-foreground cursor-not-allowed" : "")}
             />
             {isFree && (
               <p className="mt-1 text-xs text-muted-foreground">
