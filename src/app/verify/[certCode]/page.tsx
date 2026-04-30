@@ -1,8 +1,14 @@
-import { CheckCircle, XCircle } from "@phosphor-icons/react/dist/ssr";
+import {
+  CheckCircle,
+  XCircle,
+  DownloadSimple,
+} from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { getCertificateForVerify } from "@/server/repos/certificate";
+import { publicUrl } from "@/server/services/r2";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +72,20 @@ export default async function VerifyCertificatePage({
               </div>
             ))}
           </dl>
+
+          {!isRevoked && (
+            <div className="flex justify-center">
+              <Button asChild variant="primary" size="md">
+                <a
+                  href={publicUrl(`certs/${cert.certCode}.pdf`)}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <DownloadSimple size={16} weight="bold" /> ดาวน์โหลดใบรับรอง (PDF)
+                </a>
+              </Button>
+            </div>
+          )}
 
           <p className="text-center text-caption text-(--foreground-subtle)">
             ตรวจสอบโดย Finalive Learning Platform · {new Date().toLocaleDateString("th-TH", dateFmt)}

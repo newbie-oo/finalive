@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Certificate as CertIcon, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import {
+  Certificate as CertIcon,
+  ArrowRight,
+  DownloadSimple,
+} from "@phosphor-icons/react/dist/ssr";
 import { getSession } from "@/server/auth-session";
 import { listCertificatesByUserId } from "@/server/repos/certificate";
+import { publicUrl } from "@/server/services/r2";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -59,7 +64,16 @@ export default async function AccountCertificatesPage() {
                     ถูกเพิกถอนเมื่อ {cert.revokedAt.toLocaleDateString("th-TH")}
                   </p>
                 )}
-                <div className="mt-auto pt-2">
+                <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                  <Button asChild variant="secondary" size="sm">
+                    <a
+                      href={publicUrl(`certs/${cert.certCode}.pdf`)}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <DownloadSimple size={14} weight="bold" /> ดาวน์โหลด PDF
+                    </a>
+                  </Button>
                   <Button asChild variant="ghost" size="sm">
                     <Link href={`/verify/${cert.certCode}`}>
                       ตรวจสอบ <ArrowRight size={14} weight="bold" />

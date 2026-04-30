@@ -12,6 +12,8 @@ import { getCertificateByEnrollmentId, createCertificate } from "@/server/repos/
 import { generateCertCode } from "@/server/services/cert-code";
 import { putObject, publicUrl } from "@/server/services/r2";
 import { CertificateDoc } from "@/server/certificates/certificate-doc";
+import { enqueueEmail } from "@/server/services/email-queue";
+import { getEnv } from "@/lib/env";
 
 export async function issueCertificate(enrollmentId: string) {
   const session = await getSession();
@@ -115,5 +117,33 @@ export async function issueCertificate(enrollmentId: string) {
     pdfMediaId: media!.id,
   });
 
-  return { ok: true, certCode, pdfUrl: publicUrl(key) };
+  const pdfUrl = publicUrl(key);
+
+  // Best-effort email notification — failures here should not block the cert
+  // issue itself. The email queue runs out-of-band so we just enqueue.
+  try {
+    const env = getEnv();
+    const baseUrl = env.BETTER_AUTH_URL.replace(/\/$/, "");
+    const recipientEmail = userRow[0]?.name
+      ? session.user.email
+      : session.user.email;
+    if (recipientEmail) {
+      await enqueueEmail({
+        toEmail: recipientEmail,
+        template: "course_completed",
+        userId: session.user.id,
+        paramsJson: {
+          name: studentName,
+          courseTitle,
+          certCode,
+          verifyUrl: `${baseUrl}/verify/${certCode}`,
+          pdfUrl,
+        },
+      });
+    }
+  } catch (err) {
+    console.error("certificate: failed to enqueue course_completed email", err);
+  }
+
+  return { ok: true, certCode, pdfUrl };
 }
