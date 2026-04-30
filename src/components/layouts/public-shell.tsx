@@ -12,21 +12,22 @@ interface NavItem {
   href: string;
   label: string;
   // 'always' shows for everyone; 'auth' only when logged in;
-  // 'admin' only for the admin role.
-  visibility?: "always" | "auth" | "admin";
+  // 'student' only for non-admin authenticated users; 'admin' only for the admin role.
+  visibility?: "always" | "auth" | "student" | "admin";
 }
 
 const NAV: NavItem[] = [
   { href: "/courses", label: "คอร์ส" },
   { href: "/instructor", label: "ผู้สอน" },
-  { href: "/#about", label: "เกี่ยวกับ" },
-  { href: "/account/enrollments", label: "คอร์สของฉัน", visibility: "auth" },
+  { href: "/account/enrollments", label: "คอร์สของฉัน", visibility: "student" },
+  { href: "/account/certificates", label: "ใบประกาศ", visibility: "student" },
   { href: "/admin", label: "Admin Panel", visibility: "admin" },
 ];
 
 function visibleNav(role: string | undefined, isAuthed: boolean): NavItem[] {
   return NAV.filter((n) => {
     if (n.visibility === "admin") return role === "admin";
+    if (n.visibility === "student") return isAuthed && role !== "admin";
     if (n.visibility === "auth") return isAuthed;
     return true;
   });
@@ -122,12 +123,12 @@ export function PublicShell({ children, hideFooter, unboundedMain }: PublicShell
                 image={(session.user as { image?: string | null }).image}
                 links={[
                   { href: "/account", label: "บัญชี" },
-                  { href: "/account/enrollments", label: "คอร์สของฉัน" },
-                  ...( (session.user as { role?: string }).role === "admin"
+                  ...((session.user as { role?: string }).role === "admin"
                     ? [{ href: "/admin", label: "แผงควบคุม" }]
-                    : [{ href: "/account/certificates", label: "ใบประกาศ" }]
-                  ),
-                  { href: "/account/security", label: "ความปลอดภัย" },
+                    : [
+                        { href: "/account/enrollments", label: "คอร์สของฉัน" },
+                        { href: "/account/certificates", label: "ใบประกาศ" },
+                      ]),
                 ]}
               />
             ) : (

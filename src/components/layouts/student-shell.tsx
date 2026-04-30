@@ -10,11 +10,12 @@ const STUDENT_NAV = [
   { href: "/account/certificates", label: "ใบประกาศ" },
 ];
 
+// Admin nav intentionally drops student-only routes (enrollments/certificates)
+// — admins manage those via /admin pages instead.
 const ADMIN_NAV = [
   { href: "/courses", label: "คอร์ส" },
   { href: "/instructor", label: "ผู้สอน" },
   { href: "/admin", label: "แผงควบคุม" },
-  { href: "/account/enrollments", label: "คอร์สของฉัน" },
 ];
 
 export function StudentShell({
@@ -34,7 +35,7 @@ export function StudentShell({
         style={{ background: "color-mix(in srgb, var(--background) 80%, transparent)" }}
       >
         <div className="mx-auto flex h-full max-w-[1200px] items-center justify-between gap-6 px-6">
-          <Link href="/account" className="flex items-center gap-2 text-(--foreground)">
+          <Link href="/" className="flex items-center gap-2 text-(--foreground)">
             <span className="h-2.5 w-2.5 rounded-full bg-(--primary)" aria-hidden />
             <span className="text-[18px] font-semibold tracking-tight">Finalive</span>
           </Link>
@@ -56,12 +57,12 @@ export function StudentShell({
               email={user.email}
               links={[
                 { href: "/account", label: "บัญชี" },
-                { href: "/account/enrollments", label: "คอร์สของฉัน" },
                 ...(user.role === "admin"
                   ? [{ href: "/admin", label: "แผงควบคุม" }]
-                  : [{ href: "/account/certificates", label: "ใบประกาศ" }]
-                ),
-                { href: "/account/security", label: "ความปลอดภัย" },
+                  : [
+                      { href: "/account/enrollments", label: "คอร์สของฉัน" },
+                      { href: "/account/certificates", label: "ใบประกาศ" },
+                    ]),
               ]}
             />
           </div>

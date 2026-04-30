@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { toast } from "sonner";
 
@@ -8,7 +9,16 @@ interface Props {
   mode?: "login" | "register";
 }
 
+// Only allow internal paths to defend against open-redirect attacks.
+function safeNext(raw: string | null): string | undefined {
+  if (!raw) return undefined;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return undefined;
+  return raw;
+}
+
 export function GoogleSignInButton({ mode = "login" }: Props) {
+  const params = useSearchParams();
+  const nextParam = safeNext(params.get("next"));
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +35,12 @@ export function GoogleSignInButton({ mode = "login" }: Props) {
       return;
     }
     setLoading(true);
-    await signIn.social({ provider: "google", callbackURL: "/account" });
+    // Forward `next` if present; otherwise let the post-OAuth landing logic
+    // (in /api/auth/[...all] callback or /login default) decide.
+    await signIn.social({
+      provider: "google",
+      callbackURL: nextParam ?? "/",
+    });
     setLoading(false);
   }
 
