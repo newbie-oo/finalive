@@ -262,14 +262,19 @@ async function seedCourses(adminId: string): Promise<LessonMeta[]> {
     usedSlugs.add(slug);
 
     const courseId = randomUUID();
+    // Mirror the bidirectional invariant in repos/admin-course.ts:
+    // price=0 always means isFree=true (and vice versa) so seed data
+    // never re-introduces the legacy "฿0 + paid checkout" bug.
+    const priceNumber = Number(c.price);
+    const isFree = (c.isFree ?? false) || priceNumber === 0;
     await db.insert(courseTable).values({
       id: courseId,
       slug,
       title: c.title,
       summary: c.summary,
       ownerUserId: adminId,
-      price: c.price,
-      isFree: c.isFree ?? false,
+      price: isFree ? "0.00" : c.price,
+      isFree,
       status: "published",
       publishedAt: new Date(),
       createdByUserId: adminId,

@@ -4,6 +4,9 @@
 
 - [ ] Database migrated (`pnpm db:migrate`)
 - [ ] Seed data applied if first deploy (`pnpm seed`)
+- [ ] **One-shot data fixups** (idempotent — safe to re-run):
+  - `pnpm tsx --env-file=.env.local scripts/migrate-zero-price-free.ts`
+    → flips legacy `price=0 && isFree=false` rows to `isFree=true` so students aren't sent into the paid checkout for a free course
 - [ ] All env vars configured in Vercel dashboard
 
 ## Required Environment Variables
