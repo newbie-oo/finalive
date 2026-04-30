@@ -51,3 +51,7 @@ drizzle/meta/_journal_local.json
 # Upload temp files
 uploads/video/
 
+# pi agent artifacts
+.pi/
+.pi-lens/
+
