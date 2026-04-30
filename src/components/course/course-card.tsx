@@ -10,7 +10,7 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+      className="group flex h-full flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
     >
       <div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)" aria-hidden>
         {course.coverUrl ? (
