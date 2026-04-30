@@ -18,6 +18,8 @@ export interface PendingSlipRow {
   status: string;
   expectedAmount: string;
   reportedAmount: string | null;
+  rejectionReason: string | null;
+  rejectionNote: string | null;
   createdAt: Date;
   pendingId: string;
   refCode: string;
@@ -61,6 +63,8 @@ export async function listPendingSlips(
       status: paymentSlip.status,
       expectedAmount: paymentSlip.expectedAmount,
       reportedAmount: paymentSlip.reportedAmount,
+      rejectionReason: paymentSlip.rejectionReason,
+      rejectionNote: paymentSlip.rejectionNote,
       createdAt: paymentSlip.createdAt,
       pendingId: pendingEnrollment.id,
       refCode: pendingEnrollment.refCode,

@@ -32,6 +32,8 @@ interface SlipRow {
   status: string;
   expectedAmount: string;
   reportedAmount: string | null;
+  rejectionReason: string | null;
+  rejectionNote: string | null;
   createdAt: string;
   pendingId: string;
   refCode: string;
@@ -532,6 +534,23 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                   </dl>
                 </div>
 
+                {active.status === "rejected" && active.rejectionReason && (
+                  <div className="rounded-[14px] border border-(--destructive)/30 bg-(--destructive-bg)/40 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-caption font-semibold uppercase tracking-widest text-(--destructive-fg)">
+                      <Prohibit size={14} weight="fill" /> เหตุผลที่ปฏิเสธ
+                    </div>
+                    <p className="text-ui font-medium text-(--destructive-fg)">
+                      {REJECT_REASON_LABEL[active.rejectionReason as (typeof REJECT_REASONS)[number]]
+                        ?? active.rejectionReason}
+                    </p>
+                    {active.rejectionNote && (
+                      <p className="mt-1 text-uism text-(--foreground-muted)">
+                        {active.rejectionNote}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {error && (
                   <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                     {error}
@@ -597,7 +616,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
                 <div className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground-muted)">
                   <ArrowCounterClockwise size={16} />
-                  สลิปนี้ถูก{active.status === "approved" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
+                  สลิปนี้ถูก{active.status === "accepted" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
                 </div>
               </div>
             )}
@@ -753,6 +772,22 @@ function MobileSlipSheet({
               <dd className="mono text-(--foreground)">{active.refCode}</dd>
             </dl>
           </div>
+          {active.status === "rejected" && active.rejectionReason && (
+            <div className="rounded-[14px] border border-(--destructive)/30 bg-(--destructive-bg)/40 p-4">
+              <div className="mb-2 flex items-center gap-2 text-caption font-semibold uppercase tracking-widest text-(--destructive-fg)">
+                <Prohibit size={14} weight="fill" /> เหตุผลที่ปฏิเสธ
+              </div>
+              <p className="text-ui font-medium text-(--destructive-fg)">
+                {REJECT_REASON_LABEL[active.rejectionReason as (typeof REJECT_REASONS)[number]]
+                  ?? active.rejectionReason}
+              </p>
+              {active.rejectionNote && (
+                <p className="mt-1 text-uism text-(--foreground-muted)">
+                  {active.rejectionNote}
+                </p>
+              )}
+            </div>
+          )}
           {error && (
             <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               {error}
@@ -810,7 +845,7 @@ function MobileSlipSheet({
         <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
           <div className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground-muted)">
             <ArrowCounterClockwise size={16} />
-            สลิปนี้ถูก{active.status === "approved" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
+            สลิปนี้ถูก{active.status === "accepted" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
           </div>
         </div>
       )}
@@ -819,7 +854,7 @@ function MobileSlipSheet({
 }
 
 function SlipStatusChip({ status }: { status: string }) {
-  if (status === "approved") {
+  if (status === "accepted") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-(--success-bg) px-2.5 py-0.5 text-[12px] font-medium text-(--success)">
         <CheckCircle size={11} weight="fill" /> อนุมัติแล้ว
