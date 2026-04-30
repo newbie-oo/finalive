@@ -71,4 +71,34 @@ describe("MarkdownView", () => {
     const out = html(`<p><a href="https://x.com" target="_blank">link</a></p>`);
     expect(out).toMatch(/rel="noopener noreferrer"/);
   });
+
+  // End-to-end smoke for what the admin Tiptap editor actually emits — a
+  // mix of headings, formatted paragraphs, image, alignment, list, link,
+  // code block. Renders the same HTML the student sees on /learn.
+  it("renders a full Tiptap-style lesson body unchanged in shape", () => {
+    const tiptapOutput = [
+      `<h2>หัวข้อหลัก</h2>`,
+      `<p>ย่อหน้าธรรมดาที่มี <strong>ตัวหนา</strong>, <em>ตัวเอียง</em> และ <u>ขีดเส้นใต้</u>.</p>`,
+      `<p style="text-align: center"><img src="https://cdn.example.com/diagram.png" alt="แผนภาพ" width="640" /></p>`,
+      `<ul><li>ข้อหนึ่ง</li><li>ข้อสอง</li></ul>`,
+      `<blockquote><p>“อ้างคำพูด”</p></blockquote>`,
+      `<pre><code>const x = 1;</code></pre>`,
+      `<p>อ่านเพิ่มที่ <a href="https://example.com" target="_blank" rel="noopener noreferrer">ลิงก์</a></p>`,
+    ].join("");
+    const out = html(tiptapOutput);
+    // Every non-script feature should survive in some recognisable form.
+    expect(out).toMatch(/<h2>หัวข้อหลัก<\/h2>/);
+    expect(out).toMatch(/<strong>ตัวหนา<\/strong>/);
+    expect(out).toMatch(/<em>ตัวเอียง<\/em>/);
+    expect(out).toMatch(/<u>ขีดเส้นใต้<\/u>/);
+    expect(out).toMatch(/<img[^>]+src="https:\/\/cdn\.example\.com\/diagram\.png"/);
+    expect(out).toMatch(/data-align="center"/);
+    expect(out).toMatch(/<li>ข้อหนึ่ง<\/li>/);
+    expect(out).toMatch(/<blockquote><p>/);
+    expect(out).toMatch(/<pre><code>const x = 1;<\/code><\/pre>/);
+    expect(out).toMatch(/href="https:\/\/example\.com"/);
+    expect(out).toMatch(/rel="noopener noreferrer"/);
+    // Should not leak inline style or unknown attrs.
+    expect(out).not.toMatch(/style="/);
+  });
 });
