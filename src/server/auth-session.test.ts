@@ -9,6 +9,21 @@ const redirectMock = vi.fn((url: string) => {
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
+// Avoid pulling the real db client (which calls getEnv() at import time)
+// when this test runs in the unit test pool — the role-fallback path that
+// uses `db` is never hit because every test scenario below already supplies
+// a role on the mocked session user.
+vi.mock("@/db/client", () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => ({ limit: async () => [] }),
+      }),
+    }),
+  },
+  schema: { user: { id: "id", role: "role" } },
+}));
+
 const getSessionApi = vi.fn();
 vi.mock("./auth", () => ({
   auth: { api: { getSession: getSessionApi } },
