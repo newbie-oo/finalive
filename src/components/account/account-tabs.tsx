@@ -6,7 +6,6 @@ import {
   UserCircle,
   Books,
   Certificate,
-  ShieldCheck,
   type Icon,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
@@ -24,7 +23,6 @@ const TABS: Tab[] = [
   { href: "/account", label: "ข้อมูลบัญชี", icon: UserCircle, exact: true },
   { href: "/account/enrollments", label: "เนื้อหาที่เรียน", icon: Books },
   { href: "/account/certificates", label: "ใบประกาศ", icon: Certificate },
-  { href: "/account/security", label: "ความปลอดภัย", icon: ShieldCheck },
 ];
 
 export function AccountTabs() {

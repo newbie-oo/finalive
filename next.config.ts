@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // /account/security was retired in favour of inline sections on /account.
+      {
+        source: "/account/security",
+        destination: "/account",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
