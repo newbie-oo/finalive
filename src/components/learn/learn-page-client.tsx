@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
-import { Button } from "@/components/ui/button";
 import { CurriculumSidebar } from "./curriculum-sidebar";
 import { LearnTopbar } from "./learn-topbar";
 import { MobileCurriculumDrawer } from "./mobile-curriculum-drawer";
 import { LessonClient } from "./lesson-client";
+import { CourseCompleteModal } from "./course-complete-modal";
 import { MarkdownView } from "@/lib/markdown";
 import type { SidebarModule } from "./curriculum-sidebar";
-import { Certificate, ArrowRight } from "@phosphor-icons/react";
 
 interface LearnPageClientProps {
   courseSlug: string;
@@ -27,6 +26,8 @@ interface LearnPageClientProps {
   quizId: string | null;
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
+  /** Plain object so the prop is server-component-serialisable. */
+  passedQuizIds?: Record<string, boolean>;
   isEnrolled: boolean;
   isAdmin?: boolean;
   totalLessons: number;
@@ -49,6 +50,7 @@ export function LearnPageClient({
   quizId,
   modules,
   progress,
+  passedQuizIds,
   isEnrolled,
   isAdmin = false,
   totalLessons,
@@ -59,6 +61,14 @@ export function LearnPageClient({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  const passedQuizMap = useMemo(
+    () =>
+      passedQuizIds
+        ? new Map(Object.entries(passedQuizIds))
+        : new Map<string, boolean>(),
+    [passedQuizIds],
+  );
 
   // Listen for video completion event from VidstackPlayer
   useEffect(() => {
@@ -93,28 +103,6 @@ export function LearnPageClient({
       <div className="flex flex-1 min-h-0">
         {/* Main content */}
         <main className="flex-1 overflow-y-auto min-w-0">
-          {/* Course complete banner — hidden for admin previews. Admins
-              never enroll, so completing every lesson should not surface a
-              certificate CTA they cannot redeem. */}
-          {!isAdmin && doneLessons >= totalLessons && totalLessons > 0 && (
-            <div className="mx-4 mt-4 rounded-[14px] border border-success bg-success/10 p-4 lg:mx-8 lg:mt-6">
-              <div className="flex items-start gap-3">
-                <Certificate size={24} weight="fill" className="mt-0.5 shrink-0 text-success" />
-                <div className="flex-1">
-                  <h3 className="text-h4 text-success">จบคอร์สแล้ว! 🎉</h3>
-                  <p className="mt-1 text-body text-(--foreground-muted)">
-                    คุณเรียนครบทุกบทเรียนแล้ว ใบประกาศนียบัตรพร้อมให้ดาวน์โหลด
-                  </p>
-                  <Button asChild variant="ghost" size="sm" className="mt-2 text-success">
-                    <Link href="/account/certificates">
-                      ดูใบประกาศ <ArrowRight size={14} weight="bold" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Player */}
           <div className="bg-black flex justify-center lg:p-4">
             <div className="w-full max-w-[1100px]">
@@ -125,6 +113,7 @@ export function LearnPageClient({
                   currentTime={watchedSeconds}
                   lessonId={lessonId}
                   nextLessonId={nextLessonId}
+                  quizId={quizId}
                   courseSlug={courseSlug}
                   suppressProgress={isAdmin}
                 />
@@ -196,6 +185,7 @@ export function LearnPageClient({
               lessonId={lessonId}
               courseSlug={courseSlug}
               nextLessonId={nextLessonId}
+              quizId={quizId}
               durationSeconds={durationSeconds}
               isAdmin={isAdmin}
             />
@@ -209,6 +199,7 @@ export function LearnPageClient({
               courseSlug={courseSlug}
               modules={modules}
               progress={progress}
+              passedQuizIds={passedQuizMap}
               isEnrolled={isEnrolled}
               isAdmin={isAdmin}
               totalLessons={totalLessons}
@@ -224,9 +215,21 @@ export function LearnPageClient({
         courseSlug={courseSlug}
         modules={modules}
         progress={progress}
+        passedQuizIds={passedQuizMap}
         isEnrolled={isEnrolled}
         isAdmin={isAdmin}
       />
+
+      {/* Course-complete celebration: fires once per course (localStorage),
+          positioned as a centred modal — not on top of the video. Hidden
+          for admin previews; admins never enroll. */}
+      {!isAdmin && (
+        <CourseCompleteModal
+          courseSlug={courseSlug}
+          totalLessons={totalLessons}
+          doneLessons={doneLessons}
+        />
+      )}
     </div>
   );
 }

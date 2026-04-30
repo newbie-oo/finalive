@@ -3,7 +3,7 @@ import { buildHlsUrl } from "@/server/services/bunny";
 import { LearnPageClient } from "@/components/learn/learn-page-client";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
-import { getQuizByLessonId } from "@/server/repos/quiz";
+import { getQuizByLessonId, listLatestQuizPassByCourse } from "@/server/repos/quiz";
 import { checkLessonAccess } from "@/server/services/learn-access";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +48,12 @@ export default async function LearnLessonPage({
   const currentProgress = courseData.progress.find((p) => p.lessonId === lessonId);
   const watchedSeconds = currentProgress?.watchedSeconds ?? 0;
 
+  const passedQuizMap = userId
+    ? await listLatestQuizPassByCourse(userId, courseData.course.id)
+    : new Map<string, boolean>();
+  // Plain object keeps the prop serialisable across the server/client boundary.
+  const passedQuizIds = Object.fromEntries(passedQuizMap.entries());
+
   return (
     <LearnPageClient
       courseSlug={courseSlug}
@@ -63,6 +69,7 @@ export default async function LearnLessonPage({
       quizId={quizMeta?.id ?? null}
       modules={courseData.modules}
       progress={courseData.progress}
+      passedQuizIds={passedQuizIds}
       isEnrolled={courseData.isEnrolled}
       isAdmin={isAdmin}
       totalLessons={totalLessons}

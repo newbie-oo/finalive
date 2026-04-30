@@ -11,6 +11,9 @@ interface LessonClientProps {
   lessonId: string;
   courseSlug: string;
   nextLessonId: string | null;
+  /** Prefer the quiz CTA over "next lesson" so students take the quiz
+   * before moving on. */
+  quizId?: string | null;
   durationSeconds: number | null;
   /** When true, suppress all progress writes — admin previews must not
    * accrue completion, otherwise the certificate banner activates. */
@@ -21,6 +24,7 @@ export function LessonClient({
   lessonId,
   courseSlug,
   nextLessonId,
+  quizId,
   durationSeconds,
   isAdmin = false,
 }: LessonClientProps) {
@@ -106,7 +110,14 @@ export function LessonClient({
           "ทำเครื่องหมายว่าจบแล้ว"
         )}
       </Button>
-      {completed && nextLessonId && (
+      {completed && quizId && (
+        <Button asChild variant="primary" size="md">
+          <Link href={`/learn/${courseSlug}/quiz/${quizId}`}>
+            ทำแบบทดสอบ <ArrowRight size={14} weight="bold" />
+          </Link>
+        </Button>
+      )}
+      {completed && !quizId && nextLessonId && (
         <Button asChild variant="ghost" size="md">
           <Link href={`/learn/${courseSlug}/${nextLessonId}`}>
             บทถัดไป <ArrowRight size={14} weight="bold" />

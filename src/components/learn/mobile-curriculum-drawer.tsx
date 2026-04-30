@@ -8,6 +8,7 @@ interface MobileCurriculumDrawerProps {
   courseSlug: string;
   modules: Parameters<typeof CurriculumSidebar>[0]["modules"];
   progress: Parameters<typeof CurriculumSidebar>[0]["progress"];
+  passedQuizIds?: Parameters<typeof CurriculumSidebar>[0]["passedQuizIds"];
   isEnrolled: boolean;
   isAdmin?: boolean;
 }

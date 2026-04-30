@@ -33,6 +33,9 @@ interface CurriculumSidebarProps {
   courseSlug: string;
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
+  /** Latest-attempt pass status, keyed by quizId. Quizzes the user has not
+   * attempted are absent from the map (rendered with the default Exam icon). */
+  passedQuizIds?: ReadonlyMap<string, boolean>;
   isEnrolled: boolean;
   isAdmin?: boolean;
   totalLessons?: number;
@@ -57,6 +60,7 @@ export function CurriculumSidebar({
   courseSlug,
   modules,
   progress,
+  passedQuizIds,
   isEnrolled,
   isAdmin = false,
   totalLessons,
@@ -160,7 +164,8 @@ export function CurriculumSidebar({
               {(() => {
                 const quizLesson = mod.lessons.find((l) => l.quizId);
                 if (!quizLesson || !quizLesson.quizId) return null;
-                const locked = !isAdmin && !isEnrolled && !quizLesson.isPreview && !quizLesson.isFree;
+                const _locked = !isAdmin && !isEnrolled && !quizLesson.isPreview && !quizLesson.isFree;
+                const passed = passedQuizIds?.get(quizLesson.quizId);
                 return (
                   <li>
                     <Link
@@ -168,8 +173,24 @@ export function CurriculumSidebar({
                       className="flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-uism text-(--foreground) transition-colors hover:bg-(--surface-muted)"
                       onClick={onClose}
                     >
-                      <Exam size={14} className="text-primary shrink-0" />
-                      <span className="flex-1 truncate">แบบทดสอบท้ายโมดูล</span>
+                      {passed === true ? (
+                        <CheckCircle
+                          size={14}
+                          weight="fill"
+                          className="text-success shrink-0"
+                          aria-label="ผ่านแบบทดสอบ"
+                        />
+                      ) : (
+                        <Exam size={14} className="text-primary shrink-0" />
+                      )}
+                      <span className="flex-1 truncate">
+                        แบบทดสอบท้ายโมดูล
+                        {passed === false ? (
+                          <span className="ml-2 text-caption text-(--destructive-fg)">
+                            ลองอีกครั้ง
+                          </span>
+                        ) : null}
+                      </span>
                     </Link>
                   </li>
                 );

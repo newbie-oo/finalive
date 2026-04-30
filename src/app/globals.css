@@ -303,4 +303,27 @@
   .prose-style > *:first-child {
     margin-top: 0 !important;
   }
+  .prose-style img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5em 0;
+  }
+  .prose-style figure {
+    margin: 1.5em 0;
+  }
+  .prose-style figcaption {
+    margin-top: 0.5em;
+    font-size: 0.875em;
+    color: var(--foreground-subtle);
+    text-align: center;
+  }
+  .prose-style u {
+    text-decoration: underline;
+  }
+  /* Alignment via safe data-attribute (set by sanitizeRichHtml hook). */
+  .prose-style [data-align="left"] { text-align: left; }
+  .prose-style [data-align="center"] { text-align: center; }
+  .prose-style [data-align="right"] { text-align: right; }
+  .prose-style [data-align="justify"] { text-align: justify; }
 }

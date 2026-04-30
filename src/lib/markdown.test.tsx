@@ -42,4 +42,33 @@ describe("MarkdownView", () => {
     expect(out).not.toMatch(/<script>alert/);
     expect(out).toMatch(/&lt;script&gt;|<h2>.*script.*<\/h2>/);
   });
+
+  it("strips javascript: URLs from images while keeping safe https sources", () => {
+    const safe = html(`<p><img src="https://x.com/y.png" alt="ok" /></p>`);
+    expect(safe).toMatch(/<img[^>]+src="https:\/\/x\.com\/y\.png"/);
+    expect(safe).toMatch(/alt="ok"/);
+
+    const unsafe = html(`<p><img src="javascript:alert(1)" /></p>`);
+    // The src attribute must not survive sanitisation.
+    expect(unsafe).not.toMatch(/javascript:/);
+  });
+
+  it("preserves Tiptap-authored underline + alignment via data-align", () => {
+    const out = html(`<p style="text-align: center"><u>centered underline</u></p>`);
+    expect(out).toMatch(/<u>centered underline<\/u>/);
+    // Alignment is migrated to a data attribute the prose stylesheet targets,
+    // not left as a passthrough inline style.
+    expect(out).toMatch(/data-align="center"/);
+    expect(out).not.toMatch(/style="text-align/);
+  });
+
+  it("strips inline event handlers (onerror) from images", () => {
+    const out = html(`<p><img src="https://x.com/y.png" onerror="alert(1)" /></p>`);
+    expect(out).not.toMatch(/onerror/);
+  });
+
+  it("forces noopener on anchors targeting _blank", () => {
+    const out = html(`<p><a href="https://x.com" target="_blank">link</a></p>`);
+    expect(out).toMatch(/rel="noopener noreferrer"/);
+  });
 });

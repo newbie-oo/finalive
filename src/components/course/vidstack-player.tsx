@@ -8,7 +8,7 @@ import {
   defaultLayoutIcons,
 } from "@vidstack/react/player/layouts/default";
 import type { MediaTimeUpdateEventDetail } from "@vidstack/react";
-import { CheckCircle, ArrowRight, Repeat, WarningCircle } from "@phosphor-icons/react";
+import { CheckCircle, ArrowRight, Exam, Repeat, WarningCircle } from "@phosphor-icons/react";
 
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";
@@ -20,6 +20,10 @@ export interface VidstackPlayerProps {
   currentTime?: number;
   lessonId?: string;
   nextLessonId?: string | null;
+  /** When the just-watched lesson has a quiz, prefer the quiz CTA in the
+   * completion overlay over "next lesson" so students don't accidentally
+   * skip the assessment. */
+  quizId?: string | null;
   courseSlug?: string;
   /** When true, suppress all progress writes — admin previews must not
    * accrue completion records that would later trigger the certificate
@@ -34,6 +38,7 @@ export function VidstackPlayer({
   currentTime = 0,
   lessonId,
   nextLessonId,
+  quizId,
   courseSlug,
   suppressProgress = false,
 }: VidstackPlayerProps) {
@@ -156,11 +161,30 @@ export function VidstackPlayer({
           </div>
           <h3 className="mt-4 text-h3 text-white">จบบทเรียนแล้ว!</h3>
           <p className="mt-1 text-body text-white/70">ยินดีด้วย คุณเรียนจบบทนี้แล้ว</p>
-          <div className="mt-6 flex gap-3">
-            {nextLessonId && courseSlug && (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            {/* Quiz takes precedence over "next lesson" so students complete
+                the assessment before moving on. */}
+            {quizId && courseSlug ? (
+              <Link
+                href={`/learn/${courseSlug}/quiz/${quizId}`}
+                className="inline-flex h-11 items-center gap-2 rounded-button bg-(--accent) px-5 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+              >
+                <Exam size={16} weight="bold" /> ทำแบบทดสอบ
+              </Link>
+            ) : nextLessonId && courseSlug ? (
               <Link
                 href={`/learn/${courseSlug}/${nextLessonId}`}
                 className="inline-flex h-11 items-center gap-2 rounded-button bg-(--accent) px-5 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+              >
+                บทถัดไป <ArrowRight size={16} weight="bold" />
+              </Link>
+            ) : null}
+            {/* Show next-lesson as a secondary action when a quiz exists, so
+                students who already passed can still skip ahead. */}
+            {quizId && nextLessonId && courseSlug && (
+              <Link
+                href={`/learn/${courseSlug}/${nextLessonId}`}
+                className="inline-flex h-11 items-center gap-2 rounded-button border border-white/25 bg-white/10 px-5 text-ui font-medium text-white transition-colors hover:bg-white/20"
               >
                 บทถัดไป <ArrowRight size={16} weight="bold" />
               </Link>

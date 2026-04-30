@@ -12,11 +12,16 @@ import DOMPurify from "isomorphic-dompurify";
  * compromised admin account or a future API path injects something nasty.
  * The allow-list mirrors what Tiptap's StarterKit produces.
  */
+// Tiptap StarterKit + the editor extensions wired in
+// admin/tiptap-editor.tsx (image, link, underline, text-align) emit the
+// following tags/attrs. Keep this list narrow — anything not listed gets
+// stripped by DOMPurify.
 const ALLOWED_TAGS = [
   "p",
   "br",
   "strong",
   "em",
+  "u",
   "s",
   "code",
   "blockquote",
@@ -29,15 +34,63 @@ const ALLOWED_TAGS = [
   "a",
   "hr",
   "pre",
+  "img",
+  "figure",
+  "figcaption",
 ];
-const ALLOWED_ATTR = ["href", "target", "rel"];
+const ALLOWED_ATTR = [
+  "href",
+  "target",
+  "rel",
+  "src",
+  "alt",
+  "title",
+  "width",
+  "height",
+  "loading",
+  // Tiptap text-align extension serialises alignment into `style` — we
+  // hook below to extract it into a data-attribute the prose stylesheet
+  // can target without granting open `style` access.
+  "data-align",
+];
+
+// Hook registration is one-shot per module load. We use a module-level
+// flag rather than mutating the function so DOMPurify's hook list never
+// grows on repeated sanitize() calls (HMR + hot reload friendliness).
+let hooksRegistered = false;
+function ensureHooks() {
+  if (hooksRegistered) return;
+  DOMPurify.addHook("uponSanitizeAttribute", (node, data) => {
+    if (data.attrName !== "style") return;
+    const m = /text-align:\s*(left|right|center|justify)/i.exec(data.attrValue);
+    if (m) {
+      (node as Element).setAttribute("data-align", m[1]!.toLowerCase());
+    }
+    data.keepAttr = false;
+  });
+  DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+    if (node.tagName === "A") {
+      const el = node as HTMLAnchorElement;
+      if (el.getAttribute("target") === "_blank") {
+        el.setAttribute("rel", "noopener noreferrer");
+      }
+    }
+    if (node.tagName === "IMG") {
+      const el = node as HTMLImageElement;
+      const src = el.getAttribute("src") ?? "";
+      if (/^\s*(javascript|data|vbscript):/i.test(src)) {
+        el.removeAttribute("src");
+      }
+    }
+  });
+  hooksRegistered = true;
+}
 
 export function sanitizeRichHtml(html: string): string {
+  ensureHooks();
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
-    // Force any user-supplied link to safe defaults.
-    ADD_ATTR: ["target"],
   });
 }
 

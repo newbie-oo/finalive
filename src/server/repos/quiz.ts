@@ -1,8 +1,8 @@
 import "server-only";
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { quiz, quizQuestion, quizChoice } from "@/db/schema/quiz";
-import { lesson } from "@/db/schema/course";
+import { courseModule, lesson } from "@/db/schema/course";
 import { quizAttempt } from "@/db/schema/progress";
 
 export interface QuizWithQuestions {
@@ -19,6 +19,50 @@ export interface QuestionWithChoices {
   promptMd: string;
   sortOrder: number;
   choices: { id: string; body: string; sortOrder: number }[];
+}
+
+/**
+ * For each quiz attached to any lesson within the given course, return the
+ * pass status of the user's *latest* attempt (so a re-take that fails after
+ * a pass also flips the icon back). Quizzes the user has not attempted are
+ * not included in the map.
+ */
+export async function listLatestQuizPassByCourse(
+  userId: string,
+  courseId: string,
+): Promise<Map<string, boolean>> {
+  const quizRows = await db
+    .select({ quizId: quiz.id })
+    .from(quiz)
+    .innerJoin(lesson, eq(lesson.id, quiz.lessonId))
+    .innerJoin(courseModule, eq(courseModule.id, lesson.moduleId))
+    .where(and(eq(courseModule.courseId, courseId), isNull(quiz.deletedAt)));
+  const quizIds = quizRows.map((r) => r.quizId);
+  if (quizIds.length === 0) return new Map();
+
+  // Pull every attempt for this user across the relevant quizzes, ordered
+  // newest-first, then keep the first row we see per quizId. The course's
+  // quiz count is small (one per lesson at most) so this is cheap and
+  // avoids a Postgres-only DISTINCT ON for portability.
+  const rows = await db
+    .select({
+      quizId: quizAttempt.quizId,
+      passed: quizAttempt.passed,
+      submittedAt: quizAttempt.submittedAt,
+    })
+    .from(quizAttempt)
+    .where(
+      and(eq(quizAttempt.userId, userId), inArray(quizAttempt.quizId, quizIds)),
+    )
+    .orderBy(desc(quizAttempt.submittedAt));
+
+  const result = new Map<string, boolean>();
+  for (const r of rows) {
+    if (!result.has(r.quizId)) {
+      result.set(r.quizId, r.passed);
+    }
+  }
+  return result;
 }
 
 export async function getQuizByLessonId(lessonId: string): Promise<{ id: string; title: string } | null> {
