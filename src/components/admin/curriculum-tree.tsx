@@ -416,8 +416,14 @@ function SortableModule({
 
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(mod.title);
-
-  useEffect(() => { setDraftTitle(mod.title); }, [mod.title]);
+  const [prevTitle, setPrevTitle] = useState(mod.title);
+  // React's "store snapshot of prop" pattern (replaces a setState-in-effect
+  // sync). Resync only when the user isn't actively editing — otherwise a
+  // refresh from the server would clobber an in-progress rename.
+  if (!editing && prevTitle !== mod.title) {
+    setPrevTitle(mod.title);
+    setDraftTitle(mod.title);
+  }
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -583,9 +589,24 @@ function SortableLesson({
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(lesson.title);
 
-  useEffect(() => { setIsPreview(lesson.isPreview); }, [lesson.isPreview]);
-  useEffect(() => { setIsFree(lesson.isFree); }, [lesson.isFree]);
-  useEffect(() => { setDraftTitle(lesson.title); }, [lesson.title]);
+  // Snapshot-of-prop pattern (replaces 3 setState-in-effect syncs).
+  // Resync local UI state only when the relevant prop genuinely changed —
+  // and for draftTitle, only when the user isn't mid-edit.
+  const [prevPreview, setPrevPreview] = useState(lesson.isPreview);
+  if (prevPreview !== lesson.isPreview) {
+    setPrevPreview(lesson.isPreview);
+    setIsPreview(lesson.isPreview);
+  }
+  const [prevFree, setPrevFree] = useState(lesson.isFree);
+  if (prevFree !== lesson.isFree) {
+    setPrevFree(lesson.isFree);
+    setIsFree(lesson.isFree);
+  }
+  const [prevTitle, setPrevTitle] = useState(lesson.title);
+  if (!editing && prevTitle !== lesson.title) {
+    setPrevTitle(lesson.title);
+    setDraftTitle(lesson.title);
+  }
 
   function commitRename() {
     const next = draftTitle.trim();
