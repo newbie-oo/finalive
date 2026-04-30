@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { getAdminDashboardCounts } from "@/server/repos/admin-dashboard";
+import { formatTHB } from "@/lib/format";
 
 interface StatCardProps {
   label: string;
-  value: number;
+  /** Pre-formatted display value. Pass through formatTHB() for currency,
+   * .toLocaleString() for plain counts, etc. */
+  value: string;
   href?: string;
   hint?: string;
 }
@@ -27,6 +30,10 @@ function StatCard({ label, value, href, hint }: StatCardProps) {
   );
 }
 
+// Thai-locale thousands separator. Stat counts are integers, currency is
+// handled separately via formatTHB so the ฿ prefix renders right.
+const fmtCount = (n: number) => n.toLocaleString("th-TH");
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
@@ -38,13 +45,13 @@ export default async function AdminDashboardPage() {
         <p className="mt-1 text-body text-(--foreground-muted)">ภาพรวมสถานะระบบและการดำเนินการล่าสุด</p>
       </header>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="สลิปรอตรวจ" value={c.slipsSubmitted} href="/admin/slips?status=submitted" />
-        <StatCard label="อนุมัติวันนี้" value={c.slipsAcceptedToday} href="/admin/slips?status=accepted" />
-        <StatCard label="ปฏิเสธวันนี้" value={c.slipsRejectedToday} href="/admin/slips?status=rejected" />
-        <StatCard label="นักเรียนกำลังเรียน" value={c.enrollmentsActive} />
-        <StatCard label="คอร์สเผยแพร่" value={c.coursesPublished} href="/admin/courses" />
-        <StatCard label="รายได้เดือนนี้" value={c.revenueMtd} hint="บาท" />
-        <StatCard label="ใบประกาศเดือนนี้" value={c.certsMtd} href="/admin/certificates" />
+        <StatCard label="สลิปรอตรวจ" value={fmtCount(c.slipsSubmitted)} href="/admin/slips?status=submitted" />
+        <StatCard label="อนุมัติวันนี้" value={fmtCount(c.slipsAcceptedToday)} href="/admin/slips?status=accepted" />
+        <StatCard label="ปฏิเสธวันนี้" value={fmtCount(c.slipsRejectedToday)} href="/admin/slips?status=rejected" />
+        <StatCard label="นักเรียนกำลังเรียน" value={fmtCount(c.enrollmentsActive)} />
+        <StatCard label="คอร์สเผยแพร่" value={fmtCount(c.coursesPublished)} href="/admin/courses" />
+        <StatCard label="รายได้เดือนนี้" value={formatTHB(c.revenueMtd)} />
+        <StatCard label="ใบประกาศเดือนนี้" value={fmtCount(c.certsMtd)} href="/admin/certificates" />
       </div>
       <p className="text-uism text-foreground-subtle">
         ตัวเลข &quot;วันนี้&quot; นับจากเที่ยงคืนตามเครื่อง server
