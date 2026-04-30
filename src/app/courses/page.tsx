@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard, CourseCardSkeleton } from "@/components/course/course-card";
+import { CourseFilters } from "@/components/courses/course-filters";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import {
@@ -46,44 +47,6 @@ async function CourseGrid({ params }: { params: ListPublishedCoursesParams }) {
   );
 }
 
-function CourseFilters({ q, freeOnly }: { q: string; freeOnly: boolean }) {
-  return (
-    <form
-      method="get"
-      action="/courses"
-      className="flex flex-wrap items-center gap-3"
-    >
-      <label className="sr-only" htmlFor="q">
-        ค้นหาคอร์ส
-      </label>
-      <input
-        id="q"
-        name="q"
-        type="search"
-        defaultValue={q}
-        placeholder="ค้นหาคอร์ส (ชื่อหรือคำอธิบาย)"
-        className="h-10 w-full rounded-button border border-(--border) bg-(--surface) px-3 text-ui sm:w-72"
-      />
-      <label className="inline-flex items-center gap-2 text-ui">
-        <input
-          type="checkbox"
-          name="free"
-          value="1"
-          defaultChecked={freeOnly}
-          className="h-4 w-4 accent-(--primary)"
-        />
-        เฉพาะคอร์สฟรี
-      </label>
-      <button
-        type="submit"
-        className="inline-flex h-10 items-center rounded-button bg-(--accent) px-4 text-ui font-medium text-(--accent-fg) hover:bg-(--accent-hover)"
-      >
-        กรอง
-      </button>
-    </form>
-  );
-}
-
 export default async function CoursesPage({
   searchParams,
 }: {
@@ -108,7 +71,7 @@ export default async function CoursesPage({
               เลือกคอร์สที่เหมาะกับเป้าหมายของคุณ
             </p>
           </div>
-          <CourseFilters q={q} freeOnly={freeOnly} />
+          <CourseFilters initialQ={q} initialFreeOnly={freeOnly} />
         </header>
         <Suspense
           fallback={
