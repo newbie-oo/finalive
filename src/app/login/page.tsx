@@ -12,6 +12,7 @@ import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
+import { Eye, EyeSlash } from "@phosphor-icons/react";
 
 const loginSchema = z.object({
   email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -40,6 +41,7 @@ export default function LoginPage() {
   const params = useSearchParams();
   const rawNext = params.get("next");
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -120,13 +122,25 @@ export default function LoginPage() {
                 ลืมรหัสผ่าน?
               </Link>
             </div>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              invalid={!!errors.password}
-              {...register("password")}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                invalid={!!errors.password}
+                className="pr-10"
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+              >
+                {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {errors.password && <FieldError>{errors.password.message}</FieldError>}
           </div>
 
