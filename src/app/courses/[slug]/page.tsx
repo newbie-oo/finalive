@@ -90,7 +90,10 @@ export default async function CourseDetailPage({
     (sum, m) => sum + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),
     0,
   );
-  const price = course.isFree ? "ฟรี" : formatTHB(course.price);
+  // Defensive: render free if either flag set OR price is literally 0 — keeps
+  // the page UX correct even if a stray row escaped the create/update invariant.
+  const isFreeView = course.isFree || Number(course.price) === 0;
+  const price = isFreeView ? "ฟรี" : formatTHB(course.price);
   const hasPreviewableLesson = curriculum.some((m) =>
     m.lessons.some((l) => l.isPreview || l.isFree),
   );
@@ -115,7 +118,7 @@ export default async function CourseDetailPage({
             <div>
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <StatusChip tone="primary">การเงินและการลงทุน</StatusChip>
-                {course.isFree && <StatusChip tone="success">ฟรี</StatusChip>}
+                {isFreeView && <StatusChip tone="success">ฟรี</StatusChip>}
                 {isAdmin && course.status !== "published" && (
                   <StatusChip tone="warning">
                     {course.status === "draft" ? "ร่าง · admin preview" : "เก็บถาวร · admin preview"}

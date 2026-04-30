@@ -85,6 +85,15 @@ export function SlipPendingPoll({
     );
   }
 
+  // Last-update time exposed so the user can see polling is alive (otherwise
+  // the section looks frozen). Format th-TH 24h.
+  const lastUpdated = query.dataUpdatedAt
+    ? new Date(query.dataUpdatedAt).toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
   return (
     <Card className="border-success bg-success-bg">
       <div className="flex items-start gap-3">
@@ -93,12 +102,22 @@ export function SlipPendingPoll({
           weight="duotone"
           className="text-success shrink-0 motion-safe:animate-pulse"
         />
-        <div className="text-body text-success-foreground">
+        <div className="flex-1 text-body text-success-foreground">
           <p className="font-medium">ส่งสลิปแล้ว — รอ admin ตรวจสอบ</p>
           <p className="mt-1 text-uism">
             ปกติใช้เวลา 1–2 ชม. เมื่อตรวจเสร็จระบบจะพาคุณไปหน้าคอร์สอัตโนมัติ
             ไม่ต้องรีเฟรชเอง
           </p>
+          {lastUpdated && (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-caption text-(--foreground-muted)">
+              <span
+                aria-hidden="true"
+                className="inline-block h-1.5 w-1.5 rounded-full bg-success motion-safe:animate-pulse"
+              />
+              ตรวจสอบล่าสุด {lastUpdated}
+              {query.isFetching ? " · กำลังโหลด…" : ""}
+            </p>
+          )}
         </div>
       </div>
     </Card>

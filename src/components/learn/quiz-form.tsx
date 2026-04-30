@@ -184,9 +184,21 @@ export function QuizForm({ quiz, courseSlug }: QuizFormProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button onClick={() => { setResult(null); setAnswers({}); setCurrentIndex(0); }} variant="secondary" size="lg" className="flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Button
+            onClick={() => {
+              setResult(null);
+              setAnswers({});
+              setCurrentIndex(0);
+            }}
+            variant="secondary"
+            size="lg"
+            className="flex-1 sm:flex-none"
+          >
             ทำอีกครั้ง
+          </Button>
+          <Button asChild variant="ghost" size="lg" className="flex-1 sm:flex-none">
+            <Link href="/account/enrollments">ดูคอร์สของฉัน</Link>
           </Button>
           <Button asChild variant="primary" size="lg" className="flex-1">
             <Link href={`/learn/${courseSlug}`}>

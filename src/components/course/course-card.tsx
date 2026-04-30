@@ -6,7 +6,12 @@ import { formatTHB } from "@/lib/format";
 import { StatusChip } from "@/components/ui/status-chip";
 
 export function CourseCard({ course }: { course: PublicCourseSummary }) {
-  const price = course.isFree ? "ฟรี" : formatTHB(course.price);
+  // Defensive: if a row slipped through with price=0 && isFree=false (the
+  // legacy bug fixed by migration), still render it as free in the catalog
+  // so students don't see "฿0.00" tags. The repos enforce the invariant on
+  // create/update, so this is just belt-and-braces.
+  const isFree = course.isFree || Number(course.price) === 0;
+  const price = isFree ? "ฟรี" : formatTHB(course.price);
   return (
     <Link
       href={`/courses/${course.slug}`}
@@ -25,7 +30,7 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
         ) : (
           <CoverFallback title={course.title} />
         )}
-        {course.isFree && (
+        {isFree && (
           <span className="absolute left-3 top-3">
             <StatusChip tone="success">ฟรี</StatusChip>
           </span>

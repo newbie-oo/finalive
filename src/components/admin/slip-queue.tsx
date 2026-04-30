@@ -326,18 +326,27 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
       className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_540px] lg:items-start"
       style={{ minHeight: "calc(100vh - 3.5rem - 3rem)" }}
     >
-      {/* Table */}
-      <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-hidden min-w-0">
-        <table className="w-full border-collapse" style={{ tableLayout: "fixed" }}>
+      {/* Table — overflow-x-auto so we never collapse columns to 1-char
+          widths on the narrow split-pane left column. The sticky split-pane
+          shrinks the table area noticeably; without min-width the fixed
+          layout was squishing student name + course title to "Q..." / "D...". */}
+      <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-x-auto min-w-0">
+        <table className="w-full border-collapse min-w-[520px]" style={{ tableLayout: "fixed" }}>
           <thead>
             <tr className="border-b border-(--border) bg-(--surface-muted)">
               <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 140 }}>
                 รหัส
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)">
+              <th
+                className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
+                style={{ minWidth: 150 }}
+              >
                 ผู้เรียน
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)">
+              <th
+                className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
+                style={{ minWidth: 140 }}
+              >
                 คอร์ส
               </th>
               <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 110 }}>
