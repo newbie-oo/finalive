@@ -81,4 +81,33 @@ describe("price ↔ isFree mutual exclusion", () => {
     expect(row.isFree).toBe(true);
     expect(Number(row.price)).toBe(0);
   });
+
+  it("createAdminCourse with price=0 forces isFree=true (no slip required path)", async () => {
+    const id = await createAdminCourse({
+      slug: `pm-${randomUUID()}`,
+      title: "Implicit Free",
+      summary: "x",
+      price: "0.00",
+      isFree: false,
+      ownerUserId: ADMIN_ID,
+    });
+    const row = await getRow(id);
+    expect(row.isFree).toBe(true);
+    expect(Number(row.price)).toBe(0);
+  });
+
+  it("updateAdminCourse setting price=0 forces isFree=true", async () => {
+    const id = await createAdminCourse({
+      slug: `pm-${randomUUID()}`,
+      title: "Was Paid 3",
+      summary: "x",
+      price: "1990.00",
+      isFree: false,
+      ownerUserId: ADMIN_ID,
+    });
+    await updateAdminCourse(id, { price: "0.00" });
+    const row = await getRow(id);
+    expect(row.isFree).toBe(true);
+    expect(Number(row.price)).toBe(0);
+  });
 });

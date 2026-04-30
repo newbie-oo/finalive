@@ -120,9 +120,13 @@ export async function createAdminCourse(input: {
   isFree: boolean;
   ownerUserId: string;
 }) {
-  // Invariant: a free course cannot have a non-zero price. Force price to 0
-  // when isFree=true so admins can't accidentally save a contradictory state.
-  const price = input.isFree ? "0.00" : input.price;
+  // Bidirectional invariant: free courses always have price 0, AND price 0
+  // always means free. The latter prevents the legacy bug where admins
+  // entered ฿0 with isFree=false, sending students into the slip-upload flow
+  // for a free course.
+  const priceNumber = Number(input.price);
+  const isFree = input.isFree || priceNumber === 0;
+  const price = isFree ? "0.00" : input.price;
   const [row] = await db
     .insert(course)
     .values({
@@ -130,7 +134,7 @@ export async function createAdminCourse(input: {
       title: input.title,
       summary: input.summary,
       price,
-      isFree: input.isFree,
+      isFree,
       ownerUserId: input.ownerUserId,
       createdByUserId: input.ownerUserId,
       status: "draft",
@@ -153,11 +157,14 @@ export async function updateAdminCourse(
 ) {
   const updates: typeof input = { ...input };
 
-  // Same invariant on update: if the caller is flipping isFree=true, zero out
-  // price (whether or not they passed a price field). If isFree is not part of
-  // this update, trust the caller — db state already enforces the previous
-  // invariant via the create path.
+  // Bidirectional invariant on update:
+  // 1. isFree=true → force price=0
+  // 2. price=0 → force isFree=true (so admins setting price to 0 don't trap
+  //    students in the slip-upload flow for a "free" course).
   if (updates.isFree === true) {
+    updates.price = "0.00";
+  } else if (updates.price !== undefined && Number(updates.price) === 0) {
+    updates.isFree = true;
     updates.price = "0.00";
   }
 
