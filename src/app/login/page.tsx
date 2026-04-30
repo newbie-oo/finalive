@@ -64,7 +64,12 @@ export default function LoginPage() {
     });
 
     if (result.error) {
-      setServerError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      const errorCode = (result.error as { code?: string }).code;
+      if (errorCode === "EMAIL_NOT_VERIFIED") {
+        setServerError("อีเมลยังไม่ได้รับการยืนยัน กรุณาตรวจสอบกล่องจดหมายของคุณ");
+      } else {
+        setServerError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      }
       return;
     }
 
