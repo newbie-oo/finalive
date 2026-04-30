@@ -105,10 +105,13 @@ export function LearnPageClient({
       <div className="flex flex-1 min-h-0">
         {/* Main content */}
         <main className="flex-1 overflow-y-auto min-w-0">
-          {/* Player */}
-          <div className="bg-black flex justify-center lg:p-4">
-            <div className="w-full max-w-[1100px]">
-              {hlsUrl ? (
+          {/* Player — only render the 16:9 container when there's actually
+              a video. Otherwise emit a slim banner so lesson body fills the
+              viewport instead of being pushed below the fold by an empty
+              video well. */}
+          {hlsUrl ? (
+            <div className="bg-black flex justify-center lg:p-4">
+              <div className="w-full">
                 <VidstackPlayer
                   src={hlsUrl}
                   title={lessonTitle}
@@ -119,16 +122,17 @@ export function LearnPageClient({
                   courseSlug={courseSlug}
                   suppressProgress={isAdmin}
                 />
-              ) : (
-                <div
-                  role="status"
-                  className="flex aspect-video w-full items-center justify-center bg-(--surface-muted) text-body text-(--foreground-muted)"
-                >
-                  ยังไม่มีวิดีโอสำหรับบทเรียนนี้ — กรุณาอ่านเนื้อหาด้านล่าง
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div
+              role="status"
+              className="mx-4 mt-4 flex items-center gap-2 rounded-md border border-(--border) bg-(--surface-muted) px-4 py-3 text-uism text-(--foreground-muted) lg:mx-8 lg:mt-6"
+            >
+              <span aria-hidden="true">📖</span>
+              บทเรียนนี้ไม่มีวิดีโอ — อ่านเนื้อหาด้านล่าง
+            </div>
+          )}
 
           {/* Mobile progress strip */}
           <div className="flex items-center gap-3 border-b border-(--border) px-4 py-3 lg:hidden">
