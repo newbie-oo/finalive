@@ -257,14 +257,6 @@ export function LearnPageClient({
 							>
 								โน้ต
 							</button>
-							{quizId && (
-								<Link
-									href={`/learn/${courseSlug}/quiz/${quizId}`}
-									className="px-0 py-3 text-ui font-medium text-(--foreground-muted) hover:text-(--foreground)"
-								>
-									แบบทดสอบ
-								</Link>
-							)}
 						</div>
 
 						{activeTab === "notes" ? (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CheckCircle } from "@phosphor-icons/react";
@@ -95,7 +95,13 @@ export default function RegisterPage() {
 					</>
 				}
 			>
-				<GoogleSignInButton mode="register" />
+				<Suspense
+					fallback={
+						<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+					}
+				>
+					<GoogleSignInButton mode="register" />
+				</Suspense>
 				<div className="flex items-center gap-3">
 					<div className="h-px flex-1 bg-(--border)" />
 					<span className="text-uism text-(--foreground-muted)">หรือ</span>

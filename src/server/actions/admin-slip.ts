@@ -1,287 +1,67 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
-import { course } from "@/db/schema/course";
-import { enrollment } from "@/db/schema/enrollment";
-import { user as userTable } from "@/db/schema/auth";
-import { ApiError } from "@/lib/api-error";
-import { requireRole } from "../auth-session";
-import { enqueueEmail } from "../services/email-queue";
-import { logAudit } from "../services/audit";
-import { isUniqueViolation } from "@/lib/pg-error";
+import { requireRole } from "@/server/auth-session";
+import { SlipReviewService } from "@/server/payments/slip-review-service";
+import { EmailSlipNotifier } from "@/server/services/slip-notifier";
+import { DbAuditLogger } from "@/server/services/audit-logger";
 import {
-  REJECT_REASONS,
-  REJECT_REASON_LABEL,
-  type RejectReason,
+	REJECT_REASONS,
+	REJECT_REASON_LABEL,
+	type RejectReason,
 } from "@/components/admin/slip-reject-options";
 
 export { REJECT_REASONS, REJECT_REASON_LABEL };
 export type { RejectReason };
 
 export interface RejectSlipInput {
-  slipId: string;
-  reason: RejectReason;
-  note?: string;
+	slipId: string;
+	reason: RejectReason;
+	note?: string;
 }
 
 export interface RejectSlipResult {
-  slipId: string;
-  pendingId: string;
+	slipId: string;
+	pendingId: string;
 }
 
 export interface AcceptSlipResult {
-  slipId: string;
-  enrollmentId: string;
+	slipId: string;
+	enrollmentId: string;
 }
-
-/**
- * Single source of truth for the joined slip + pending + course + student
- * row that both accept and reject need. Loaded read-only outside the TX so
- * the TX itself stays short. The status guard inside the TX (conditional
- * UPDATE) is the canonical race defense; we only inspect status here to
- * fail fast with a friendly error.
- */
-async function loadSlipForReview(slipId: string) {
-  const rows = await db
-    .select({
-      slipId: paymentSlip.id,
-      slipStatus: paymentSlip.status,
-      pendingId: pendingEnrollment.id,
-      pendingAmount: pendingEnrollment.amount,
-      pendingRefCode: pendingEnrollment.refCode,
-      studentUserId: pendingEnrollment.userId,
-      studentEmail: userTable.email,
-      studentName: userTable.name,
-      courseId: course.id,
-      courseTitle: course.title,
-      courseSlug: course.slug,
-    })
-    .from(paymentSlip)
-    .innerJoin(pendingEnrollment, eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id))
-    .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
-    .innerJoin(userTable, eq(pendingEnrollment.userId, userTable.id))
-    .where(eq(paymentSlip.id, slipId))
-    .limit(1);
-
-  const row = rows[0];
-  if (!row) throw new ApiError("not_found", "slip not found");
-  return row;
-}
-
-export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
-  const { user: admin } = await requireRole("admin");
-
-  const row = await loadSlipForReview(slipId);
-
-  const enrollmentId = await db.transaction(async (tx) => {
-    // Conditional UPDATE — only flips when still 'submitted'. If two admins
-    // race, the loser's update affects 0 rows and we abort.
-    const updated = await tx
-      .update(paymentSlip)
-      .set({
-        status: "accepted",
-        reviewedByUserId: admin.id,
-        reviewedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(paymentSlip.id, slipId), eq(paymentSlip.status, "submitted")))
-      .returning({ id: paymentSlip.id });
-    if (updated.length === 0) {
-      throw new ApiError("slip_already_reviewed", "slip was reviewed by another admin");
-    }
-
-    await tx
-      .update(pendingEnrollment)
-      .set({ status: "paid", updatedAt: new Date() })
-      .where(eq(pendingEnrollment.id, row.pendingId));
-
-    let createdEnrollmentId: string;
-    try {
-      const inserted = await tx
-        .insert(enrollment)
-        .values({
-          userId: row.studentUserId,
-          courseId: row.courseId,
-          source: "paid",
-          sourcePendingId: row.pendingId,
-          priceAtPurchase: row.pendingAmount,
-          status: "active",
-        })
-        .returning({ id: enrollment.id });
-      const created = inserted[0];
-      if (!created) throw new ApiError("internal_error", "enrollment insert failed");
-      createdEnrollmentId = created.id;
-    } catch (e) {
-      if (isUniqueViolation(e, "one_active_enrollment")) {
-        // Idempotency / concurrent grant: another active enrollment already
-        // exists for this (user, course). Surface a typed error so the admin
-        // can investigate (probably an admin_grant beat them to it).
-        throw new ApiError(
-          "enrollment_already_active",
-          "นักเรียนมีสิทธิ์เรียนคอร์สนี้อยู่แล้ว",
-        );
-      }
-      throw e;
-    }
-
-    await enqueueEmail(
-      {
-        toEmail: row.studentEmail,
-        template: "slip_accepted",
-        paramsJson: {
-          name: row.studentName,
-          courseTitle: row.courseTitle,
-          courseSlug: row.courseSlug,
-          refCode: row.pendingRefCode,
-          amount: row.pendingAmount,
-        },
-        userId: row.studentUserId,
-      },
-      tx,
-    );
-
-    await logAudit(
-      {
-        actorType: "user",
-        actorUserId: admin.id,
-        action: "payment_slip.accepted",
-        targetType: "payment_slip",
-        targetId: slipId,
-        afterJson: {
-          enrollmentId: createdEnrollmentId,
-          pendingId: row.pendingId,
-          refCode: row.pendingRefCode,
-        },
-      },
-      tx,
-    );
-
-    return createdEnrollmentId;
-  });
-
-  return { slipId, enrollmentId };
-}
-
-export async function rejectSlip(input: RejectSlipInput): Promise<RejectSlipResult> {
-  const { user: admin } = await requireRole("admin");
-
-  const row = await loadSlipForReview(input.slipId);
-
-  await db.transaction(async (tx) => {
-    const updated = await tx
-      .update(paymentSlip)
-      .set({
-        status: "rejected",
-        rejectionReason: input.reason,
-        rejectionNote: input.note ?? null,
-        reviewedByUserId: admin.id,
-        reviewedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(and(eq(paymentSlip.id, input.slipId), eq(paymentSlip.status, "submitted")))
-      .returning({ id: paymentSlip.id });
-    if (updated.length === 0) {
-      throw new ApiError("slip_already_reviewed", "slip was reviewed by another admin");
-    }
-
-    // Bounce pending back to awaiting_payment so the student can re-upload.
-    await tx
-      .update(pendingEnrollment)
-      .set({ status: "awaiting_payment", updatedAt: new Date() })
-      .where(eq(pendingEnrollment.id, row.pendingId));
-
-    await enqueueEmail(
-      {
-        toEmail: row.studentEmail,
-        template: "slip_rejected",
-        paramsJson: {
-          name: row.studentName,
-          courseTitle: row.courseTitle,
-          courseSlug: row.courseSlug,
-          refCode: row.pendingRefCode,
-          amount: row.pendingAmount,
-          reason: input.reason,
-          reasonLabel: REJECT_REASON_LABEL[input.reason],
-          note: input.note ?? null,
-        },
-        userId: row.studentUserId,
-      },
-      tx,
-    );
-
-    await logAudit(
-      {
-        actorType: "user",
-        actorUserId: admin.id,
-        action: "payment_slip.rejected",
-        targetType: "payment_slip",
-        targetId: input.slipId,
-        afterJson: {
-          pendingId: row.pendingId,
-          refCode: row.pendingRefCode,
-          reason: input.reason,
-          note: input.note ?? null,
-        },
-      },
-      tx,
-    );
-  });
-
-  return { slipId: input.slipId, pendingId: row.pendingId };
-}
-
-const MAX_BULK = 50;
-const BULK_CONCURRENCY = 5;
 
 export interface BulkResult {
-  succeeded: string[];
-  failed: Array<{ slipId: string; code: string; message: string }>;
+	succeeded: string[];
+	failed: Array<{ slipId: string; code: string; message: string }>;
 }
 
-function describeBulkError(id: string, e: unknown): BulkResult["failed"][number] {
-  if (e instanceof ApiError) return { slipId: id, code: e.code, message: e.message };
-  return {
-    slipId: id,
-    code: "internal_error",
-    message: e instanceof Error ? e.message : String(e),
-  };
+const service = new SlipReviewService({
+	notifier: new EmailSlipNotifier(),
+	auditLogger: new DbAuditLogger(),
+});
+
+export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
+	const { user: admin } = await requireRole("admin");
+	return service.accept(slipId, admin.id);
 }
 
-// Bulk operations run as N independent TXs (not one giant TX) so a single
-// stale slip doesn't poison the batch. We process up to BULK_CONCURRENCY
-// in flight at a time — high enough that a 50-slip batch finishes in a
-// couple of seconds, low enough that we don't saturate the connection
-// pool or thrash the queue invalidations downstream.
-async function runBulk(
-  slipIds: string[],
-  fn: (id: string) => Promise<unknown>,
-): Promise<BulkResult> {
-  if (slipIds.length === 0 || slipIds.length > MAX_BULK) {
-    throw new ApiError("validation_failed", `bulk size must be 1..${MAX_BULK}`);
-  }
-
-  const result: BulkResult = { succeeded: [], failed: [] };
-  for (let i = 0; i < slipIds.length; i += BULK_CONCURRENCY) {
-    const chunk = slipIds.slice(i, i + BULK_CONCURRENCY);
-    const settled = await Promise.allSettled(chunk.map((id) => fn(id)));
-    settled.forEach((s, idx) => {
-      const id = chunk[idx]!;
-      if (s.status === "fulfilled") result.succeeded.push(id);
-      else result.failed.push(describeBulkError(id, s.reason));
-    });
-  }
-  return result;
+export async function rejectSlip(
+	input: RejectSlipInput,
+): Promise<RejectSlipResult> {
+	const { user: admin } = await requireRole("admin");
+	return service.reject(input, admin.id);
 }
 
 export function bulkAcceptSlips(slipIds: string[]): Promise<BulkResult> {
-  return runBulk(slipIds, (id) => acceptSlip(id));
+	return requireRole("admin").then(({ user: admin }) =>
+		service.bulkAccept(slipIds, admin.id),
+	);
 }
 
 export function bulkRejectSlips(
-  slipIds: string[],
-  reason: RejectReason,
-  note?: string,
+	slipIds: string[],
+	reason: RejectReason,
+	note?: string,
 ): Promise<BulkResult> {
-  return runBulk(slipIds, (id) => rejectSlip({ slipId: id, reason, note }));
+	return requireRole("admin").then(({ user: admin }) =>
+		service.bulkReject(slipIds, reason, note, admin.id),
+	);
 }

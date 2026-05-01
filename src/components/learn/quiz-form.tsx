@@ -194,6 +194,8 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				totalQuestions: res.result.totalQuestions,
 				questionResults: res.result.questionResults,
 			});
+			// Re-fetch server data so sidebar quiz icons update immediately.
+			router.refresh();
 		}
 		setSubmitting(false);
 	};

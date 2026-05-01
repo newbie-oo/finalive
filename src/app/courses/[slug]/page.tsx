@@ -243,7 +243,7 @@ export default async function CourseDetailPage({
 									{!isEnrolled && !course.isFree && hasPreviewableLesson && (
 										<Button
 											asChild
-											variant="ghost"
+											variant="secondary"
 											size="md"
 											className="w-full"
 										>

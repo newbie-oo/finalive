@@ -1,213 +1,35 @@
 import "server-only";
-import { randomUUID, createHash } from "node:crypto";
-import { and, eq } from "drizzle-orm";
-import { z } from "zod";
-import { db } from "@/db/client";
-import { pendingEnrollment, paymentSlip } from "@/db/schema/payment";
-import { course } from "@/db/schema/course";
-import { mediaAsset } from "@/db/schema/media";
-import { ApiError } from "@/lib/api-error";
-import { getEnv } from "@/lib/env";
-import { sniffSlipFile } from "@/lib/file-sniff";
-import { requireSession } from "../auth-session";
-import { putObject } from "../services/r2";
-import { withIdempotency } from "../services/idempotency";
-import { enqueueEmail } from "../services/email-queue";
-import { logAudit } from "../services/audit";
+import { requireSession } from "@/server/auth-session";
+import { SlipUploadService } from "@/server/payments/slip-upload-service";
+import { R2ObjectStorage } from "@/server/services/storage";
+import { EmailSlipNotifier } from "@/server/services/slip-notifier";
+import { DbAuditLogger } from "@/server/services/audit-logger";
 
 export interface UploadSlipInput {
-  pendingId: string;
-  bytes: Buffer;
-  reportedAmount?: string;
+	pendingId: string;
+	bytes: Buffer;
+	reportedAmount?: string;
 }
 
-const uploadSlipResultSchema = z.object({
-  slipId: z.string().uuid(),
-  pendingId: z.string().uuid(),
-  status: z.literal("submitted"),
+export type UploadSlipResult = {
+	slipId: string;
+	pendingId: string;
+	status: "submitted";
+};
+
+const service = new SlipUploadService({
+	storage: new R2ObjectStorage("private"),
+	notifier: new EmailSlipNotifier(),
+	auditLogger: new DbAuditLogger(),
 });
 
-export type UploadSlipResult = z.infer<typeof uploadSlipResultSchema>;
-
-const MAX_BYTES = 5 * 1024 * 1024;
-
-export async function uploadSlip(input: UploadSlipInput): Promise<UploadSlipResult> {
-  const { user } = await requireSession();
-
-  if (input.bytes.byteLength === 0 || input.bytes.byteLength > MAX_BYTES) {
-    throw new ApiError("validation_failed", "file size out of range");
-  }
-  // Trust magic bytes, not the browser-supplied Content-Type. The sniffed
-  // result is what we store as media_asset.mime_type so admins viewing the
-  // slip get a Content-Type that matches the actual payload.
-  const sniffed = sniffSlipFile(input.bytes);
-  if (sniffed === "unknown") {
-    throw new ApiError(
-      "validation_failed",
-      "file content must be PNG, JPEG, PDF, or HEIC",
-    );
-  }
-
-  const idemKey = createHash("sha256")
-    .update(input.pendingId)
-    .update(":")
-    .update(input.bytes)
-    .digest("hex");
-
-  return withIdempotency<UploadSlipResult>({
-    scope: "slip.upload",
-    key: idemKey,
-    schema: uploadSlipResultSchema,
-    run: async () => {
-      const pendingRows = await db
-        .select({
-          id: pendingEnrollment.id,
-          userId: pendingEnrollment.userId,
-          courseId: pendingEnrollment.courseId,
-          amount: pendingEnrollment.amount,
-          status: pendingEnrollment.status,
-          expiresAt: pendingEnrollment.expiresAt,
-          refCode: pendingEnrollment.refCode,
-        })
-        .from(pendingEnrollment)
-        .where(eq(pendingEnrollment.id, input.pendingId))
-        .limit(1);
-      const pending = pendingRows[0];
-      if (!pending) throw new ApiError("not_found", "pending not found");
-      if (pending.userId !== user.id) throw new ApiError("forbidden", "not your pending");
-      if (pending.status === "paid") throw new ApiError("invalid_state", "already paid");
-      if (pending.status === "expired" || pending.expiresAt.getTime() < Date.now()) {
-        throw new ApiError("pending_expired", "pending has expired");
-      }
-
-      const courseRows = await db
-        .select({ title: course.title, slug: course.slug })
-        .from(course)
-        .where(eq(course.id, pending.courseId))
-        .limit(1);
-      const courseInfo = courseRows[0];
-      if (!courseInfo) throw new ApiError("not_found", "course missing");
-
-      // Storage key derives only from values we control — never from the
-      // user-supplied filename (which can carry path traversal / RTL overrides).
-      // sniffed is narrowed above (the "unknown" branch already threw), so
-      // this map only needs the four real types.
-      const extByMime: Record<
-        Exclude<typeof sniffed, "unknown">,
-        string
-      > = {
-        "image/png": "png",
-        "image/jpeg": "jpg",
-        "image/heic": "heic",
-        "application/pdf": "pdf",
-      };
-      const ext = extByMime[sniffed as Exclude<typeof sniffed, "unknown">];
-      const storageKey = `slips/${pending.userId}/${pending.id}/${randomUUID()}.${ext}`;
-
-      // 1) Reserve a media_asset row in pending_upload state. This claims the
-      //    storage_key in DB *before* we write the blob, so a janitor cron
-      //    can find orphans by querying media_asset where status='pending_upload'
-      //    AND created_at < now() - 10min, then DELETE both the blob and the row.
-      const [media] = await db
-        .insert(mediaAsset)
-        .values({
-          kind: sniffed === "application/pdf" ? "pdf" : "image",
-          storage: "r2_private",
-          storageKey,
-          mimeType: sniffed,
-          sizeBytes: input.bytes.byteLength,
-          status: "pending_upload",
-          createdByUserId: user.id,
-        })
-        .returning({ id: mediaAsset.id });
-      if (!media) throw new ApiError("internal_error", "media insert failed");
-      const mediaId = media.id;
-
-      // 2) PUT to R2. If this throws, the pending_upload row stays — janitor
-      //    sweeps both the (non-existent) blob and the row in a follow-up.
-      await putObject({
-        bucket: "private",
-        key: storageKey,
-        body: input.bytes,
-        contentType: sniffed,
-      });
-
-      // 3) Single TX: flip media_asset -> ready, insert slip, transition pending,
-      //    enqueue 2 emails, write audit. If this rolls back, R2 already has the
-      //    blob — but the media row is still pending_upload so janitor will
-      //    GC the orphan along with the original row.
-      const slipId = await db.transaction(async (tx) => {
-        await tx
-          .update(mediaAsset)
-          .set({ status: "ready" })
-          .where(eq(mediaAsset.id, mediaId));
-
-        const [slip] = await tx
-          .insert(paymentSlip)
-          .values({
-            pendingEnrollmentId: pending.id,
-            imageMediaId: mediaId,
-            expectedAmount: pending.amount,
-            reportedAmount: input.reportedAmount ?? null,
-            status: "submitted",
-            idempotencyKey: idemKey,
-          })
-          .returning({ id: paymentSlip.id });
-        if (!slip) throw new ApiError("internal_error", "slip insert failed");
-
-        await tx
-          .update(pendingEnrollment)
-          .set({ status: "slip_submitted", updatedAt: new Date() })
-          .where(
-            and(eq(pendingEnrollment.id, pending.id), eq(pendingEnrollment.userId, user.id)),
-          );
-
-        await enqueueEmail(
-          {
-            toEmail: user.email,
-            template: "slip_received",
-            paramsJson: {
-              name: user.name,
-              courseTitle: courseInfo.title,
-              refCode: pending.refCode,
-              amount: pending.amount,
-            },
-            userId: user.id,
-          },
-          tx,
-        );
-
-        await enqueueEmail(
-          {
-            toEmail: getEnv().ADMIN_NOTIFY_EMAIL,
-            template: "admin_new_slip",
-            paramsJson: {
-              studentEmail: user.email,
-              courseTitle: courseInfo.title,
-              refCode: pending.refCode,
-              amount: pending.amount,
-              reviewUrl: "/admin/slips",
-            },
-          },
-          tx,
-        );
-
-        await logAudit(
-          {
-            actorType: "user",
-            actorUserId: user.id,
-            action: "payment_slip.uploaded",
-            targetType: "payment_slip",
-            targetId: slip.id,
-            afterJson: { pendingId: pending.id, refCode: pending.refCode },
-          },
-          tx,
-        );
-
-        return slip.id;
-      });
-
-      return { slipId, pendingId: pending.id, status: "submitted" };
-    },
-  });
+export async function uploadSlip(
+	input: UploadSlipInput,
+): Promise<UploadSlipResult> {
+	const { user } = await requireSession();
+	return service.upload(input, {
+		id: user.id,
+		email: user.email,
+		name: user.name,
+	});
 }

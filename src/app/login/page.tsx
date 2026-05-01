@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,7 +36,7 @@ function safeNext(raw: string | null, fallback: string): string {
 	return raw;
 }
 
-export default function LoginPage() {
+function LoginForm() {
 	const router = useRouter();
 	const params = useSearchParams();
 	const rawNext = params.get("next");
@@ -83,86 +83,103 @@ export default function LoginPage() {
 	}
 
 	return (
-		<PublicShell>
-			<AuthCard
-				title="เข้าสู่ระบบ"
-				subtitle="ยินดีต้อนรับกลับมา"
-				footer={
-					<>
-						ยังไม่มีบัญชี?{" "}
+		<AuthCard
+			title="เข้าสู่ระบบ"
+			subtitle="ยินดีต้อนรับกลับมา"
+			footer={
+				<>
+					ยังไม่มีบัญชี?{" "}
+					<Link
+						href="/register"
+						className="font-medium text-(--primary) hover:underline"
+					>
+						สมัครสมาชิก
+					</Link>
+				</>
+			}
+		>
+			<GoogleSignInButton mode="login" />
+			<div className="flex items-center gap-3">
+				<div className="h-px flex-1 bg-(--border)" />
+				<span className="text-uism text-(--foreground-muted)">หรือ</span>
+				<div className="h-px flex-1 bg-(--border)" />
+			</div>
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+				<div>
+					<Label htmlFor="email" required>
+						อีเมล
+					</Label>
+					<Input
+						id="email"
+						type="email"
+						autoComplete="email"
+						invalid={!!errors.email}
+						{...register("email")}
+					/>
+					{errors.email && <FieldError>{errors.email.message}</FieldError>}
+				</div>
+
+				<div>
+					<div className="flex items-center justify-between">
+						<Label htmlFor="password" required>
+							รหัสผ่าน
+						</Label>
 						<Link
-							href="/register"
-							className="font-medium text-(--primary) hover:underline"
+							href="/forgot-password"
+							className="mb-1.5 text-uism text-(--primary) hover:underline"
 						>
-							สมัครสมาชิก
+							ลืมรหัสผ่าน?
 						</Link>
-					</>
+					</div>
+					<PasswordInput
+						id="password"
+						autoComplete="current-password"
+						invalid={!!errors.password}
+						{...register("password")}
+					/>
+					{errors.password && (
+						<FieldError>{errors.password.message}</FieldError>
+					)}
+				</div>
+
+				{serverError && (
+					<p
+						role="alert"
+						className="rounded-md bg-(--destructive-bg) px-3 py-2 text-uism text-(--destructive-fg)"
+					>
+						{serverError}
+					</p>
+				)}
+
+				<Button
+					type="submit"
+					variant="primary"
+					size="lg"
+					className="w-full"
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+				</Button>
+			</form>
+		</AuthCard>
+	);
+}
+
+export default function LoginPage() {
+	return (
+		<PublicShell>
+			<Suspense
+				fallback={
+					<div className="mx-auto max-w-md space-y-6">
+						<div className="h-8 w-48 animate-pulse rounded-md bg-(--surface-muted)" />
+						<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+						<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+						<div className="h-12 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+					</div>
 				}
 			>
-				<GoogleSignInButton mode="login" />
-				<div className="flex items-center gap-3">
-					<div className="h-px flex-1 bg-(--border)" />
-					<span className="text-uism text-(--foreground-muted)">หรือ</span>
-					<div className="h-px flex-1 bg-(--border)" />
-				</div>
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<div>
-						<Label htmlFor="email" required>
-							อีเมล
-						</Label>
-						<Input
-							id="email"
-							type="email"
-							autoComplete="email"
-							invalid={!!errors.email}
-							{...register("email")}
-						/>
-						{errors.email && <FieldError>{errors.email.message}</FieldError>}
-					</div>
-
-					<div>
-						<div className="flex items-center justify-between">
-							<Label htmlFor="password" required>
-								รหัสผ่าน
-							</Label>
-							<Link
-								href="/forgot-password"
-								className="mb-1.5 text-uism text-(--primary) hover:underline"
-							>
-								ลืมรหัสผ่าน?
-							</Link>
-						</div>
-						<PasswordInput
-							id="password"
-							autoComplete="current-password"
-							invalid={!!errors.password}
-							{...register("password")}
-						/>
-						{errors.password && (
-							<FieldError>{errors.password.message}</FieldError>
-						)}
-					</div>
-
-					{serverError && (
-						<p
-							role="alert"
-							className="rounded-md bg-(--destructive-bg) px-3 py-2 text-uism text-(--destructive-fg)"
-						>
-							{serverError}
-						</p>
-					)}
-
-					<Button
-						type="submit"
-						variant="primary"
-						size="lg"
-						className="w-full"
-						disabled={isSubmitting}
-					>
-						{isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-					</Button>
-				</form>
-			</AuthCard>
+				<LoginForm />
+			</Suspense>
 		</PublicShell>
 	);
 }

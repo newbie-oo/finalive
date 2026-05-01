@@ -218,6 +218,12 @@
 .ProseMirror [style*="text-align: right"] { text-align: right; }
 .ProseMirror [style*="text-align: justify"] { text-align: justify; }
 
+/* Route-change progress indicator (used in LearnTopbar) */
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
 /* Prose-style markdown typography for lesson/quiz body content */
 @layer utilities {
   .prose-style {
