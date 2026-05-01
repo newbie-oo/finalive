@@ -17,16 +17,15 @@ export type UploadSlipResult = {
 	status: "submitted";
 };
 
-const service = new SlipUploadService({
-	storage: new R2ObjectStorage("private"),
-	notifier: new EmailSlipNotifier(),
-	auditLogger: new DbAuditLogger(),
-});
-
 export async function uploadSlip(
 	input: UploadSlipInput,
 ): Promise<UploadSlipResult> {
 	const { user } = await requireSession();
+	const service = new SlipUploadService({
+		storage: new R2ObjectStorage("private"),
+		notifier: new EmailSlipNotifier(),
+		auditLogger: new DbAuditLogger(),
+	});
 	return service.upload(input, {
 		id: user.id,
 		email: user.email,

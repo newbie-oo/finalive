@@ -33,26 +33,28 @@ export interface BulkResult {
 	failed: Array<{ slipId: string; code: string; message: string }>;
 }
 
-const service = new SlipReviewService({
-	notifier: new EmailSlipNotifier(),
-	auditLogger: new DbAuditLogger(),
-});
+function makeService() {
+	return new SlipReviewService({
+		notifier: new EmailSlipNotifier(),
+		auditLogger: new DbAuditLogger(),
+	});
+}
 
 export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
 	const { user: admin } = await requireRole("admin");
-	return service.accept(slipId, admin.id);
+	return makeService().accept(slipId, admin.id);
 }
 
 export async function rejectSlip(
 	input: RejectSlipInput,
 ): Promise<RejectSlipResult> {
 	const { user: admin } = await requireRole("admin");
-	return service.reject(input, admin.id);
+	return makeService().reject(input, admin.id);
 }
 
 export function bulkAcceptSlips(slipIds: string[]): Promise<BulkResult> {
 	return requireRole("admin").then(({ user: admin }) =>
-		service.bulkAccept(slipIds, admin.id),
+		makeService().bulkAccept(slipIds, admin.id),
 	);
 }
 
@@ -62,6 +64,6 @@ export function bulkRejectSlips(
 	note?: string,
 ): Promise<BulkResult> {
 	return requireRole("admin").then(({ user: admin }) =>
-		service.bulkReject(slipIds, reason, note, admin.id),
+		makeService().bulkReject(slipIds, reason, note, admin.id),
 	);
 }
