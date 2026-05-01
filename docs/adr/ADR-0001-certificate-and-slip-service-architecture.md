@@ -47,7 +47,7 @@ Action (HTTP transport)
 | `ObjectStorage`            | Put objects and resolve public URLs        | `R2ObjectStorage`               |
 | `CourseCompletionNotifier` | Notify student of certificate availability | `EmailCourseCompletionNotifier` |
 | `SlipNotifier`             | Notify student and admin of slip events    | `EmailSlipNotifier`             |
-| `AuditLogger`              | Write audit log entries                    | `DbAuditLogger`                 |
+| `AuditLogger`              | Write audit log entries (supports tx)      | `DbAuditLogger`                 |
 
 ## Consequences
 
@@ -68,6 +68,7 @@ Action (HTTP transport)
 
 - `CertificateIssuer` extracted from `src/server/actions/certificate.tsx` — action reduced from 119 to 15 lines; 8 unit tests cover every path.
 - `SlipUploadService` extracted from `src/server/actions/slip.ts` — action reduced from 140 to ~20 lines; tests cover validation, idempotency, transaction failure, and success.
+- `SlipReviewService` extracted from `src/server/actions/admin-slip.ts` — action reduced from 200 to ~25 lines; tests cover accept/reject success, race conditions, unique violations, bulk operations with partial failures.
 
 ## References
 
@@ -77,3 +78,6 @@ Action (HTTP transport)
 - `src/server/services/notifier.ts`
 - `src/server/services/slip-notifier.ts`
 - `src/server/payments/slip-upload-service.ts`
+- `src/server/payments/slip-review-service.ts`
+- `src/server/payments/slip-review-service.test.ts`
+- `src/server/services/audit-logger.ts`
