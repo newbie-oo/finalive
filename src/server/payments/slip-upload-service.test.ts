@@ -32,6 +32,7 @@ function fakeDeps() {
 	return {
 		storage: {
 			put: vi.fn().mockResolvedValue(undefined),
+			delete: vi.fn().mockResolvedValue(undefined),
 			urlFor: vi.fn().mockReturnValue("https://cdn.example.com/test"),
 		},
 		notifier: {

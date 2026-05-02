@@ -13,7 +13,8 @@ import {
 } from "@/server/admin/admin-command";
 import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
-import { deleteObject } from "@/server/services/r2";
+import { R2ObjectStorage } from "@/server/services/storage";
+import { CoverImageService } from "@/server/services/cover-image";
 
 const createSchema = z.object({
 	slug: z.string().min(1).max(100),
@@ -111,6 +112,26 @@ export async function updateCourseAction(formData: FormData) {
 	return { ok: true };
 }
 
+function makeCoverService() {
+	return new CoverImageService({
+		storage: new R2ObjectStorage("public"),
+		getMediaAsset: async (mediaAssetId) => {
+			const rows = await db
+				.select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
+				.from(mediaAsset)
+				.where(eq(mediaAsset.id, mediaAssetId))
+				.limit(1);
+			return rows[0] ?? null;
+		},
+		deleteMediaAsset: async (mediaAssetId) => {
+			await db.delete(mediaAsset).where(eq(mediaAsset.id, mediaAssetId));
+		},
+		updateCourseCover: async (courseId, mediaAssetId) => {
+			await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
+		},
+	});
+}
+
 export async function updateCourseCoverAction(formData: FormData) {
 	const auth = await requireAdminSession();
 	if (!auth.ok) return { ok: false, error: auth.error } as const;
@@ -121,34 +142,12 @@ export async function updateCourseCoverAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	// Cleanup old cover.
-	const oldCoverMediaId = access.course.coverMediaId;
-	if (oldCoverMediaId) {
-		const oldAssets = await db
-			.select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
-			.from(mediaAsset)
-			.where(eq(mediaAsset.id, oldCoverMediaId))
-			.limit(1);
-		const oldAsset = oldAssets[0];
-		if (oldAsset) {
-			try {
-				const uuid = oldAsset.storageKey;
-				await deleteObject({
-					bucket: "public",
-					key: `covers/${uuid}-640.webp`,
-				});
-				await deleteObject({
-					bucket: "public",
-					key: `covers/${uuid}-1200.webp`,
-				});
-			} catch (err) {
-				console.error("Failed to delete old cover from R2:", err);
-			}
-			await db.delete(mediaAsset).where(eq(mediaAsset.id, oldAsset.id));
-		}
-	}
-
-	await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
+	const service = makeCoverService();
+	await service.replaceCover({
+		courseId,
+		newMediaAssetId: mediaAssetId,
+		oldCoverMediaId: access.course.coverMediaId,
+	});
 
 	revalidateCourseAdminPaths(courseId, access.course.slug);
 	return { ok: true };

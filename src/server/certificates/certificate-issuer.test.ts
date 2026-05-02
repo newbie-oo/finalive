@@ -40,6 +40,7 @@ function fakeDeps() {
 		},
 		storage: {
 			put: vi.fn().mockResolvedValue(undefined),
+			delete: vi.fn().mockResolvedValue(undefined),
 			urlFor: vi
 				.fn()
 				.mockImplementation((key: string) => `https://cdn.example.com/${key}`),
