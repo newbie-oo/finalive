@@ -1,10 +1,7 @@
 "use server";
 
 import { getSession } from "@/server/auth-session";
-import { CertificateIssuer } from "@/server/certificates/certificate-issuer";
-import { ReactPdfCertificateRenderer } from "@/server/certificates/certificate-renderer";
-import { R2ObjectStorage } from "@/server/services/storage";
-import { EmailCourseCompletionNotifier } from "@/server/services/notifier";
+import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
 export async function issueCertificate(enrollmentId: string) {
 	const session = await getSession();
@@ -12,11 +9,7 @@ export async function issueCertificate(enrollmentId: string) {
 		return { ok: false, error: "unauthorized" as const };
 	}
 
-	const issuer = new CertificateIssuer({
-		renderer: new ReactPdfCertificateRenderer(),
-		storage: new R2ObjectStorage("public"),
-		notifier: new EmailCourseCompletionNotifier(),
-	});
+	const issuer = certificateIssuerFactory();
 
 	return issuer.issue(
 		enrollmentId,

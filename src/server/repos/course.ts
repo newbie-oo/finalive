@@ -445,3 +445,19 @@ export async function isUserEnrolledInCourse(
 		.limit(1);
 	return rows.length > 0;
 }
+
+/**
+ * Resolve the course ID that owns a given lesson.
+ * Used by completion services to know which course to evaluate.
+ */
+export async function getCourseIdByLessonId(
+	lessonId: string,
+): Promise<string | null> {
+	const [row] = await db
+		.select({ courseId: courseModule.courseId })
+		.from(lesson)
+		.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+		.where(eq(lesson.id, lessonId))
+		.limit(1);
+	return row?.courseId ?? null;
+}

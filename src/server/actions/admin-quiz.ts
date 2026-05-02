@@ -1,10 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { db } from "@/db/client";
-import { lesson, courseModule } from "@/db/schema/course";
+import { getCourseIdByLessonId } from "@/server/repos/course";
 import {
 	getAdminQuizById,
 	saveAdminQuiz,
@@ -52,15 +50,7 @@ function makeQuizService() {
 	return new QuizAdminService({
 		getQuizById: getAdminQuizById,
 		saveQuiz: saveAdminQuiz,
-		getLessonCourseId: async (lessonId) => {
-			const rows = await db
-				.select({ courseId: courseModule.courseId })
-				.from(lesson)
-				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-				.where(eq(lesson.id, lessonId))
-				.limit(1);
-			return rows[0]?.courseId ?? null;
-		},
+		getLessonCourseId: getCourseIdByLessonId,
 		createQuiz: createAdminQuiz,
 	});
 }

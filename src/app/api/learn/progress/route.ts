@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { requireSession } from "@/server/auth-session";
-import { db } from "@/db/client";
-import { lesson, courseModule } from "@/db/schema/course";
-import {
-	updateWatchedSeconds,
-	markLessonComplete,
-} from "@/server/repos/progress";
-import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
-import { CourseCompletionService } from "@/server/services/course-completion";
+import { updateWatchedSeconds } from "@/server/repos/progress";
+import { makeCourseCompletionService } from "@/server/services/course-completion-factory";
 import {
 	checkRateLimit,
 	getClientIP,
@@ -57,47 +50,16 @@ export async function POST(req: Request) {
 	const isComplete = markComplete || watchedSeconds >= COMPLETE_SENTINEL;
 
 	if (isComplete) {
-		const { CertificateIssuer } = await import(
-			"@/server/certificates/certificate-issuer"
-		);
-		const { ReactPdfCertificateRenderer } = await import(
-			"@/server/certificates/certificate-renderer"
-		);
-		const { R2ObjectStorage } = await import("@/server/services/storage");
-		const { EmailCourseCompletionNotifier } = await import(
-			"@/server/services/notifier"
-		);
-
-		const service = new CourseCompletionService({
-			markLessonComplete,
-			getCourseIdByLessonId: async (lid: string) => {
-				const [row] = await db
-					.select({ courseId: courseModule.courseId })
-					.from(lesson)
-					.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-					.where(eq(lesson.id, lid))
-					.limit(1);
-				return row?.courseId ?? null;
-			},
-			checkAndMarkCourseComplete,
-			certificateIssuer: new CertificateIssuer({
-				renderer: new ReactPdfCertificateRenderer(),
-				storage: new R2ObjectStorage("public"),
-				notifier: new EmailCourseCompletionNotifier(),
-			}),
-		});
-
+		const service = makeCourseCompletionService();
 		const result = await service.handleLessonComplete({
 			userId: user.id,
 			userEmail: user.email,
 			userRole: user.role,
 			lessonId,
 		});
-
 		return NextResponse.json({ ok: true, ...result });
-	} else {
-		await updateWatchedSeconds(user.id, lessonId, watchedSeconds);
 	}
 
+	await updateWatchedSeconds(user.id, lessonId, watchedSeconds);
 	return NextResponse.json({ ok: true, completed: false });
 }

@@ -8,6 +8,7 @@ import { courseModule, lesson } from "@/db/schema/course";
 import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { CourseCompletionService } from "@/server/services/course-completion";
+import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
 const submitSchema = z.object({
 	quizId: z.string().uuid(),
@@ -19,36 +20,7 @@ function makeCompletionService() {
 		markLessonComplete: async () => {},
 		getCourseIdByLessonId: async () => null,
 		checkAndMarkCourseComplete,
-		certificateIssuer: {
-			issue: async (
-				enrollmentId,
-				requestingUserId,
-				requestingUserRole,
-				requestingUserEmail,
-			) => {
-				const { CertificateIssuer } = await import(
-					"@/server/certificates/certificate-issuer"
-				);
-				const { ReactPdfCertificateRenderer } = await import(
-					"@/server/certificates/certificate-renderer"
-				);
-				const { R2ObjectStorage } = await import("@/server/services/storage");
-				const { EmailCourseCompletionNotifier } = await import(
-					"@/server/services/notifier"
-				);
-				const issuer = new CertificateIssuer({
-					renderer: new ReactPdfCertificateRenderer(),
-					storage: new R2ObjectStorage("public"),
-					notifier: new EmailCourseCompletionNotifier(),
-				});
-				return issuer.issue(
-					enrollmentId,
-					requestingUserId,
-					requestingUserRole,
-					requestingUserEmail,
-				);
-			},
-		},
+		certificateIssuer: certificateIssuerFactory(),
 	});
 }
 
