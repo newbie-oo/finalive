@@ -1,8 +1,11 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
+import { and, eq } from "drizzle-orm";
 import { getSession } from "@/server/auth-session";
-import { canEditCourse } from "@/server/services/course-authz";
+import { canEditCoursePure } from "@/server/services/course-authz";
 import { getAdminCourseById } from "@/server/repos/admin-course";
+import { db } from "@/db/client";
+import { courseCollaborator } from "@/db/schema/course";
 import type { SessionContext } from "@/server/auth-session";
 
 export type AdminResult<T> =
@@ -37,11 +40,26 @@ export async function requireCourseAccess(
 		return { ok: false, error: "not_found" };
 	}
 
-	const editable = await canEditCourse(
-		session.user.id,
-		session.user.role,
-		courseId,
-	);
+	// Load only this user's collaborator role (if any) — avoids the double
+	// course query that canEditCourse(getCourseAccess) would do.
+	const collabRows = await db
+		.select({ role: courseCollaborator.role })
+		.from(courseCollaborator)
+		.where(
+			and(
+				eq(courseCollaborator.courseId, courseId),
+				eq(courseCollaborator.userId, session.user.id),
+			),
+		)
+		.limit(1);
+
+	const editable = canEditCoursePure({
+		userId: session.user.id,
+		userRole: session.user.role,
+		courseOwnerId: course.ownerUserId,
+		collaboratorRole: collabRows[0]?.role ?? null,
+	});
+
 	if (!editable) {
 		return { ok: false, error: "forbidden" };
 	}
