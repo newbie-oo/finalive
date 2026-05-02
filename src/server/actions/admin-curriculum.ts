@@ -14,11 +14,16 @@ import {
 	reorderAdminLessons,
 } from "@/server/repos/admin-course";
 import { getCourseCurriculum } from "@/server/repos/course";
+import { CurriculumAdminService } from "@/server/services/curriculum-admin";
 import {
 	requireAdminSession,
 	requireCourseAccess,
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
+
+function makeCurriculumService() {
+	return new CurriculumAdminService({ getCourseCurriculum });
+}
 
 const createModuleSchema = z.object({
 	courseId: z.string().uuid(),
@@ -41,11 +46,8 @@ export async function createModuleAction(formData: FormData) {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
-	const curriculum = await getCourseCurriculum(courseId);
-	const nextSortOrder =
-		curriculum.length > 0
-			? Math.max(...curriculum.map((m) => m.sortOrder)) + 1
-			: 0;
+	const svc = makeCurriculumService();
+	const nextSortOrder = await svc.computeNextModuleSortOrder(courseId);
 
 	const moduleId = await createAdminModule({
 		courseId: parsed.data.courseId,
@@ -80,16 +82,14 @@ export async function createLessonAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const curriculum = await getCourseCurriculum(courseId);
-	const targetModule = curriculum.find((m) => m.id === moduleId);
-	if (!targetModule) {
+	const svc = makeCurriculumService();
+	const nextSortOrder = await svc.computeNextLessonSortOrder(
+		courseId,
+		moduleId,
+	);
+	if (nextSortOrder === null) {
 		return { ok: false, error: "not_found" as const };
 	}
-
-	const nextSortOrder =
-		targetModule.lessons.length > 0
-			? Math.max(...targetModule.lessons.map((l) => l.sortOrder)) + 1
-			: 0;
 
 	const lessonId = await createAdminLesson({
 		moduleId: parsed.data.moduleId,
@@ -124,11 +124,9 @@ export async function updateLessonAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const curriculum = await getCourseCurriculum(courseId);
-	const moduleIds = curriculum.map((m) => m.id);
-	if (!moduleIds.includes(lessonRow.moduleId)) {
-		return { ok: false, error: "forbidden" as const };
-	}
+	const svc = makeCurriculumService();
+	const verified = await svc.verifyLessonInCourse(lessonId, courseId);
+	if (!verified.ok) return { ok: false, error: verified.error };
 
 	const raw: Record<string, unknown> = { lessonId };
 	for (const key of ["title", "bodyMd", "isPreview", "isFree"] as const) {
@@ -235,10 +233,12 @@ export async function updateModuleAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const curriculum = await getCourseCurriculum(parsed.data.courseId);
-	if (!curriculum.some((m) => m.id === parsed.data.moduleId)) {
-		return { ok: false, error: "not_found" as const };
-	}
+	const svc = makeCurriculumService();
+	const verified = await svc.verifyModuleInCourse(
+		parsed.data.moduleId,
+		parsed.data.courseId,
+	);
+	if (!verified.ok) return { ok: false, error: verified.error };
 
 	await updateAdminModule(parsed.data.moduleId, { title: parsed.data.title });
 	revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
@@ -262,10 +262,12 @@ export async function deleteModuleAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const curriculum = await getCourseCurriculum(parsed.data.courseId);
-	if (!curriculum.some((m) => m.id === parsed.data.moduleId)) {
-		return { ok: false, error: "not_found" as const };
-	}
+	const svc = makeCurriculumService();
+	const verified = await svc.verifyModuleInCourse(
+		parsed.data.moduleId,
+		parsed.data.courseId,
+	);
+	if (!verified.ok) return { ok: false, error: verified.error };
 
 	await deleteAdminModule(parsed.data.moduleId);
 	revalidateCourseAdminPaths(parsed.data.courseId, access.course.slug);
@@ -293,10 +295,12 @@ export async function renameLessonAction(
 	const lessonRow = await getAdminLessonById(parsed.data.lessonId);
 	if (!lessonRow) return { ok: false, error: "not_found" as const };
 
-	const curriculum = await getCourseCurriculum(parsed.data.courseId);
-	if (!curriculum.some((m) => m.id === lessonRow.moduleId)) {
-		return { ok: false, error: "not_found" as const };
-	}
+	const svc = makeCurriculumService();
+	const verified = await svc.verifyLessonInCourse(
+		parsed.data.lessonId,
+		parsed.data.courseId,
+	);
+	if (!verified.ok) return { ok: false, error: verified.error };
 
 	await updateAdminLesson(parsed.data.lessonId, { title: parsed.data.title });
 	revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
@@ -326,10 +330,12 @@ export async function deleteLessonAction(
 	const lessonRow = await getAdminLessonById(parsed.data.lessonId);
 	if (!lessonRow) return { ok: false, error: "not_found" as const };
 
-	const curriculum = await getCourseCurriculum(parsed.data.courseId);
-	if (!curriculum.some((m) => m.id === lessonRow.moduleId)) {
-		return { ok: false, error: "not_found" as const };
-	}
+	const svc = makeCurriculumService();
+	const verified = await svc.verifyLessonInCourse(
+		parsed.data.lessonId,
+		parsed.data.courseId,
+	);
+	if (!verified.ok) return { ok: false, error: verified.error };
 
 	await deleteAdminLesson(parsed.data.lessonId);
 	revalidateCourseAdminPaths(parsed.data.courseId, access.course.slug);
