@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 	// Admin previews must not record progress — otherwise an admin walking
 	// through a course would auto-complete and trigger a certificate flow
 	// they can never redeem.
-	if ((user as { role?: string }).role === "admin") {
+	if (user.role === "admin") {
 		return NextResponse.json({ ok: true, ignored: "admin_preview" });
 	}
 	let body: unknown;
