@@ -243,13 +243,20 @@ export function CourseTabs({
 	totalDuration,
 	learningOutcomes,
 }: CourseTabsProps) {
-	const [activeTab, setActiveTab] = useState<TabId>("curriculum");
+	const [activeTab, setActiveTab] = useState<TabId>(() => {
+		if (
+			typeof window !== "undefined" &&
+			window.location.hash === "#instructor"
+		) {
+			return "instructor";
+		}
+		return "curriculum";
+	});
 	const instructorRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 		if (window.location.hash === "#instructor") {
-			setActiveTab("instructor");
 			instructorRef.current?.scrollIntoView({
 				behavior: "smooth",
 				block: "start",

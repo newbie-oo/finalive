@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { requireRole } from "@/server/auth-session";
 import { getEnv } from "@/lib/env";
 import { makeBunnyStatusService } from "@/server/services/bunny-status-service-factory";

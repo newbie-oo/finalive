@@ -1,5 +1,4 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { lessonProgress } from "@/db/schema/progress";
 
@@ -11,66 +10,66 @@ import { lessonProgress } from "@/db/schema/progress";
  * callers that both saw "no row" raced to INSERT and the loser crashed.
  */
 export async function upsertLessonProgress(
-  userId: string,
-  lessonId: string,
+	userId: string,
+	lessonId: string,
 ): Promise<void> {
-  const now = new Date();
-  await db
-    .insert(lessonProgress)
-    .values({
-      userId,
-      lessonId,
-      status: "in_progress",
-      watchedSeconds: 0,
-      lastWatchedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [lessonProgress.userId, lessonProgress.lessonId],
-      set: { lastWatchedAt: now, updatedAt: now },
-    });
+	const now = new Date();
+	await db
+		.insert(lessonProgress)
+		.values({
+			userId,
+			lessonId,
+			status: "in_progress",
+			watchedSeconds: 0,
+			lastWatchedAt: now,
+		})
+		.onConflictDoUpdate({
+			target: [lessonProgress.userId, lessonProgress.lessonId],
+			set: { lastWatchedAt: now, updatedAt: now },
+		});
 }
 
 export async function updateWatchedSeconds(
-  userId: string,
-  lessonId: string,
-  watchedSeconds: number,
+	userId: string,
+	lessonId: string,
+	watchedSeconds: number,
 ): Promise<void> {
-  const now = new Date();
-  await db
-    .insert(lessonProgress)
-    .values({
-      userId,
-      lessonId,
-      status: "in_progress",
-      watchedSeconds: Math.max(0, watchedSeconds),
-      lastWatchedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [lessonProgress.userId, lessonProgress.lessonId],
-      set: {
-        watchedSeconds: Math.max(0, watchedSeconds),
-        lastWatchedAt: now,
-        updatedAt: now,
-      },
-    });
+	const now = new Date();
+	await db
+		.insert(lessonProgress)
+		.values({
+			userId,
+			lessonId,
+			status: "in_progress",
+			watchedSeconds: Math.max(0, watchedSeconds),
+			lastWatchedAt: now,
+		})
+		.onConflictDoUpdate({
+			target: [lessonProgress.userId, lessonProgress.lessonId],
+			set: {
+				watchedSeconds: Math.max(0, watchedSeconds),
+				lastWatchedAt: now,
+				updatedAt: now,
+			},
+		});
 }
 
 export async function markLessonComplete(
-  userId: string,
-  lessonId: string,
+	userId: string,
+	lessonId: string,
 ): Promise<void> {
-  const now = new Date();
-  await db
-    .insert(lessonProgress)
-    .values({
-      userId,
-      lessonId,
-      status: "completed",
-      watchedSeconds: 0,
-      lastWatchedAt: now,
-    })
-    .onConflictDoUpdate({
-      target: [lessonProgress.userId, lessonProgress.lessonId],
-      set: { status: "completed", updatedAt: now },
-    });
+	const now = new Date();
+	await db
+		.insert(lessonProgress)
+		.values({
+			userId,
+			lessonId,
+			status: "completed",
+			watchedSeconds: 0,
+			lastWatchedAt: now,
+		})
+		.onConflictDoUpdate({
+			target: [lessonProgress.userId, lessonProgress.lessonId],
+			set: { status: "completed", updatedAt: now },
+		});
 }

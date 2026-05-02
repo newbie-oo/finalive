@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { z } from "zod";
+import type { NextRequest } from "next/server";
 import { ApiError } from "@/lib/api-error";
 import { apiRoute } from "@/lib/api-route";
 
@@ -39,9 +40,7 @@ describe("apiRoute", () => {
 		const handler = apiRoute({
 			handler: async () => ({ ok: true }),
 		});
-		const res = await handler(
-			makeReq() as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq() as unknown as NextRequest);
 		expect(res.status).toBe(200);
 		expect(await res.json()).toEqual({ ok: true });
 	});
@@ -54,9 +53,7 @@ describe("apiRoute", () => {
 			auth: "required",
 			handler: async ({ user }) => ({ id: user?.id }),
 		});
-		const res = await handler(
-			makeReq() as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq() as unknown as NextRequest);
 		expect(await res.json()).toEqual({ id: "u1" });
 	});
 
@@ -66,9 +63,7 @@ describe("apiRoute", () => {
 			auth: "required",
 			handler: async () => ({ ok: true }),
 		});
-		const res = await handler(
-			makeReq() as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq() as unknown as NextRequest);
 		expect(res.status).toBe(401);
 		const json = await res.json();
 		expect(json.code).toBe("unauthorized");
@@ -83,7 +78,7 @@ describe("apiRoute", () => {
 		const res = await handler(
 			makeReq({
 				name: "Alice",
-			}) as unknown as import("next/server").NextRequest,
+			}) as unknown as NextRequest,
 		);
 		expect(await res.json()).toEqual({ name: "Alice" });
 	});
@@ -93,9 +88,7 @@ describe("apiRoute", () => {
 			body: z.object({ name: z.string().min(1) }),
 			handler: async () => ({ ok: true }),
 		});
-		const res = await handler(
-			makeReq({ name: "" }) as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq({ name: "" }) as unknown as NextRequest);
 		expect(res.status).toBe(400);
 		expect((await res.json()).code).toBe("validation_failed");
 	});
@@ -108,7 +101,7 @@ describe("apiRoute", () => {
 		const res = await handler(
 			makeReq(undefined, {
 				page: "3",
-			}) as unknown as import("next/server").NextRequest,
+			}) as unknown as NextRequest,
 		);
 		expect(await res.json()).toEqual({ page: 3 });
 	});
@@ -119,9 +112,7 @@ describe("apiRoute", () => {
 				throw new ApiError("not_found", "Course not found");
 			},
 		});
-		const res = await handler(
-			makeReq() as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq() as unknown as NextRequest);
 		expect(res.status).toBe(404);
 		const json = await res.json();
 		expect(json.code).toBe("not_found");
@@ -135,9 +126,7 @@ describe("apiRoute", () => {
 			handler: async ({ req }) =>
 				NextResponse.redirect(new URL("/done", req.url), 303),
 		});
-		const res = await handler(
-			makeReq() as unknown as import("next/server").NextRequest,
-		);
+		const res = await handler(makeReq() as unknown as NextRequest);
 		expect(res.status).toBe(303);
 		expect(res.headers.get("location")).toBe("http://localhost/done");
 	});
