@@ -1,4 +1,5 @@
 import "server-only";
+import { getEnv } from "@/lib/env";
 import { enqueueEmail } from "./email-queue";
 
 export interface SlipNotifier {
@@ -51,17 +52,19 @@ export class EmailSlipNotifier implements SlipNotifier {
 		amount: number;
 		userId: string;
 	}): Promise<void> {
-		await enqueueEmail({
-			toEmail: params.toEmail,
-			template: "slip_received",
-			userId: params.userId,
-			paramsJson: {
-				name: params.studentName,
-				courseTitle: params.courseTitle,
-				refCode: params.refCode,
-				amount: params.amount,
+		await enqueueEmail(
+			params.toEmail,
+			{
+				template: "slip_received",
+				params: {
+					name: params.studentName,
+					courseTitle: params.courseTitle,
+					refCode: params.refCode,
+					amount: String(params.amount),
+				},
 			},
-		});
+			params.userId,
+		);
 	}
 
 	async notifyAdminOfNewSlip(params: {
@@ -71,14 +74,13 @@ export class EmailSlipNotifier implements SlipNotifier {
 		refCode: string;
 		amount: number;
 	}): Promise<void> {
-		await enqueueEmail({
-			toEmail: params.adminEmail,
+		await enqueueEmail(params.adminEmail, {
 			template: "admin_new_slip",
-			paramsJson: {
+			params: {
 				studentEmail: params.studentEmail,
 				courseTitle: params.courseTitle,
 				refCode: params.refCode,
-				amount: params.amount,
+				amount: String(params.amount),
 				reviewUrl: "/admin/slips",
 			},
 		});
@@ -93,18 +95,22 @@ export class EmailSlipNotifier implements SlipNotifier {
 		amount: number;
 		userId: string;
 	}): Promise<void> {
-		await enqueueEmail({
-			toEmail: params.toEmail,
-			template: "slip_accepted",
-			userId: params.userId,
-			paramsJson: {
-				name: params.studentName,
-				courseTitle: params.courseTitle,
-				courseSlug: params.courseSlug,
-				refCode: params.refCode,
-				amount: params.amount,
+		const baseUrl = getEnv().BETTER_AUTH_URL.replace(/\/$/, "");
+		await enqueueEmail(
+			params.toEmail,
+			{
+				template: "slip_accepted",
+				params: {
+					name: params.studentName,
+					courseTitle: params.courseTitle,
+					courseSlug: params.courseSlug,
+					refCode: params.refCode,
+					amount: String(params.amount),
+					baseUrl,
+				},
 			},
-		});
+			params.userId,
+		);
 	}
 
 	async notifyStudentOfSlipRejection(params: {
@@ -118,19 +124,22 @@ export class EmailSlipNotifier implements SlipNotifier {
 		note: string | null;
 		userId: string;
 	}): Promise<void> {
-		await enqueueEmail({
-			toEmail: params.toEmail,
-			template: "slip_rejected",
-			userId: params.userId,
-			paramsJson: {
-				name: params.studentName,
-				courseTitle: params.courseTitle,
-				courseSlug: params.courseSlug,
-				refCode: params.refCode,
-				amount: params.amount,
-				reasonLabel: params.reasonLabel,
-				note: params.note,
+		const baseUrl = getEnv().BETTER_AUTH_URL.replace(/\/$/, "");
+		await enqueueEmail(
+			params.toEmail,
+			{
+				template: "slip_rejected",
+				params: {
+					name: params.studentName,
+					courseTitle: params.courseTitle,
+					refCode: params.refCode,
+					amount: String(params.amount),
+					reasonLabel: params.reasonLabel,
+					note: params.note,
+					baseUrl,
+				},
 			},
-		});
+			params.userId,
+		);
 	}
 }

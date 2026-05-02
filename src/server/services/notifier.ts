@@ -24,17 +24,19 @@ export class EmailCourseCompletionNotifier implements CourseCompletionNotifier {
 	}): Promise<void> {
 		const env = getEnv();
 		const baseUrl = env.BETTER_AUTH_URL.replace(/\/$/, "");
-		await enqueueEmail({
-			toEmail: params.recipientEmail,
-			template: "course_completed",
-			userId: params.userId,
-			paramsJson: {
-				name: params.studentName,
-				courseTitle: params.courseTitle,
-				certCode: params.certCode,
-				verifyUrl: `${baseUrl}/verify/${params.certCode}`,
-				pdfUrl: params.pdfUrl,
+		await enqueueEmail(
+			params.recipientEmail,
+			{
+				template: "course_completed",
+				params: {
+					name: params.studentName,
+					courseTitle: params.courseTitle,
+					certCode: params.certCode,
+					verifyUrl: `${baseUrl}/verify/${params.certCode}`,
+					pdfUrl: params.pdfUrl,
+				},
 			},
-		});
+			params.userId,
+		);
 	}
 }
