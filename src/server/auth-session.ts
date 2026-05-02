@@ -116,3 +116,23 @@ export async function requireRole(
 	const ctx = await requireSession(redirectTo);
 	return guardRole(ctx, role, { type: "redirect", path: "/403" });
 }
+
+/** API-route variants: throw ApiError instead of calling redirect()
+ *  so the caller can return a JSON 401/403 response. */
+export async function requireSessionThrow(): Promise<SessionContext> {
+	const ctx = await getSession();
+	return guardSession(ctx, {
+		type: "throw",
+		status: 401,
+		message: "unauthorized",
+	});
+}
+
+export async function requireRoleThrow(role: Role): Promise<SessionContext> {
+	const ctx = await requireSessionThrow();
+	return guardRole(ctx, role, {
+		type: "throw",
+		status: 403,
+		message: "forbidden",
+	});
+}

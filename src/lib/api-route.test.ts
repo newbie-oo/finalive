@@ -12,8 +12,8 @@ const mockRequireSession = vi.fn();
 const mockRequireRole = vi.fn();
 
 vi.mock("@/server/auth-session", () => ({
-	requireSession: (...args: unknown[]) => mockRequireSession(...args),
-	requireRole: (...args: unknown[]) => mockRequireRole(...args),
+	requireSessionThrow: (...args: unknown[]) => mockRequireSession(...args),
+	requireRoleThrow: (...args: unknown[]) => mockRequireRole(...args),
 }));
 
 function makeReq(body?: unknown, query?: Record<string, string>): Request {

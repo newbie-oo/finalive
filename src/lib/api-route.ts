@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireSession, requireRole } from "@/server/auth-session";
+import { requireSessionThrow, requireRoleThrow } from "@/server/auth-session";
 import { ApiError, statusForCode } from "@/lib/api-error";
 
 /** Auth requirement for an API route. */
@@ -71,10 +71,10 @@ export function apiRoute<
 			// ── Auth ──
 			let user: ApiUser | undefined;
 			if (options.auth === "admin") {
-				const s = await requireRole("admin");
+				const s = await requireRoleThrow("admin");
 				user = s.user;
 			} else if (options.auth === "required") {
-				const s = await requireSession();
+				const s = await requireSessionThrow();
 				user = s.user;
 			}
 
