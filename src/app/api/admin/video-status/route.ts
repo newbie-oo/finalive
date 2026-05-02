@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
 		};
 
 		const isReady = data.status === 4;
-		const durationSeconds = data.length ? Math.round(data.length) : null;
+		const durationSeconds =
+			typeof data.length === "number" ? Math.round(data.length) : null;
 
 		if (isReady) {
 			const service = makeBunnyStatusService();

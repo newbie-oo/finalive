@@ -10,6 +10,7 @@ import { NotesPanel } from "./notes-panel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, X } from "@phosphor-icons/react";
 import { useLearnShell } from "./learn-shell-context";
+import { formatDurationMinutes } from "@/lib/format";
 
 interface LessonContentProps {
 	courseSlug: string;
@@ -242,11 +243,8 @@ export function LessonContent({
 								<div className="flex flex-wrap items-center gap-3 mb-6 text-(--foreground-muted)">
 									<span className="text-caption flex items-center gap-1">
 										<span className="num">
-											{durationSeconds
-												? `${Math.floor(durationSeconds / 60)}:${(durationSeconds % 60).toString().padStart(2, "0")}`
-												: "—"}
-										</span>{" "}
-										นาที
+											{formatDurationMinutes(durationSeconds)}
+										</span>
 									</span>
 									<span style={{ color: "var(--border-strong)" }}>·</span>
 									<span className="text-caption">{moduleTitle}</span>

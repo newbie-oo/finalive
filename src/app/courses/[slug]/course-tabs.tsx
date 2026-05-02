@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, Play, LockSimple, YoutubeLogo } from "@phosphor-icons/react";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
-import { formatDuration } from "@/lib/format";
+import { formatDuration, formatDurationMinutes } from "@/lib/format";
 import type { CurriculumModule, CurriculumLesson } from "@/server/repos/course";
 
 const DEFAULT_OUTCOMES = [
@@ -67,7 +67,7 @@ function LessonRow({
 				/>
 			</span>
 			<span className="num text-uism text-(--foreground-muted)">
-				{formatDuration(lesson.durationSeconds)}
+				{formatDurationMinutes(lesson.durationSeconds)}
 			</span>
 		</div>
 	);

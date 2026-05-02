@@ -49,7 +49,8 @@ export async function POST(request: Request) {
 		return NextResponse.json({ ok: true, note: "ignored_status" });
 	}
 
-	const durationSeconds = payload.Length ? Math.round(payload.Length) : null;
+	const durationSeconds =
+		typeof payload.Length === "number" ? Math.round(payload.Length) : null;
 	const service = makeBunnyStatusService();
 	const result = await service.sync(videoGuid, status, durationSeconds);
 

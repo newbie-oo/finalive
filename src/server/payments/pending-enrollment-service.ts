@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gt, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
@@ -67,6 +67,7 @@ export const defaultDeps: PendingEnrollmentServiceDeps = {
 						"awaiting_payment",
 						"slip_submitted",
 					]),
+					gt(pendingEnrollment.expiresAt, new Date()),
 				),
 			)
 			.limit(1);

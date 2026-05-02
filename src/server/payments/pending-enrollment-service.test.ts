@@ -57,6 +57,18 @@ describe("PendingEnrollmentService", () => {
 		expect(deps.insertPending).not.toHaveBeenCalled();
 	});
 
+	it("creates new pending when existing one is expired", async () => {
+		const deps = fakeDeps({
+			findExistingPending: vi.fn().mockResolvedValue(undefined),
+		});
+		const svc = new PendingEnrollmentService(deps);
+		const result = await svc.create("u1", "course-slug");
+		expect(result.refCode).toBe("REF001");
+		expect(deps.insertPending).toHaveBeenCalledWith(
+			expect.objectContaining({ userId: "u1", courseId: "c1" }),
+		);
+	});
+
 	it("throws not_found when course does not exist", async () => {
 		const deps = fakeDeps({
 			getCourseBySlug: vi.fn().mockResolvedValue(undefined),

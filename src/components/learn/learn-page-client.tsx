@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { CurriculumSidebar } from "./curriculum-sidebar";
 import { LearnTopbar } from "./learn-topbar";
@@ -13,6 +12,7 @@ import { MarkdownView } from "@/lib/markdown";
 import { NotesPanel } from "./notes-panel";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, X } from "@phosphor-icons/react";
+import { formatDurationMinutes } from "@/lib/format";
 import type { SidebarModule } from "./curriculum-sidebar";
 
 interface LearnPageClientProps {
@@ -271,11 +271,8 @@ export function LearnPageClient({
 									<div className="flex flex-wrap items-center gap-3 mb-6 text-(--foreground-muted)">
 										<span className="text-caption flex items-center gap-1">
 											<span className="num">
-												{durationSeconds
-													? `${Math.floor(durationSeconds / 60)}:${(durationSeconds % 60).toString().padStart(2, "0")}`
-													: "—"}
-											</span>{" "}
-											นาที
+												{formatDurationMinutes(durationSeconds)}
+											</span>
 										</span>
 										<span style={{ color: "var(--border-strong)" }}>·</span>
 										<span className="text-caption">{moduleTitle}</span>
