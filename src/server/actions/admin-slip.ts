@@ -2,7 +2,7 @@ import "server-only";
 import { requireRole } from "@/server/auth-session";
 import { SlipReviewService } from "@/server/payments/slip-review-service";
 import { EmailSlipNotifier } from "@/server/services/slip-notifier";
-import { DbAuditLogger } from "@/server/services/audit-logger";
+import { makeDbAuditLogger } from "@/server/services/audit-logger";
 import {
 	REJECT_REASONS,
 	REJECT_REASON_LABEL,
@@ -36,7 +36,7 @@ export interface BulkResult {
 function makeService() {
 	return new SlipReviewService({
 		notifier: new EmailSlipNotifier(),
-		auditLogger: new DbAuditLogger(),
+		auditLogger: makeDbAuditLogger(),
 	});
 }
 

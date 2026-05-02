@@ -1,6 +1,6 @@
 import "server-only";
 import {
-	PendingEnrollmentService,
+	makePendingEnrollmentService,
 	type CreatePendingResult,
 } from "@/server/payments/pending-enrollment-service";
 import { requireSession } from "@/server/auth-session";
@@ -11,6 +11,6 @@ export async function createPendingEnrollment(
 	courseSlug: string,
 ): Promise<CreatePendingResult> {
 	const { user } = await requireSession("/login");
-	const service = new PendingEnrollmentService();
+	const service = makePendingEnrollmentService();
 	return service.create(user.id, courseSlug);
 }

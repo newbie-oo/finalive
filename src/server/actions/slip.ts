@@ -3,7 +3,7 @@ import { requireSession } from "@/server/auth-session";
 import { SlipUploadService } from "@/server/payments/slip-upload-service";
 import { R2ObjectStorage } from "@/server/services/storage";
 import { EmailSlipNotifier } from "@/server/services/slip-notifier";
-import { DbAuditLogger } from "@/server/services/audit-logger";
+import { makeDbAuditLogger } from "@/server/services/audit-logger";
 
 export interface UploadSlipInput {
 	pendingId: string;
@@ -24,7 +24,7 @@ export async function uploadSlip(
 	const service = new SlipUploadService({
 		storage: new R2ObjectStorage("private"),
 		notifier: new EmailSlipNotifier(),
-		auditLogger: new DbAuditLogger(),
+		auditLogger: makeDbAuditLogger(),
 	});
 	return service.upload(input, {
 		id: user.id,

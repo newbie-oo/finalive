@@ -44,6 +44,10 @@ export interface PendingEnrollmentServiceDeps {
 	generateRefCode: () => string;
 }
 
+export function makePendingEnrollmentService(): PendingEnrollmentService {
+	return new PendingEnrollmentService(defaultDeps);
+}
+
 export const defaultDeps: PendingEnrollmentServiceDeps = {
 	getCourseBySlug: async (slug) => {
 		const rows = await db
@@ -125,7 +129,7 @@ export const defaultDeps: PendingEnrollmentServiceDeps = {
  * collision retries. All DB access is injected so tests can fake deps.
  */
 export class PendingEnrollmentService {
-	constructor(private deps: PendingEnrollmentServiceDeps = defaultDeps) {}
+	constructor(private deps: PendingEnrollmentServiceDeps) {}
 
 	async create(
 		userId: string,
