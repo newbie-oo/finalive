@@ -1,14 +1,19 @@
 "use server";
 
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
-import { getSession } from "@/server/auth-session";
+import { eq } from "drizzle-orm";
 import {
 	createAdminCourse,
 	updateAdminCourse,
 } from "@/server/repos/admin-course";
-import { canEditCourse } from "@/server/services/course-authz";
-import { getAdminCourseById } from "@/server/repos/admin-course";
+import {
+	requireAdminSession,
+	requireCourseAccess,
+	revalidateCourseAdminPaths,
+} from "@/server/admin/admin-command";
+import { db } from "@/db/client";
+import { mediaAsset } from "@/db/schema/media";
+import { deleteObject } from "@/server/services/r2";
 
 const createSchema = z.object({
 	slug: z.string().min(1).max(100),
@@ -16,8 +21,6 @@ const createSchema = z.object({
 	summary: z.string().min(1).max(500),
 	description: z.string().max(10000).optional(),
 	coverMediaId: z.string().uuid().optional(),
-	// Price may be omitted when the course is free — disabled <input> elements
-	// don't get serialised into FormData, so we fall back to "0.00".
 	price: z
 		.string()
 		.regex(/^\d+(\.\d{1,2})?$/)
@@ -26,9 +29,11 @@ const createSchema = z.object({
 });
 
 export async function createCourseAction(formData: FormData) {
-	const session = await getSession();
-	if (!session?.user?.id || session.user.role !== "admin") {
-		return { ok: false, error: "unauthorized" as const };
+	const auth = await requireAdminSession();
+	if (!auth.ok) return { ok: false, error: auth.error } as const;
+	// Course creation is admin-only.
+	if (auth.session.user.role !== "admin") {
+		return { ok: false, error: "forbidden" as const };
 	}
 
 	const rawPrice = formData.get("price");
@@ -46,8 +51,6 @@ export async function createCourseAction(formData: FormData) {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
-	// Free courses always reset price to 0; the repo enforces this too,
-	// but normalising here keeps the type narrow.
 	const price = parsed.data.isFree ? "0.00" : (parsed.data.price ?? "0.00");
 	const courseId = await createAdminCourse({
 		slug: parsed.data.slug,
@@ -57,12 +60,10 @@ export async function createCourseAction(formData: FormData) {
 		coverMediaId: parsed.data.coverMediaId || undefined,
 		isFree: parsed.data.isFree,
 		price,
-		ownerUserId: session.user.id,
+		ownerUserId: auth.session.user.id,
 	});
 
-	revalidatePath("/admin/courses");
-	revalidatePath("/courses");
-
+	revalidateCourseAdminPaths(courseId);
 	return { ok: true, courseId };
 }
 
@@ -79,25 +80,12 @@ const updateSchema = z.object({
 });
 
 export async function updateCourseAction(formData: FormData) {
-	const session = await getSession();
-	if (!session?.user?.id) {
-		return { ok: false, error: "unauthorized" as const };
-	}
+	const auth = await requireAdminSession();
+	if (!auth.ok) return { ok: false, error: auth.error } as const;
 
 	const courseId = formData.get("courseId") as string;
-	const courseRow = await getAdminCourseById(courseId);
-	if (!courseRow) {
-		return { ok: false, error: "not_found" as const };
-	}
-
-	const canEdit = await canEditCourse(
-		session.user.id,
-		session.user.role,
-		courseId,
-	);
-	if (!canEdit) {
-		return { ok: false, error: "forbidden" as const };
-	}
+	const access = await requireCourseAccess(auth.session, courseId);
+	if (!access.ok) return { ok: false, error: access.error } as const;
 
 	const raw: Record<string, unknown> = { courseId };
 	for (const key of [
@@ -119,45 +107,22 @@ export async function updateCourseAction(formData: FormData) {
 	const { courseId: _, ...updates } = parsed.data;
 	await updateAdminCourse(courseId, updates);
 
-	revalidatePath("/admin/courses");
-	revalidatePath(`/admin/courses/${courseId}`);
-	revalidatePath(`/admin/courses/${courseId}/curriculum`);
-	revalidatePath(`/courses/${courseRow.slug}`);
-	revalidatePath("/courses");
-
+	revalidateCourseAdminPaths(courseId, access.course.slug);
 	return { ok: true };
 }
 
-import { db } from "@/db/client";
-import { mediaAsset } from "@/db/schema/media";
-import { eq } from "drizzle-orm";
-import { deleteObject } from "@/server/services/r2";
-
 export async function updateCourseCoverAction(formData: FormData) {
-	const session = await getSession();
-	if (!session?.user?.id) {
-		return { ok: false, error: "unauthorized" as const };
-	}
+	const auth = await requireAdminSession();
+	if (!auth.ok) return { ok: false, error: auth.error } as const;
 
 	const courseId = formData.get("courseId") as string;
 	const mediaAssetId = formData.get("mediaAssetId") as string;
 
-	const courseRow = await getAdminCourseById(courseId);
-	if (!courseRow) {
-		return { ok: false, error: "not_found" as const };
-	}
-
-	const canEdit = await canEditCourse(
-		session.user.id,
-		session.user.role,
-		courseId,
-	);
-	if (!canEdit) {
-		return { ok: false, error: "forbidden" as const };
-	}
+	const access = await requireCourseAccess(auth.session, courseId);
+	if (!access.ok) return { ok: false, error: access.error } as const;
 
 	// Cleanup old cover.
-	const oldCoverMediaId = courseRow.coverMediaId;
+	const oldCoverMediaId = access.course.coverMediaId;
 	if (oldCoverMediaId) {
 		const oldAssets = await db
 			.select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
@@ -185,10 +150,6 @@ export async function updateCourseCoverAction(formData: FormData) {
 
 	await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
 
-	revalidatePath("/admin/courses");
-	revalidatePath(`/admin/courses/${courseId}`);
-	revalidatePath(`/courses/${courseRow.slug}`);
-	revalidatePath("/courses");
-
+	revalidateCourseAdminPaths(courseId, access.course.slug);
 	return { ok: true };
 }
