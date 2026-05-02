@@ -26,8 +26,8 @@ describe("Card", () => {
 	it("adds interactive styles when interactive is true", () => {
 		render(<Card interactive>Content</Card>);
 		const card = screen.getByText("Content").closest("[data-slot='card']");
-		expect(card).toHaveClass("hover:-translate-y-0.5");
 		expect(card).toHaveClass("shadow-(--shadow-sm)");
+		expect(card).toHaveClass("hover:shadow-(--shadow-md)");
 	});
 
 	it("renders CardHeader", () => {

@@ -4,7 +4,7 @@ import { QuizForm } from "./quiz-form";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
-	useRouter: () => ({ push: vi.fn() }),
+	useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
 // Mock server action

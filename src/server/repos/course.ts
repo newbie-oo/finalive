@@ -1,5 +1,16 @@
 import "server-only";
-import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	desc,
+	eq,
+	ilike,
+	inArray,
+	isNull,
+	or,
+	sql,
+} from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -152,14 +163,15 @@ export async function listPublishedCourses(
 	}));
 
 	// Client-side duration filter (TODO: move to SQL when duration is indexed)
-	if (params.durationMin !== undefined) {
+	const { durationMin, durationMax } = params;
+	if (durationMin !== undefined) {
 		mappedRows = mappedRows.filter(
-			(r) => Math.floor((r.totalSeconds ?? 0) / 60) >= params.durationMin!,
+			(r) => Math.floor(r.totalSeconds / 60) >= durationMin,
 		);
 	}
-	if (params.durationMax !== undefined) {
+	if (durationMax !== undefined) {
 		mappedRows = mappedRows.filter(
-			(r) => Math.floor((r.totalSeconds ?? 0) / 60) <= params.durationMax!,
+			(r) => Math.floor(r.totalSeconds / 60) <= durationMax,
 		);
 	}
 
@@ -368,6 +380,8 @@ export async function getCourseCurriculum(
 
 	if (modules.length === 0) return [];
 
+	const moduleIds = modules.map((m) => m.id);
+
 	const lessons = await db
 		.select({
 			id: lesson.id,
@@ -379,7 +393,7 @@ export async function getCourseCurriculum(
 			sortOrder: lesson.sortOrder,
 		})
 		.from(lesson)
-		.where(isNull(lesson.deletedAt))
+		.where(and(isNull(lesson.deletedAt), inArray(lesson.moduleId, moduleIds)))
 		.orderBy(asc(lesson.sortOrder));
 
 	const byModule = new Map<string, CurriculumLesson[]>();
@@ -403,9 +417,10 @@ export async function getCourseCurriculum(
 		lessons: byModule.get(m.id) ?? [],
 	}));
 
-	return includeEmptyModules
-		? result
-		: result.filter((m) => m.lessons.length > 0);
+	if (!includeEmptyModules) {
+		return result.filter((m) => m.lessons.length > 0);
+	}
+	return result;
 }
 
 /**
