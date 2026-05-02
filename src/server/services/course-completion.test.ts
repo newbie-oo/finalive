@@ -110,4 +110,41 @@ describe("CourseCompletionService", () => {
 		expect(deps.markLessonComplete).toHaveBeenCalledTimes(2);
 		expect(deps.certificateIssuer.issue).toHaveBeenCalledTimes(2);
 	});
+
+	describe("reevaluateCourseCompletion", () => {
+		it("issues certificate when course is now complete", async () => {
+			const deps = fakeDeps();
+			const service = new CourseCompletionService(deps);
+			const result = await service.reevaluateCourseCompletion({
+				userId: "u1",
+				userEmail: "a@b.com",
+				userRole: "student",
+				courseId: "course-1",
+			});
+			expect(result).toEqual({
+				courseCompleted: true,
+				certificateIssued: true,
+			});
+			expect(deps.markLessonComplete).not.toHaveBeenCalled();
+		});
+
+		it("returns early when course is not yet complete", async () => {
+			const deps = fakeDeps({
+				checkAndMarkCourseComplete: vi
+					.fn()
+					.mockResolvedValue({ completed: false, enrollmentId: null }),
+			});
+			const service = new CourseCompletionService(deps);
+			const result = await service.reevaluateCourseCompletion({
+				userId: "u1",
+				userEmail: "a@b.com",
+				courseId: "course-1",
+			});
+			expect(result).toEqual({
+				courseCompleted: false,
+				certificateIssued: false,
+			});
+			expect(deps.certificateIssuer.issue).not.toHaveBeenCalled();
+		});
+	});
 });

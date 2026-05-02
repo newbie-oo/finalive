@@ -29,6 +29,11 @@ export interface HandleLessonCompleteResult {
 	certificateIssued: boolean;
 }
 
+export interface ReevaluateResult {
+	courseCompleted: boolean;
+	certificateIssued: boolean;
+}
+
 /**
  * Orchestrates the lesson → course → certificate completion flow.
  * Keeps API routes thin: they validate input and call this service;
@@ -78,6 +83,39 @@ export class CourseCompletionService {
 
 		return {
 			lessonCompleted: true,
+			courseCompleted: true,
+			certificateIssued: certResult.ok,
+		};
+	}
+
+	/**
+	 * Re-evaluate course completion without marking a lesson complete.
+	 * Use this when a quiz is passed or another non-lesson gate is cleared.
+	 */
+	async reevaluateCourseCompletion(params: {
+		userId: string;
+		userEmail: string;
+		userRole?: string;
+		courseId: string;
+	}): Promise<ReevaluateResult> {
+		const { completed, enrollmentId } =
+			await this.deps.checkAndMarkCourseComplete(
+				params.userId,
+				params.courseId,
+			);
+
+		if (!completed || !enrollmentId) {
+			return { courseCompleted: false, certificateIssued: false };
+		}
+
+		const certResult = await this.deps.certificateIssuer.issue(
+			enrollmentId,
+			params.userId,
+			params.userRole ?? "student",
+			params.userEmail,
+		);
+
+		return {
 			courseCompleted: true,
 			certificateIssued: certResult.ok,
 		};
