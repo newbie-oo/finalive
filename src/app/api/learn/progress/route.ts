@@ -10,6 +10,11 @@ import {
 } from "@/server/repos/progress";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { CourseCompletionService } from "@/server/services/course-completion";
+import {
+	checkRateLimit,
+	getClientIP,
+	rateLimitConfigs,
+} from "@/lib/rate-limit";
 
 const schema = z.object({
 	lessonId: z.string().uuid(),
@@ -20,6 +25,15 @@ const schema = z.object({
 const COMPLETE_SENTINEL = 999_000;
 
 export async function POST(req: Request) {
+	const limit = checkRateLimit(
+		getClientIP(req),
+		"/api/learn/progress",
+		rateLimitConfigs.api,
+	);
+	if (!limit.allowed) {
+		return NextResponse.json({ code: "rate_limited" }, { status: 429 });
+	}
+
 	const { user } = await requireSession();
 	// Admin previews must not record progress — otherwise an admin walking
 	// through a course would auto-complete and trigger a certificate flow

@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getEnv } from "@/lib/env";
 import { verifyHmacSha256 } from "@/lib/webhook-signature";
 import { logger } from "@/lib/logger";
 import { makeBunnyStatusService } from "@/server/services/bunny-status-service-factory";
 
-interface BunnyWebhookPayload {
-	VideoLibraryId?: number;
-	VideoGuid?: string;
-	Status?: number;
-	Length?: number;
-	Title?: string;
-}
+const bunnyWebhookSchema = z.object({
+	VideoLibraryId: z.number().optional(),
+	VideoGuid: z.string().optional(),
+	Status: z.number().optional(),
+	Length: z.number().optional(),
+	Title: z.string().optional(),
+});
 
 export async function POST(request: Request) {
 	const env = getEnv();
@@ -26,15 +27,23 @@ export async function POST(request: Request) {
 		}
 	}
 
-	let payload: BunnyWebhookPayload;
+	let rawPayload: unknown;
 	try {
-		payload = JSON.parse(rawBody) as BunnyWebhookPayload;
+		rawPayload = JSON.parse(rawBody);
 	} catch {
 		return NextResponse.json({ error: "invalid_json" }, { status: 400 });
 	}
 
-	const videoGuid = payload.VideoGuid;
-	const receivedLibraryId = payload.VideoLibraryId;
+	const parsed = bunnyWebhookSchema.safeParse(rawPayload);
+	if (!parsed.success) {
+		return NextResponse.json(
+			{ error: "invalid_payload", details: parsed.error.flatten() },
+			{ status: 400 },
+		);
+	}
+
+	const { VideoGuid: videoGuid, VideoLibraryId: receivedLibraryId } =
+		parsed.data;
 
 	if (!videoGuid || !receivedLibraryId) {
 		return NextResponse.json({ error: "missing_fields" }, { status: 400 });
@@ -44,13 +53,15 @@ export async function POST(request: Request) {
 		return NextResponse.json({ error: "invalid_library" }, { status: 403 });
 	}
 
-	const status = payload.Status ?? -1;
+	const status = parsed.data.Status ?? -1;
 	if (![1, 4, 5, 6].includes(status)) {
 		return NextResponse.json({ ok: true, note: "ignored_status" });
 	}
 
 	const durationSeconds =
-		typeof payload.Length === "number" ? Math.round(payload.Length) : null;
+		typeof parsed.data.Length === "number"
+			? Math.round(parsed.data.Length)
+			: null;
 	const service = makeBunnyStatusService();
 	const result = await service.sync(videoGuid, status, durationSeconds);
 
