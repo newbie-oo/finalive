@@ -4,7 +4,6 @@ import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
-import { publicUrl } from "@/server/services/r2";
 import {
 	buildOffsetResponse,
 	type OffsetParams,
@@ -45,7 +44,7 @@ export interface PublicCourseSummary {
 	price: string;
 	isFree: boolean;
 	publishedAt: Date | null;
-	coverUrl: string | null;
+	coverStorageKey: string | null;
 	enrollmentCount: number;
 	/** Course lifecycle: 'draft' | 'published' | 'archived'. Surfaced so admin
 	 * views can chip non-published courses. */
@@ -147,9 +146,7 @@ export async function listPublishedCourses(
 		isFree: r.isFree,
 		status: r.status,
 		publishedAt: r.publishedAt,
-		coverUrl: r.coverStorageKey
-			? publicUrl(`covers/${r.coverStorageKey}-640.webp`)
-			: null,
+		coverStorageKey: r.coverStorageKey ?? null,
 		enrollmentCount: r.enrollmentCount ?? 0,
 		totalSeconds: r.totalSeconds ?? 0,
 	}));
@@ -213,9 +210,7 @@ export async function listFeaturedCourses(
 		isFree: r.isFree,
 		status: r.status,
 		publishedAt: r.publishedAt,
-		coverUrl: r.coverStorageKey
-			? publicUrl(`covers/${r.coverStorageKey}-640.webp`)
-			: null,
+		coverStorageKey: r.coverStorageKey ?? null,
 		enrollmentCount: r.enrollmentCount ?? 0,
 	}));
 }
@@ -265,9 +260,7 @@ export async function getPublishedCourseBySlug(
 		isFree: r.isFree,
 		status: r.status,
 		publishedAt: r.publishedAt,
-		coverUrl: r.coverStorageKey
-			? publicUrl(`covers/${r.coverStorageKey}-640.webp`)
-			: null,
+		coverStorageKey: r.coverStorageKey ?? null,
 		enrollmentCount: r.enrollmentCount ?? 0,
 	};
 }

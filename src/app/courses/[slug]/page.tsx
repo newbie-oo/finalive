@@ -24,6 +24,7 @@ import {
 } from "@/server/repos/course";
 import { getSession } from "@/server/auth-session";
 import { formatTHB, formatDuration } from "@/lib/format";
+import { coverImageUrl } from "@/lib/media-url";
 
 const INCLUDES: Array<{
 	icon: React.ComponentType<{
@@ -151,10 +152,10 @@ export default async function CourseDetailPage({
 
 						<aside className="lg:sticky lg:top-24 lg:self-start">
 							<Card noPadding className="overflow-hidden shadow-(--shadow-md)">
-								{course.coverUrl ? (
+								{course.coverStorageKey ? (
 									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
 										<Image
-											src={course.coverUrl}
+											src={coverImageUrl(course.coverStorageKey)!}
 											alt={course.title}
 											fill
 											sizes="(max-width: 1024px) 100vw, 480px"

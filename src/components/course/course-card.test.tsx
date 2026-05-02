@@ -11,7 +11,7 @@ function makeCourse(
 		slug: "test-course",
 		title: "Test Course",
 		summary: "A test course",
-		coverUrl: "https://example.com/cover.jpg",
+		coverStorageKey: "abc123",
 		price: "990",
 		isFree: false,
 		status: "published",
@@ -43,25 +43,21 @@ describe("CourseCard", () => {
 		).not.toBeInTheDocument();
 	});
 
-	it("renders fallback cover when no coverUrl", () => {
+	it("renders fallback cover when no coverStorageKey", () => {
 		render(
 			<CourseCard
-				course={makeCourse({ coverUrl: null, title: "React Mastery" })}
+				course={makeCourse({ coverStorageKey: null, title: "React Mastery" })}
 			/>,
 		);
 		// Fallback shows the first letter of the title
 		expect(screen.getByText("R")).toBeInTheDocument();
 	});
 
-	it("renders cover image when coverUrl is provided", () => {
-		render(
-			<CourseCard
-				course={makeCourse({ coverUrl: "https://example.com/cover.jpg" })}
-			/>,
-		);
+	it("renders cover image when coverStorageKey is provided", () => {
+		render(<CourseCard course={makeCourse({ coverStorageKey: "abc123" })} />);
 		const img = screen.getByAltText("Test Course");
 		expect(img).toBeInTheDocument();
-		expect(img).toHaveAttribute("src", expect.stringContaining("cover.jpg"));
+		expect(img).toHaveAttribute("src", expect.stringContaining("abc123"));
 	});
 
 	it("renders enrollment count", () => {
