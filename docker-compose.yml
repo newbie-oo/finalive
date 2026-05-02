@@ -35,6 +35,11 @@ services:
       MINIO_ROOT_PASSWORD: miniodev
     command: server /data --console-address ":9001"
     volumes: [miniodata:/data]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   pgdata:
