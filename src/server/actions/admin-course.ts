@@ -15,6 +15,7 @@ import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
 import { R2ObjectStorage } from "@/server/services/storage";
 import { CoverImageService } from "@/server/services/cover-image";
+import { CourseAdminService } from "@/server/services/course-admin";
 
 const createSchema = z.object({
 	slug: z.string().min(1).max(100),
@@ -29,22 +30,27 @@ const createSchema = z.object({
 	isFree: z.coerce.boolean(),
 });
 
+function makeCourseService() {
+	return new CourseAdminService({
+		createCourse: createAdminCourse,
+		updateCourse: updateAdminCourse,
+	});
+}
+
 export async function createCourseAction(formData: FormData) {
 	const auth = await requireAdminSession();
 	if (!auth.ok) return { ok: false, error: auth.error } as const;
-	// Course creation is admin-only.
 	if (auth.session.user.role !== "admin") {
 		return { ok: false, error: "forbidden" as const };
 	}
 
-	const rawPrice = formData.get("price");
 	const parsed = createSchema.safeParse({
 		slug: formData.get("slug"),
 		title: formData.get("title"),
 		summary: formData.get("summary"),
 		description: formData.get("description") ?? undefined,
 		coverMediaId: formData.get("coverMediaId") ?? undefined,
-		price: rawPrice ?? undefined,
+		price: formData.get("price") ?? undefined,
 		isFree: formData.get("isFree"),
 	});
 
@@ -52,15 +58,9 @@ export async function createCourseAction(formData: FormData) {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
-	const price = parsed.data.isFree ? "0.00" : (parsed.data.price ?? "0.00");
-	const courseId = await createAdminCourse({
-		slug: parsed.data.slug,
-		title: parsed.data.title,
-		summary: parsed.data.summary,
-		descriptionMd: parsed.data.description || undefined,
-		coverMediaId: parsed.data.coverMediaId || undefined,
-		isFree: parsed.data.isFree,
-		price,
+	const service = makeCourseService();
+	const courseId = await service.create({
+		...parsed.data,
 		ownerUserId: auth.session.user.id,
 	});
 
@@ -106,7 +106,8 @@ export async function updateCourseAction(formData: FormData) {
 	}
 
 	const { courseId: _, ...updates } = parsed.data;
-	await updateAdminCourse(courseId, updates);
+	const service = makeCourseService();
+	await service.update(courseId, updates);
 
 	revalidateCourseAdminPaths(courseId, access.course.slug);
 	return { ok: true };

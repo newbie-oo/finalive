@@ -15,6 +15,7 @@ import {
 	requireAdminSession,
 	requireCourseAccess,
 } from "@/server/admin/admin-command";
+import { QuizAdminService } from "@/server/services/quiz-admin";
 
 const saveQuizSchema = z.object({
 	quizId: z.string().uuid(),
@@ -47,6 +48,23 @@ type SaveQuizResult =
 			error: "unauthorized" | "invalid_input" | "not_found" | "forbidden";
 	  };
 
+function makeQuizService() {
+	return new QuizAdminService({
+		getQuizById: getAdminQuizById,
+		saveQuiz: saveAdminQuiz,
+		getLessonCourseId: async (lessonId) => {
+			const rows = await db
+				.select({ courseId: courseModule.courseId })
+				.from(lesson)
+				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+				.where(eq(lesson.id, lessonId))
+				.limit(1);
+			return rows[0]?.courseId ?? null;
+		},
+		createQuiz: createAdminQuiz,
+	});
+}
+
 export async function saveQuizAction(
 	input: z.infer<typeof saveQuizSchema>,
 ): Promise<SaveQuizResult> {
@@ -66,15 +84,12 @@ export async function saveQuizAction(
 	const access = await requireCourseAccess(auth.session, quiz.courseId);
 	if (!access.ok) return { ok: false, error: access.error };
 
-	await saveAdminQuiz(parsed.data.quizId, {
+	const service = makeQuizService();
+	const fresh = await service.save({
+		quizId: parsed.data.quizId,
 		passScorePct: parsed.data.passScorePct,
 		questions: parsed.data.questions,
 	});
-
-	const fresh = await getAdminQuizById(parsed.data.quizId);
-	if (!fresh) {
-		return { ok: false, error: "not_found" };
-	}
 
 	revalidatePath(`/admin/courses/${quiz.courseId}/quizzes/${quiz.id}`);
 	revalidatePath(`/admin/courses/${quiz.courseId}/curriculum`);
@@ -99,28 +114,22 @@ export async function createQuizAction(
 		return { ok: false, error: "invalid_input" as const };
 	}
 
-	const [row] = await db
-		.select({ courseId: courseModule.courseId })
-		.from(lesson)
-		.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-		.where(eq(lesson.id, parsed.data.lessonId))
-		.limit(1);
-
-	if (!row) {
+	const service = makeQuizService();
+	const courseId = await service.resolveCourseId(parsed.data.lessonId);
+	if (!courseId) {
 		return { ok: false, error: "not_found" as const };
 	}
 
-	const access = await requireCourseAccess(auth.session, row.courseId);
+	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const quizId = await createAdminQuiz({
+	const quizId = await service.create({
 		lessonId: parsed.data.lessonId,
 		title: parsed.data.title,
 		passScorePct: parsed.data.passScorePct,
 		createdByUserId: auth.session.user.id,
 	});
 
-	revalidatePath(`/admin/courses/${row.courseId}/curriculum`);
-
+	revalidatePath(`/admin/courses/${courseId}/curriculum`);
 	return { ok: true, quizId };
 }
