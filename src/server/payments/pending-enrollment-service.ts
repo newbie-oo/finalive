@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, gt, inArray } from "drizzle-orm";
+import { and, eq, gt, inArray, lte } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
@@ -29,6 +29,9 @@ export interface PendingEnrollmentServiceDeps {
 	) => Promise<
 		{ id: string; refCode: string; amount: string; expiresAt: Date } | undefined
 	>;
+	/** Mark any expired active pendings as "expired" so they don't block
+	 *  the one_active_pending unique index. */
+	expireOutdatedPendings: (userId: string, courseId: string) => Promise<void>;
 	insertPending: (args: {
 		userId: string;
 		courseId: string;
@@ -79,6 +82,22 @@ export const defaultDeps: PendingEnrollmentServiceDeps = {
 			expiresAt: rows[0].expiresAt,
 		};
 	},
+	expireOutdatedPendings: async (userId, courseId) => {
+		await db
+			.update(pendingEnrollment)
+			.set({ status: "expired", updatedAt: new Date() })
+			.where(
+				and(
+					eq(pendingEnrollment.userId, userId),
+					eq(pendingEnrollment.courseId, courseId),
+					inArray(pendingEnrollment.status, [
+						"awaiting_payment",
+						"slip_submitted",
+					]),
+					lte(pendingEnrollment.expiresAt, new Date()),
+				),
+			);
+	},
 	insertPending: async (args) => {
 		const [row] = await db
 			.insert(pendingEnrollment)
@@ -121,6 +140,8 @@ export class PendingEnrollmentService {
 
 		const existing = await this.deps.findExistingPending(userId, courseRow.id);
 		if (existing) return existing;
+
+		await this.deps.expireOutdatedPendings(userId, courseRow.id);
 
 		const expiresAt = new Date(Date.now() + PENDING_TTL_MS);
 		for (let attempt = 0; attempt < MAX_REF_CODE_RETRIES; attempt += 1) {

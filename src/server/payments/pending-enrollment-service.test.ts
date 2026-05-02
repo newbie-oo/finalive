@@ -19,6 +19,7 @@ function fakeDeps(overrides?: Partial<PendingEnrollmentServiceDeps>) {
 			status: "published",
 		}),
 		findExistingPending: vi.fn().mockResolvedValue(undefined),
+		expireOutdatedPendings: vi.fn().mockResolvedValue(undefined),
 		insertPending: vi.fn().mockImplementation(async (args) => ({
 			id: "p-" + args.refCode,
 			refCode: args.refCode,
@@ -64,6 +65,7 @@ describe("PendingEnrollmentService", () => {
 		const svc = new PendingEnrollmentService(deps);
 		const result = await svc.create("u1", "course-slug");
 		expect(result.refCode).toBe("REF001");
+		expect(deps.expireOutdatedPendings).toHaveBeenCalledWith("u1", "c1");
 		expect(deps.insertPending).toHaveBeenCalledWith(
 			expect.objectContaining({ userId: "u1", courseId: "c1" }),
 		);
