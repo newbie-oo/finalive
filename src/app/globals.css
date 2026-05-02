@@ -1,26 +1,335 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Finalive design tokens — sourced from claude-design-ui/lib/tokens.css */
+
+@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-fg);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-foreground: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-warning-foreground: var(--warning-fg);
+  --color-destructive: var(--destructive);
+  --color-destructive-bg: var(--destructive-bg);
+  --color-destructive-foreground: var(--destructive-fg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-review-bg: var(--review-bg);
+  --color-review-foreground: var(--review-fg);
+
+  /* shadcn-compat aliases (so existing primitives keep working) */
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--foreground-muted);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-accent: var(--surface-muted);
+  --color-sidebar-accent-foreground: var(--foreground);
+  --color-sidebar-primary: var(--primary);
+  --color-sidebar-primary-foreground: var(--primary-fg);
+  --color-sidebar-ring: var(--primary);
+
+  --font-sans: var(--font-plex-thai), var(--font-geist-sans), system-ui, sans-serif;
+  --font-heading: var(--font-plex-thai), var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-numeric: var(--font-geist-sans), system-ui, sans-serif;
+
+  --radius-input: 6px;
+  --radius-nav: 8px;
+  --radius-button: 10px;
+  --radius-card: 14px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: var(--shadow-sm-token);
+  --shadow-md: var(--shadow-md-token);
+  --shadow-lg: var(--shadow-lg-token);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root,
+[data-theme="light"] {
+  --background: #FBFBFD;
+  --surface: #FFFFFF;
+  --surface-muted: #F5F3FF;
+  --surface-sunken: #EEF2FF;
+  --foreground: #1E1B4B;
+  --foreground-muted: #475569;
+  --foreground-subtle: #94A3B8;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-fg: #FFFFFF;
+  --accent: #F97316;
+  --accent-hover: #EA580C;
+  --accent-fg: #FFFFFF;
+  --success: #10B981;
+  --success-bg: #ECFDF5;
+  --success-fg: #065F46;
+  --warning: #F59E0B;
+  --warning-bg: #FFFBEB;
+  --warning-fg: #92400E;
+  --destructive: #DC2626;
+  --destructive-bg: #FEF2F2;
+  --destructive-fg: #991B1B;
+  --info: #0EA5E9;
+  --info-bg: #F0F9FF;
+  --review-bg: #EEF2FF;
+  --review-fg: #3730A3;
+  --shadow-sm-token: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-md-token: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg-token: 0 12px 32px rgba(15, 23, 42, 0.1), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --radius: 10px;
+}
+
+[data-theme="dark"] {
+  --background: #0B0B14;
+  --surface: #13131F;
+  --surface-muted: #1B1B2E;
+  --surface-sunken: #0F0F1A;
+  --foreground: #F1F5F9;
+  --foreground-muted: #A1A1AA;
+  --foreground-subtle: #9CA3AF;
+  --border: #27273A;
+  --border-strong: #3F3F5C;
+  --primary: #818CF8;
+  --primary-hover: #A5B4FC;
+  --primary-fg: #0B0B14;
+  --accent: #FB923C;
+  --accent-hover: #FDBA74;
+  --accent-fg: #0B0B14;
+  --success: #34D399;
+  --success-bg: #022C22;
+  --success-fg: #6EE7B7;
+  --warning: #FBBF24;
+  --warning-bg: #2A1F02;
+  --warning-fg: #FCD34D;
+  --destructive: #F87171;
+  --destructive-bg: #2A1010;
+  --destructive-fg: #FCA5A5;
+  --info: #38BDF8;
+  --info-bg: #0F2942;
+  --review-bg: #1B1B3A;
+  --review-fg: #A5B4FC;
+  --shadow-sm-token: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md-token: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg-token: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Backwards-compat for any leftover .dark class users (during migration) */
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .num,
+  .tnum {
+    font-family: var(--font-numeric);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  .mono {
+    font-family: var(--font-mono);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Type scale (utility classes — Tailwind-compatible) */
+@layer utilities {
+  .text-display { font-size: 48px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+  .text-h1 { font-size: 36px; font-weight: 700; line-height: 1.2; letter-spacing: -0.015em; }
+  .text-h2 { font-size: 28px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
+  .text-h3 { font-size: 22px; font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; }
+  .text-h4 { font-size: 18px; font-weight: 600; line-height: 1.35; }
+  .text-bodylg { font-size: 17px; font-weight: 400; line-height: 1.65; }
+  .text-body { font-size: 15px; font-weight: 400; line-height: 1.6; }
+  .text-ui { font-size: 14px; font-weight: 500; line-height: 1.4; }
+  .text-uism { font-size: 13px; font-weight: 500; line-height: 1.4; letter-spacing: 0.005em; }
+  .text-caption { font-size: 12px; font-weight: 400; line-height: 1.4; letter-spacing: 0.01em; }
+
+  @media (max-width: 640px) {
+    .text-display { font-size: 32px; }
+    .text-h1 { font-size: 28px; }
+    .text-h2 { font-size: 24px; }
+    .text-h3 { font-size: 20px; }
+    .text-bodylg { font-size: 16px; }
+  }
+}
+
+/* Honour user motion preferences — disables transforms, transitions,
+   and animations entirely per WCAG 2.2 AA + handoff motion spec. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Force-visible focus ring, even when focus-visible isn't supported. */
+:focus-visible {
+  outline-color: var(--primary);
+}
+
+/* Tiptap ProseMirror text-align support */
+.ProseMirror [style*="text-align: left"] { text-align: left; }
+.ProseMirror [style*="text-align: center"] { text-align: center; }
+.ProseMirror [style*="text-align: right"] { text-align: right; }
+.ProseMirror [style*="text-align: justify"] { text-align: justify; }
+
+/* Route-change progress indicator (used in LearnTopbar) */
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Prose-style markdown typography for lesson/quiz body content */
+@layer utilities {
+  .prose-style {
+    color: var(--foreground);
+  }
+  .prose-style h2 {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+    color: var(--foreground);
+  }
+  .prose-style h3 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: var(--foreground);
+  }
+  .prose-style h4 {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 1.25em;
+    margin-bottom: 0.4em;
+    color: var(--foreground);
+  }
+  .prose-style p {
+    margin-bottom: 1em;
+    line-height: 1.75;
+    color: var(--foreground-muted);
+  }
+  .prose-style p strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .prose-style ul,
+  .prose-style ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+    line-height: 1.75;
+    color: var(--foreground-muted);
+  }
+  .prose-style ul {
+    list-style-type: disc;
+  }
+  .prose-style ol {
+    list-style-type: decimal;
+  }
+  .prose-style li {
+    margin-bottom: 0.35em;
+  }
+  .prose-style li::marker {
+    color: var(--foreground-subtle);
+  }
+  .prose-style blockquote {
+    margin: 1.25em 0;
+    padding: 0.75em 1em;
+    border-left: 3px solid var(--primary);
+    background: var(--surface-muted);
+    border-radius: 0 8px 8px 0;
+    color: var(--foreground-muted);
+  }
+  .prose-style blockquote p {
+    margin: 0;
+  }
+  .prose-style code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--surface-muted);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--primary);
+  }
+  .prose-style hr {
+    margin: 1.5em 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+  }
+  .prose-style > *:first-child {
+    margin-top: 0 !important;
+  }
+  .prose-style img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5em 0;
+  }
+  .prose-style figure {
+    margin: 1.5em 0;
+  }
+  .prose-style figcaption {
+    margin-top: 0.5em;
+    font-size: 0.875em;
+    color: var(--foreground-subtle);
+    text-align: center;
+  }
+  .prose-style u {
+    text-decoration: underline;
+  }
+  /* Alignment via safe data-attribute (set by sanitizeRichHtml hook). */
+  .prose-style [data-align="left"] { text-align: left; }
+  .prose-style [data-align="center"] { text-align: center; }
+  .prose-style [data-align="right"] { text-align: right; }
+  .prose-style [data-align="justify"] { text-align: justify; }
 }

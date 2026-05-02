@@ -1,0 +1,143 @@
+import { Suspense } from "react";
+import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
+import { PublicShell } from "@/components/layouts/public-shell";
+import {
+	CourseCard,
+	CourseCardSkeleton,
+} from "@/components/course/course-card";
+import { CourseFilters } from "@/components/courses/course-filters";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PaginationNav } from "@/components/ui/pagination-nav";
+import {
+	listPublishedCourses,
+	type ListPublishedCoursesParams,
+} from "@/server/repos/course";
+import { offsetSchema, type SearchParams } from "@/lib/pagination";
+
+export const dynamic = "force-dynamic";
+
+async function CourseGrid({ params }: { params: ListPublishedCoursesParams }) {
+	const result = await listPublishedCourses(params);
+
+	if (result.data.length === 0) {
+		return (
+			<EmptyState
+				icon={<GraduationCap size={28} weight="duotone" />}
+				title="ไม่พบคอร์สที่ตรงกับเงื่อนไข"
+				description="ลองเปลี่ยนคำค้น หรือล้างตัวกรองเพื่อดูคอร์สทั้งหมด"
+			/>
+		);
+	}
+
+	return (
+		<>
+			<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+				{result.data.map((c) => (
+					<li key={c.id}>
+						<CourseCard course={c} />
+					</li>
+				))}
+			</ul>
+			<div className="mt-10">
+				<PaginationNav
+					page={result.pagination.page}
+					totalPages={result.pagination.total_pages}
+					basePath="/courses"
+					perPage={params.per_page === 12 ? undefined : params.per_page}
+				/>
+			</div>
+		</>
+	);
+}
+
+export default async function CoursesPage({
+	searchParams,
+}: {
+	searchParams: SearchParams;
+}) {
+	const sp = await searchParams;
+	const base = offsetSchema.parse({
+		page: sp.page,
+		per_page: sp.per_page ?? 12,
+	});
+	const q = typeof sp.q === "string" ? sp.q : "";
+	let freeOnly = sp.free === "1" || sp.free === "true";
+	const price = typeof sp.price === "string" ? sp.price : "";
+	const duration = typeof sp.duration === "string" ? sp.duration : "";
+	const sortBy = typeof sp.sort === "string" ? sp.sort : "newest";
+
+	// Parse price range
+	let priceMin: number | undefined;
+	let priceMax: number | undefined;
+	if (price === "free") {
+		freeOnly = true;
+	} else if (price === "1-1000") {
+		priceMin = 1;
+		priceMax = 1000;
+	} else if (price === "1000-5000") {
+		priceMin = 1000;
+		priceMax = 5000;
+	} else if (price === "5000+") {
+		priceMin = 5000;
+	}
+
+	// Parse duration range (minutes)
+	let durationMin: number | undefined;
+	let durationMax: number | undefined;
+	if (duration === "0-60") {
+		durationMax = 60;
+	} else if (duration === "60-300") {
+		durationMin = 60;
+		durationMax = 300;
+	} else if (duration === "300+") {
+		durationMin = 300;
+	}
+
+	const params: ListPublishedCoursesParams = {
+		...base,
+		q,
+		freeOnly,
+		priceMin,
+		priceMax,
+		durationMin,
+		durationMax,
+		sortBy: ["newest", "price_asc", "price_desc", "popular"].includes(sortBy)
+			? (sortBy as ListPublishedCoursesParams["sortBy"])
+			: "newest",
+	};
+
+	return (
+		<PublicShell>
+			<section className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
+				<header className="mb-8 space-y-4">
+					<div>
+						<h1 className="text-h1">คอร์สทั้งหมด</h1>
+						<p className="mt-2 text-bodylg text-(--foreground-muted)">
+							เลือกคอร์สที่เหมาะกับเป้าหมายของคุณ
+						</p>
+					</div>
+					<CourseFilters
+						initialQ={q}
+						initialFreeOnly={freeOnly}
+						initialPrice={price}
+						initialDuration={duration}
+						initialSort={sortBy}
+					/>
+				</header>
+				<Suspense
+					fallback={
+						<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+							{Array.from({ length: 6 }).map((_, i) => (
+								<li key={i}>
+									<CourseCardSkeleton />
+								</li>
+							))}
+						</ul>
+					}
+				>
+					<CourseGrid params={params} />
+				</Suspense>
+			</section>
+		</PublicShell>
+	);
+}
