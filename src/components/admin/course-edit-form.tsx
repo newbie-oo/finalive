@@ -86,7 +86,10 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 		formData.append("title", title.trim());
 		formData.append("summary", summary.trim());
 		formData.append("price", isFree ? "0.00" : price.trim());
-		formData.append("isFree", isFree ? "true" : "false");
+		// z.coerce.boolean() treats any non-empty string as truthy,
+		// so "false" would coerce to true. Send "" instead, which
+		// Boolean("") correctly evaluates to false.
+		formData.append("isFree", isFree ? "true" : "");
 		formData.append("status", status);
 
 		const res = await updateCourseAction(formData);
