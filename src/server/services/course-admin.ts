@@ -14,6 +14,7 @@ export interface CourseAdminDeps {
 	updateCourse: (
 		courseId: string,
 		updates: {
+			slug?: string;
 			title?: string;
 			summary?: string;
 			price?: string;
@@ -59,9 +60,10 @@ export class CourseAdminService {
 
 	async update(
 		courseId: string,
-		updates: Partial<Omit<CreateCourseInput, "slug" | "ownerUserId">>,
+		updates: Partial<Omit<CreateCourseInput, "ownerUserId">>,
 	): Promise<void> {
 		await this.deps.updateCourse(courseId, {
+			...(updates.slug !== undefined && { slug: updates.slug }),
 			...(updates.title !== undefined && { title: updates.title }),
 			...(updates.summary !== undefined && { summary: updates.summary }),
 			...(updates.price !== undefined && { price: updates.price }),
