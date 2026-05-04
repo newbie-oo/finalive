@@ -42,7 +42,11 @@ export default async function AdminCourseEditPage({
 				</p>
 			</header>
 
-			<CourseEditForm course={course} coverUrl={coverUrl} />
+			<CourseEditForm
+				key={course.updatedAt.toISOString()}
+				course={course}
+				coverUrl={coverUrl}
+			/>
 
 			<div className="space-y-4">
 				<div className="flex items-center justify-between">

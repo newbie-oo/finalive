@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LockSimple } from "@phosphor-icons/react";
 import { toast } from "sonner";
@@ -16,24 +17,38 @@ interface CourseEditFormProps {
 }
 
 export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
+	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [isFree, setIsFree] = useState(course.isFree);
+
+	// All fields controlled so the form stays in sync after router.refresh()
 	const [slug, setSlug] = useState(course.slug);
 	const [title, setTitle] = useState(course.title);
 	const [summary, setSummary] = useState(course.summary);
+	const [price, setPrice] = useState(course.price);
+	const [isFree, setIsFree] = useState(course.isFree);
+	const [status, setStatus] = useState(course.status);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
 
-		const formData = new FormData(e.currentTarget);
+		// Build FormData manually so every field is explicit (no hidden-input
+		// ambiguity with the isFree checkbox).
+		const formData = new FormData();
 		formData.append("courseId", course.id);
+		formData.append("slug", slug);
+		formData.append("title", title);
+		formData.append("summary", summary);
+		formData.append("price", isFree ? "0.00" : price);
+		formData.append("isFree", isFree ? "true" : "false");
+		formData.append("status", status);
+
 		const res = await updateCourseAction(formData);
 
 		setLoading(false);
 		if (res.ok) {
 			toast.success("บันทึกคอร์สสำเร็จ");
-			window.location.reload();
+			router.refresh();
 		} else {
 			toast.error(`บันทึกไม่สำเร็จ: ${res.error ?? "unknown"}`);
 		}
@@ -100,7 +115,8 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 				<input
 					name="price"
 					type="text"
-					defaultValue={course.price}
+					value={isFree ? "0.00" : price}
+					onChange={(e) => setPrice(e.target.value)}
 					required={!isFree}
 					readOnly={isFree}
 					aria-disabled={isFree}
@@ -117,11 +133,9 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<input type="hidden" name="isFree" value="" />
 				<input
 					name="isFree"
 					type="checkbox"
-					value="true"
 					checked={isFree}
 					onChange={(e) => setIsFree(e.target.checked)}
 					className="h-4 w-4"
@@ -133,7 +147,8 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 				<label className="block text-sm font-medium">สถานะ</label>
 				<select
 					name="status"
-					defaultValue={course.status}
+					value={status}
+					onChange={(e) => setStatus(e.target.value)}
 					className="mt-1 w-full rounded border px-3 py-2 text-sm"
 				>
 					<option value="draft">ร่าง</option>
