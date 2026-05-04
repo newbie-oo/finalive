@@ -29,6 +29,10 @@ export class CoverImageService {
 		newMediaAssetId: string;
 		oldCoverMediaId: string | null;
 	}): Promise<void> {
+		// Update the course first so the FK is released before we delete the old
+		// media_asset row (otherwise Postgres raises 23503).
+		await this.deps.updateCourseCover(params.courseId, params.newMediaAssetId);
+
 		if (params.oldCoverMediaId) {
 			const oldAsset = await this.deps.getMediaAsset(params.oldCoverMediaId);
 			if (oldAsset) {
@@ -45,7 +49,5 @@ export class CoverImageService {
 				await this.deps.deleteMediaAsset(oldAsset.id);
 			}
 		}
-
-		await this.deps.updateCourseCover(params.courseId, params.newMediaAssetId);
 	}
 }

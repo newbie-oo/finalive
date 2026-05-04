@@ -8,5 +8,9 @@ export function coverImageUrl(
 	storageKey: string | null | undefined,
 ): string | null {
 	if (!storageKey) return null;
-	return publicUrl(`covers/${storageKey}-640.webp`);
+	// Defensive: some legacy rows store the full path; most store just the uuid.
+	const key = storageKey.startsWith("covers/")
+		? storageKey
+		: `covers/${storageKey}-640.webp`;
+	return publicUrl(key);
 }

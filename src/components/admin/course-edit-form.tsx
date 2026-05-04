@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LockSimple } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { updateCourseAction } from "@/server/actions/admin-course";
 import { CoverImageUpload } from "@/components/admin/cover-image-upload";
 import type { course } from "@/db/schema/course";
@@ -16,15 +16,15 @@ interface CourseEditFormProps {
 }
 
 export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
-	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 	const [isFree, setIsFree] = useState(course.isFree);
+	const [slug, setSlug] = useState(course.slug);
+	const [title, setTitle] = useState(course.title);
+	const [summary, setSummary] = useState(course.summary);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
-		setError(null);
 
 		const formData = new FormData(e.currentTarget);
 		formData.append("courseId", course.id);
@@ -32,9 +32,10 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 
 		setLoading(false);
 		if (res.ok) {
-			router.refresh();
+			toast.success("บันทึกคอร์สสำเร็จ");
+			window.location.reload();
 		} else {
-			setError(res.error ?? "unknown");
+			toast.error(`บันทึกไม่สำเร็จ: ${res.error ?? "unknown"}`);
 		}
 	};
 
@@ -44,10 +45,9 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 				<label className="block text-sm font-medium">Slug</label>
 				<input
 					name="slug"
-					defaultValue={course.slug}
+					value={slug}
+					onChange={(e) => setSlug(e.target.value)}
 					required
-					pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
-					title="ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น เช่น my-course-101"
 					className="mt-1 w-full rounded border px-3 py-2 text-sm font-mono"
 				/>
 				<p className="mt-1 text-xs text-muted-foreground">
@@ -64,7 +64,8 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 				<label className="block text-sm font-medium">ชื่อคอร์ส</label>
 				<input
 					name="title"
-					defaultValue={course.title}
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
 					required
 					className="mt-1 w-full rounded border px-3 py-2 text-sm"
 				/>
@@ -74,7 +75,8 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 				<label className="block text-sm font-medium">คำอธิบายสั้น</label>
 				<textarea
 					name="summary"
-					defaultValue={course.summary}
+					value={summary}
+					onChange={(e) => setSummary(e.target.value)}
 					required
 					rows={3}
 					className="mt-1 w-full rounded border px-3 py-2 text-sm"
@@ -139,10 +141,6 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
 					<option value="archived">เก็บถาวร</option>
 				</select>
 			</div>
-
-			{error && (
-				<p className="text-sm text-destructive">เกิดข้อผิดพลาด: {error}</p>
-			)}
 
 			<div className="flex gap-3">
 				<button

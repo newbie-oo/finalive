@@ -11,7 +11,7 @@ import {
 
 const MAX_SIZE = 5 * 1024 * 1024;
 
-function makeService() {
+function makeService(imageUuid: string) {
 	const storage = new R2ObjectStorage("public");
 	return new ImageUploadService({
 		storage,
@@ -27,17 +27,16 @@ function makeService() {
 					.webp({ quality: 80 })
 					.toBuffer(),
 			]);
-			const uuid = crypto.randomUUID();
 			return [
 				{
 					buffer: coverBuffer,
-					key: `covers/${uuid}-640.webp`,
+					key: `covers/${imageUuid}-640.webp`,
 					contentType: "image/webp",
 					name: "cover",
 				},
 				{
 					buffer: ogBuffer,
-					key: `covers/${uuid}-1200.webp`,
+					key: `covers/${imageUuid}-1200.webp`,
 					contentType: "image/webp",
 					name: "og",
 				},
@@ -80,10 +79,12 @@ export async function POST(request: Request) {
 
 	try {
 		const buffer = Buffer.from(await file.arrayBuffer());
-		const service = makeService();
+		const imageUuid = crypto.randomUUID();
+		const service = makeService(imageUuid);
 		const result = await service.upload({
 			bytes: buffer,
 			userId: session.user.id,
+			storageKey: imageUuid,
 		});
 
 		return NextResponse.json({
