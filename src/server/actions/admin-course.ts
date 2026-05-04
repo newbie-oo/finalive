@@ -61,7 +61,10 @@ export async function createCourseAction(formData: FormData) {
 	});
 
 	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
+		const issue = parsed.error.issues[0];
+		if (!issue) return { ok: false, error: "invalid_input" };
+		const field = issue.path.join(".");
+		return { ok: false, error: `invalid_input (${field}): ${issue.message}` };
 	}
 
 	const service = makeCourseService();
@@ -115,7 +118,10 @@ export async function updateCourseAction(formData: FormData) {
 
 	const parsed = updateSchema.safeParse(raw);
 	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
+		const issue = parsed.error.issues[0];
+		if (!issue) return { ok: false, error: "invalid_input" };
+		const field = issue.path.join(".");
+		return { ok: false, error: `invalid_input (${field}): ${issue.message}` };
 	}
 
 	const { courseId: _, ...updates } = parsed.data;
