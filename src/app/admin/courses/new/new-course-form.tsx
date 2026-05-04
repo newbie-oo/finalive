@@ -242,8 +242,13 @@ export function NewCourseForm() {
 								name="slug"
 								required
 								placeholder="my-course"
+								pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+								title="ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น เช่น my-course-101"
 								className="mono"
 							/>
+							<p className="mt-1 text-xs text-muted-foreground">
+								ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น (เช่น my-course-101)
+							</p>
 						</div>
 
 						<div>

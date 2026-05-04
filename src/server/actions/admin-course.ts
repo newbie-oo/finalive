@@ -17,8 +17,14 @@ import { R2ObjectStorage } from "@/server/services/storage";
 import { CoverImageService } from "@/server/services/cover-image";
 import { CourseAdminService } from "@/server/services/course-admin";
 
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 const createSchema = z.object({
-	slug: z.string().min(1).max(100),
+	slug: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(slugRegex, "slug ต้องเป็นตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น"),
 	title: z.string().min(1).max(200),
 	summary: z.string().min(1).max(500),
 	description: z.string().max(10000).optional(),
@@ -70,6 +76,12 @@ export async function createCourseAction(formData: FormData) {
 
 const updateSchema = z.object({
 	courseId: z.string().uuid(),
+	slug: z
+		.string()
+		.min(1)
+		.max(100)
+		.regex(slugRegex, "slug ต้องเป็นตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น")
+		.optional(),
 	title: z.string().min(1).max(200).optional(),
 	summary: z.string().min(1).max(500).optional(),
 	price: z
@@ -90,6 +102,7 @@ export async function updateCourseAction(formData: FormData) {
 
 	const raw: Record<string, unknown> = { courseId };
 	for (const key of [
+		"slug",
 		"title",
 		"summary",
 		"price",
@@ -109,7 +122,13 @@ export async function updateCourseAction(formData: FormData) {
 	const service = makeCourseService();
 	await service.update(courseId, updates);
 
-	revalidateCourseAdminPaths(courseId, access.course.slug);
+	// Revalidate old slug path if slug changed
+	if (updates.slug && updates.slug !== access.course.slug) {
+		revalidateCourseAdminPaths(courseId, access.course.slug);
+		revalidateCourseAdminPaths(courseId, updates.slug);
+	} else {
+		revalidateCourseAdminPaths(courseId, access.course.slug);
+	}
 	return { ok: true };
 }
 

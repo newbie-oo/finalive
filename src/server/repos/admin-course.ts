@@ -159,6 +159,7 @@ export async function createAdminCourse(input: {
 export async function updateAdminCourse(
 	courseId: string,
 	input: {
+		slug?: string;
 		title?: string;
 		summary?: string;
 		price?: string;
