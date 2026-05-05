@@ -373,12 +373,35 @@ describe("CurriculumAdminService", () => {
 			expect(deps.reorderAdminLessons).toHaveBeenCalledWith("m1", ["l2", "l1"]);
 		});
 
-		it("returns not_found when reorder throws", async () => {
+		it("returns not_found on foreign key violation", async () => {
 			const deps = fakeDeps();
-			deps.reorderAdminLessons.mockRejectedValue(new Error("boom"));
+			deps.reorderAdminLessons.mockRejectedValue(
+				new Error("violates foreign key constraint"),
+			);
 			const svc = createCurriculumAdminService(deps);
 			const result = await svc.reorderLessons("m1", ["l2", "l1"]);
 			expect(result).toEqual({ ok: false, error: "not_found" });
+		});
+
+		it("returns invalid_input on unique constraint violation", async () => {
+			const deps = fakeDeps();
+			deps.reorderAdminLessons.mockRejectedValue(
+				new Error("violates unique constraint"),
+			);
+			const svc = createCurriculumAdminService(deps);
+			const result = await svc.reorderLessons("m1", ["l2", "l1"]);
+			expect(result).toEqual({ ok: false, error: "invalid_input" });
+		});
+
+		it("throws unexpected errors instead of swallowing", async () => {
+			const deps = fakeDeps();
+			deps.reorderAdminLessons.mockRejectedValue(
+				new Error("connection timeout"),
+			);
+			const svc = createCurriculumAdminService(deps);
+			await expect(svc.reorderLessons("m1", ["l2", "l1"])).rejects.toThrow(
+				"connection timeout",
+			);
 		});
 	});
 });

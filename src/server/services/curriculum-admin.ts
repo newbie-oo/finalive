@@ -1,6 +1,21 @@
 import "server-only";
 import type { CurriculumModule } from "@/server/repos/course";
 
+function classifyDbError(
+	err: unknown,
+): "not_found" | "invalid_input" | "unexpected" {
+	if (err instanceof Error) {
+		const msg = err.message.toLowerCase();
+		if (msg.includes("foreign key") || msg.includes("violates foreign")) {
+			return "not_found";
+		}
+		if (msg.includes("unique constraint") || msg.includes("violates unique")) {
+			return "invalid_input";
+		}
+	}
+	return "unexpected";
+}
+
 export interface CurriculumAdminDeps {
 	getCourseCurriculum: (courseId: string) => Promise<CurriculumModule[]>;
 	createAdminModule: (input: {
@@ -101,7 +116,9 @@ export interface CurriculumAdminService {
 	reorderModules(
 		courseId: string,
 		orderedIds: string[],
-	): Promise<{ ok: true } | { ok: false; error: "invalid_input" }>;
+	): Promise<
+		{ ok: true } | { ok: false; error: "not_found" | "invalid_input" }
+	>;
 	reorderLessons(
 		moduleId: string,
 		orderedIds: string[],
@@ -229,8 +246,10 @@ export function createCurriculumAdminService(
 			try {
 				await deps.reorderAdminModules(courseId, orderedIds);
 				return { ok: true };
-			} catch {
-				return { ok: false, error: "invalid_input" };
+			} catch (err) {
+				const kind = classifyDbError(err);
+				if (kind === "unexpected") throw err;
+				return { ok: false, error: kind };
 			}
 		},
 
@@ -238,8 +257,10 @@ export function createCurriculumAdminService(
 			try {
 				await deps.reorderAdminLessons(moduleId, orderedIds);
 				return { ok: true };
-			} catch {
-				return { ok: false, error: "not_found" };
+			} catch (err) {
+				const kind = classifyDbError(err);
+				if (kind === "unexpected") throw err;
+				return { ok: false, error: kind };
 			}
 		},
 	};
