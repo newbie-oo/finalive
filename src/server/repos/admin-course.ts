@@ -14,6 +14,7 @@ import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
+import { enrollmentCountSubq } from "./course-queries";
 
 export interface AdminCourseListItem {
 	id: string;
@@ -51,18 +52,6 @@ export async function listAdminCourses(
 		conditions.push(text);
 	}
 
-	// Subquery: active enrollments per course. Kept inline to avoid a global
-	// import shape that would force dependents to know about the join.
-	const enrollCount = db
-		.select({
-			courseId: enrollment.courseId,
-			count: sql<number>`count(*)::int`.as("admin_enrollment_count"),
-		})
-		.from(enrollment)
-		.where(eq(enrollment.status, "active"))
-		.groupBy(enrollment.courseId)
-		.as("admin_enrollment_count");
-
 	const rows = await db
 		.select({
 			id: course.id,
@@ -73,10 +62,10 @@ export async function listAdminCourses(
 			price: course.price,
 			publishedAt: course.publishedAt,
 			createdAt: course.createdAt,
-			enrollmentCount: enrollCount.count,
+			enrollmentCount: enrollmentCountSubq.count,
 		})
 		.from(course)
-		.leftJoin(enrollCount, eq(enrollCount.courseId, course.id))
+		.leftJoin(enrollmentCountSubq, eq(enrollmentCountSubq.courseId, course.id))
 		.where(and(...conditions))
 		.orderBy(desc(course.createdAt));
 
