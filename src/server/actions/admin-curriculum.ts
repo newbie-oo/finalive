@@ -41,15 +41,14 @@ export async function createModuleAction(formData: FormData) {
 	const auth = await requireAdminSession();
 	if (!auth.ok) return { ok: false, error: auth.error } as const;
 
-	const courseId = formData.get("courseId") as string;
-	const access = await requireCourseAccess(auth.session, courseId);
-	if (!access.ok) return { ok: false, error: access.error } as const;
-
 	const parsed = createModuleSchema.safeParse({
-		courseId,
+		courseId: formData.get("courseId"),
 		title: formData.get("title"),
 	});
 	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
+
+	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
+	if (!access.ok) return { ok: false, error: access.error } as const;
 
 	const result = await svc.createModule(
 		parsed.data.courseId,
@@ -58,7 +57,7 @@ export async function createModuleAction(formData: FormData) {
 	);
 	if (!result.ok) return { ok: false, error: result.error };
 
-	revalidateCourseAdminPaths(courseId, access.course.slug);
+	revalidateCourseAdminPaths(parsed.data.courseId, access.course.slug);
 	return { ok: true, moduleId: result.moduleId };
 }
 
