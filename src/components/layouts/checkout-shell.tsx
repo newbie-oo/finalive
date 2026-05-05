@@ -2,16 +2,23 @@ import Link from "next/link";
 import { Shield } from "@phosphor-icons/react/dist/ssr";
 import { Stepper } from "@/components/ui/stepper";
 
-const STEPS = [{ label: "ข้อมูล" }, { label: "ชำระเงิน" }, { label: "เสร็จสิ้น" }];
+const DEFAULT_STEPS = [
+	{ label: "ข้อมูล" },
+	{ label: "ชำระเงิน" },
+	{ label: "เสร็จสิ้น" },
+];
 
 export function CheckoutShell({
 	step,
+	steps,
 	children,
 }: {
 	/** Zero-based step index. 0=info, 1=payment, 2=done */
 	step: 0 | 1 | 2;
+	steps?: { label: string }[];
 	children: React.ReactNode;
 }) {
+	const resolvedSteps = steps ?? DEFAULT_STEPS;
 	return (
 		<div className="flex min-h-full flex-col">
 			<a
@@ -38,7 +45,7 @@ export function CheckoutShell({
 
 			<div className="border-b border-(--border) bg-(--surface-muted)/40 py-5">
 				<div className="mx-auto max-w-[640px] px-6">
-					<Stepper steps={STEPS} current={step} />
+					<Stepper steps={resolvedSteps} current={step} />
 				</div>
 			</div>
 
