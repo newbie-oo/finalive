@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import { cn } from "@/lib/utils";
+import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
 
 interface SidebarLesson {
 	id: string;
@@ -136,7 +137,7 @@ function StatusIcon({
 }
 
 function SidebarNotesCard({ lessonId }: { lessonId: string }) {
-	const preview = useMemo(() => {
+	const [preview] = useState(() => {
 		if (typeof window === "undefined") return "";
 		try {
 			const keys = Object.keys(localStorage);
@@ -149,7 +150,7 @@ function SidebarNotesCard({ lessonId }: { lessonId: string }) {
 		} catch {
 			return "";
 		}
-	}, [lessonId]);
+	});
 
 	if (!preview) return null;
 
@@ -181,56 +182,8 @@ export function CurriculumSidebar({
 	const params = useParams();
 	const activeLessonId = params.lessonId as string;
 
-	// Optimistic set of lessonIds marked completed locally so the sidebar
-	// reacts immediately without waiting for a server round-trip / reload.
-	const [optimisticIds, setOptimisticIds] = useState<Set<string>>(new Set());
-	useEffect(() => {
-		const handler = (e: Event) => {
-			const detail = (e as CustomEvent).detail as
-				| { lessonId: string }
-				| undefined;
-			if (detail?.lessonId) {
-				setOptimisticIds((prev) => new Set(prev).add(detail.lessonId));
-			}
-		};
-		window.addEventListener("lesson-marked-complete", handler);
-		return () => window.removeEventListener("lesson-marked-complete", handler);
-	}, []);
-
-	const progressMap = useMemo(() => {
-		const map = new Map(progress.map((p) => [p.lessonId, p.status]));
-		for (const id of optimisticIds) {
-			map.set(id, "completed");
-		}
-		return map;
-	}, [progress, optimisticIds]);
-
-	const lessonCount =
-		totalLessons ?? modules.reduce((acc, m) => acc + m.lessons.length, 0);
-	const doneCount = useMemo(() => {
-		let count = 0;
-		for (const mod of modules) {
-			for (const les of mod.lessons) {
-				if (progressMap.get(les.id) === "completed") count++;
-			}
-		}
-		return count;
-	}, [modules, progressMap]);
-	const progressPct =
-		lessonCount > 0 ? Math.round((doneCount / lessonCount) * 100) : 0;
-
-	// Calculate remaining time from uncompleted lessons
-	const remainingSeconds = useMemo(() => {
-		let total = 0;
-		for (const mod of modules) {
-			for (const les of mod.lessons) {
-				if (progressMap.get(les.id) !== "completed" && les.durationSeconds) {
-					total += les.durationSeconds;
-				}
-			}
-		}
-		return total;
-	}, [modules, progressMap]);
+	const { progressMap, doneCount, lessonCount, progressPct, remainingSeconds } =
+		useCurriculumProgress(modules, progress, totalLessons);
 
 	return (
 		<nav className="flex h-full flex-col bg-(--surface)">
