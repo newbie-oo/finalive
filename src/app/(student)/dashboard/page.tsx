@@ -82,6 +82,23 @@ function getActivityBadge(type: string): string | null {
 	}
 }
 
+function AchievementIcon({ icon }: { icon: string }) {
+	switch (icon) {
+		case "trophy":
+			return <Trophy size={22} weight="bold" />;
+		case "flame":
+			return <Flame size={22} weight="bold" />;
+		case "books":
+			return <Books size={22} weight="bold" />;
+		case "check-circle":
+			return <CheckCircle size={22} weight="bold" />;
+		case "certificate":
+			return <Certificate size={22} weight="bold" />;
+		default:
+			return <Trophy size={22} weight="bold" />;
+	}
+}
+
 export default async function DashboardPage() {
 	const session = await getSession();
 	if (!session?.user) {
@@ -90,12 +107,6 @@ export default async function DashboardPage() {
 
 	const data = await getStudentDashboardData(session.user.id);
 	const inProgress = data.enrollments.filter((e) => !e.completedAt);
-
-	// Compute current streak (consecutive days with activity)
-	const streak = 5; // TODO: compute from lessonProgress.lastWatchedAt
-
-	// Build heatmap from enrollments activity (simplified)
-	const heatLevels = Array.from({ length: 35 }, (_, i) => (i * 7 + 13) % 5);
 
 	return (
 		<section className="space-y-8">
@@ -148,7 +159,7 @@ export default async function DashboardPage() {
 					},
 					{
 						icon: Flame,
-						value: String(streak),
+						value: String(data.streak),
 						label: "วันต่อเนื่อง",
 						color: "var(--accent)",
 					},
@@ -267,7 +278,7 @@ export default async function DashboardPage() {
 						</h3>
 						<span className="text-uism font-semibold text-(--primary)">
 							<span className="num">
-								{(data.totalWatchedSeconds / 3600).toFixed(1)}
+								{(data.weeklyWatchedSeconds / 3600).toFixed(1)}
 							</span>{" "}
 							ชม. สัปดาห์นี้
 						</span>
@@ -298,7 +309,7 @@ export default async function DashboardPage() {
 								))}
 							</div>
 							<div className="grid grid-flow-col grid-cols-[repeat(35,1fr)] grid-rows-7 gap-1">
-								{heatLevels.map((lvl, i) => {
+								{data.heatmap.map((lvl, i) => {
 									const colors = [
 										"#E5E7EB",
 										"#C7D2FE",
@@ -350,38 +361,13 @@ export default async function DashboardPage() {
 						</span>
 					</div>
 					<div className="space-y-4">
-						{[
-							{
-								icon: Trophy,
-								title: "ใบประกาศนักบุกเบิก",
-								desc: `${data.certCount} ใบประกาศแล้ว`,
-								color: "var(--primary)",
-							},
-							{
-								icon: Flame,
-								title: `สตรีก ${streak} วัน`,
-								desc: "เรียนต่อเนื่องทุกวัน",
-								color: "var(--accent)",
-							},
-							{
-								icon: Books,
-								title: "นักเรียนขยัน",
-								desc: `จบ ${data.enrollments.reduce((sum, e) => sum + e.doneLessons, 0)} บทเรียน`,
-								color: "#10B981",
-							},
-							{
-								icon: CheckCircle,
-								title: "Quiz Master",
-								desc: "ผ่านแบบทดสอบทั้งหมด",
-								color: "#8B5CF6",
-							},
-						].map((a) => (
+						{data.achievements.map((a) => (
 							<div key={a.title} className="flex items-center gap-3.5">
 								<div
 									className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
 									style={{ background: `${a.color}15`, color: a.color }}
 								>
-									<a.icon size={22} weight="bold" />
+									<AchievementIcon icon={a.icon} />
 								</div>
 								<div>
 									<div className="text-ui font-semibold text-(--foreground)">

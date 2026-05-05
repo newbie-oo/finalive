@@ -21,8 +21,8 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-// Default landing after login: home page for students, admin dashboard for admins.
-const STUDENT_DEFAULT = "/";
+// Default landing after login: student dashboard, admin dashboard for admins.
+const STUDENT_DEFAULT = "/dashboard";
 const ADMIN_DEFAULT = "/admin";
 
 function defaultFor(role: string | null | undefined): string {

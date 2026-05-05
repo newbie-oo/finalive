@@ -11,9 +11,13 @@ import { quiz } from "@/db/schema/quiz";
 export interface StudentDashboardData {
 	enrollments: StudentEnrollmentItem[];
 	totalWatchedSeconds: number;
+	weeklyWatchedSeconds: number;
 	certCount: number;
 	completedCourses: number;
+	streak: number;
+	heatmap: number[];
 	recentActivity: RecentActivityItem[];
+	achievements: AchievementItem[];
 }
 
 export interface StudentEnrollmentItem {
@@ -39,10 +43,17 @@ export interface RecentActivityItem {
 	at: Date;
 }
 
+export interface AchievementItem {
+	icon: "trophy" | "flame" | "books" | "check-circle" | "certificate";
+	title: string;
+	desc: string;
+	color: string;
+}
+
 export async function getStudentDashboardData(
 	userId: string,
 ): Promise<StudentDashboardData> {
-	// Enrollments with progress
+	// ── Enrollments with progress ──
 	const lessonCountByCourse = db
 		.select({
 			courseId: courseModule.courseId,
@@ -93,7 +104,7 @@ export async function getStudentDashboardData(
 		.orderBy(desc(enrollment.createdAt))
 		.limit(50);
 
-	// Total watched seconds
+	// ── Watched seconds ──
 	const watchedRows = await db
 		.select({
 			total: sql<number>`coalesce(sum(${lessonProgress.watchedSeconds}), 0)::int`,
@@ -101,14 +112,111 @@ export async function getStudentDashboardData(
 		.from(lessonProgress)
 		.where(eq(lessonProgress.userId, userId));
 
-	// Certificates
+	// ── Weekly watched seconds (this week Mon 00:00 UTC) ──
+	const now = new Date();
+	const dayOfWeek = now.getUTCDay(); // 0=Sun,1=Mon
+	const monday = new Date(now);
+	monday.setUTCDate(now.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+	monday.setUTCHours(0, 0, 0, 0);
+
+	const weeklyRows = await db
+		.select({
+			total: sql<number>`coalesce(sum(${lessonProgress.watchedSeconds}), 0)::int`,
+		})
+		.from(lessonProgress)
+		.where(
+			and(
+				eq(lessonProgress.userId, userId),
+				sql`${lessonProgress.lastWatchedAt} >= ${monday.toISOString()}`,
+			),
+		);
+
+	// ── Certificates ──
 	const certRows = await db
 		.select({ count: count() })
 		.from(certificate)
 		.innerJoin(enrollment, eq(certificate.enrollmentId, enrollment.id))
 		.where(eq(enrollment.userId, userId));
 
-	// Recent activity: completed lessons
+	// ── Streak: consecutive days with any lesson progress ──
+	const streakRows = await db
+		.select({
+			date: sql<string>`distinct date(${lessonProgress.lastWatchedAt})`.as(
+				"date",
+			),
+		})
+		.from(lessonProgress)
+		.where(eq(lessonProgress.userId, userId))
+		.orderBy(desc(sql`date`));
+
+	let streak = 0;
+	if (streakRows.length > 0) {
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+		const dates = streakRows.map((r) => {
+			const d = new Date(r.date);
+			d.setHours(0, 0, 0, 0);
+			return d.getTime();
+		});
+		const mostRecent = dates[0]!;
+		const oneDay = 86400000;
+		// Allow today or yesterday as the start of the streak
+		if (mostRecent >= today.getTime() - oneDay) {
+			streak = 1;
+			for (let i = 1; i < dates.length; i++) {
+				if (dates[i] === mostRecent - i * oneDay) {
+					streak++;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+
+	// ── Heatmap: activity intensity per day for last 35 days ──
+	// Intensity = number of lessons with progress (capped at 4)
+	const heatmapDays = 35;
+	const heatStart = new Date(now);
+	heatStart.setDate(now.getDate() - heatmapDays + 1);
+	heatStart.setHours(0, 0, 0, 0);
+
+	const heatRows = await db
+		.select({
+			date: sql<string>`date(${lessonProgress.lastWatchedAt})`.as("date"),
+			lessons: sql<number>`count(distinct ${lessonProgress.lessonId})::int`.as(
+				"lessons",
+			),
+		})
+		.from(lessonProgress)
+		.where(
+			and(
+				eq(lessonProgress.userId, userId),
+				sql`${lessonProgress.lastWatchedAt} >= ${heatStart.toISOString()}`,
+			),
+		)
+		.groupBy(sql`date`)
+		.orderBy(sql`date`);
+
+	const heatMapByDate = new Map<string, number>();
+	for (const r of heatRows) {
+		heatMapByDate.set(r.date, r.lessons);
+	}
+
+	const heatmap: number[] = [];
+	for (let i = 0; i < heatmapDays; i++) {
+		const d = new Date(heatStart);
+		d.setDate(heatStart.getDate() + i);
+		const key = d.toISOString().slice(0, 10);
+		const lessons = heatMapByDate.get(key) ?? 0;
+		// 0 = none, 1 = 1 lesson, 2 = 2-3, 3 = 4-5, 4 = 6+
+		if (lessons === 0) heatmap.push(0);
+		else if (lessons === 1) heatmap.push(1);
+		else if (lessons <= 3) heatmap.push(2);
+		else if (lessons <= 5) heatmap.push(3);
+		else heatmap.push(4);
+	}
+
+	// ── Recent activity ──
 	const recentLessons = await db
 		.select({
 			lessonTitle: lesson.title,
@@ -128,7 +236,6 @@ export async function getStudentDashboardData(
 		.orderBy(desc(lessonProgress.updatedAt))
 		.limit(10);
 
-	// Recent quiz attempts
 	const recentQuizzes = await db
 		.select({
 			quizTitle: quiz.title,
@@ -146,7 +253,6 @@ export async function getStudentDashboardData(
 		.orderBy(desc(quizAttempt.submittedAt))
 		.limit(10);
 
-	// Recent completed courses
 	const recentCompleted = await db
 		.select({
 			courseTitle: course.title,
@@ -163,7 +269,6 @@ export async function getStudentDashboardData(
 		.orderBy(desc(enrollment.completedAt))
 		.limit(10);
 
-	// Merge and sort recent activity
 	const activity: RecentActivityItem[] = [
 		...recentLessons.map(
 			(l): RecentActivityItem => ({
@@ -192,6 +297,43 @@ export async function getStudentDashboardData(
 		.sort((a, b) => b.at.getTime() - a.at.getTime())
 		.slice(0, 10);
 
+	// ── Achievements ──
+	const totalDoneLessons = enrollments.reduce(
+		(sum, e) => sum + (e.doneLessons ?? 0),
+		0,
+	);
+	const quizPassCount = recentQuizzes.filter((q) => q.passed).length;
+
+	const achievements: AchievementItem[] = [
+		{
+			icon: "certificate",
+			title: "ใบประกาศนักบุกเบิก",
+			desc: `${certRows[0]?.count ?? 0} ใบประกาศแล้ว`,
+			color: "var(--primary)",
+		},
+		{
+			icon: "flame",
+			title: `สตรีก ${streak} วัน`,
+			desc: streak > 1 ? "เรียนต่อเนื่องทุกวัน" : "เริ่มต้นสตรีกของคุณ",
+			color: "var(--accent)",
+		},
+		{
+			icon: "books",
+			title: "นักเรียนขยัน",
+			desc: `จบ ${totalDoneLessons} บทเรียน`,
+			color: "#10B981",
+		},
+	];
+
+	if (quizPassCount > 0) {
+		achievements.push({
+			icon: "check-circle",
+			title: "Quiz Master",
+			desc: `ผ่านแบบทดสอบ ${quizPassCount} ครั้ง`,
+			color: "#8B5CF6",
+		});
+	}
+
 	return {
 		enrollments: enrollments.map((r) => ({
 			enrollmentId: r.enrollmentId,
@@ -204,8 +346,12 @@ export async function getStudentDashboardData(
 			completedAt: r.completedAt,
 		})),
 		totalWatchedSeconds: watchedRows[0]?.total ?? 0,
+		weeklyWatchedSeconds: weeklyRows[0]?.total ?? 0,
 		certCount: certRows[0]?.count ?? 0,
 		completedCourses: enrollments.filter((e) => e.completedAt).length,
+		streak,
+		heatmap,
 		recentActivity: activity,
+		achievements,
 	};
 }
