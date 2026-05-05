@@ -78,7 +78,8 @@ export function LessonPlayerLayout({
 			if (!res.ok) throw new Error("failed");
 			setLocalCompleted(true);
 			toast.success("จบบทเรียนแล้ว");
-			router.refresh();
+			// Hard reload to force server data re-fetch
+			window.location.reload();
 		} catch {
 			toast.error("บันทึกไม่สำเร็จ");
 		}
