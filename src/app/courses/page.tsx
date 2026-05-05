@@ -1,13 +1,10 @@
 import { Suspense } from "react";
-import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
-import {
-	CourseCard,
-	CourseCardSkeleton,
-} from "@/components/course/course-card";
 import { CourseFilters } from "@/components/courses/course-filters";
-import { EmptyState } from "@/components/ui/empty-state";
-import { PaginationNav } from "@/components/ui/pagination-nav";
+import {
+	CourseCatalog,
+	CourseCatalogSkeleton,
+} from "@/components/courses/course-catalog";
 import {
 	listPublishedCourses,
 	type ListPublishedCoursesParams,
@@ -16,38 +13,15 @@ import { offsetSchema, type SearchParams } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
-async function CourseGrid({ params }: { params: ListPublishedCoursesParams }) {
+async function CourseGrid({
+	params,
+	searchParams,
+}: {
+	params: ListPublishedCoursesParams;
+	searchParams: string;
+}) {
 	const result = await listPublishedCourses(params);
-
-	if (result.data.length === 0) {
-		return (
-			<EmptyState
-				icon={<GraduationCap size={28} weight="duotone" />}
-				title="ไม่พบคอร์สที่ตรงกับเงื่อนไข"
-				description="ลองเปลี่ยนคำค้น หรือล้างตัวกรองเพื่อดูคอร์สทั้งหมด"
-			/>
-		);
-	}
-
-	return (
-		<>
-			<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{result.data.map((c) => (
-					<li key={c.id}>
-						<CourseCard course={c} />
-					</li>
-				))}
-			</ul>
-			<div className="mt-10">
-				<PaginationNav
-					page={result.pagination.page}
-					totalPages={result.pagination.total_pages}
-					basePath="/courses"
-					perPage={params.per_page === 12 ? undefined : params.per_page}
-				/>
-			</div>
-		</>
-	);
+	return <CourseCatalog result={result} searchParams={searchParams} />;
 }
 
 export default async function CoursesPage({
@@ -106,38 +80,28 @@ export default async function CoursesPage({
 			: "newest",
 	};
 
+	// Build query string for pagination to preserve filters
+	const filterParams = new URLSearchParams();
+	if (q) filterParams.set("q", q);
+	if (freeOnly) filterParams.set("free", "1");
+	if (price) filterParams.set("price", price);
+	if (duration) filterParams.set("duration", duration);
+	if (sortBy && sortBy !== "newest") filterParams.set("sort", sortBy);
+	const filterQs = filterParams.toString();
+
 	return (
 		<PublicShell>
-			<section className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
-				<header className="mb-8 space-y-4">
-					<div>
-						<h1 className="text-h1">คอร์สทั้งหมด</h1>
-						<p className="mt-2 text-bodylg text-(--foreground-muted)">
-							เลือกคอร์สที่เหมาะกับเป้าหมายของคุณ
-						</p>
-					</div>
-					<CourseFilters
-						initialQ={q}
-						initialFreeOnly={freeOnly}
-						initialPrice={price}
-						initialDuration={duration}
-						initialSort={sortBy}
-					/>
-				</header>
-				<Suspense
-					fallback={
-						<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-							{Array.from({ length: 6 }).map((_, i) => (
-								<li key={i}>
-									<CourseCardSkeleton />
-								</li>
-							))}
-						</ul>
-					}
-				>
-					<CourseGrid params={params} />
+			<CourseFilters
+				initialQ={q}
+				initialFreeOnly={freeOnly}
+				initialPrice={price}
+				initialDuration={duration}
+				initialSort={sortBy}
+			>
+				<Suspense fallback={<CourseCatalogSkeleton />}>
+					<CourseGrid params={params} searchParams={filterQs} />
 				</Suspense>
-			</section>
+			</CourseFilters>
 		</PublicShell>
 	);
 }

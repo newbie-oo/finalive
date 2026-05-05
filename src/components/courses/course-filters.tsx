@@ -19,13 +19,6 @@ const PRICE_OPTIONS = [
 	{ label: "มากกว่า ฿5,000", value: "5000+" },
 ];
 
-const DURATION_OPTIONS = [
-	{ label: "ทั้งหมด", value: "" },
-	{ label: "<1 ชม.", value: "0-60" },
-	{ label: "1-5 ชม.", value: "60-300" },
-	{ label: "5+ ชม.", value: "300+" },
-];
-
 const SORT_OPTIONS = [
 	{ label: "ยอดนิยม", value: "popular" },
 	{ label: "ใหม่ล่าสุด", value: "newest" },
@@ -110,18 +103,17 @@ export function CourseFilters({
 		setSortBy("newest");
 	};
 
-	const activeQuickFilter =
-		q.trim()
-			? null
-			: freeOnly || price === "free"
-				? "free"
-				: duration === "60-300"
-					? "duration"
-					: sortBy === "popular" && !price && !duration
-						? "popular"
-						: sortBy === "newest" && !price && !duration && !freeOnly
-							? "all"
-							: null;
+	const activeQuickFilter = q.trim()
+		? null
+		: freeOnly || price === "free"
+			? "free"
+			: duration === "60-300"
+				? "duration"
+				: sortBy === "popular" && !price && !duration
+					? "popular"
+					: sortBy === "newest" && !price && !duration && !freeOnly
+						? "all"
+						: null;
 
 	const handleQuickFilter = (type: (typeof QUICK_FILTERS)[number]["type"]) => {
 		setQ("");
@@ -276,65 +268,61 @@ export function CourseFilters({
 												</label>
 											</li>
 										))}
-										</ul>
-									</div>
+									</ul>
+								</div>
 
-									{/* Price */}
-									<div className="rounded-card border border-(--border) bg-(--surface) p-4">
-										<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
-											ราคา
-										</h3>
-										<ul className="space-y-2.5">
-											{PRICE_OPTIONS.map((o) => (
-												<li key={o.value}>
-													<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
-														<input
-															type="radio"
-															name="price"
-															checked={
-																price === o.value ||
-																(o.value === "free" && freeOnly)
-															}
-															onChange={() => {
-																setPrice(o.value);
-																if (o.value === "free")
-																	setFreeOnly(true);
-																else setFreeOnly(false);
-															}}
-															className="h-4 w-4 accent-(--primary)"
-														/>
-														<span>{o.label}</span>
-													</label>
-												</li>
+								{/* Price */}
+								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
+									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+										ราคา
+									</h3>
+									<ul className="space-y-2.5">
+										{PRICE_OPTIONS.map((o) => (
+											<li key={o.value}>
+												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
+													<input
+														type="radio"
+														name="price"
+														checked={
+															price === o.value ||
+															(o.value === "free" && freeOnly)
+														}
+														onChange={() => {
+															setPrice(o.value);
+															if (o.value === "free") setFreeOnly(true);
+															else setFreeOnly(false);
+														}}
+														className="h-4 w-4 accent-(--primary)"
+													/>
+													<span>{o.label}</span>
+												</label>
+											</li>
+										))}
+									</ul>
+								</div>
+
+								{/* Sort */}
+								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
+									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+										เรียงลำดับ
+									</h3>
+									<div className="relative">
+										<select
+											value={sortBy}
+											onChange={(e) => setSortBy(e.target.value)}
+											className="h-10 w-full appearance-none rounded-button border border-(--border) bg-(--surface) px-3 pr-8 text-ui outline-none focus:border-(--primary)"
+											aria-label="เรียงลำดับ"
+										>
+											{SORT_OPTIONS.map((o) => (
+												<option key={o.value} value={o.value}>
+													{o.label}
+												</option>
 											))}
-										</ul>
-									</div>
-
-									{/* Sort */}
-									<div className="rounded-card border border-(--border) bg-(--surface) p-4">
-										<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
-											เรียงลำดับ
-										</h3>
-										<div className="relative">
-											<select
-												value={sortBy}
-												onChange={(e) =>
-													setSortBy(e.target.value)
-												}
-												className="h-10 w-full appearance-none rounded-button border border-(--border) bg-(--surface) px-3 pr-8 text-ui outline-none focus:border-(--primary)"
-												aria-label="เรียงลำดับ"
-											>
-												{SORT_OPTIONS.map((o) => (
-													<option key={o.value} value={o.value}>
-														{o.label}
-													</option>
-												))}
-											</select>
-											<CaretDown
-												size={14}
-												className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
-											/>
-										</div>
+										</select>
+										<CaretDown
+											size={14}
+											className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
+										/>
 									</div>
 								</div>
 							</div>

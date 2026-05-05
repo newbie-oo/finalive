@@ -32,7 +32,9 @@ describe("CourseFilters", () => {
 				initialPrice=""
 				initialDuration=""
 				initialSort="newest"
-			/>,
+			>
+				<div />
+			</CourseFilters>,
 		);
 
 		// Click a price filter
@@ -52,10 +54,12 @@ describe("CourseFilters", () => {
 				initialPrice="free"
 				initialDuration="0-60"
 				initialSort="price_asc"
-			/>,
+			>
+				<div />
+			</CourseFilters>,
 		);
 
-		const clearBtn = screen.getByRole("button", { name: /ล้าง/ });
+		const clearBtn = screen.getByRole("button", { name: /ล้างตัวกรอง/ });
 		fireEvent.click(clearBtn);
 
 		// After clear, search input should be empty
@@ -70,7 +74,9 @@ describe("CourseFilters", () => {
 				initialPrice=""
 				initialDuration=""
 				initialSort="newest"
-			/>,
+			>
+				<div />
+			</CourseFilters>,
 		);
 
 		const sortSelect = screen.getByLabelText("เรียงลำดับ");
