@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { unstable_noStore } from "next/cache";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse } from "@/server/repos/learn";
 import { listLatestQuizPassByCourse } from "@/server/repos/quiz";
@@ -15,6 +16,7 @@ export default async function CourseLearnLayout({
 	params: Promise<{ courseSlug: string }>;
 	children: React.ReactNode;
 }) {
+	unstable_noStore();
 	const { courseSlug } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
