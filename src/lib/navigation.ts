@@ -15,7 +15,13 @@ export const PUBLIC_NAV: NavItem[] = [
 
 export const STUDENT_NAV = PUBLIC_NAV.filter((n) => n.visibility !== "admin");
 
-export const ADMIN_NAV = PUBLIC_NAV.filter((n) => n.visibility !== "student");
+// Admin nav is explicitly defined (not derived from PUBLIC_NAV) so that
+// adding new public routes does not silently inject them into the admin header.
+export const ADMIN_NAV: NavItem[] = [
+	{ href: "/courses", label: "คอร์ส", visibility: "always" },
+	{ href: "/instructor", label: "ผู้สอน", visibility: "always" },
+	{ href: "/admin", label: "แผงควบคุม", visibility: "admin" },
+];
 
 export function visibleNav(
 	role: string | undefined,
