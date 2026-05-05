@@ -9,21 +9,28 @@ import {
 	updateAdminModule,
 	deleteAdminModule,
 	deleteAdminLesson,
-	getAdminLessonById,
 	reorderAdminModules,
 	reorderAdminLessons,
 } from "@/server/repos/admin-course";
 import { getCourseCurriculum } from "@/server/repos/course";
-import { CurriculumAdminService } from "@/server/services/curriculum-admin";
+import { createCurriculumAdminService } from "@/server/services/curriculum-admin";
 import {
 	requireAdminSession,
 	requireCourseAccess,
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 
-function makeCurriculumService() {
-	return new CurriculumAdminService({ getCourseCurriculum });
-}
+const svc = createCurriculumAdminService({
+	getCourseCurriculum,
+	createAdminModule,
+	createAdminLesson,
+	updateAdminModule,
+	updateAdminLesson,
+	deleteAdminModule,
+	deleteAdminLesson,
+	reorderAdminModules,
+	reorderAdminLessons,
+});
 
 const createModuleSchema = z.object({
 	courseId: z.string().uuid(),
@@ -42,22 +49,17 @@ export async function createModuleAction(formData: FormData) {
 		courseId,
 		title: formData.get("title"),
 	});
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
 
-	const svc = makeCurriculumService();
-	const nextSortOrder = await svc.computeNextModuleSortOrder(courseId);
-
-	const moduleId = await createAdminModule({
-		courseId: parsed.data.courseId,
-		title: parsed.data.title,
-		sortOrder: nextSortOrder,
-		createdByUserId: auth.session.user.id,
-	});
+	const result = await svc.createModule(
+		parsed.data.courseId,
+		parsed.data.title,
+		auth.session.user.id,
+	);
+	if (!result.ok) return { ok: false, error: result.error };
 
 	revalidateCourseAdminPaths(courseId, access.course.slug);
-	return { ok: true, moduleId };
+	return { ok: true, moduleId: result.moduleId };
 }
 
 const createLessonSchema = z.object({
@@ -74,32 +76,22 @@ export async function createLessonAction(formData: FormData) {
 		moduleId,
 		title: formData.get("title"),
 	});
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
 
 	const courseId = formData.get("courseId") as string;
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const svc = makeCurriculumService();
-	const nextSortOrder = await svc.computeNextLessonSortOrder(
+	const result = await svc.createLesson(
 		courseId,
-		moduleId,
+		parsed.data.moduleId,
+		parsed.data.title,
+		auth.session.user.id,
 	);
-	if (nextSortOrder === null) {
-		return { ok: false, error: "not_found" as const };
-	}
-
-	const lessonId = await createAdminLesson({
-		moduleId: parsed.data.moduleId,
-		title: parsed.data.title,
-		sortOrder: nextSortOrder,
-		createdByUserId: auth.session.user.id,
-	});
+	if (!result.ok) return { ok: false, error: result.error };
 
 	revalidatePath(`/admin/courses/${courseId}/curriculum`);
-	return { ok: true, lessonId };
+	return { ok: true, lessonId: result.lessonId };
 }
 
 const updateLessonSchema = z.object({
@@ -114,40 +106,25 @@ export async function updateLessonAction(formData: FormData) {
 	const auth = await requireAdminSession();
 	if (!auth.ok) return { ok: false, error: auth.error } as const;
 
-	const lessonId = formData.get("lessonId") as string;
-	const lessonRow = await getAdminLessonById(lessonId);
-	if (!lessonRow) {
-		return { ok: false, error: "not_found" as const };
-	}
-
 	const courseId = formData.get("courseId") as string;
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const svc = makeCurriculumService();
-	const verified = await svc.verifyLessonInCourse(lessonId, courseId);
-	if (!verified.ok) return { ok: false, error: verified.error };
-
-	const raw: Record<string, unknown> = { lessonId };
+	const raw: Record<string, unknown> = { lessonId: formData.get("lessonId") };
 	for (const key of ["title", "bodyMd", "isPreview", "isFree"] as const) {
 		const val = formData.get(key);
 		if (val !== null) raw[key] = val;
 	}
 
 	const parsed = updateLessonSchema.safeParse(raw);
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
 
-	const { lessonId: _, ...updates } = parsed.data;
-	await updateAdminLesson(lessonId, {
-		...updates,
-		bodyMd: updates.bodyMd ?? null,
-	});
+	const { lessonId, ...patch } = parsed.data;
+	const result = await svc.updateLesson(courseId, lessonId, patch);
+	if (!result.ok) return { ok: false, error: result.error };
 
 	revalidatePath(`/admin/courses/${courseId}/curriculum`);
 	revalidatePath(`/admin/courses/${courseId}/lessons/${lessonId}`);
-
 	return { ok: true };
 }
 
@@ -164,20 +141,19 @@ export async function reorderModulesAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const moduleIdsRaw = formData.get("moduleIds") as string;
 	let moduleIds: string[];
 	try {
-		moduleIds = JSON.parse(moduleIdsRaw);
+		moduleIds = JSON.parse(formData.get("moduleIds") as string);
 	} catch {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
 	const parsed = reorderModulesSchema.safeParse({ courseId, moduleIds });
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
 
-	await reorderAdminModules(courseId, parsed.data.moduleIds);
+	const result = await svc.reorderModules(courseId, parsed.data.moduleIds);
+	if (!result.ok) return { ok: false, error: result.error };
+
 	revalidatePath(`/admin/courses/${courseId}/curriculum`);
 	return { ok: true };
 }
@@ -197,20 +173,19 @@ export async function reorderLessonsAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const lessonIdsRaw = formData.get("lessonIds") as string;
 	let lessonIds: string[];
 	try {
-		lessonIds = JSON.parse(lessonIdsRaw);
+		lessonIds = JSON.parse(formData.get("lessonIds") as string);
 	} catch {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
 	const parsed = reorderLessonsSchema.safeParse({ moduleId, lessonIds });
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+	if (!parsed.success) return { ok: false, error: "invalid_input" as const };
 
-	await reorderAdminLessons(moduleId, parsed.data.lessonIds);
+	const result = await svc.reorderLessons(moduleId, parsed.data.lessonIds);
+	if (!result.ok) return { ok: false, error: result.error };
+
 	revalidatePath(`/admin/courses/${courseId}/curriculum`);
 	return { ok: true };
 }
@@ -233,14 +208,13 @@ export async function updateModuleAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const svc = makeCurriculumService();
-	const verified = await svc.verifyModuleInCourse(
-		parsed.data.moduleId,
+	const result = await svc.updateModule(
 		parsed.data.courseId,
+		parsed.data.moduleId,
+		{ title: parsed.data.title },
 	);
-	if (!verified.ok) return { ok: false, error: verified.error };
+	if (!result.ok) return { ok: false, error: result.error };
 
-	await updateAdminModule(parsed.data.moduleId, { title: parsed.data.title });
 	revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
 	return { ok: true };
 }
@@ -262,14 +236,12 @@ export async function deleteModuleAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const svc = makeCurriculumService();
-	const verified = await svc.verifyModuleInCourse(
-		parsed.data.moduleId,
+	const result = await svc.deleteModule(
 		parsed.data.courseId,
+		parsed.data.moduleId,
 	);
-	if (!verified.ok) return { ok: false, error: verified.error };
+	if (!result.ok) return { ok: false, error: result.error };
 
-	await deleteAdminModule(parsed.data.moduleId);
 	revalidateCourseAdminPaths(parsed.data.courseId, access.course.slug);
 	return { ok: true };
 }
@@ -292,17 +264,13 @@ export async function renameLessonAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const lessonRow = await getAdminLessonById(parsed.data.lessonId);
-	if (!lessonRow) return { ok: false, error: "not_found" as const };
-
-	const svc = makeCurriculumService();
-	const verified = await svc.verifyLessonInCourse(
-		parsed.data.lessonId,
+	const result = await svc.updateLesson(
 		parsed.data.courseId,
+		parsed.data.lessonId,
+		{ title: parsed.data.title },
 	);
-	if (!verified.ok) return { ok: false, error: verified.error };
+	if (!result.ok) return { ok: false, error: result.error };
 
-	await updateAdminLesson(parsed.data.lessonId, { title: parsed.data.title });
 	revalidatePath(`/admin/courses/${parsed.data.courseId}/curriculum`);
 	revalidatePath(
 		`/admin/courses/${parsed.data.courseId}/lessons/${parsed.data.lessonId}`,
@@ -327,17 +295,12 @@ export async function deleteLessonAction(
 	const access = await requireCourseAccess(auth.session, parsed.data.courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const lessonRow = await getAdminLessonById(parsed.data.lessonId);
-	if (!lessonRow) return { ok: false, error: "not_found" as const };
-
-	const svc = makeCurriculumService();
-	const verified = await svc.verifyLessonInCourse(
-		parsed.data.lessonId,
+	const result = await svc.deleteLesson(
 		parsed.data.courseId,
+		parsed.data.lessonId,
 	);
-	if (!verified.ok) return { ok: false, error: verified.error };
+	if (!result.ok) return { ok: false, error: result.error };
 
-	await deleteAdminLesson(parsed.data.lessonId);
 	revalidateCourseAdminPaths(parsed.data.courseId, access.course.slug);
 	return { ok: true };
 }
