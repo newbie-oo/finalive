@@ -3,59 +3,71 @@ import { Check } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 
 interface StepperStep {
-  label: string;
+	label: string;
 }
 
-interface StepperProps extends React.HTMLAttributes<HTMLOListElement> {
-  steps: StepperStep[];
-  /** Zero-based index of the current step. */
-  current: number;
+interface StepperProps extends React.HTMLAttributes<HTMLDivElement> {
+	steps: StepperStep[];
+	/** Zero-based index of the current step. */
+	current: number;
 }
 
 export function Stepper({ steps, current, className, ...props }: StepperProps) {
-  return (
-    <ol
-      role="list"
-      aria-label="Checkout progress"
-      className={cn("flex w-full items-center gap-2", className)}
-      {...props}
-    >
-      {steps.map((step, idx) => {
-        const isPast = idx < current;
-        const isCurrent = idx === current;
-        return (
-          <li key={step.label} className="flex flex-1 items-center gap-2 min-w-0">
-            <span
-              aria-current={isCurrent ? "step" : undefined}
-              className={cn(
-                "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-uism font-semibold tabular-nums",
-                isPast && "bg-(--success) text-white",
-                isCurrent && "bg-(--primary) text-(--primary-fg)",
-                !isPast && !isCurrent && "border border-(--border) text-(--foreground-muted)",
-              )}
-            >
-              {isPast ? <Check weight="bold" className="h-4 w-4" /> : idx + 1}
-            </span>
-            <span
-              className={cn(
-                "truncate text-uism",
-                isCurrent ? "text-(--foreground) font-medium" : "text-(--foreground-muted)",
-              )}
-            >
-              {step.label}
-            </span>
-            {idx < steps.length - 1 && (
-              <span
-                aria-hidden
-                className={cn(
-                  "ml-auto h-px flex-1",
-                  isPast ? "bg-(--success)" : "bg-(--border)",
-                )}
-              />
-            )}
-          </li>
-        );
-      })}
-    </ol>
-  );
+	return (
+		<div
+			role="list"
+			aria-label="Checkout progress"
+			className={cn("flex items-center justify-center", className)}
+			{...props}
+		>
+			{steps.map((step, idx) => {
+				const isPast = idx < current;
+				const isCurrent = idx === current;
+				const isFuture = idx > current;
+				return (
+					<React.Fragment key={step.label}>
+						<div className="flex flex-col items-center gap-2">
+							<div
+								aria-current={isCurrent ? "step" : undefined}
+								className={cn(
+									"flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums",
+									isPast && "bg-(--primary) text-white",
+									isCurrent &&
+										"bg-(--primary) text-(--primary-fg) ring-4 ring-(--primary)/15",
+									isFuture && "bg-(--surface-muted) text-(--foreground-muted)",
+								)}
+							>
+								{isPast ? (
+									<Check weight="bold" className="h-3.5 w-3.5" />
+								) : (
+									idx + 1
+								)}
+							</div>
+							<span
+								className={cn(
+									"text-uism",
+									isCurrent
+										? "font-semibold text-(--foreground)"
+										: isFuture
+											? "text-(--foreground-muted)"
+											: "text-(--foreground)",
+								)}
+							>
+								{step.label}
+							</span>
+						</div>
+						{idx < steps.length - 1 && (
+							<div
+								aria-hidden
+								className={cn(
+									"mx-4 mb-6 h-0.5 w-20",
+									idx < current ? "bg-(--primary)" : "bg-(--border)",
+								)}
+							/>
+						)}
+					</React.Fragment>
+				);
+			})}
+		</div>
+	);
 }
