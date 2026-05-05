@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { unstable_noStore } from "next/cache";
 import { buildHlsUrl } from "@/server/services/bunny";
 import { LessonContent } from "@/components/learn/lesson-content";
 import { getSession } from "@/server/auth-session";
@@ -13,6 +14,7 @@ export default async function LearnLessonPage({
 }: {
 	params: Promise<{ courseSlug: string; lessonId: string }>;
 }) {
+	unstable_noStore();
 	const { courseSlug, lessonId } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
