@@ -13,6 +13,7 @@ import {
 	Check,
 	ArrowLeft,
 	ArrowRight,
+	Certificate,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
@@ -159,6 +160,30 @@ export function LessonPlayerLayout({
 					</div>
 				</div>
 			</div>
+
+			{/* Certificate claim banner */}
+			{totalLessons > 0 && doneLessons >= totalLessons && (
+				<div className="mx-auto max-w-[920px] px-4 pt-4 lg:px-8">
+					<div className="flex items-center gap-4 rounded-[14px] border border-(--success)/30 bg-(--success-bg) p-5">
+						<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-(--success)">
+							<Certificate size={24} weight="fill" className="text-white" />
+						</div>
+						<div className="min-w-0 flex-1">
+							<p className="text-uism font-semibold text-(--success-fg)">
+								จบคอร์สแล้ว! 🎉
+							</p>
+							<p className="text-caption text-(--success-fg)/80">
+								ใบประกาศพร้อมให้ดาวน์โหลดแล้ว
+							</p>
+						</div>
+						<Button asChild variant="primary" size="md">
+							<Link href="/account/certificates">
+								ดูใบประกาศ <ArrowRight size={14} weight="bold" />
+							</Link>
+						</Button>
+					</div>
+				</div>
+			)}
 
 			{/* Tabs + body */}
 			<div className="px-4 py-5 pb-8 lg:px-8 lg:py-8 lg:pb-12 max-w-[920px] mx-auto">
