@@ -62,8 +62,8 @@ export async function submitQuizAction(formData: FormData) {
 	});
 
 	if (result.passed && courseId) {
-		const service = container.courseCompletion();
-		await service.reevaluateCourseCompletion({
+		const checker = container.courseCompletionChecker();
+		await checker.reevaluateCourseCompletion({
 			userId: session.user.id,
 			userEmail: session.user.email,
 			userRole: session.user.role,

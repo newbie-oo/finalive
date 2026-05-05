@@ -19,6 +19,7 @@ import { makeDbAuditLogger } from "@/server/services/audit-logger";
 import { sendGrantCourseEmail } from "@/server/services/mailer";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
+import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
 import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
 /**
@@ -87,7 +88,7 @@ export const container = {
 						and(
 							eq(enrollment.userId, studentUserId),
 							eq(enrollment.courseId, courseId),
-							eq(enrollment.status, "active")
+							eq(enrollment.status, "active"),
 						),
 					)
 					.limit(1);
@@ -161,6 +162,13 @@ export const container = {
 		return new CourseCompletionService({
 			markLessonComplete: async () => {},
 			getCourseIdByLessonId: async () => null,
+			checkAndMarkCourseComplete,
+			certificateIssuer: certificateIssuerFactory(),
+		});
+	},
+
+	courseCompletionChecker(): CourseCompletionChecker {
+		return new CourseCompletionChecker({
 			checkAndMarkCourseComplete,
 			certificateIssuer: certificateIssuerFactory(),
 		});
