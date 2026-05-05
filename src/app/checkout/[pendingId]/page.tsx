@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CaretLeft, WarningCircle } from "@phosphor-icons/react/dist/ssr";
+import {
+	WarningCircle,
+	Shield,
+	ArrowRight,
+	Sparkle,
+} from "@phosphor-icons/react/dist/ssr";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
 import { RefCodeCopy } from "./ref-code-copy";
 import { Button } from "@/components/ui/button";
@@ -14,6 +19,7 @@ import {
 import { formatTHB } from "@/lib/format";
 import { isExpired } from "@/server/services/pending-fsm";
 import { CountdownTimer } from "@/components/checkout/countdown-timer";
+import { PaymentMethodTabs } from "@/components/checkout/payment-method-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -34,15 +40,7 @@ export default async function CheckoutPage({
 
 	return (
 		<CheckoutShell step={1}>
-			<div className="mx-auto max-w-[640px]">
-				<Link
-					href={`/courses/${pending.courseSlug}`}
-					className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
-				>
-					<CaretLeft size={14} /> {pending.courseTitle}
-				</Link>
-				<h1 className="mt-2 text-h1">ชำระเงิน</h1>
-
+			<div className="mx-auto max-w-[560px]">
 				{expired ? (
 					<div className="mt-8 space-y-4">
 						<Card className="flex items-start gap-3 border-destructive bg-destructive-bg">
@@ -79,82 +77,93 @@ export default async function CheckoutPage({
 						</Button>
 					</div>
 				) : (
-					<div className="mt-8 space-y-5">
-						<Card className="space-y-3">
-							<h2 className="text-h4">สรุปการสั่งซื้อ</h2>
-							<Row label="คอร์ส" value={pending.courseTitle} />
-							<Row
-								label="ยอดที่ต้องโอน"
-								value={
-									<span className="num text-h2 font-semibold text-success">
-										{formatTHB(pending.amount)}
-									</span>
-								}
+					<div className="mt-8 space-y-4">
+						{/* Order summary */}
+						<Card className="p-6">
+							<h2 className="text-h4 mb-4">สรุปการสั่งซื้อ</h2>
+							<div className="flex gap-3.5 pb-4 mb-4 border-b border-(--border)">
+								<div className="h-16 w-24 shrink-0 overflow-hidden rounded-[10px] bg-primary/10">
+									{/* Course thumbnail placeholder */}
+								</div>
+								<div className="flex-1 min-w-0">
+									<div className="text-ui font-semibold text-(--foreground) mb-1">
+										{pending.courseTitle}
+									</div>
+								</div>
+							</div>
+							<div className="flex justify-between mb-2 text-sm">
+								<span className="text-(--foreground-muted)">ราคาคอร์ส</span>
+								<span className="num font-semibold text-(--foreground)">
+									{formatTHB(pending.amount)}
+								</span>
+							</div>
+							<div className="mt-3 flex items-baseline justify-between border-t border-(--border) pt-3">
+								<span className="text-ui font-semibold text-(--foreground)">
+									รวมทั้งสิ้น
+								</span>
+								<span className="num text-2xl font-bold text-primary">
+									{formatTHB(pending.amount)}
+								</span>
+							</div>
+						</Card>
+
+						{/* Payment method */}
+						<div className="space-y-3">
+							<h2 className="text-h4">วิธีชำระเงิน</h2>
+							<PaymentMethodTabs
+								bankText={bank?.text ?? null}
+								qrImageUrl={qrImageUrl}
 							/>
-							<div className="flex items-center justify-between gap-3">
+						</div>
+
+						{/* Reference code */}
+						<div className="rounded-card border border-primary/20 bg-primary/5 p-5">
+							<div className="mb-2 flex items-center justify-between gap-2">
 								<span className="text-uism text-(--foreground-muted)">
-									เลขอ้างอิง
+									เลขอ้างอิง{" "}
+									<span className="text-(--foreground-subtle)">
+										(โอนเงินแล้วระบุในสลิป)
+									</span>
+								</span>
+								<CountdownTimer expiresAt={pending.expiresAt} />
+							</div>
+							<div className="flex items-center justify-between gap-3">
+								<span className="mono text-[28px] font-bold tracking-wide text-primary">
+									{pending.refCode}
 								</span>
 								<RefCodeCopy refCode={pending.refCode} />
 							</div>
-							<Row
-								label="เหลือเวลา"
-								value={<CountdownTimer expiresAt={pending.expiresAt} />}
-							/>
-						</Card>
+						</div>
 
-						<Card className="space-y-4">
-							<h2 className="text-h4">โอนเข้าบัญชี</h2>
-							<p className="text-body text-(--foreground-muted)">
-								{bank ? bank.text : "กรุณาติดต่อ admin สำหรับข้อมูลบัญชี"}
-							</p>
-							<div className="flex flex-col items-center gap-3">
-								{qrImageUrl ? (
-									// eslint-disable-next-line @next/next/no-img-element
-									<img
-										src={qrImageUrl}
-										width={224}
-										height={224}
-										alt="PromptPay QR สำหรับโอนค่าคอร์ส"
-										className="h-56 w-56 rounded-card border border-(--border) bg-white object-contain p-2"
-									/>
-								) : (
-									<div
-										role="img"
-										aria-label="ยังไม่ได้ตั้งค่า QR — โอนผ่านเลขบัญชีด้านบน"
-										className="flex h-40 w-40 items-center justify-center rounded-card border border-dashed border-(--border) bg-(--surface-muted) px-3 text-center text-caption text-(--foreground-muted)"
-									>
-										QR ยังไม่พร้อม — โอนตามเลขบัญชีด้านบน
-									</div>
-								)}
-								<p className="text-uism text-(--foreground-muted)">
-									โอนยอด{" "}
-									<span className="num">{formatTHB(pending.amount)}</span>{" "}
-									แล้วกดปุ่มอัปโหลดสลิปด้านล่าง
-								</p>
-							</div>
-						</Card>
-
+						{/* Upload slip */}
 						<Button asChild variant="accent" size="lg" className="w-full">
 							<Link href={`/checkout/${pending.id}/upload-slip`}>
-								อัปโหลดสลิป
+								อัปโหลดสลิป <ArrowRight size={18} />
 							</Link>
 						</Button>
-						<p className="text-center text-caption text-(--foreground-subtle)">
-							กรุณาโอนภายในเวลาที่กำหนด จากนั้นกด &ldquo;อัปโหลดสลิป&rdquo;
+
+						{/* Security */}
+						<p className="flex items-center justify-center gap-1.5 text-center text-caption text-(--foreground-subtle)">
+							<Shield size={14} className="text-(--success)" />
+							ข้อมูลของคุณปลอดภัย · เข้ารหัส SSL 256-bit
 						</p>
+
+						{/* Next steps */}
+						<div className="flex items-start gap-3 rounded-card bg-(--surface-muted) p-4">
+							<Sparkle size={18} className="mt-0.5 shrink-0 text-primary" />
+							<div>
+								<div className="text-ui font-semibold text-(--foreground) mb-0.5">
+									ขั้นตอนต่อไป
+								</div>
+								<p className="text-uism text-(--foreground-muted)">
+									เมื่อคุณยืนยันการชำระ ทีมงานจะตรวจสอบสลิปภายใน 1-2 ชม.
+									และส่งอีเมลแจ้งเปิดคอร์สให้คุณทันที
+								</p>
+							</div>
+						</div>
 					</div>
 				)}
 			</div>
 		</CheckoutShell>
-	);
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-	return (
-		<div className="flex items-center justify-between gap-3">
-			<span className="text-uism text-(--foreground-muted)">{label}</span>
-			<span className="text-ui font-medium text-(--foreground)">{value}</span>
-		</div>
 	);
 }
