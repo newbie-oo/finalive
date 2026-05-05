@@ -111,17 +111,35 @@ export default async function DashboardPage() {
 	return (
 		<section className="space-y-8">
 			{/* Welcome banner */}
-			<div className="relative overflow-hidden rounded-card border border-(--border) bg-gradient-to-br from-[rgba(79,70,229,0.08)] to-[rgba(249,115,22,0.06)] p-6 md:p-8">
+			<div
+				className="relative overflow-hidden rounded-card border border-(--border) p-6 md:p-8"
+				style={{
+					background:
+						"linear-gradient(120deg, rgba(79,70,229,0.08) 0%, rgba(249,115,22,0.06) 100%)",
+				}}
+			>
 				<div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
 					<div>
-						<h1 className="text-h1 text-(--foreground)">
+						<h1 className="mb-1.5 text-h1 font-bold text-(--foreground)">
 							สวัสดี {session.user.name?.split(/\s+/)[0] ?? "นักเรียน"} 👋
 						</h1>
-						<p className="mt-1 text-bodylg text-(--foreground-muted)">
-							{inProgress.length > 0
-								? "พร้อมเรียนต่อจากจุดที่ค้างไว้ไหม?"
-								: "เริ่มเรียนคอร์สใหม่ได้เลย"}
-						</p>
+						{inProgress[0] ? (
+							<p className="text-bodylg text-(--foreground-muted)">
+								เรียนต่อจาก{" "}
+								<strong className="num font-bold text-(--foreground)">
+									{inProgress[0].courseTitle}
+								</strong>{" "}
+								— ทำไปแล้ว{" "}
+								<strong className="num font-bold text-(--foreground)">
+									{inProgress[0].doneLessons}/{inProgress[0].totalLessons}
+								</strong>{" "}
+								บทเรียน
+							</p>
+						) : (
+							<p className="text-bodylg text-(--foreground-muted)">
+								เริ่มเรียนคอร์สใหม่ได้เลย
+							</p>
+						)}
 					</div>
 					<div className="flex gap-3">
 						<Link
