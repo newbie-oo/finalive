@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-	WarningCircle,
-	Shield,
-	ArrowRight,
-	Sparkle,
-} from "@phosphor-icons/react/dist/ssr";
+import { WarningCircle, Shield, Sparkle } from "@phosphor-icons/react/dist/ssr";
+import { InlineSlipUpload } from "@/components/checkout/inline-slip-upload";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
 import { RefCodeCopy } from "./ref-code-copy";
 import { Button } from "@/components/ui/button";
@@ -135,12 +131,8 @@ export default async function CheckoutPage({
 							</div>
 						</div>
 
-						{/* Upload slip */}
-						<Button asChild variant="accent" size="lg" className="w-full">
-							<Link href={`/checkout/${pending.id}/upload-slip`}>
-								อัปโหลดสลิป <ArrowRight size={18} />
-							</Link>
-						</Button>
+						{/* Inline slip upload */}
+						<InlineSlipUpload pendingId={pending.id} />
 
 						{/* Security */}
 						<p className="flex items-center justify-center gap-1.5 text-center text-caption text-(--foreground-subtle)">
