@@ -8,7 +8,6 @@ import {
 	LockSimple,
 	YoutubeLogo,
 	Video,
-	FileText,
 	Certificate,
 	ChatCircle,
 	Clock,
@@ -73,9 +72,7 @@ function LessonRow({
 			</span>
 			<span
 				className={`text-ui flex-1 ${
-					playable
-						? "text-(--foreground)"
-						: "text-(--foreground-muted)"
+					playable ? "text-(--foreground)" : "text-(--foreground-muted)"
 				}`}
 			>
 				{lesson.title}
@@ -143,9 +140,7 @@ function CurriculumTab({
 	return (
 		<div>
 			<div className="mb-4 flex items-end justify-between">
-				<h3 className="text-h2 font-semibold text-(--foreground)">
-					เนื้อหาคอร์ส
-				</h3>
+				<h3 className="text-h2 font-semibold text-(--foreground)">เนื้อหาคอร์ส</h3>
 				<span className="text-uism text-(--foreground-muted)">
 					<span className="num">{curriculum.length}</span> โมดูล ·{" "}
 					<span className="num">{totalLessons}</span> บทเรียน ·{" "}
@@ -166,8 +161,7 @@ function CurriculumTab({
 										{m.sortOrder}. {m.title}
 									</span>
 									<span className="text-uism text-(--foreground-muted)">
-										<span className="num">{m.lessons.length}</span>{" "}
-										บทเรียน
+										<span className="num">{m.lessons.length}</span> บทเรียน
 									</span>
 								</span>
 							}
@@ -206,8 +200,7 @@ function InstructorTab() {
 			</div>
 
 			<p className="text-body text-(--foreground)">
-				อาร์มมีประสบการณ์วิเคราะห์การลงทุนกว่า 10 ปี
-				ในตลาดหุ้นไทยและต่างประเทศ
+				อาร์มมีประสบการณ์วิเคราะห์การลงทุนกว่า 10 ปี ในตลาดหุ้นไทยและต่างประเทศ
 				พร้อมความเชี่ยวชาญในการวางแผนการเงินระยะยาวและการบริหารความเสี่ยง
 				ผ่านการสอนมาแล้วกว่า 5,000 นักเรียนทั่วประเทศ
 			</p>
@@ -272,8 +265,8 @@ function InstructorCard() {
 				</div>
 			</div>
 			<p className="mb-4 text-uism text-pretty text-(--foreground-muted)">
-				อาจารย์อาร์มเคยทำงานด้านการลงทุนกับกองทุนใหญ่ในไทยและสิงคโปร์
-				ปัจจุบันเป็น independent analyst
+				อาจารย์อาร์มเคยทำงานด้านการลงทุนกับกองทุนใหญ่ในไทยและสิงคโปร์ ปัจจุบันเป็น
+				independent analyst
 			</p>
 			<Button variant="secondary" className="w-full">
 				ดูคอร์สทั้งหมดของผู้สอน
@@ -296,7 +289,6 @@ function CourseContentsCard({
 			label: `${totalLessons} บทเรียน HD`,
 			sub: `รวม ${formatDuration(totalDuration)}`,
 		},
-		{ icon: FileText, label: "Excel template", sub: "5 ไฟล์ดาวน์โหลด" },
 		{ icon: Certificate, label: "ใบประกาศ", sub: "เมื่อจบคอร์ส" },
 		{ icon: ChatCircle, label: "Q&A กับผู้สอน", sub: "บน Discord" },
 		{ icon: Clock, label: "เรียนตลอดชีพ", sub: "อัปเดตเนื้อหาฟรี" },

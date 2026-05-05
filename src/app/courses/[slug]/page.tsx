@@ -8,9 +8,7 @@ import {
 	Certificate as CertificateIcon,
 	Users,
 	Play,
-	Shield,
 	ChatCircle,
-	FileText,
 	Video,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
@@ -33,7 +31,6 @@ const CTA_FEATURES = [
 	"เรียนได้ตลอดชีพ บนทุกอุปกรณ์",
 	"แบบทดสอบจบแต่ละโมดูล",
 	"ใบประกาศเมื่อเรียนจบ",
-	"ไฟล์ Excel template พร้อมใช้",
 	"Q&A กับผู้สอนใน Discord",
 ];
 
@@ -88,7 +85,6 @@ export default async function CourseDetailPage({
 		...(durationHours ? [{ icon: Clock, label: durationHours }] : []),
 		{ icon: CertificateIcon, label: "ใบประกาศ" },
 		{ icon: ChatCircle, label: "Q&A กับผู้สอน" },
-		{ icon: FileText, label: "Excel template" },
 	];
 
 	return (
@@ -109,7 +105,6 @@ export default async function CourseDetailPage({
 					<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
 						{/* Left column — hero */}
 						<div>
-							{/* Cover image with play overlay */}
 							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
 								{course.coverStorageKey ? (
 									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
@@ -125,20 +120,6 @@ export default async function CourseDetailPage({
 								) : (
 									<div className="relative aspect-video w-full overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]" />
 								)}
-								{hasPreviewableLesson && (
-									<div className="absolute inset-0 flex items-center justify-center">
-										<Link
-											href="#curriculum"
-											className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-white pl-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-transform hover:scale-105"
-										>
-											<Play
-												size={28}
-												weight="fill"
-												className="text-(--primary)"
-											/>
-										</Link>
-									</div>
-								)}
 							</div>
 
 							{/* Badges */}
@@ -147,7 +128,7 @@ export default async function CourseDetailPage({
 									<span className="inline-flex h-[22px] items-center gap-1 rounded-full px-2.5 text-[12px] font-medium leading-none whitespace-nowrap bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-(--accent)">
 										BESTSELLER
 									</span>
-									)}
+								)}
 								<StatusChip tone="primary">
 									มีคนเรียน {course.enrollmentCount.toLocaleString("th-TH")} คน
 								</StatusChip>
@@ -318,27 +299,11 @@ export default async function CourseDetailPage({
 											className="w-full"
 										>
 											<Link href="#curriculum">
-												<Play
-													size={16}
-													weight="fill"
-													className="mr-1"
-												/>
+												<Play size={16} weight="fill" className="mr-1" />
 												ดูตัวอย่างฟรี
 											</Link>
 										</Button>
 									)}
-								</div>
-
-								{/* Refund guarantee */}
-								<div className="mt-4 flex items-center gap-3 rounded-lg bg-(--surface-muted) p-3">
-									<Shield
-										size={18}
-										weight="fill"
-										className="shrink-0 text-(--success)"
-									/>
-									<span className="text-uism text-(--foreground)">
-										รับประกันคืนเงินภายใน 7 วัน
-									</span>
 								</div>
 
 								{/* Enrollment footer */}
