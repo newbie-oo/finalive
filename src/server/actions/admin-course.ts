@@ -11,6 +11,7 @@ import {
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 import { container } from "@/server/container";
+import { parseFormData } from "@/lib/form-data";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -38,24 +39,9 @@ export async function createCourseAction(formData: FormData) {
 		return { ok: false, error: "forbidden" as const };
 	}
 
-	const parsed = createSchema.safeParse({
-		slug: formData.get("slug"),
-		title: formData.get("title"),
-		summary: formData.get("summary"),
-		description: formData.get("description") ?? undefined,
-		coverMediaId: formData.get("coverMediaId") ?? undefined,
-		price: formData.get("price") ?? undefined,
-		isFree: formData.get("isFree"),
-	});
+	const parsed = parseFormData(formData, createSchema);
+	if (!parsed.ok) return { ok: false, error: parsed.error };
 
-	if (!parsed.success) {
-		const issue = parsed.error.issues[0];
-		if (!issue) return { ok: false, error: "invalid_input" };
-		const field = issue.path.join(".");
-		return { ok: false, error: `invalid_input (${field}): ${issue.message}` };
-	}
-
-	const price = parsed.data.isFree ? "0.00" : (parsed.data.price ?? "0.00");
 	const courseId = await createAdminCourse({
 		slug: parsed.data.slug,
 		title: parsed.data.title,
@@ -63,7 +49,7 @@ export async function createCourseAction(formData: FormData) {
 		descriptionMd: parsed.data.description || undefined,
 		coverMediaId: parsed.data.coverMediaId || undefined,
 		isFree: parsed.data.isFree,
-		price,
+		price: parsed.data.price ?? "0.00",
 		ownerUserId: auth.session.user.id,
 	});
 
@@ -97,26 +83,8 @@ export async function updateCourseAction(formData: FormData) {
 	const access = await requireCourseAccess(auth.session, courseId);
 	if (!access.ok) return { ok: false, error: access.error } as const;
 
-	const raw: Record<string, unknown> = { courseId };
-	for (const key of [
-		"slug",
-		"title",
-		"summary",
-		"price",
-		"isFree",
-		"status",
-	] as const) {
-		const val = formData.get(key);
-		if (val !== null) raw[key] = val;
-	}
-
-	const parsed = updateSchema.safeParse(raw);
-	if (!parsed.success) {
-		const issue = parsed.error.issues[0];
-		if (!issue) return { ok: false, error: "invalid_input" };
-		const field = issue.path.join(".");
-		return { ok: false, error: `invalid_input (${field}): ${issue.message}` };
-	}
+	const parsed = parseFormData(formData, updateSchema);
+	if (!parsed.ok) return { ok: false, error: parsed.error };
 
 	const { courseId: _, ...updates } = parsed.data;
 	await updateAdminCourse(courseId, {
