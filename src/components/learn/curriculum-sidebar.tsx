@@ -207,7 +207,15 @@ export function CurriculumSidebar({
 
 	const lessonCount =
 		totalLessons ?? modules.reduce((acc, m) => acc + m.lessons.length, 0);
-	const doneCount = progress.filter((p) => p.status === "completed").length;
+	const doneCount = useMemo(() => {
+		let count = 0;
+		for (const mod of modules) {
+			for (const les of mod.lessons) {
+				if (progressMap.get(les.id) === "completed") count++;
+			}
+		}
+		return count;
+	}, [modules, progressMap]);
 	const progressPct =
 		lessonCount > 0 ? Math.round((doneCount / lessonCount) * 100) : 0;
 
