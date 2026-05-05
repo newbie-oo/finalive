@@ -9,7 +9,9 @@ import {
 	Sparkle,
 	BookOpen,
 	ListBullets,
+	Trophy,
 } from "@phosphor-icons/react";
+import { QuizCelebration } from "./quiz-celebration";
 import { submitQuizAction } from "@/server/actions/quiz";
 import type { QuizWithQuestions } from "@/server/repos/quiz";
 import type { QuestionResult } from "@/server/repos/quiz";
@@ -209,6 +211,8 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 		);
 		return (
 			<div className="space-y-6">
+				<QuizCelebration passed={result.passed} />
+
 				{/* Score card */}
 				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center md:p-9">
 					<ScoreCircle
@@ -302,6 +306,22 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 								onClick={() => router.push("/account/enrollments")}
 							>
 								<ListBullets size={16} weight="bold" /> ดูคอร์สของฉัน
+							</Button>
+						)}
+						{result.passed && (
+							<Button
+								asChild
+								variant="outline"
+								size="lg"
+								className="border-(--primary) text-(--primary) hover:bg-(--primary)/5"
+							>
+								<a
+									href={`/verify/${courseSlug}`}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Trophy size={16} weight="bold" /> ดูใบประกาศ
+								</a>
 							</Button>
 						)}
 						<Button

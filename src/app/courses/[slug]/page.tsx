@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
+import { MobileCourseCta } from "@/components/course/mobile-course-cta";
 import { CourseTabs } from "./course-tabs";
 import {
 	getPublishedCourseBySlug,
@@ -332,6 +333,12 @@ export default async function CourseDetailPage({
 				courseSlug={course.slug}
 				totalLessons={totalLessons}
 				totalDuration={totalDuration}
+			/>
+			<MobileCourseCta
+				courseSlug={course.slug}
+				price={price}
+				isFree={isFreeView}
+				isEnrolled={isEnrolled}
 			/>
 		</PublicShell>
 	);

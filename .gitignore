@@ -55,3 +55,6 @@ uploads/video/
 .pi/
 .pi-lens/
 
+# git worktrees
+.worktrees/
+

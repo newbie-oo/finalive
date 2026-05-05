@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 					: undefined,
 		});
 		return NextResponse.redirect(
-			new URL(`/checkout/${result.pendingId}/pending`, req.url),
+			new URL(`/checkout/${result.pendingId}/success`, req.url),
 			303,
 		);
 	} catch (e: unknown) {

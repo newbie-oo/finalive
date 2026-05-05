@@ -16,6 +16,7 @@ import {
 import { PublicShell } from "@/components/layouts/public-shell";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { cn } from "@/lib/utils";
+import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import type { SessionUser } from "@/server/auth-session";
 
 interface NavItem {
@@ -146,6 +147,9 @@ export function AdminShell({
 								</Link>
 							))}
 						</nav>
+					</div>
+					<div className="border-b border-(--border) bg-(--surface-muted)/30 px-6 py-2 md:px-8">
+						<AdminBreadcrumb />
 					</div>
 					<div className="flex-1 px-6 py-6 md:px-8 md:py-7">{children}</div>
 				</div>
