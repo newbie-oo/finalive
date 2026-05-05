@@ -20,6 +20,8 @@ import { sendGrantCourseEmail } from "@/server/services/mailer";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
+import { QuizService } from "@/server/services/quiz-service";
+import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
 import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
 /**
@@ -171,6 +173,15 @@ export const container = {
 		return new CourseCompletionChecker({
 			checkAndMarkCourseComplete,
 			certificateIssuer: certificateIssuerFactory(),
+		});
+	},
+
+	quizService(): QuizService {
+		return new QuizService({
+			getQuizById,
+			isUserEnrolledInCourse,
+			submitQuizAttempt,
+			completionChecker: this.courseCompletionChecker(),
 		});
 	},
 

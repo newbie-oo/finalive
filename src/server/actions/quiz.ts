@@ -1,12 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { getSession } from "@/server/auth-session";
-import { db } from "@/db/client";
-import { courseModule, lesson } from "@/db/schema/course";
-import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
-import { isUserEnrolledInCourse } from "@/server/repos/course";
 import { container } from "@/server/container";
 
 const submitSchema = z.object({
@@ -35,40 +30,16 @@ export async function submitQuizAction(formData: FormData) {
 		return { ok: false, error: "invalid_input" as const };
 	}
 
-	const quiz = await getQuizById(quizId);
-	if (!quiz) {
-		return { ok: false, error: "quiz_not_found" as const };
-	}
-
-	const lessonRow = await db
-		.select({ courseId: courseModule.courseId })
-		.from(lesson)
-		.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-		.where(eq(lesson.id, quiz.lessonId))
-		.limit(1);
-	const courseId = lessonRow[0]?.courseId;
-
-	if (courseId) {
-		const isEnrolled = await isUserEnrolledInCourse(session.user.id, courseId);
-		if (!isEnrolled) {
-			return { ok: false, error: "not_enrolled" as const };
-		}
-	}
-
-	const result = await submitQuizAttempt({
+	const result = await container.quizService().submit({
 		userId: session.user.id,
+		userEmail: session.user.email,
+		userRole: session.user.role,
 		quizId,
 		answers,
 	});
 
-	if (result.passed && courseId) {
-		const checker = container.courseCompletionChecker();
-		await checker.reevaluateCourseCompletion({
-			userId: session.user.id,
-			userEmail: session.user.email,
-			userRole: session.user.role,
-			courseId,
-		});
+	if (!result.ok) {
+		return { ok: false, error: result.error };
 	}
 
 	return { ok: true, result };
