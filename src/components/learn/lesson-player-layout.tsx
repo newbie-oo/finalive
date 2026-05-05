@@ -78,8 +78,11 @@ export function LessonPlayerLayout({
 			if (!res.ok) throw new Error("failed");
 			setLocalCompleted(true);
 			toast.success("จบบทเรียนแล้ว");
-			// Hard reload to force server data re-fetch
-			window.location.reload();
+			// Optimistically update sidebar without reload
+			window.dispatchEvent(
+				new CustomEvent("lesson-marked-complete", { detail: { lessonId } }),
+			);
+			router.refresh();
 		} catch {
 			toast.error("บันทึกไม่สำเร็จ");
 		}
