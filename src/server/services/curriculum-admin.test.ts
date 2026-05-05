@@ -404,4 +404,41 @@ describe("CurriculumAdminService", () => {
 			);
 		});
 	});
+
+	describe("updateModule", () => {
+		it("updates a module when it belongs to the course", async () => {
+			const deps = fakeDeps({
+				getCourseCurriculum: makeCurriculum([
+					{ id: "m1", title: "A", sortOrder: 0, lessons: [] },
+				]),
+			});
+			const svc = createCurriculumAdminService(deps);
+			const result = await svc.updateModule("c1", "m1", { title: "Updated" });
+			expect(result).toEqual({ ok: true });
+			expect(deps.updateAdminModule).toHaveBeenCalledWith("m1", {
+				title: "Updated",
+			});
+		});
+
+		it("returns not_found when module does not belong to course", async () => {
+			const deps = fakeDeps();
+			const svc = createCurriculumAdminService(deps);
+			const result = await svc.updateModule("c1", "mX", { title: "Updated" });
+			expect(result).toEqual({ ok: false, error: "not_found" });
+			expect(deps.updateAdminModule).not.toHaveBeenCalled();
+		});
+
+		it("passes the full patch through to the repo", async () => {
+			const deps = fakeDeps({
+				getCourseCurriculum: makeCurriculum([
+					{ id: "m1", title: "A", sortOrder: 0, lessons: [] },
+				]),
+			});
+			const svc = createCurriculumAdminService(deps);
+			await svc.updateModule("c1", "m1", { title: "Renamed" });
+			expect(deps.updateAdminModule).toHaveBeenCalledWith("m1", {
+				title: "Renamed",
+			});
+		});
+	});
 });
