@@ -31,15 +31,3 @@ export type EmailPayload =
 	| { template: "slip_rejected"; params: SlipRejectedProps }
 	| { template: "course_completed"; params: CourseCompletedProps }
 	| { template: "admin_new_slip"; params: AdminNewSlipProps };
-
-/** Runtime set of valid template names — useful for validation at DB boundaries. */
-export const EMAIL_TEMPLATE_NAMES = new Set<EmailPayload["template"]>([
-	"verify_email",
-	"password_reset",
-	"course_granted",
-	"slip_received",
-	"slip_accepted",
-	"slip_rejected",
-	"course_completed",
-	"admin_new_slip",
-]);

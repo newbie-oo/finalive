@@ -1,17 +1,5 @@
 import "server-only";
 
-/** Bunny Stream API status codes from GET /library/{lib}/videos/{id} */
-export const BUNNY_STATUS = {
-	CREATED: 0,
-	UPLOADED: 1,
-	PROCESSING: 2,
-	TRANSCODING: 3,
-	FINISHED: 4,
-	ERROR: 5,
-	UPLOAD_FAILED: 6,
-	JIT_SEGMENTING: 7,
-} as const;
-
 /** Bunny Stream webhook status codes */
 export const BUNNY_WEBHOOK_STATUS = {
 	UPLOADED: 1,

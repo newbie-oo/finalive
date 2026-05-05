@@ -18,19 +18,3 @@ export function coverImageUrl(
 		: `covers/${storageKey}-640.webp`;
 	return publicUrl(key);
 }
-
-/**
- * Pure helper: builds a cover image URL given a base CDN URL and storage key.
- * Safe to use anywhere (including Client Components) because the base URL is
- * passed in — no process.env access.
- */
-export function buildCoverImageUrl(
-	baseUrl: string,
-	storageKey: string | null | undefined,
-): string | null {
-	if (!storageKey) return null;
-	const key = storageKey.startsWith("covers/")
-		? storageKey
-		: `covers/${storageKey}-640.webp`;
-	return `${baseUrl.replace(/\/$/, "")}/${encodeURI(key)}`;
-}

@@ -8,30 +8,21 @@ import {
 	REJECT_REASON_LABEL,
 	type RejectReason,
 } from "@/components/admin/slip-reject-options";
+import type {
+	RejectSlipInput,
+	RejectSlipResult,
+	AcceptSlipResult,
+	BulkResult,
+} from "@/server/payments/slip-review-service";
 
 export { REJECT_REASONS, REJECT_REASON_LABEL };
-export type { RejectReason };
-
-export interface RejectSlipInput {
-	slipId: string;
-	reason: RejectReason;
-	note?: string;
-}
-
-export interface RejectSlipResult {
-	slipId: string;
-	pendingId: string;
-}
-
-export interface AcceptSlipResult {
-	slipId: string;
-	enrollmentId: string;
-}
-
-export interface BulkResult {
-	succeeded: string[];
-	failed: Array<{ slipId: string; code: string; message: string }>;
-}
+export type {
+	RejectReason,
+	RejectSlipInput,
+	RejectSlipResult,
+	AcceptSlipResult,
+	BulkResult,
+};
 
 function makeService() {
 	return new SlipReviewService({
