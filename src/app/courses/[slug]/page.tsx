@@ -24,7 +24,6 @@ import {
 } from "@/server/repos/course";
 import { getSession } from "@/server/auth-session";
 import { formatTHB } from "@/lib/format";
-import { coverImageUrl } from "@/lib/media-url";
 
 const CTA_FEATURES = [
 	"บทเรียนวิดีโอ HD",
@@ -106,10 +105,10 @@ export default async function CourseDetailPage({
 						{/* Left column — hero */}
 						<div>
 							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
-								{course.coverStorageKey ? (
+								{course.coverImageUrl ? (
 									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
 										<Image
-											src={coverImageUrl(course.coverStorageKey)!}
+											src={course.coverImageUrl}
 											alt={course.title}
 											fill
 											sizes="(max-width: 1024px) 100vw, 720px"
@@ -118,7 +117,14 @@ export default async function CourseDetailPage({
 										/>
 									</div>
 								) : (
-									<div className="relative aspect-video w-full overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]" />
+									<div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
+										<span
+											className="font-semibold text-white"
+											style={{ fontSize: 80, letterSpacing: "-0.02em" }}
+										>
+											{course.title.trim().charAt(0).toUpperCase()}
+										</span>
+									</div>
 								)}
 							</div>
 
