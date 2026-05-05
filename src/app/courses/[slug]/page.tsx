@@ -3,13 +3,15 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
 	CaretRight,
-	CheckCircle,
-	BookOpen,
+	Check,
 	Clock,
 	Certificate as CertificateIcon,
-	Devices,
-	Infinity as InfinityIcon,
 	Users,
+	Play,
+	Shield,
+	ChatCircle,
+	FileText,
+	Video,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { Button } from "@/components/ui/button";
@@ -23,21 +25,16 @@ import {
 	isUserEnrolledInCourse,
 } from "@/server/repos/course";
 import { getSession } from "@/server/auth-session";
-import { formatTHB, formatDuration } from "@/lib/format";
+import { formatTHB } from "@/lib/format";
 import { coverImageUrl } from "@/lib/media-url";
 
-const INCLUDES: Array<{
-	icon: React.ComponentType<{
-		size?: number;
-		weight?: "regular" | "bold" | "fill";
-	}>;
-	label: string;
-}> = [
-	{ icon: BookOpen, label: "บทเรียนวิดีโอครบทุก module" },
-	{ icon: InfinityIcon, label: "เรียนได้ตลอดชีพ ไม่หมดอายุ" },
-	{ icon: Devices, label: "เปิดดูบนทุกอุปกรณ์" },
-	{ icon: CheckCircle, label: "แบบทดสอบจบบท" },
-	{ icon: CertificateIcon, label: "ใบประกาศเมื่อเรียนจบ" },
+const CTA_FEATURES = [
+	"บทเรียนวิดีโอ HD",
+	"เรียนได้ตลอดชีพ บนทุกอุปกรณ์",
+	"แบบทดสอบจบแต่ละโมดูล",
+	"ใบประกาศเมื่อเรียนจบ",
+	"ไฟล์ Excel template พร้อมใช้",
+	"Q&A กับผู้สอนใน Discord",
 ];
 
 export default async function CourseDetailPage({
@@ -72,12 +69,32 @@ export default async function CourseDetailPage({
 	const hasPreviewableLesson = curriculum.some((m) =>
 		m.lessons.some((l) => l.isPreview || l.isFree),
 	);
+	const isBestseller = course.enrollmentCount >= 100;
+	const durationHours =
+		totalDuration === 0
+			? null
+			: totalDuration >= 3600
+				? `${Math.ceil(totalDuration / 3600)} ชม.`
+				: `${Math.ceil(totalDuration / 60)} นาที`;
+	const lastUpdated = course.publishedAt
+		? course.publishedAt.toLocaleDateString("th-TH", {
+				year: "numeric",
+				month: "short",
+			})
+		: null;
+
+	const featurePills = [
+		{ icon: Video, label: `${totalLessons} บทเรียน` },
+		...(durationHours ? [{ icon: Clock, label: durationHours }] : []),
+		{ icon: CertificateIcon, label: "ใบประกาศ" },
+		{ icon: ChatCircle, label: "Q&A กับผู้สอน" },
+		{ icon: FileText, label: "Excel template" },
+	];
 
 	return (
 		<PublicShell>
-			{/* Hero — surface-sunken band, 2-col 60/40 with sticky purchase card. */}
-			<section className="bg-(--surface-sunken)">
-				<div className="mx-auto max-w-[1200px] px-6 py-12 md:py-16">
+			<section className="bg-(--surface-muted)">
+				<div className="mx-auto max-w-[1200px] px-6 py-6 md:py-8">
 					<nav
 						aria-label="breadcrumb"
 						className="mb-6 flex items-center gap-2 text-uism text-(--foreground-muted)"
@@ -89,10 +106,51 @@ export default async function CourseDetailPage({
 						<span className="truncate text-(--foreground)">{course.title}</span>
 					</nav>
 
-					<div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
+					<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
+						{/* Left column — hero */}
 						<div>
+							{/* Cover image with play overlay */}
+							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
+								{course.coverStorageKey ? (
+									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
+										<Image
+											src={coverImageUrl(course.coverStorageKey)!}
+											alt={course.title}
+											fill
+											sizes="(max-width: 1024px) 100vw, 720px"
+											className="object-cover"
+											priority
+										/>
+									</div>
+								) : (
+									<div className="relative aspect-video w-full overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]" />
+								)}
+								{hasPreviewableLesson && (
+									<div className="absolute inset-0 flex items-center justify-center">
+										<Link
+											href="#curriculum"
+											className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-white pl-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-transform hover:scale-105"
+										>
+											<Play
+												size={28}
+												weight="fill"
+												className="text-(--primary)"
+											/>
+										</Link>
+									</div>
+								)}
+							</div>
+
+							{/* Badges */}
 							<div className="mb-4 flex flex-wrap items-center gap-2">
-								<StatusChip tone="primary">การเงินและการลงทุน</StatusChip>
+								{isBestseller && (
+									<span className="inline-flex h-[22px] items-center gap-1 rounded-full px-2.5 text-[12px] font-medium leading-none whitespace-nowrap bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-(--accent)">
+										BESTSELLER
+									</span>
+									)}
+								<StatusChip tone="primary">
+									มีคนเรียน {course.enrollmentCount.toLocaleString("th-TH")} คน
+								</StatusChip>
 								{isFreeView && <StatusChip tone="success">ฟรี</StatusChip>}
 								{isAdmin && course.status !== "published" && (
 									<StatusChip tone="warning">
@@ -102,103 +160,114 @@ export default async function CourseDetailPage({
 									</StatusChip>
 								)}
 							</div>
+
+							{/* Title */}
 							<h1 className="text-h1 break-words text-(--foreground)">
 								{course.title}
 							</h1>
-							<p className="mt-4 text-bodylg text-(--foreground-muted)">
-								{course.summary}
-							</p>
+
+							{/* Meta row */}
+							<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-uism text-(--foreground-muted)">
+								<span className="inline-flex items-center gap-1.5">
+									<Users size={16} />
+									<span className="num font-semibold text-(--foreground)">
+										{course.enrollmentCount.toLocaleString("th-TH")}
+									</span>{" "}
+									ผู้เรียน
+								</span>
+								{lastUpdated && (
+									<>
+										<span className="text-(--foreground-subtle)">·</span>
+										<span>อัปเดตล่าสุด {lastUpdated}</span>
+									</>
+								)}
+								<span className="text-(--foreground-subtle)">·</span>
+								<span>ภาษาไทย</span>
+							</div>
 
 							{/* Instructor row */}
 							<a
 								href="#instructor"
-								className="mt-6 inline-flex items-center gap-3 rounded-card border border-transparent p-1 transition-colors hover:border-(--border) hover:bg-(--surface-muted)"
+								className="mt-5 inline-flex items-center gap-3 rounded-[14px] border border-transparent p-1 transition-colors hover:border-(--border) hover:bg-(--surface-muted)"
 							>
 								<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-ui font-semibold text-white">
 									อา
 								</div>
 								<div>
-									<div className="text-ui font-semibold text-(--foreground)">
-										อ.อาร์ม
+									<div className="text-uism text-(--foreground-muted)">
+										ผู้สอน
 									</div>
-									<div className="text-caption text-(--foreground-muted)">
-										นักวิเคราะห์การเงิน · CFA Charterholder
+									<div className="text-ui font-semibold text-(--foreground)">
+										อ.อาร์ม{" "}
+										<span className="text-uism font-medium text-(--foreground-muted)">
+											· CFA Charterholder
+										</span>
 									</div>
 								</div>
 							</a>
 
-							{/* Meta row */}
-							<div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-uism text-(--foreground-muted)">
-								<span className="inline-flex items-center gap-1.5">
-									<BookOpen size={16} />
-									<span className="num">{totalLessons}</span> บทเรียน
-								</span>
-								<span className="inline-flex items-center gap-1.5">
-									<Clock size={16} />
-									{formatDuration(totalDuration)}
-								</span>
-								<span>
-									<span className="num">{curriculum.length}</span> โมดูล
-								</span>
-								<span className="inline-flex items-center gap-1.5">
-									<Users size={16} />
-									<span className="num">
-										{course.enrollmentCount.toLocaleString("th-TH")}
-									</span>{" "}
-									ผู้เรียน
-								</span>
+							{/* Summary */}
+							<p className="mt-5 text-bodylg text-(--foreground-muted)">
+								{course.summary}
+							</p>
+
+							{/* Feature pills */}
+							<div className="mt-6 flex flex-wrap gap-3">
+								{featurePills.map(({ icon: Icon, label }, i) => (
+									<span
+										key={i}
+										className="inline-flex items-center gap-1.5 rounded-full border border-(--border) bg-(--surface) px-3.5 py-2 text-[13px] text-(--foreground)"
+									>
+										<Icon size={16} className="text-(--primary)" />
+										{label}
+									</span>
+								))}
 							</div>
 						</div>
 
+						{/* Right column — sticky CTA card */}
 						<aside className="lg:sticky lg:top-24 lg:self-start">
-							<Card noPadding className="overflow-hidden shadow-(--shadow-md)">
-								{course.coverStorageKey ? (
-									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
-										<Image
-											src={coverImageUrl(course.coverStorageKey)!}
-											alt={course.title}
-											fill
-											sizes="(max-width: 1024px) 100vw, 480px"
-											className="object-cover"
-											priority
-										/>
-									</div>
-								) : (
-									<div className="relative aspect-video w-full overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]" />
-								)}
-								<div className="space-y-5 p-6">
-									<div>
-										{course.isFree ? (
-											<div className="text-h2 font-semibold text-(--success)">
-												ฟรี
-											</div>
-										) : (
-											<div className="flex items-baseline gap-2">
-												<span
-													className="num text-display font-bold text-(--foreground)"
-													style={{ fontSize: 32, lineHeight: 1 }}
-												>
-													{price}
-												</span>
-											</div>
-										)}
-									</div>
+							<Card className="shadow-(--shadow-md)">
+								{/* Price */}
+								<div className="mb-5">
+									{course.isFree ? (
+										<div className="text-h2 font-semibold text-(--success)">
+											ฟรี
+										</div>
+									) : (
+										<div className="flex items-baseline gap-3">
+											<span
+												className="num text-display font-bold text-(--primary)"
+												style={{ fontSize: 32, lineHeight: 1 }}
+											>
+												{price}
+											</span>
+										</div>
+									)}
+								</div>
 
-									<ul className="space-y-2.5">
-										{INCLUDES.map((it) => {
-											const Ic = it.icon;
-											return (
-												<li
-													key={it.label}
-													className="flex items-center gap-2.5 text-body text-(--foreground-muted)"
-												>
-													<Ic size={18} weight="bold" />
-													<span>{it.label}</span>
-												</li>
-											);
-										})}
-									</ul>
+								{/* Divider */}
+								<div className="mb-5 h-px bg-(--border)" />
 
+								{/* Feature checklist */}
+								<ul className="mb-6 space-y-3">
+									{CTA_FEATURES.map((label) => (
+										<li
+											key={label}
+											className="flex items-start gap-2.5 text-body text-(--foreground)"
+										>
+											<Check
+												size={18}
+												weight="bold"
+												className="mt-0.5 shrink-0 text-(--success)"
+											/>
+											<span>{label}</span>
+										</li>
+									))}
+								</ul>
+
+								{/* CTA buttons */}
+								<div className="space-y-2.5">
 									{isAdmin ? (
 										<Button
 											asChild
@@ -239,8 +308,8 @@ export default async function CourseDetailPage({
 										</form>
 									)}
 									{/* Hide redundant preview CTA: already-enrolled students go
-                      straight to /learn, and free courses make every lesson
-                      previewable so the link is noise. */}
+					    straight to /learn, and free courses make every lesson
+					    previewable so the link is noise. */}
 									{!isEnrolled && !course.isFree && hasPreviewableLesson && (
 										<Button
 											asChild
@@ -248,9 +317,38 @@ export default async function CourseDetailPage({
 											size="md"
 											className="w-full"
 										>
-											<Link href="#curriculum">ดูตัวอย่างฟรี</Link>
+											<Link href="#curriculum">
+												<Play
+													size={16}
+													weight="fill"
+													className="mr-1"
+												/>
+												ดูตัวอย่างฟรี
+											</Link>
 										</Button>
 									)}
+								</div>
+
+								{/* Refund guarantee */}
+								<div className="mt-4 flex items-center gap-3 rounded-lg bg-(--surface-muted) p-3">
+									<Shield
+										size={18}
+										weight="fill"
+										className="shrink-0 text-(--success)"
+									/>
+									<span className="text-uism text-(--foreground)">
+										รับประกันคืนเงินภายใน 7 วัน
+									</span>
+								</div>
+
+								{/* Enrollment footer */}
+								<div className="mt-5 border-t border-(--border) pt-4 text-center">
+									<span className="text-caption text-(--foreground-muted)">
+										<span className="num font-semibold text-(--foreground)">
+											{course.enrollmentCount.toLocaleString("th-TH")}
+										</span>{" "}
+										นักเรียนลงทะเบียนแล้ว
+									</span>
 								</div>
 							</Card>
 						</aside>
