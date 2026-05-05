@@ -7,23 +7,12 @@ import { db } from "@/db/client";
 import { courseModule, lesson } from "@/db/schema/course";
 import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
 import { isUserEnrolledInCourse } from "@/server/repos/course";
-import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
-import { CourseCompletionService } from "@/server/services/course-completion";
-import { certificateIssuerFactory } from "@/server/services/certificate-factory";
+import { container } from "@/server/container";
 
 const submitSchema = z.object({
 	quizId: z.string().uuid(),
 	answers: z.record(z.string().uuid(), z.string().uuid()),
 });
-
-function makeCompletionService() {
-	return new CourseCompletionService({
-		markLessonComplete: async () => {},
-		getCourseIdByLessonId: async () => null,
-		checkAndMarkCourseComplete,
-		certificateIssuer: certificateIssuerFactory(),
-	});
-}
 
 export async function submitQuizAction(formData: FormData) {
 	const session = await getSession();
@@ -73,7 +62,7 @@ export async function submitQuizAction(formData: FormData) {
 	});
 
 	if (result.passed && courseId) {
-		const service = makeCompletionService();
+		const service = container.courseCompletion();
 		await service.reevaluateCourseCompletion({
 			userId: session.user.id,
 			userEmail: session.user.email,
