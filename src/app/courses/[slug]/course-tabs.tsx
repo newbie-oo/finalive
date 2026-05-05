@@ -2,9 +2,20 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Check, Play, LockSimple, YoutubeLogo } from "@phosphor-icons/react";
+import {
+	Check,
+	Play,
+	LockSimple,
+	YoutubeLogo,
+	Video,
+	FileText,
+	Certificate,
+	ChatCircle,
+	Clock,
+	ArrowRight,
+} from "@phosphor-icons/react";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
-import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
+import { Button } from "@/components/ui/button";
 import { formatDuration, formatDurationMinutes } from "@/lib/format";
 import type { CurriculumModule, CurriculumLesson } from "@/server/repos/course";
 
@@ -38,74 +49,83 @@ const FAQS = [
 function LessonRow({
 	lesson,
 	courseSlug,
+	lessonNumber,
 }: {
 	lesson: CurriculumLesson;
 	courseSlug: string;
+	lessonNumber: string;
 }) {
 	const playable = lesson.isPreview || lesson.isFree;
-	const Icon = playable ? Play : LockSimple;
-	const inner = (
-		<div className="flex items-center justify-between border-b border-(--border) px-4 py-3 text-body last:border-b-0">
-			<span className="flex items-center gap-3">
-				<Icon
-					size={16}
-					weight={playable ? "fill" : "regular"}
-					className={
-						playable ? "text-(--primary)" : "text-(--foreground-subtle)"
-					}
-				/>
-				<span
-					className={
-						playable ? "text-(--foreground)" : "text-(--foreground-muted)"
-					}
-				>
-					{lesson.title}
-				</span>
-				<LessonAccessBadge
-					isPreview={lesson.isPreview}
-					isFree={lesson.isFree}
-				/>
+
+	const row = (
+		<div className="flex items-center gap-3.5 border-t border-(--border) px-5 py-3.5">
+			{playable ? (
+				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+					<Play size={16} weight="fill" />
+				</div>
+			) : (
+				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--surface-muted) text-(--foreground-subtle)">
+					<LockSimple size={16} />
+				</div>
+			)}
+			<span className="num text-uism w-7 shrink-0 text-(--foreground-subtle)">
+				{lessonNumber}
 			</span>
-			<span className="num text-uism text-(--foreground-muted)">
+			<span
+				className={`text-ui flex-1 ${
+					playable
+						? "text-(--foreground)"
+						: "text-(--foreground-muted)"
+				}`}
+			>
+				{lesson.title}
+			</span>
+			{lesson.isPreview && (
+				<span className="shrink-0 rounded-full bg-(--primary)/10 px-2.5 py-0.5 text-[11px] font-medium text-(--primary)">
+					Preview
+				</span>
+			)}
+			<span className="num text-uism shrink-0 text-(--foreground-subtle)">
 				{formatDurationMinutes(lesson.durationSeconds)}
 			</span>
 		</div>
 	);
+
 	if (playable) {
 		return (
 			<Link
 				href={`/courses/${courseSlug}/preview/${lesson.id}`}
 				className="block transition-colors hover:bg-(--surface-muted)"
 			>
-				{inner}
+				{row}
 			</Link>
 		);
 	}
-	return <div>{inner}</div>;
+	return <div>{row}</div>;
 }
 
 function LearningOutcomes({ outcomes }: { outcomes: string[] }) {
 	return (
-		<section className="py-12 md:py-16">
-			<div className="mx-auto max-w-[1200px] px-6">
-				<h2 className="text-h2 mb-6">สิ่งที่คุณจะได้เรียนรู้</h2>
-				<div className="grid gap-4 sm:grid-cols-2">
-					{outcomes.map((outcome) => (
-						<div
-							key={outcome}
-							className="flex items-start gap-3 rounded-card border border-(--border) bg-(--surface) p-4"
-						>
-							<Check
-								size={20}
-								weight="bold"
-								className="mt-0.5 shrink-0 text-(--success)"
-							/>
-							<span className="text-body text-(--foreground)">{outcome}</span>
-						</div>
-					))}
-				</div>
+		<div className="mb-8 rounded-card border border-(--primary)/15 bg-(--surface-muted) p-6">
+			<h3 className="text-h3 mb-4 font-semibold text-(--foreground)">
+				สิ่งที่คุณจะได้เรียนรู้
+			</h3>
+			<div className="grid gap-3 sm:grid-cols-2">
+				{outcomes.map((outcome) => (
+					<div
+						key={outcome}
+						className="flex items-start gap-3 text-body text-(--foreground)"
+					>
+						<Check
+							size={18}
+							weight="bold"
+							className="mt-0.5 shrink-0 text-(--primary)"
+						/>
+						<span>{outcome}</span>
+					</div>
+				))}
 			</div>
-		</section>
+		</div>
 	);
 }
 
@@ -122,11 +142,16 @@ function CurriculumTab({
 }) {
 	return (
 		<div>
-			<p className="mb-4 text-body text-(--foreground-muted)">
-				<span className="num">{curriculum.length}</span> โมดูล ·
-				<span className="num"> {totalLessons}</span> บทเรียน · เวลาเรียนรวม{" "}
-				{formatDuration(totalDuration)}
-			</p>
+			<div className="mb-4 flex items-end justify-between">
+				<h3 className="text-h2 font-semibold text-(--foreground)">
+					เนื้อหาคอร์ส
+				</h3>
+				<span className="text-uism text-(--foreground-muted)">
+					<span className="num">{curriculum.length}</span> โมดูล ·{" "}
+					<span className="num">{totalLessons}</span> บทเรียน ·{" "}
+					<span className="num">{formatDuration(totalDuration)}</span>
+				</span>
+			</div>
 			{curriculum.length === 0 ? (
 				<p className="text-body text-(--foreground-muted)">ยังไม่มีเนื้อหา</p>
 			) : (
@@ -141,13 +166,19 @@ function CurriculumTab({
 										{m.sortOrder}. {m.title}
 									</span>
 									<span className="text-uism text-(--foreground-muted)">
-										<span className="num">{m.lessons.length}</span> บทเรียน
+										<span className="num">{m.lessons.length}</span>{" "}
+										บทเรียน
 									</span>
 								</span>
 							}
 						>
-							{m.lessons.map((l) => (
-								<LessonRow key={l.id} lesson={l} courseSlug={courseSlug} />
+							{m.lessons.map((l, lIdx) => (
+								<LessonRow
+									key={l.id}
+									lesson={l}
+									courseSlug={courseSlug}
+									lessonNumber={`${idx + 1}.${lIdx + 1}`}
+								/>
 							))}
 						</AccordionItem>
 					))}
@@ -175,7 +206,8 @@ function InstructorTab() {
 			</div>
 
 			<p className="text-body text-(--foreground)">
-				อาร์มมีประสบการณ์วิเคราะห์การลงทุนกว่า 10 ปี ในตลาดหุ้นไทยและต่างประเทศ
+				อาร์มมีประสบการณ์วิเคราะห์การลงทุนกว่า 10 ปี
+				ในตลาดหุ้นไทยและต่างประเทศ
 				พร้อมความเชี่ยวชาญในการวางแผนการเงินระยะยาวและการบริหารความเสี่ยง
 				ผ่านการสอนมาแล้วกว่า 5,000 นักเรียนทั่วประเทศ
 			</p>
@@ -217,6 +249,82 @@ function FaqTab() {
 				</AccordionItem>
 			))}
 		</Accordion>
+	);
+}
+
+function InstructorCard() {
+	return (
+		<div className="mb-6 rounded-card border border-(--border) bg-(--surface) p-6">
+			<div className="mb-3 text-uism uppercase tracking-wider text-(--foreground-muted)">
+				ผู้สอน
+			</div>
+			<div className="mb-4 flex items-center gap-3.5">
+				<div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-h4 font-semibold text-white">
+					อา
+				</div>
+				<div>
+					<div className="text-h4 font-semibold text-(--foreground)">
+						อาร์ม ริลีย์
+					</div>
+					<div className="text-caption text-(--foreground-muted)">
+						CFA · อดีต VP Investment
+					</div>
+				</div>
+			</div>
+			<p className="mb-4 text-uism text-pretty text-(--foreground-muted)">
+				อาจารย์อาร์มเคยทำงานด้านการลงทุนกับกองทุนใหญ่ในไทยและสิงคโปร์
+				ปัจจุบันเป็น independent analyst
+			</p>
+			<Button variant="secondary" className="w-full">
+				ดูคอร์สทั้งหมดของผู้สอน
+				<ArrowRight size={14} />
+			</Button>
+		</div>
+	);
+}
+
+function CourseContentsCard({
+	totalLessons,
+	totalDuration,
+}: {
+	totalLessons: number;
+	totalDuration: number;
+}) {
+	const items = [
+		{
+			icon: Video,
+			label: `${totalLessons} บทเรียน HD`,
+			sub: `รวม ${formatDuration(totalDuration)}`,
+		},
+		{ icon: FileText, label: "Excel template", sub: "5 ไฟล์ดาวน์โหลด" },
+		{ icon: Certificate, label: "ใบประกาศ", sub: "เมื่อจบคอร์ส" },
+		{ icon: ChatCircle, label: "Q&A กับผู้สอน", sub: "บน Discord" },
+		{ icon: Clock, label: "เรียนตลอดชีพ", sub: "อัปเดตเนื้อหาฟรี" },
+	];
+
+	return (
+		<div className="rounded-card border border-(--border) bg-(--surface) p-6">
+			<div className="mb-4 text-ui font-semibold text-(--foreground)">
+				คอร์สนี้ประกอบด้วย
+			</div>
+			<div className="flex flex-col gap-3">
+				{items.map(({ icon: Icon, label, sub }, i) => (
+					<div key={i} className="flex items-center gap-3">
+						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--surface-muted) text-(--primary)">
+							<Icon size={18} />
+						</div>
+						<div>
+							<div className="text-ui font-medium text-(--foreground)">
+								{label}
+							</div>
+							<div className="text-caption text-(--foreground-muted)">
+								{sub}
+							</div>
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
 	);
 }
 
@@ -265,51 +373,62 @@ export function CourseTabs({
 	}, []);
 
 	return (
-		<>
-			<LearningOutcomes outcomes={learningOutcomes ?? DEFAULT_OUTCOMES} />
+		<section ref={instructorRef} id="instructor" className="py-12 md:py-16">
+			<div className="mx-auto max-w-[1200px] px-6">
+				<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
+					{/* Left column — tabs */}
+					<div>
+						{/* Tab nav */}
+						<div className="mb-8 flex gap-1 border-b border-(--border)">
+							{TABS.map((tab) => (
+								<button
+									key={tab.id}
+									type="button"
+									onClick={() => setActiveTab(tab.id)}
+									className={`relative px-3 pb-3 pt-1 text-ui font-medium transition-colors ${
+										activeTab === tab.id
+											? "text-(--foreground)"
+											: "text-(--foreground-muted) hover:text-(--foreground)"
+									}`}
+									aria-selected={activeTab === tab.id}
+									role="tab"
+								>
+									{tab.label}
+									{activeTab === tab.id && (
+										<span className="absolute inset-x-0 -bottom-px h-0.5 bg-(--primary)" />
+									)}
+								</button>
+							))}
+						</div>
 
-			<section ref={instructorRef} id="instructor" className="py-12 md:py-16">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
-						<div>
-							{/* Tab nav */}
-							<div className="mb-6 flex gap-6 border-b border-(--border)">
-								{TABS.map((tab) => (
-									<button
-										key={tab.id}
-										type="button"
-										onClick={() => setActiveTab(tab.id)}
-										className={`relative pb-3 text-ui font-medium transition-colors ${
-											activeTab === tab.id
-												? "text-(--foreground)"
-												: "text-(--foreground-muted) hover:text-(--foreground)"
-										}`}
-										aria-selected={activeTab === tab.id}
-										role="tab"
-									>
-										{tab.label}
-										{activeTab === tab.id && (
-											<span className="absolute inset-x-0 -bottom-px h-0.5 bg-(--primary)" />
-										)}
-									</button>
-								))}
-							</div>
-
-							{/* Tab panels */}
-							{activeTab === "curriculum" && (
+						{/* Tab panels */}
+						{activeTab === "curriculum" && (
+							<>
+								<LearningOutcomes
+									outcomes={learningOutcomes ?? DEFAULT_OUTCOMES}
+								/>
 								<CurriculumTab
 									curriculum={curriculum}
 									courseSlug={courseSlug}
 									totalLessons={totalLessons}
 									totalDuration={totalDuration}
 								/>
-							)}
-							{activeTab === "instructor" && <InstructorTab />}
-							{activeTab === "faq" && <FaqTab />}
-						</div>
+							</>
+						)}
+						{activeTab === "instructor" && <InstructorTab />}
+						{activeTab === "faq" && <FaqTab />}
+					</div>
+
+					{/* Right column — instructor + contents */}
+					<div>
+						<InstructorCard />
+						<CourseContentsCard
+							totalLessons={totalLessons}
+							totalDuration={totalDuration}
+						/>
 					</div>
 				</div>
-			</section>
-		</>
+			</div>
+		</section>
 	);
 }
