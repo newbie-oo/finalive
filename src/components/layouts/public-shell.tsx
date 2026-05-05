@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { List, X, YoutubeLogo } from "@phosphor-icons/react";
+import { YoutubeLogo } from "@phosphor-icons/react";
 import { useSession } from "@/lib/auth-client";
 import { visibleNav } from "@/lib/navigation";
+import { AppHeader } from "./app-header";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import { Button } from "@/components/ui/button";
 
 const FOOTER_COLS: Array<{
@@ -60,145 +60,83 @@ export function PublicShell({
 			>
 				ข้ามไปยังเนื้อหา
 			</a>
-			<header
-				className="sticky top-0 z-50 h-16 border-b border-(--border) backdrop-blur-md"
-				style={{
-					background: "color-mix(in srgb, var(--background) 80%, transparent)",
-				}}
-			>
-				<div className="mx-auto flex h-full max-w-[1200px] items-center justify-between gap-6 px-6">
-					<Link
-						href="/"
-						className="flex items-center gap-2 text-(--foreground)"
+			<AppHeader
+				navItems={navItems}
+				user={
+					session?.user
+						? {
+								name: session.user.name,
+								email: session.user.email,
+								image: (session.user as { image?: string | null }).image,
+								role,
+							}
+						: null
+				}
+				rightSlot={
+					<a
+						href="https://www.youtube.com/@armrileyquant"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="YouTube"
+						className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
 					>
-						<span
-							className="h-2.5 w-2.5 rounded-full bg-(--primary)"
-							aria-hidden
-						/>
-						<span className="text-[18px] font-semibold tracking-tight">
-							Finalive
-						</span>
-					</Link>
+						<YoutubeLogo size={18} weight="fill" />
+					</a>
+				}
+				onMobileMenuToggle={() => setDrawerOpen((o) => !o)}
+				mobileMenuOpen={drawerOpen}
+			/>
 
-					<nav className="hidden items-center gap-1 md:flex" aria-label="หลัก">
-						{navItems.map((n) => {
-							const isAdminLink = n.visibility === "admin";
-							return (
-								<Link
-									key={n.href}
-									href={n.href}
-									className={
-										isAdminLink
-											? "rounded-nav border border-(--primary)/30 bg-(--primary)/10 px-3 py-1.5 text-ui font-semibold text-(--primary) transition-colors hover:bg-(--primary)/15"
-											: "rounded-nav px-3.5 py-2 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
-									}
-								>
-									{n.label}
-								</Link>
-							);
-						})}
-					</nav>
-
-					<div className="hidden items-center gap-2 md:flex">
-						<a
-							href="https://www.youtube.com/@armrileyquant"
-							target="_blank"
-							rel="noopener noreferrer"
-							aria-label="YouTube"
-							className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
-						>
-							<YoutubeLogo size={18} weight="fill" />
-						</a>
-						<ThemeToggle />
+			{drawerOpen && (
+				<div className="sticky top-16 z-40 border-t border-(--border) bg-(--surface) md:hidden">
+					<nav
+						className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4"
+						aria-label="เมนูมือถือ"
+					>
+						{navItems.map((n) => (
+							<Link
+								key={n.href}
+								href={n.href}
+								className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+								onClick={() => setDrawerOpen(false)}
+							>
+								{n.label}
+							</Link>
+						))}
+						<div className="my-2 h-px bg-(--border)" />
 						{session?.user ? (
-							<UserProfileDropdown
-								name={session.user.name}
-								email={session.user.email}
-								image={(session.user as { image?: string | null }).image}
-								links={[
-									{ href: "/account", label: "บัญชี" },
-									...((session.user as { role?: string }).role === "admin"
-										? [{ href: "/admin", label: "แผงควบคุม" }]
-										: [
-												{ href: "/account/enrollments", label: "คอร์สของฉัน" },
-												{ href: "/account/certificates", label: "ใบประกาศ" },
-											]),
-								]}
-							/>
+							<Link
+								href="/account"
+								className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+								onClick={() => setDrawerOpen(false)}
+							>
+								บัญชีของฉัน
+							</Link>
 						) : (
 							<>
-								<Button asChild variant="ghost" size="sm">
-									<Link href="/login">เข้าสู่ระบบ</Link>
+								<Button
+									asChild
+									variant="ghost"
+									size="md"
+									className="justify-start"
+								>
+									<Link href="/login" onClick={() => setDrawerOpen(false)}>
+										เข้าสู่ระบบ
+									</Link>
 								</Button>
-								<Button asChild variant="primary" size="sm">
-									<Link href="/register">สมัคร</Link>
+								<Button asChild variant="primary" size="md">
+									<Link href="/register" onClick={() => setDrawerOpen(false)}>
+										สมัคร
+									</Link>
 								</Button>
 							</>
 						)}
-					</div>
-
-					<button
-						type="button"
-						aria-label={drawerOpen ? "ปิดเมนู" : "เปิดเมนู"}
-						aria-expanded={drawerOpen}
-						onClick={() => setDrawerOpen((o) => !o)}
-						className="inline-flex h-10 w-10 items-center justify-center rounded-nav text-(--foreground) hover:bg-(--surface-muted) md:hidden"
-					>
-						{drawerOpen ? <X size={20} /> : <List size={20} />}
-					</button>
+						<div className="mt-2 flex justify-end">
+							<ThemeToggle />
+						</div>
+					</nav>
 				</div>
-
-				{drawerOpen && (
-					<div className="border-t border-(--border) bg-(--surface) md:hidden">
-						<nav
-							className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4"
-							aria-label="เมนูมือถือ"
-						>
-							{navItems.map((n) => (
-								<Link
-									key={n.href}
-									href={n.href}
-									className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
-									onClick={() => setDrawerOpen(false)}
-								>
-									{n.label}
-								</Link>
-							))}
-							<div className="my-2 h-px bg-(--border)" />
-							{session?.user ? (
-								<Link
-									href="/account"
-									className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
-									onClick={() => setDrawerOpen(false)}
-								>
-									บัญชีของฉัน
-								</Link>
-							) : (
-								<>
-									<Button
-										asChild
-										variant="ghost"
-										size="md"
-										className="justify-start"
-									>
-										<Link href="/login" onClick={() => setDrawerOpen(false)}>
-											เข้าสู่ระบบ
-										</Link>
-									</Button>
-									<Button asChild variant="primary" size="md">
-										<Link href="/register" onClick={() => setDrawerOpen(false)}>
-											สมัคร
-										</Link>
-									</Button>
-								</>
-							)}
-							<div className="mt-2 flex justify-end">
-								<ThemeToggle />
-							</div>
-						</nav>
-					</div>
-				)}
-			</header>
+			)}
 
 			<main id="main" className={unboundedMain ? "flex-1 min-h-0" : "flex-1"}>
 				{children}
