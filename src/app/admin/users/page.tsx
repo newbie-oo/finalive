@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminUsersPage() {
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "admin") {
-    return <p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>;
+    return (
+      <p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>
+    );
   }
 
   const users = await db
@@ -29,22 +31,35 @@ export default async function AdminUsersPage() {
     <section className="space-y-6">
       <header>
         <h1 className="text-h1">ผู้ใช้ทั้งหมด</h1>
-        <p className="mt-1 text-body text-(--foreground-muted)">{users.length} คน</p>
+        <p className="mt-1 text-body text-(--foreground-muted)">
+          {users.length} คน
+        </p>
       </header>
 
       <div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
         <table className="w-full text-ui">
           <thead>
             <tr className="border-b border-(--border) bg-(--surface-muted) text-left">
-              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">ชื่อ</th>
-              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">อีเมล</th>
-              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">บทบาท</th>
-              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">สมัครเมื่อ</th>
+              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                ชื่อ
+              </th>
+              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                อีเมล
+              </th>
+              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                บทบาท
+              </th>
+              <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                สมัครเมื่อ
+              </th>
             </tr>
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-b border-(--border) last:border-b-0">
+              <tr
+                key={u.id}
+                className="border-b border-(--border) last:border-b-0"
+              >
                 <td className="px-5 py-3">
                   <Link
                     href={`/admin/users/${u.id}`}
@@ -54,7 +69,9 @@ export default async function AdminUsersPage() {
                     {u.name}
                   </Link>
                 </td>
-                <td className="px-5 py-3 text-(--foreground-muted)">{u.email}</td>
+                <td className="px-5 py-3 text-(--foreground-muted)">
+                  {u.email}
+                </td>
                 <td className="px-5 py-3">
                   <StatusChip tone={u.role === "admin" ? "primary" : "neutral"}>
                     {u.role === "admin" ? "ผู้ดูแล" : "นักเรียน"}

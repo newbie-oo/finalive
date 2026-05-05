@@ -9,9 +9,9 @@ import { EmailCourseCompletionNotifier } from "@/server/services/notifier";
  * Centralises construction so callers don't duplicate the object graph.
  */
 export function certificateIssuerFactory(): CertificateIssuer {
-	return new CertificateIssuer({
-		renderer: new ReactPdfCertificateRenderer(),
-		storage: new R2ObjectStorage("public"),
-		notifier: new EmailCourseCompletionNotifier(),
-	});
+  return new CertificateIssuer({
+    renderer: new ReactPdfCertificateRenderer(),
+    storage: new R2ObjectStorage("public"),
+    notifier: new EmailCourseCompletionNotifier(),
+  });
 }

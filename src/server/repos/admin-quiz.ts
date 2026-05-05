@@ -45,7 +45,9 @@ export async function createAdminQuiz(input: {
   return row!.id;
 }
 
-export async function getAdminQuizById(quizId: string): Promise<AdminQuiz | null> {
+export async function getAdminQuizById(
+  quizId: string,
+): Promise<AdminQuiz | null> {
   const quizRows = await db
     .select({
       id: quiz.id,
@@ -130,14 +132,18 @@ export async function saveAdminQuiz(
     const existingQuestions = await tx
       .select({ id: quizQuestion.id })
       .from(quizQuestion)
-      .where(and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)));
+      .where(
+        and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)),
+      );
 
     const existingQuestionIds = new Set(existingQuestions.map((q) => q.id));
 
     // Determine kept vs removed questions BEFORE upserting to avoid
     // unique constraint violations on (quizId, sortOrder).
     const keptQuestionIds = new Set(
-      input.questions.map((q) => q.id).filter((id): id is string => !!id && existingQuestionIds.has(id)),
+      input.questions
+        .map((q) => q.id)
+        .filter((id): id is string => !!id && existingQuestionIds.has(id)),
     );
     const removedQuestionIds = existingQuestionIds.difference(keptQuestionIds);
     if (removedQuestionIds.size > 0) {
@@ -175,14 +181,19 @@ export async function saveAdminQuiz(
         .select({ id: quizChoice.id })
         .from(quizChoice)
         .where(
-          and(eq(quizChoice.questionId, questionId), isNull(quizChoice.deletedAt)),
+          and(
+            eq(quizChoice.questionId, questionId),
+            isNull(quizChoice.deletedAt),
+          ),
         );
 
       const existingChoiceIds = new Set(existingChoices.map((c) => c.id));
 
       // Determine kept vs removed choices BEFORE upserting.
       const keptChoiceIds = new Set(
-        q.choices.map((c) => c.id).filter((id): id is string => !!id && existingChoiceIds.has(id)),
+        q.choices
+          .map((c) => c.id)
+          .filter((id): id is string => !!id && existingChoiceIds.has(id)),
       );
       const removedChoiceIds = existingChoiceIds.difference(keptChoiceIds);
       if (removedChoiceIds.size > 0) {

@@ -21,7 +21,12 @@ beforeAll(() => {
   process.env.BUNNY_CDN_HOSTNAME ??= "vz-cf7a0b15-c66.b-cdn.net";
 });
 
-import { signEmbedToken, signHlsToken, buildHlsUrl, deleteBunnyVideo } from "./bunny";
+import {
+  signEmbedToken,
+  signHlsToken,
+  buildHlsUrl,
+  deleteBunnyVideo,
+} from "./bunny";
 
 describe("signEmbedToken", () => {
   it("produces deterministic base64url token + matching expires", () => {
@@ -44,14 +49,30 @@ describe("signEmbedToken", () => {
   });
 
   it("differs when videoId changes", () => {
-    const a = signEmbedToken({ videoId: "v1", expiresAt: 1, secretOverride: "s" });
-    const b = signEmbedToken({ videoId: "v2", expiresAt: 1, secretOverride: "s" });
+    const a = signEmbedToken({
+      videoId: "v1",
+      expiresAt: 1,
+      secretOverride: "s",
+    });
+    const b = signEmbedToken({
+      videoId: "v2",
+      expiresAt: 1,
+      secretOverride: "s",
+    });
     expect(a.token).not.toBe(b.token);
   });
 
   it("differs when secret changes", () => {
-    const a = signEmbedToken({ videoId: "v", expiresAt: 1, secretOverride: "s1" });
-    const b = signEmbedToken({ videoId: "v", expiresAt: 1, secretOverride: "s2" });
+    const a = signEmbedToken({
+      videoId: "v",
+      expiresAt: 1,
+      secretOverride: "s1",
+    });
+    const b = signEmbedToken({
+      videoId: "v",
+      expiresAt: 1,
+      secretOverride: "s2",
+    });
     expect(a.token).not.toBe(b.token);
   });
 
@@ -66,8 +87,11 @@ describe("signEmbedToken", () => {
   it("throws when no secret configured", () => {
     const original = process.env.BUNNY_STREAM_TOKEN_SECRET;
     delete process.env.BUNNY_STREAM_TOKEN_SECRET;
-    expect(() => signEmbedToken({ videoId: "v" })).toThrow(/BUNNY_STREAM_TOKEN_SECRET/);
-    if (original !== undefined) process.env.BUNNY_STREAM_TOKEN_SECRET = original;
+    expect(() => signEmbedToken({ videoId: "v" })).toThrow(
+      /BUNNY_STREAM_TOKEN_SECRET/,
+    );
+    if (original !== undefined)
+      process.env.BUNNY_STREAM_TOKEN_SECRET = original;
   });
 });
 
@@ -90,8 +114,16 @@ describe("signHlsToken", () => {
   });
 
   it("differs when videoId changes", () => {
-    const a = signHlsToken({ videoId: "v1", expiresAt: 1, secretOverride: "s" });
-    const b = signHlsToken({ videoId: "v2", expiresAt: 1, secretOverride: "s" });
+    const a = signHlsToken({
+      videoId: "v1",
+      expiresAt: 1,
+      secretOverride: "s",
+    });
+    const b = signHlsToken({
+      videoId: "v2",
+      expiresAt: 1,
+      secretOverride: "s",
+    });
     expect(a.token).not.toBe(b.token);
   });
 
@@ -103,7 +135,12 @@ describe("signHlsToken", () => {
 
   it("differs when userIp is included", () => {
     const a = signHlsToken({ videoId: "v", expiresAt: 1, secretOverride: "s" });
-    const b = signHlsToken({ videoId: "v", expiresAt: 1, secretOverride: "s", userIp: "1.2.3.4" });
+    const b = signHlsToken({
+      videoId: "v",
+      expiresAt: 1,
+      secretOverride: "s",
+      userIp: "1.2.3.4",
+    });
     expect(a.token).not.toBe(b.token);
   });
 
@@ -118,7 +155,9 @@ describe("signHlsToken", () => {
   it("throws when no secret configured", () => {
     const original = process.env.BUNNY_CDN_TOKEN_SECRET;
     delete process.env.BUNNY_CDN_TOKEN_SECRET;
-    expect(() => signHlsToken({ videoId: "v" })).toThrow(/BUNNY_CDN_TOKEN_SECRET/);
+    expect(() => signHlsToken({ videoId: "v" })).toThrow(
+      /BUNNY_CDN_TOKEN_SECRET/,
+    );
     if (original !== undefined) process.env.BUNNY_CDN_TOKEN_SECRET = original;
   });
 });
@@ -129,25 +168,29 @@ describe("buildHlsUrl", () => {
     delete process.env.BUNNY_CDN_TOKEN_SECRET;
     const url = buildHlsUrl({ videoId: "abc" });
     expect(url).toBe("https://vz-cf7a0b15-c66.b-cdn.net/abc/playlist.m3u8");
-    if (originalSecret !== undefined) process.env.BUNNY_CDN_TOKEN_SECRET = originalSecret;
+    if (originalSecret !== undefined)
+      process.env.BUNNY_CDN_TOKEN_SECRET = originalSecret;
   });
 
   it("returns signed URL with token + expires query params", () => {
     const originalSecret = process.env.BUNNY_CDN_TOKEN_SECRET;
     process.env.BUNNY_CDN_TOKEN_SECRET = "cdn-secret";
     const url = buildHlsUrl({ videoId: "abc", expiresAt: 1_700_000_000 });
-    expect(url).toMatch(/^https:\/\/vz-cf7a0b15-c66\.b-cdn\.net\/abc\/playlist\.m3u8\?/);
+    expect(url).toMatch(
+      /^https:\/\/vz-cf7a0b15-c66\.b-cdn\.net\/abc\/playlist\.m3u8\?/,
+    );
     expect(url).toContain("token=");
     expect(url).toContain("expires=1700000000");
-    if (originalSecret !== undefined) process.env.BUNNY_CDN_TOKEN_SECRET = originalSecret;
+    if (originalSecret !== undefined)
+      process.env.BUNNY_CDN_TOKEN_SECRET = originalSecret;
   });
 });
 
 describe("deleteBunnyVideo", () => {
   it("sends DELETE to Bunny API with correct endpoint", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
-      new Response(null, { status: 200 }),
-    );
+    const fetchSpy = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response(null, { status: 200 }));
 
     await deleteBunnyVideo("old-video-guid");
 
@@ -160,9 +203,9 @@ describe("deleteBunnyVideo", () => {
   });
 
   it("does not throw on 404 (already deleted)", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
-      new Response(null, { status: 404 }),
-    );
+    const fetchSpy = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response(null, { status: 404 }));
 
     await expect(deleteBunnyVideo("missing-guid")).resolves.not.toThrow();
 
@@ -170,11 +213,13 @@ describe("deleteBunnyVideo", () => {
   });
 
   it("throws on non-404 error", async () => {
-    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
-      new Response("Forbidden", { status: 403 }),
-    );
+    const fetchSpy = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValue(new Response("Forbidden", { status: 403 }));
 
-    await expect(deleteBunnyVideo("error-guid")).rejects.toThrow(/Bunny delete video failed/);
+    await expect(deleteBunnyVideo("error-guid")).rejects.toThrow(
+      /Bunny delete video failed/,
+    );
 
     fetchSpy.mockRestore();
   });

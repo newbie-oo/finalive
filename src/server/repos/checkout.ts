@@ -5,41 +5,41 @@ import { course } from "@/db/schema/course";
 import { pendingEnrollment } from "@/db/schema/payment";
 
 export interface CheckoutPending {
-	id: string;
-	refCode: string;
-	amount: string;
-	status: string;
-	expiresAt: Date;
-	updatedAt: Date;
-	courseId: string;
-	courseSlug: string;
-	courseTitle: string;
+  id: string;
+  refCode: string;
+  amount: string;
+  status: string;
+  expiresAt: Date;
+  updatedAt: Date;
+  courseId: string;
+  courseSlug: string;
+  courseTitle: string;
 }
 
 export async function getCheckoutPending(
-	pendingId: string,
-	userId: string,
+  pendingId: string,
+  userId: string,
 ): Promise<CheckoutPending | null> {
-	const rows = await db
-		.select({
-			id: pendingEnrollment.id,
-			refCode: pendingEnrollment.refCode,
-			amount: pendingEnrollment.amount,
-			status: pendingEnrollment.status,
-			expiresAt: pendingEnrollment.expiresAt,
-			updatedAt: pendingEnrollment.updatedAt,
-			courseId: course.id,
-			courseSlug: course.slug,
-			courseTitle: course.title,
-		})
-		.from(pendingEnrollment)
-		.innerJoin(course, eq(pendingEnrollment.courseId, course.id))
-		.where(
-			and(
-				eq(pendingEnrollment.id, pendingId),
-				eq(pendingEnrollment.userId, userId),
-			),
-		)
-		.limit(1);
-	return rows[0] ?? null;
+  const rows = await db
+    .select({
+      id: pendingEnrollment.id,
+      refCode: pendingEnrollment.refCode,
+      amount: pendingEnrollment.amount,
+      status: pendingEnrollment.status,
+      expiresAt: pendingEnrollment.expiresAt,
+      updatedAt: pendingEnrollment.updatedAt,
+      courseId: course.id,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+    })
+    .from(pendingEnrollment)
+    .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
+    .where(
+      and(
+        eq(pendingEnrollment.id, pendingId),
+        eq(pendingEnrollment.userId, userId),
+      ),
+    )
+    .limit(1);
+  return rows[0] ?? null;
 }

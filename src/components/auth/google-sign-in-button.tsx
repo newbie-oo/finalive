@@ -44,7 +44,8 @@ export function GoogleSignInButton({ mode = "login" }: Props) {
     setLoading(false);
   }
 
-  const label = mode === "register" ? "สมัครด้วย Google" : "เข้าสู่ระบบด้วย Google";
+  const label =
+    mode === "register" ? "สมัครด้วย Google" : "เข้าสู่ระบบด้วย Google";
   const disabled = loading || configured === false || configured === null;
 
   return (
@@ -54,7 +55,11 @@ export function GoogleSignInButton({ mode = "login" }: Props) {
       disabled={disabled}
       className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-accent disabled:opacity-50"
     >
-      <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        className="h-4 w-4"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <path
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
           fill="#4285F4"

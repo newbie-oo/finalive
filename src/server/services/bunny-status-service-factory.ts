@@ -11,35 +11,35 @@ import { BunnyVideoStatusService } from "./bunny-video-status";
  * the webhook handler (POST /api/webhooks/bunny).
  */
 export function makeBunnyStatusService() {
-	return new BunnyVideoStatusService({
-		findAssetByBunnyId: async (bunnyId) => {
-			const rows = await db
-				.select({
-					id: mediaAsset.id,
-					currentStatus: mediaAsset.status,
-					currentDuration: mediaAsset.durationSeconds,
-				})
-				.from(mediaAsset)
-				.where(
-					and(
-						eq(mediaAsset.storage, "bunny_stream"),
-						eq(mediaAsset.storageKey, bunnyId),
-					),
-				)
-				.limit(1);
-			return rows[0];
-		},
-		updateAsset: async (assetId, updates) => {
-			await db
-				.update(mediaAsset)
-				.set(updates)
-				.where(eq(mediaAsset.id, assetId));
-		},
-		updateLessonDuration: async (assetId, durationSeconds) => {
-			await db
-				.update(lesson)
-				.set({ durationSeconds, updatedAt: new Date() })
-				.where(eq(lesson.videoMediaId, assetId));
-		},
-	});
+  return new BunnyVideoStatusService({
+    findAssetByBunnyId: async (bunnyId) => {
+      const rows = await db
+        .select({
+          id: mediaAsset.id,
+          currentStatus: mediaAsset.status,
+          currentDuration: mediaAsset.durationSeconds,
+        })
+        .from(mediaAsset)
+        .where(
+          and(
+            eq(mediaAsset.storage, "bunny_stream"),
+            eq(mediaAsset.storageKey, bunnyId),
+          ),
+        )
+        .limit(1);
+      return rows[0];
+    },
+    updateAsset: async (assetId, updates) => {
+      await db
+        .update(mediaAsset)
+        .set(updates)
+        .where(eq(mediaAsset.id, assetId));
+    },
+    updateLessonDuration: async (assetId, durationSeconds) => {
+      await db
+        .update(lesson)
+        .set({ durationSeconds, updatedAt: new Date() })
+        .where(eq(lesson.videoMediaId, assetId));
+    },
+  });
 }

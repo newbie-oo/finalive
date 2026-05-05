@@ -28,7 +28,9 @@ export async function deleteCurrentAccountAction(input: {
     return { ok: true };
   } catch (err) {
     const message =
-      err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+      err instanceof Error
+        ? err.message.toLowerCase()
+        : String(err).toLowerCase();
     if (message.includes("password") || message.includes("invalid")) {
       return { ok: false, error: "wrong_password" };
     }

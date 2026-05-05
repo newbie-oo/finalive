@@ -10,10 +10,12 @@ export interface PgErrorShape {
 export function asPgError(e: unknown): PgErrorShape | null {
   if (typeof e !== "object" || e === null) return null;
   const obj = e as Record<string, unknown>;
-  if (typeof obj.code !== "string" && typeof obj.constraint_name !== "string") return null;
+  if (typeof obj.code !== "string" && typeof obj.constraint_name !== "string")
+    return null;
   return {
     code: typeof obj.code === "string" ? obj.code : undefined,
-    constraint_name: typeof obj.constraint_name === "string" ? obj.constraint_name : undefined,
+    constraint_name:
+      typeof obj.constraint_name === "string" ? obj.constraint_name : undefined,
   };
 }
 

@@ -24,8 +24,12 @@ export const pendingEnrollment = pgTable(
     refCode: text("ref_code").notNull().unique(),
     status: text("status").notNull().default("awaiting_payment"),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     statusChk: check(
@@ -51,7 +55,10 @@ export const paymentSlip = pgTable(
     imageMediaId: uuid("image_media_id")
       .notNull()
       .references(() => mediaAsset.id),
-    expectedAmount: numeric("expected_amount", { precision: 12, scale: 2 }).notNull(),
+    expectedAmount: numeric("expected_amount", {
+      precision: 12,
+      scale: 2,
+    }).notNull(),
     reportedAmount: numeric("reported_amount", { precision: 12, scale: 2 }),
     status: text("status").notNull().default("submitted"),
     rejectionReason: text("rejection_reason"),
@@ -59,16 +66,26 @@ export const paymentSlip = pgTable(
     idempotencyKey: text("idempotency_key").notNull().unique(),
     reviewedByUserId: text("reviewed_by_user_id"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
-    statusChk: check("slip_status_chk", sql`${t.status} IN ('submitted','accepted','rejected')`),
+    statusChk: check(
+      "slip_status_chk",
+      sql`${t.status} IN ('submitted','accepted','rejected')`,
+    ),
     rejectReasonChk: check(
       "slip_reject_reason_chk",
       sql`${t.status} != 'rejected' OR ${t.rejectionReason} IN ('blurry','wrong_amount','wrong_account','stale_slip','other')`,
     ),
-    statusCreatedIdx: index("slip_status_created_idx").on(t.status, t.createdAt),
+    statusCreatedIdx: index("slip_status_created_idx").on(
+      t.status,
+      t.createdAt,
+    ),
     pendingIdx: index("slip_pending_idx").on(t.pendingEnrollmentId),
   }),
 );

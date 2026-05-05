@@ -2,13 +2,7 @@
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatTHB } from "@/lib/format";
 import type { SlipQueueStatus } from "@/server/repos/slip";
 import { SlipImageViewer } from "./slip-image-viewer";
@@ -45,7 +39,11 @@ interface SlipRow {
 
 interface PageResponse {
   data: SlipRow[];
-  pagination: { next_cursor: string | null; per_page: number; has_next: boolean };
+  pagination: {
+    next_cursor: string | null;
+    per_page: number;
+    has_next: boolean;
+  };
 }
 
 async function fetchPage({
@@ -164,7 +162,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         method: "POST",
       });
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { message?: string };
+        const body = (await res.json().catch(() => ({}))) as {
+          message?: string;
+        };
         setError(body.message ?? `accept failed (${res.status})`);
         return;
       }
@@ -198,7 +198,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         return;
       }
       if (body.failed && body.failed.length > 0) {
-        setError(`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`);
+        setError(
+          `สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`,
+        );
       }
       setSelected(new Set());
       await refresh();
@@ -216,7 +218,10 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
         const res = await fetch("/api/admin/slips/bulk-reject", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ slipIds: Array.from(effectiveSelected), reason }),
+          body: JSON.stringify({
+            slipIds: Array.from(effectiveSelected),
+            reason,
+          }),
         });
         const body = (await res.json().catch(() => ({}))) as {
           succeeded?: string[];
@@ -228,7 +233,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           return;
         }
         if (body.failed && body.failed.length > 0) {
-          setError(`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`);
+          setError(
+            `สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`,
+          );
         }
         setSelected(new Set());
         setBulkMode("none");
@@ -253,7 +260,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           body: JSON.stringify({ reason, note }),
         });
         if (!res.ok) {
-          const body = (await res.json().catch(() => ({}))) as { message?: string };
+          const body = (await res.json().catch(() => ({}))) as {
+            message?: string;
+          };
           setError(body.message ?? `reject failed (${res.status})`);
           return;
         }
@@ -270,7 +279,8 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
+      if (target?.matches("input, textarea, select, [contenteditable='true']"))
+        return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       if (e.key === "j" || e.key === "ArrowDown") {
@@ -310,7 +320,17 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [moveSelection, accept, rejectOpen, active, toggleSelected, bulkMode, activeId, sp, router]);
+  }, [
+    moveSelection,
+    accept,
+    rejectOpen,
+    active,
+    toggleSelected,
+    bulkMode,
+    activeId,
+    sp,
+    router,
+  ]);
 
   const clearSelection = useCallback(() => {
     const next = new URLSearchParams(sp.toString());
@@ -331,10 +351,16 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           shrinks the table area noticeably; without min-width the fixed
           layout was squishing student name + course title to "Q..." / "D...". */}
       <div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-x-auto min-w-0">
-        <table className="w-full border-collapse min-w-[520px]" style={{ tableLayout: "fixed" }}>
+        <table
+          className="w-full border-collapse min-w-[520px]"
+          style={{ tableLayout: "fixed" }}
+        >
           <thead>
             <tr className="border-b border-(--border) bg-(--surface-muted)">
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 140 }}>
+              <th
+                className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
+                style={{ width: 140 }}
+              >
                 รหัส
               </th>
               <th
@@ -349,10 +375,16 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               >
                 คอร์ส
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 110 }}>
+              <th
+                className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
+                style={{ width: 110 }}
+              >
                 จำนวน
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)" style={{ width: 100 }}>
+              <th
+                className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
+                style={{ width: 100 }}
+              >
                 เวลา
               </th>
               <th className="px-3 py-2.5" style={{ width: 80 }} />
@@ -361,11 +393,21 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           <tbody>
             {query.isLoading && rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-4 text-caption text-(--foreground-muted)">กำลังโหลด…</td>
+                <td
+                  colSpan={6}
+                  className="p-4 text-caption text-(--foreground-muted)"
+                >
+                  กำลังโหลด…
+                </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-4 text-caption text-(--foreground-muted)">— ไม่มีสลิปในคิวนี้ —</td>
+                <td
+                  colSpan={6}
+                  className="p-4 text-caption text-(--foreground-muted)"
+                >
+                  — ไม่มีสลิปในคิวนี้ —
+                </td>
               </tr>
             ) : (
               rows.map((slip) => {
@@ -382,7 +424,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                     onClick={() => select(slip.id)}
                   >
                     <td className="px-3 py-2.5">
-                      <span className="mono text-[12px] text-(--foreground-muted)">{slip.refCode}</span>
+                      <span className="mono text-[12px] text-(--foreground-muted)">
+                        {slip.refCode}
+                      </span>
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2.5">
@@ -391,19 +435,27 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                         </span>
                         <div className="min-w-0">
                           <div className="truncate text-ui font-medium text-(--foreground)">
-                            {slip.studentName || slip.studentEmail || slip.refCode}
+                            {slip.studentName ||
+                              slip.studentEmail ||
+                              slip.refCode}
                           </div>
                           {slip.studentEmail && (
-                            <div className="truncate text-caption text-(--foreground-muted)">{slip.studentEmail}</div>
+                            <div className="truncate text-caption text-(--foreground-muted)">
+                              {slip.studentEmail}
+                            </div>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-2.5">
-                      <div className="truncate text-ui text-(--foreground)">{slip.courseTitle}</div>
+                      <div className="truncate text-ui text-(--foreground)">
+                        {slip.courseTitle}
+                      </div>
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="num text-[13px] font-semibold">{formatTHB(slip.expectedAmount)}</span>
+                      <span className="num text-[13px] font-semibold">
+                        {formatTHB(slip.expectedAmount)}
+                      </span>
                     </td>
                     <td className="px-3 py-2.5">
                       <span className="text-caption text-(--foreground-muted)">
@@ -445,14 +497,14 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           dialog so the table doesn't shrink to nothing on small screens. */}
       <aside className="hidden min-w-0 lg:block lg:sticky lg:top-20">
         {active ? (
-          <div
-            className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[14px] border border-(--border) bg-(--surface) shadow-sm"
-          >
+          <div className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[14px] border border-(--border) bg-(--surface) shadow-sm">
             {/* Sheet header */}
             <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
               <div className="flex items-center gap-2.5 min-w-0">
                 <SlipStatusChip status={active.status} />
-                <span className="mono text-[13px] text-(--foreground-muted)">{active.refCode}</span>
+                <span className="mono text-[13px] text-(--foreground-muted)">
+                  {active.refCode}
+                </span>
               </div>
               <div className="flex items-center gap-1">
                 <button
@@ -488,10 +540,14 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               <div className="border-b border-(--border) bg-(--surface-sunken) p-5">
                 {/* Prominent amount badge */}
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">ยอดชำระ</span>
+                  <span className="text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">
+                    ยอดชำระ
+                  </span>
                   <span className="num inline-flex items-baseline gap-1 rounded-[10px] bg-(--primary) px-3 py-1.5 text-[18px] font-bold text-white">
                     <Coins size={16} weight="bold" />
-                    {parseInt(active.expectedAmount, 10).toLocaleString("th-TH")}
+                    {parseInt(active.expectedAmount, 10).toLocaleString(
+                      "th-TH",
+                    )}
                     <span className="text-[12px] font-medium">บาท</span>
                   </span>
                 </div>
@@ -509,7 +565,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                     <div className="text-ui font-semibold text-(--foreground)">
                       {active.studentName || "ไม่ระบุชื่อ"}
                     </div>
-                    <div className="text-caption text-(--foreground-muted)">{active.studentEmail}</div>
+                    <div className="text-caption text-(--foreground-muted)">
+                      {active.studentEmail}
+                    </div>
                   </div>
                 </div>
 
@@ -519,8 +577,12 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                     <Coins size={20} weight="bold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-ui font-semibold text-(--foreground)">{active.courseTitle}</div>
-                    <div className="text-caption text-(--foreground-muted)">คอร์สเดี่ยว · เข้าถึงตลอดชีพ</div>
+                    <div className="text-ui font-semibold text-(--foreground)">
+                      {active.courseTitle}
+                    </div>
+                    <div className="text-caption text-(--foreground-muted)">
+                      คอร์สเดี่ยว · เข้าถึงตลอดชีพ
+                    </div>
                   </div>
                 </div>
 
@@ -531,17 +593,27 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                   </div>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[13px]">
                     <dt className="text-(--foreground-muted)">ส่งเมื่อ</dt>
-                    <dd className="num">{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
+                    <dd className="num">
+                      {new Date(active.createdAt).toLocaleString("th-TH")}
+                    </dd>
                     <dt className="text-(--foreground-muted)">ราคา</dt>
-                    <dd className="num font-semibold text-(--foreground)">{formatTHB(active.expectedAmount)}</dd>
+                    <dd className="num font-semibold text-(--foreground)">
+                      {formatTHB(active.expectedAmount)}
+                    </dd>
                     {active.reportedAmount && (
                       <>
-                        <dt className="text-(--foreground-muted)">นักเรียนแจ้งยอด</dt>
-                        <dd className="num">{formatTHB(active.reportedAmount)}</dd>
+                        <dt className="text-(--foreground-muted)">
+                          นักเรียนแจ้งยอด
+                        </dt>
+                        <dd className="num">
+                          {formatTHB(active.reportedAmount)}
+                        </dd>
                       </>
                     )}
                     <dt className="text-(--foreground-muted)">รหัสอ้างอิง</dt>
-                    <dd className="mono text-(--foreground)">{active.refCode}</dd>
+                    <dd className="mono text-(--foreground)">
+                      {active.refCode}
+                    </dd>
                   </dl>
                 </div>
 
@@ -551,8 +623,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                       <Prohibit size={14} weight="fill" /> เหตุผลที่ปฏิเสธ
                     </div>
                     <p className="text-ui font-medium text-(--destructive-fg)">
-                      {REJECT_REASON_LABEL[active.rejectionReason as (typeof REJECT_REASONS)[number]]
-                        ?? active.rejectionReason}
+                      {REJECT_REASON_LABEL[
+                        active.rejectionReason as (typeof REJECT_REASONS)[number]
+                      ] ?? active.rejectionReason}
                     </p>
                     {active.rejectionNote && (
                       <p className="mt-1 text-uism text-(--foreground-muted)">
@@ -599,7 +672,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-(--border) bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken) disabled:opacity-50"
                 >
                   ข้าม
-                  <span className="mono rounded border border-(--border) bg-(--surface) px-1 py-0.5 text-[10px]">S</span>
+                  <span className="mono rounded border border-(--border) bg-(--surface) px-1 py-0.5 text-[10px]">
+                    S
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -610,7 +685,9 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                 >
                   <Prohibit size={16} weight="bold" />
                   ปฏิเสธ
-                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">R</span>
+                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">
+                    R
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -620,14 +697,17 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
                 >
                   <CheckCircle size={16} weight="bold" />
                   อนุมัติ
-                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">A</span>
+                  <span className="mono rounded bg-white/20 px-1 py-0.5 text-[10px]">
+                    A
+                  </span>
                 </button>
               </div>
             ) : (
               <div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
                 <div className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-(--surface-muted) py-3 text-ui font-medium text-(--foreground-muted)">
                   <ArrowCounterClockwise size={16} />
-                  สลิปนี้ถูก{active.status === "accepted" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
+                  สลิปนี้ถูก
+                  {active.status === "accepted" ? "อนุมัติ" : "ปฏิเสธ"}แล้ว
                 </div>
               </div>
             )}
@@ -638,7 +718,10 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
               เลือกสลิปจากรายการเพื่อดูรายละเอียด
             </p>
             <p className="text-uism text-(--foreground-muted)">
-              คีย์ลัด: <span className="mono">j/k</span> เลื่อน · <span className="mono">a</span> อนุมัติ · <span className="mono">r</span> ปฏิเสธ · <span className="mono">Esc</span> ปิด
+              คีย์ลัด: <span className="mono">j/k</span> เลื่อน ·{" "}
+              <span className="mono">a</span> อนุมัติ ·{" "}
+              <span className="mono">r</span> ปฏิเสธ ·{" "}
+              <span className="mono">Esc</span> ปิด
             </p>
           </div>
         )}
@@ -653,7 +736,10 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
           // sticky header (z-50) — otherwise the close button at the top
           // of the sheet was hidden under the brand bar on small screens.
           className="fixed inset-0 z-[60] flex justify-end lg:hidden"
-          style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)" }}
+          style={{
+            background: "rgba(15,23,42,0.5)",
+            backdropFilter: "blur(4px)",
+          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) clearSelection();
           }}
@@ -719,7 +805,9 @@ function MobileSlipSheet({
       <div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
         <div className="flex items-center gap-2.5 min-w-0">
           <SlipStatusChip status={active.status} />
-          <span className="mono text-[13px] text-(--foreground-muted)">{active.refCode}</span>
+          <span className="mono text-[13px] text-(--foreground-muted)">
+            {active.refCode}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -771,7 +859,9 @@ function MobileSlipSheet({
               <div className="text-ui font-semibold text-(--foreground)">
                 {active.studentName || "ไม่ระบุชื่อ"}
               </div>
-              <div className="text-caption text-(--foreground-muted)">{active.studentEmail}</div>
+              <div className="text-caption text-(--foreground-muted)">
+                {active.studentEmail}
+              </div>
             </div>
           </div>
           <div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
@@ -779,9 +869,13 @@ function MobileSlipSheet({
               <dt className="text-(--foreground-muted)">คอร์ส</dt>
               <dd className="text-(--foreground)">{active.courseTitle}</dd>
               <dt className="text-(--foreground-muted)">ส่งเมื่อ</dt>
-              <dd className="num">{new Date(active.createdAt).toLocaleString("th-TH")}</dd>
+              <dd className="num">
+                {new Date(active.createdAt).toLocaleString("th-TH")}
+              </dd>
               <dt className="text-(--foreground-muted)">ราคา</dt>
-              <dd className="num font-semibold text-(--foreground)">{formatTHB(active.expectedAmount)}</dd>
+              <dd className="num font-semibold text-(--foreground)">
+                {formatTHB(active.expectedAmount)}
+              </dd>
               <dt className="text-(--foreground-muted)">รหัสอ้างอิง</dt>
               <dd className="mono text-(--foreground)">{active.refCode}</dd>
             </dl>
@@ -792,8 +886,9 @@ function MobileSlipSheet({
                 <Prohibit size={14} weight="fill" /> เหตุผลที่ปฏิเสธ
               </div>
               <p className="text-ui font-medium text-(--destructive-fg)">
-                {REJECT_REASON_LABEL[active.rejectionReason as (typeof REJECT_REASONS)[number]]
-                  ?? active.rejectionReason}
+                {REJECT_REASON_LABEL[
+                  active.rejectionReason as (typeof REJECT_REASONS)[number]
+                ] ?? active.rejectionReason}
               </p>
               {active.rejectionNote && (
                 <p className="mt-1 text-uism text-(--foreground-muted)">

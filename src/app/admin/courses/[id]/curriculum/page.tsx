@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/server/auth-session";
-import { getAdminCourseById, getAdminCourseCurriculum } from "@/server/repos/admin-course";
+import {
+  getAdminCourseById,
+  getAdminCourseCurriculum,
+} from "@/server/repos/admin-course";
 import { canEditCourse } from "@/server/services/course-authz";
 import { CurriculumTree } from "@/components/admin/curriculum-tree";
 import { PublishButton } from "@/components/admin/publish-button";
@@ -32,7 +35,9 @@ export default async function AdminCurriculumPage({
   if (!canEdit) {
     return (
       <div className="p-6">
-        <p className="text-sm text-muted-foreground">ไม่มีสิทธิ์แก้ไขคอร์สนี้</p>
+        <p className="text-sm text-muted-foreground">
+          ไม่มีสิทธิ์แก้ไขคอร์สนี้
+        </p>
       </div>
     );
   }
@@ -44,7 +49,9 @@ export default async function AdminCurriculumPage({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-h1">จัดการเนื้อหา</h1>
-          <p className="mt-1 text-body text-(--foreground-muted)">{course.title}</p>
+          <p className="mt-1 text-body text-(--foreground-muted)">
+            {course.title}
+          </p>
         </div>
         <div className="flex gap-2">
           <PublishButton courseId={id} currentStatus={course.status} />

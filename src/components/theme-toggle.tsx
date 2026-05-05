@@ -25,9 +25,10 @@ export function ThemeToggle() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: defer hydration
   useEffect(() => setMounted(true), []);
 
-  const current: ThemeKey = mounted && (ORDER as readonly string[]).includes(theme ?? "")
-    ? (theme as ThemeKey)
-    : "light";
+  const current: ThemeKey =
+    mounted && (ORDER as readonly string[]).includes(theme ?? "")
+      ? (theme as ThemeKey)
+      : "light";
   const Icon = ICONS[current];
 
   function cycle() {

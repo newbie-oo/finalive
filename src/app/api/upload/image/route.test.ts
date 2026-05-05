@@ -21,7 +21,12 @@ describe("sharp image processing", () => {
   it("resizes large input to 640x360 WebP cover", async () => {
     // Create a 1920x1080 test image.
     const input = await sharp({
-      create: { width: 1920, height: 1080, channels: 3, background: { r: 255, g: 0, b: 0 } },
+      create: {
+        width: 1920,
+        height: 1080,
+        channels: 3,
+        background: { r: 255, g: 0, b: 0 },
+      },
     })
       .png()
       .toBuffer();
@@ -39,7 +44,12 @@ describe("sharp image processing", () => {
 
   it("resizes large input to 1200x630 WebP OG image", async () => {
     const input = await sharp({
-      create: { width: 1920, height: 1080, channels: 3, background: { r: 0, g: 255, b: 0 } },
+      create: {
+        width: 1920,
+        height: 1080,
+        channels: 3,
+        background: { r: 0, g: 255, b: 0 },
+      },
     })
       .png()
       .toBuffer();

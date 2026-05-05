@@ -8,7 +8,12 @@ export interface SlipReceivedProps {
   amount: string;
 }
 
-export function SlipReceived({ name, courseTitle, refCode, amount }: SlipReceivedProps) {
+export function SlipReceived({
+  name,
+  courseTitle,
+  refCode,
+  amount,
+}: SlipReceivedProps) {
   return (
     <EmailShell preview="ได้รับสลิปแล้ว — Finalive" heading="ได้รับสลิปแล้ว">
       <Text className="text-base text-slate-700">สวัสดีคุณ {name},</Text>

@@ -9,13 +9,16 @@ export default function PrivacyPage() {
     <PublicShell>
       <article className="mx-auto max-w-[720px] px-6 py-12 md:py-16">
         <h1 className="text-h1">นโยบายความเป็นส่วนตัว</h1>
-        <p className="mt-2 text-uism text-(--foreground-muted)">อัปเดตล่าสุด: 28 เมษายน 2026</p>
+        <p className="mt-2 text-uism text-(--foreground-muted)">
+          อัปเดตล่าสุด: 28 เมษายน 2026
+        </p>
 
         <section className="mt-8 space-y-6 text-bodylg text-(--foreground) [&_h2]:text-h3 [&_h2]:mt-8 [&_p]:text-(--foreground-muted)">
           <h2 className="text-lg font-medium">1. ข้อมูลที่เราเก็บรวบรวม</h2>
           <p>
             เราเก็บรวบรวมข้อมูลที่จำเป็นสำหรับการให้บริการ ได้แก่ ชื่อ อีเมล
-            ข้อมูลการลงทะเบียนคอร์ส ประวัติการชำระเงิน และข้อมูลการใช้งานแพลตฟอร์ม
+            ข้อมูลการลงทะเบียนคอร์ส ประวัติการชำระเงิน
+            และข้อมูลการใช้งานแพลตฟอร์ม
           </p>
 
           <h2 className="text-lg font-medium">2. วัตถุประสงค์ในการใช้ข้อมูล</h2>
@@ -27,8 +30,8 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-medium">3. การแชร์ข้อมูล</h2>
           <p>
             เราไม่ขายหรือให้เช่าข้อมูลส่วนบุคคลของผู้ใช้แก่บุคคลที่สาม
-            ข้อมูลอาจถูกเปิดเผยต่อผู้ให้บริการที่ช่วยเราดำเนินการทางเทคนิค
-            (เช่น การจัดเก็บวิดีโอ การส่งอีเมล) ภายใต้ข้อตกลงความลับ
+            ข้อมูลอาจถูกเปิดเผยต่อผู้ให้บริการที่ช่วยเราดำเนินการทางเทคนิค (เช่น
+            การจัดเก็บวิดีโอ การส่งอีเมล) ภายใต้ข้อตกลงความลับ
           </p>
 
           <h2 className="text-lg font-medium">4. ความปลอดภัย</h2>

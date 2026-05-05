@@ -2,18 +2,18 @@ import "server-only";
 import type { ObjectStorage } from "./storage";
 
 export interface CoverImageDeps {
-	storage: ObjectStorage;
-	/** Look up a media asset by id. Returns null if not found. */
-	getMediaAsset: (
-		mediaAssetId: string,
-	) => Promise<{ id: string; storageKey: string } | null>;
-	/** Delete a media asset row from the DB. */
-	deleteMediaAsset: (mediaAssetId: string) => Promise<void>;
-	/** Update the course's coverMediaId. */
-	updateCourseCover: (
-		courseId: string,
-		mediaAssetId: string | null,
-	) => Promise<void>;
+  storage: ObjectStorage;
+  /** Look up a media asset by id. Returns null if not found. */
+  getMediaAsset: (
+    mediaAssetId: string,
+  ) => Promise<{ id: string; storageKey: string } | null>;
+  /** Delete a media asset row from the DB. */
+  deleteMediaAsset: (mediaAssetId: string) => Promise<void>;
+  /** Update the course's coverMediaId. */
+  updateCourseCover: (
+    courseId: string,
+    mediaAssetId: string | null,
+  ) => Promise<void>;
 }
 
 /**
@@ -22,32 +22,32 @@ export interface CoverImageDeps {
  * Failures during old-cover cleanup are swallowed (best-effort).
  */
 export class CoverImageService {
-	constructor(private deps: CoverImageDeps) {}
+  constructor(private deps: CoverImageDeps) {}
 
-	async replaceCover(params: {
-		courseId: string;
-		newMediaAssetId: string;
-		oldCoverMediaId: string | null;
-	}): Promise<void> {
-		// Update the course first so the FK is released before we delete the old
-		// media_asset row (otherwise Postgres raises 23503).
-		await this.deps.updateCourseCover(params.courseId, params.newMediaAssetId);
+  async replaceCover(params: {
+    courseId: string;
+    newMediaAssetId: string;
+    oldCoverMediaId: string | null;
+  }): Promise<void> {
+    // Update the course first so the FK is released before we delete the old
+    // media_asset row (otherwise Postgres raises 23503).
+    await this.deps.updateCourseCover(params.courseId, params.newMediaAssetId);
 
-		if (params.oldCoverMediaId) {
-			const oldAsset = await this.deps.getMediaAsset(params.oldCoverMediaId);
-			if (oldAsset) {
-				try {
-					const uuid = oldAsset.storageKey;
-					await this.deps.storage.delete(`covers/${uuid}-640.webp`);
-					await this.deps.storage.delete(`covers/${uuid}-1200.webp`);
-				} catch (err) {
-					console.error(
-						"CoverImageService: failed to delete old cover files:",
-						err,
-					);
-				}
-				await this.deps.deleteMediaAsset(oldAsset.id);
-			}
-		}
-	}
+    if (params.oldCoverMediaId) {
+      const oldAsset = await this.deps.getMediaAsset(params.oldCoverMediaId);
+      if (oldAsset) {
+        try {
+          const uuid = oldAsset.storageKey;
+          await this.deps.storage.delete(`covers/${uuid}-640.webp`);
+          await this.deps.storage.delete(`covers/${uuid}-1200.webp`);
+        } catch (err) {
+          console.error(
+            "CoverImageService: failed to delete old cover files:",
+            err,
+          );
+        }
+        await this.deps.deleteMediaAsset(oldAsset.id);
+      }
+    }
+  }
 }

@@ -1,6 +1,13 @@
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label, FieldHelper, FieldError } from "@/components/ui/label";
 import { StatusChip } from "@/components/ui/status-chip";
@@ -17,7 +24,8 @@ export default function PrimitivesPage() {
       <header className="space-y-2">
         <h1 className="text-h1">Finalive primitives</h1>
         <p className="text-bodylg text-(--foreground-muted)">
-          Visual reference for tokens, buttons, cards, inputs, chips, avatars, stepper.
+          Visual reference for tokens, buttons, cards, inputs, chips, avatars,
+          stepper.
         </p>
       </header>
 
@@ -77,12 +85,16 @@ export default function PrimitivesPage() {
       <Section title="Inputs">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="email" required>อีเมล</Label>
+            <Label htmlFor="email" required>
+              อีเมล
+            </Label>
             <Input id="email" type="email" placeholder="you@example.com" />
             <FieldHelper>เราจะส่งรหัสยืนยันไปให้</FieldHelper>
           </div>
           <div>
-            <Label htmlFor="pw" required>รหัสผ่าน</Label>
+            <Label htmlFor="pw" required>
+              รหัสผ่าน
+            </Label>
             <Input id="pw" type="password" invalid />
             <FieldError>รหัสผ่านสั้นเกินไป</FieldError>
           </div>
@@ -130,7 +142,13 @@ export default function PrimitivesPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="space-y-4">
       <h2 className="text-h3">{title}</h2>

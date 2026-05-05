@@ -17,5 +17,5 @@ process.env.S3_BUCKET_PUBLIC = "test-public";
 process.env.S3_PUBLIC_BASE_URL = "http://localhost:9000/test-public";
 
 afterEach(() => {
-	cleanup();
+  cleanup();
 });

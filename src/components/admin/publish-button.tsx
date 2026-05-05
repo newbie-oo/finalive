@@ -43,7 +43,12 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
 
   return (
     <>
-      <Button size="md" variant="primary" onClick={handlePublish} disabled={pending}>
+      <Button
+        size="md"
+        variant="primary"
+        onClick={handlePublish}
+        disabled={pending}
+      >
         {pending ? "กำลังตรวจสอบ…" : "เผยแพร่คอร์ส"}
       </Button>
 
@@ -55,7 +60,9 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6 backdrop-blur-sm"
         >
           <Card className="w-full max-w-md shadow-(--shadow-lg)">
-            <h3 id="publish-error-title" className="text-h3">ไม่สามารถเผยแพร่ได้</h3>
+            <h3 id="publish-error-title" className="text-h3">
+              ไม่สามารถเผยแพร่ได้
+            </h3>
             <p className="mt-1 text-body text-(--foreground-muted)">
               กรุณาแก้ไขข้อผิดพลาดต่อไปนี้ก่อนเผยแพร่
             </p>
@@ -65,7 +72,11 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
               ))}
             </ul>
             <div className="mt-5 flex justify-end">
-              <Button size="md" variant="ghost" onClick={() => setShowDialog(false)}>
+              <Button
+                size="md"
+                variant="ghost"
+                onClick={() => setShowDialog(false)}
+              >
                 ปิด
               </Button>
             </div>

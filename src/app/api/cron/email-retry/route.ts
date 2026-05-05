@@ -82,5 +82,9 @@ export async function POST(request: Request) {
     return { retried, succeeded };
   });
 
-  return NextResponse.json({ ok: true, retried: result.retried, succeeded: result.succeeded });
+  return NextResponse.json({
+    ok: true,
+    retried: result.retried,
+    succeeded: result.succeeded,
+  });
 }

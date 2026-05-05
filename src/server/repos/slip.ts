@@ -55,7 +55,9 @@ export async function listPendingSlips(
   const statusPredicate =
     status === "all" ? undefined : eq(paymentSlip.status, status);
 
-  const where = and(...[statusPredicate, cursorPredicate].filter((p) => p !== undefined));
+  const where = and(
+    ...[statusPredicate, cursorPredicate].filter((p) => p !== undefined),
+  );
 
   const rows = await db
     .select({
@@ -76,7 +78,10 @@ export async function listPendingSlips(
       courseTitle: course.title,
     })
     .from(paymentSlip)
-    .innerJoin(pendingEnrollment, eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id))
+    .innerJoin(
+      pendingEnrollment,
+      eq(paymentSlip.pendingEnrollmentId, pendingEnrollment.id),
+    )
     .innerJoin(course, eq(pendingEnrollment.courseId, course.id))
     .innerJoin(userTable, eq(pendingEnrollment.userId, userTable.id))
     .where(where)
@@ -86,7 +91,9 @@ export async function listPendingSlips(
   return buildCursorResponse(rows, params);
 }
 
-export async function countPendingSlipsByStatus(): Promise<Record<string, number>> {
+export async function countPendingSlipsByStatus(): Promise<
+  Record<string, number>
+> {
   const rows = await db
     .select({
       status: paymentSlip.status,
@@ -94,7 +101,11 @@ export async function countPendingSlipsByStatus(): Promise<Record<string, number
     })
     .from(paymentSlip)
     .groupBy(paymentSlip.status);
-  const out: Record<string, number> = { submitted: 0, accepted: 0, rejected: 0 };
+  const out: Record<string, number> = {
+    submitted: 0,
+    accepted: 0,
+    rejected: 0,
+  };
   for (const r of rows) out[r.status] = r.total;
   return out;
 }

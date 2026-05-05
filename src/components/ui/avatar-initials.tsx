@@ -34,11 +34,20 @@ function getInitials(name: string): string {
   return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
 }
 
-export function AvatarInitials({ name, src, size, className, ...props }: AvatarInitialsProps) {
+export function AvatarInitials({
+  name,
+  src,
+  size,
+  className,
+  ...props
+}: AvatarInitialsProps) {
   if (src) {
     return (
       <span
-        className={cn(avatarVariants({ size, className }), "overflow-hidden bg-(--surface-muted)")}
+        className={cn(
+          avatarVariants({ size, className }),
+          "overflow-hidden bg-(--surface-muted)",
+        )}
         {...props}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -48,7 +57,10 @@ export function AvatarInitials({ name, src, size, className, ...props }: AvatarI
   }
   return (
     <span
-      className={cn(avatarVariants({ size, className }), "bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]")}
+      className={cn(
+        avatarVariants({ size, className }),
+        "bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]",
+      )}
       aria-label={name}
       {...props}
     >

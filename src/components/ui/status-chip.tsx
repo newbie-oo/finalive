@@ -29,6 +29,10 @@ interface StatusChipProps
 
 export function StatusChip({ tone, className, ...props }: StatusChipProps) {
   return (
-    <span data-slot="status-chip" className={cn(chipVariants({ tone, className }))} {...props} />
+    <span
+      data-slot="status-chip"
+      className={cn(chipVariants({ tone, className }))}
+      {...props}
+    />
   );
 }

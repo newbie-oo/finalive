@@ -41,7 +41,11 @@ export function MobileCurriculumDrawer({
           <div className="h-1 w-8 rounded-full bg-(--border-strong)" />
         </div>
         <div className="flex-1 overflow-hidden">
-          <CurriculumSidebar {...sidebarProps} isAdmin={isAdmin} onClose={onClose} />
+          <CurriculumSidebar
+            {...sidebarProps}
+            isAdmin={isAdmin}
+            onClose={onClose}
+          />
         </div>
       </div>
     </div>

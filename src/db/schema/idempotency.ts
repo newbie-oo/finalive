@@ -1,4 +1,11 @@
-import { pgTable, text, jsonb, timestamp, primaryKey, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  jsonb,
+  timestamp,
+  primaryKey,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const idempotencyRecord = pgTable(
   "idempotency_record",
@@ -7,7 +14,9 @@ export const idempotencyRecord = pgTable(
     key: text("key").notNull(),
     responseJson: jsonb("response_json").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     pk: primaryKey({ columns: [t.scope, t.key] }),

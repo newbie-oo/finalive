@@ -49,7 +49,11 @@ export default async function AccountCertificatesPage() {
             <li key={cert.certCode}>
               <Card className="flex h-full flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
-                  <CertIcon size={28} weight="duotone" className="text-(--primary)" />
+                  <CertIcon
+                    size={28}
+                    weight="duotone"
+                    className="text-(--primary)"
+                  />
                   <StatusChip tone={cert.revokedAt ? "destructive" : "success"}>
                     {cert.revokedAt ? "ถูกเพิกถอน" : "ใช้งานได้"}
                   </StatusChip>
@@ -58,7 +62,9 @@ export default async function AccountCertificatesPage() {
                 <p className="text-uism text-(--foreground-muted)">
                   ออกเมื่อ {cert.issuedAt.toLocaleDateString("th-TH")}
                 </p>
-                <p className="mono text-uism text-(--foreground-subtle)">{cert.certCode}</p>
+                <p className="mono text-uism text-(--foreground-subtle)">
+                  {cert.certCode}
+                </p>
                 {cert.revokedAt && (
                   <p className="text-uism text-destructive">
                     ถูกเพิกถอนเมื่อ {cert.revokedAt.toLocaleDateString("th-TH")}

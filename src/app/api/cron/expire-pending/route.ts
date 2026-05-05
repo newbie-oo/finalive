@@ -38,7 +38,9 @@ export async function POST(request: Request) {
     await tx
       .update(pendingEnrollment)
       .set({ status: "expired", updatedAt: now })
-      .where(sql`${pendingEnrollment.id} IN ${sql.raw("('" + ids.join("','") + "')")}`);
+      .where(
+        sql`${pendingEnrollment.id} IN ${sql.raw("('" + ids.join("','") + "')")}`,
+      );
 
     // Audit log per batch (one row for the batch operation).
     await tx.insert(auditLog).values({

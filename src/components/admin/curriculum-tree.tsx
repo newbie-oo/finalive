@@ -35,22 +35,31 @@ import {
 } from "@/server/actions/admin-curriculum";
 import { createQuizAction } from "@/server/actions/admin-quiz";
 import { MarkdownView } from "@/lib/markdown";
-import type { AdminCurriculumModule, AdminCurriculumLesson } from "@/server/repos/admin-course";
+import type {
+  AdminCurriculumModule,
+  AdminCurriculumLesson,
+} from "@/server/repos/admin-course";
 
 interface CurriculumTreeProps {
   courseId: string;
   modules: AdminCurriculumModule[];
 }
 
-export function CurriculumTree({ courseId, modules: initialModules }: CurriculumTreeProps) {
+export function CurriculumTree({
+  courseId,
+  modules: initialModules,
+}: CurriculumTreeProps) {
   const router = useRouter();
-  const [modules, setModules] = useState<AdminCurriculumModule[]>(initialModules);
+  const [modules, setModules] =
+    useState<AdminCurriculumModule[]>(initialModules);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     () => new Set(initialModules.map((m) => m.id)),
   );
   const [addingModule, setAddingModule] = useState(false);
-  const [addingLessonModuleId, setAddingLessonModuleId] = useState<string | null>(null);
+  const [addingLessonModuleId, setAddingLessonModuleId] = useState<
+    string | null
+  >(null);
   const [pending, startTransition] = useTransition();
 
   const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -60,7 +69,12 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
   // (e.g. after router.refresh()), not on every re-render. This preserves
   // unsaved local DnD reordering.
   useEffect(() => {
-    const signature = initialModules.map((m) => `${m.id}:${m.lessons.length}:${m.lessons.map((l) => l.id).join(",")}`).join("|");
+    const signature = initialModules
+      .map(
+        (m) =>
+          `${m.id}:${m.lessons.length}:${m.lessons.map((l) => l.id).join(",")}`,
+      )
+      .join("|");
     if (signature === lastSyncRef.current) return;
     lastSyncRef.current = signature;
 
@@ -97,7 +111,10 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
       if (result.ok && result.moduleId) {
         toast.success("สร้างโมดูลสำเร็จ");
         setAddingModule(false);
-        const nextSortOrder = modules.length > 0 ? Math.max(...modules.map((m) => m.sortOrder)) + 1 : 0;
+        const nextSortOrder =
+          modules.length > 0
+            ? Math.max(...modules.map((m) => m.sortOrder)) + 1
+            : 0;
         const newModule: AdminCurriculumModule = {
           id: result.moduleId,
           title,
@@ -130,7 +147,10 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
         setModules((prev) =>
           prev.map((m) => {
             if (m.id !== moduleId) return m;
-            const nextSortOrder = m.lessons.length > 0 ? Math.max(...m.lessons.map((l) => l.sortOrder)) + 1 : 0;
+            const nextSortOrder =
+              m.lessons.length > 0
+                ? Math.max(...m.lessons.map((l) => l.sortOrder)) + 1
+                : 0;
             const newLesson: AdminCurriculumLesson = {
               id: result.lessonId,
               title,
@@ -159,7 +179,9 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
 
   function handleRenameModule(moduleId: string, title: string) {
     // Optimistic local update first.
-    setModules((prev) => prev.map((m) => (m.id === moduleId ? { ...m, title } : m)));
+    setModules((prev) =>
+      prev.map((m) => (m.id === moduleId ? { ...m, title } : m)),
+    );
     startTransition(async () => {
       const result = await updateModuleAction({ courseId, moduleId, title });
       if (!result.ok) {
@@ -186,7 +208,9 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
     setModules((prev) =>
       prev.map((m) => ({
         ...m,
-        lessons: m.lessons.map((l) => (l.id === lessonId ? { ...l, title } : l)),
+        lessons: m.lessons.map((l) =>
+          l.id === lessonId ? { ...l, title } : l,
+        ),
       })),
     );
     startTransition(async () => {
@@ -200,7 +224,10 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
 
   function handleDeleteLesson(lessonId: string) {
     setModules((prev) =>
-      prev.map((m) => ({ ...m, lessons: m.lessons.filter((l) => l.id !== lessonId) })),
+      prev.map((m) => ({
+        ...m,
+        lessons: m.lessons.filter((l) => l.id !== lessonId),
+      })),
     );
     if (selectedLessonId === lessonId) setSelectedLessonId(null);
     startTransition(async () => {
@@ -221,7 +248,10 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
       debounceRef.current[key] = setTimeout(() => {
         const formData = new FormData();
         formData.append("courseId", courseId);
-        formData.append("moduleIds", JSON.stringify(newModules.map((m) => m.id)));
+        formData.append(
+          "moduleIds",
+          JSON.stringify(newModules.map((m) => m.id)),
+        );
         startTransition(async () => {
           const result = await reorderModulesAction(formData);
           if (!result.ok) {
@@ -241,7 +271,10 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
         const formData = new FormData();
         formData.append("courseId", courseId);
         formData.append("moduleId", moduleId);
-        formData.append("lessonIds", JSON.stringify(newLessons.map((l) => l.id)));
+        formData.append(
+          "lessonIds",
+          JSON.stringify(newLessons.map((l) => l.id)),
+        );
         startTransition(async () => {
           const result = await reorderLessonsAction(formData);
           if (!result.ok) {
@@ -255,7 +288,9 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   function handleDragEnd(event: DragEndEvent) {
@@ -277,13 +312,25 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
     }
 
     // Check if dragging a lesson.
-    const activeModule = modules.find((m) => m.lessons.some((l) => l.id === activeId));
-    const overModule = modules.find((m) => m.lessons.some((l) => l.id === overId));
+    const activeModule = modules.find((m) =>
+      m.lessons.some((l) => l.id === activeId),
+    );
+    const overModule = modules.find((m) =>
+      m.lessons.some((l) => l.id === overId),
+    );
 
     if (activeModule && overModule && activeModule.id === overModule.id) {
-      const lessonIndex = activeModule.lessons.findIndex((l) => l.id === activeId);
-      const overLessonIndex = activeModule.lessons.findIndex((l) => l.id === overId);
-      const newLessons = arrayMove(activeModule.lessons, lessonIndex, overLessonIndex);
+      const lessonIndex = activeModule.lessons.findIndex(
+        (l) => l.id === activeId,
+      );
+      const overLessonIndex = activeModule.lessons.findIndex(
+        (l) => l.id === overId,
+      );
+      const newLessons = arrayMove(
+        activeModule.lessons,
+        lessonIndex,
+        overLessonIndex,
+      );
       const newModules = modules.map((m) =>
         m.id === activeModule.id ? { ...m, lessons: newLessons } : m,
       );
@@ -298,7 +345,12 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
       <div className="flex w-80 flex-col border-r border-border pr-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-medium">เนื้อหา</h2>
-          <Button size="xs" variant="outline" onClick={() => setAddingModule(true)} disabled={pending}>
+          <Button
+            size="xs"
+            variant="outline"
+            onClick={() => setAddingModule(true)}
+            disabled={pending}
+          >
             + โมดูล
           </Button>
         </div>
@@ -316,7 +368,12 @@ export function CurriculumTree({ courseId, modules: initialModules }: Curriculum
             <Button size="xs" type="submit" disabled={pending}>
               บันทึก
             </Button>
-            <Button size="xs" variant="ghost" onClick={() => setAddingModule(false)} type="button">
+            <Button
+              size="xs"
+              variant="ghost"
+              onClick={() => setAddingModule(false)}
+              type="button"
+            >
               ยกเลิก
             </Button>
           </form>
@@ -459,15 +516,25 @@ function SortableModule({
             onChange={(e) => setDraftTitle(e.target.value)}
             onBlur={commitRename}
             onKeyDown={(e) => {
-              if (e.key === "Enter") { e.preventDefault(); commitRename(); }
-              else if (e.key === "Escape") { setEditing(false); setDraftTitle(mod.title); }
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitRename();
+              } else if (e.key === "Escape") {
+                setEditing(false);
+                setDraftTitle(mod.title);
+              }
             }}
             className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm font-medium"
           />
         ) : (
-          <button onClick={onToggle} className="flex flex-1 items-center justify-between text-left">
+          <button
+            onClick={onToggle}
+            className="flex flex-1 items-center justify-between text-left"
+          >
             <span className="truncate">{mod.title}</span>
-            <span className="text-xs text-muted-foreground">{isExpanded ? "▾" : "▸"}</span>
+            <span className="text-xs text-muted-foreground">
+              {isExpanded ? "▾" : "▸"}
+            </span>
           </button>
         )}
 
@@ -475,7 +542,10 @@ function SortableModule({
           <span className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/mod:opacity-100">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); setEditing(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditing(true);
+              }}
               className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
               title="เปลี่ยนชื่อโมดูล"
             >
@@ -485,7 +555,11 @@ function SortableModule({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (confirm(`ลบโมดูล "${mod.title}" และบทเรียน ${mod.lessons.length} บทใต้โมดูลนี้?`)) {
+                if (
+                  confirm(
+                    `ลบโมดูล "${mod.title}" และบทเรียน ${mod.lessons.length} บทใต้โมดูลนี้?`,
+                  )
+                ) {
                   onDelete(mod.id);
                 }
               }}
@@ -672,8 +746,13 @@ function SortableLesson({
             onChange={(e) => setDraftTitle(e.target.value)}
             onBlur={commitRename}
             onKeyDown={(e) => {
-              if (e.key === "Enter") { e.preventDefault(); commitRename(); }
-              else if (e.key === "Escape") { setEditing(false); setDraftTitle(lesson.title); }
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitRename();
+              } else if (e.key === "Escape") {
+                setEditing(false);
+                setDraftTitle(lesson.title);
+              }
             }}
             onClick={(e) => e.stopPropagation()}
             className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
@@ -682,7 +761,10 @@ function SortableLesson({
           <span className="truncate">{lesson.title}</span>
         )}
       </span>
-      <span className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+      <span
+        className="flex items-center gap-1 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={() => toggleField("isPreview")}
           disabled={pending}
@@ -710,7 +792,10 @@ function SortableLesson({
         <LessonQuizInlineAction courseId={courseId} lesson={lesson} />
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); setEditing(true); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditing(true);
+          }}
           className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
           title="เปลี่ยนชื่อบทเรียน"
         >
@@ -779,7 +864,10 @@ function LessonQuizInlineAction({
           "60",
         );
         if (passInput === null) return;
-        const passScorePct = Math.max(1, Math.min(100, parseInt(passInput, 10) || 60));
+        const passScorePct = Math.max(
+          1,
+          Math.min(100, parseInt(passInput, 10) || 60),
+        );
 
         startCreate(async () => {
           const result = await createQuizAction({
@@ -821,13 +909,19 @@ function LessonDetailPanel({
       <div className="flex items-center justify-between gap-3">
         <h3 className="truncate text-lg font-medium">{lesson.title}</h3>
         <Button size="sm" variant="primary" asChild>
-          <Link href={`/admin/courses/${courseId}/lessons/${lesson.id}`}>เปิดตัวแก้ไข →</Link>
+          <Link href={`/admin/courses/${courseId}/lessons/${lesson.id}`}>
+            เปิดตัวแก้ไข →
+          </Link>
         </Button>
       </div>
 
       <dl className="grid grid-cols-[120px_1fr] gap-y-2 text-sm">
         <dt className="text-muted-foreground">ความยาว</dt>
-        <dd>{lesson.durationSeconds ? formatDuration(lesson.durationSeconds) : "—"}</dd>
+        <dd>
+          {lesson.durationSeconds
+            ? formatDuration(lesson.durationSeconds)
+            : "—"}
+        </dd>
 
         <dt className="text-muted-foreground">วิดีโอ</dt>
         <dd>{lesson.bunnyVideoId ? "มีวิดีโอ" : "ยังไม่มีวิดีโอ"}</dd>
@@ -853,14 +947,18 @@ function LessonDetailPanel({
               แก้ไขแบบทดสอบ →
             </Link>
           ) : (
-            <span className="text-muted-foreground">ยังไม่มี — กดปุ่ม “+ ข้อสอบ” ที่บทเรียนเพื่อสร้าง</span>
+            <span className="text-muted-foreground">
+              ยังไม่มี — กดปุ่ม “+ ข้อสอบ” ที่บทเรียนเพื่อสร้าง
+            </span>
           )}
         </dd>
       </dl>
 
       {lesson.bodyMd && (
         <div>
-          <h4 className="mb-1 text-sm font-medium text-muted-foreground">ตัวอย่างเนื้อหา</h4>
+          <h4 className="mb-1 text-sm font-medium text-muted-foreground">
+            ตัวอย่างเนื้อหา
+          </h4>
           <div className="max-h-96 overflow-auto rounded border border-border bg-(--surface) p-3 text-sm">
             <MarkdownView text={lesson.bodyMd} />
           </div>

@@ -37,6 +37,8 @@ describe("isUniqueViolation", () => {
 
   it("returns false for non-unique errors", () => {
     expect(isUniqueViolation(new Error("plain"))).toBe(false);
-    expect(isUniqueViolation(Object.assign(new Error(""), { code: "23503" }))).toBe(false);
+    expect(
+      isUniqueViolation(Object.assign(new Error(""), { code: "23503" })),
+    ).toBe(false);
   });
 });

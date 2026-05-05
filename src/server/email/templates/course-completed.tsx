@@ -35,4 +35,5 @@ export function CourseCompleted({
   );
 }
 
-export const courseCompletedSubject = "ยินดีด้วย! คุณสำเร็จการศึกษาแล้ว — Finalive";
+export const courseCompletedSubject =
+  "ยินดีด้วย! คุณสำเร็จการศึกษาแล้ว — Finalive";

@@ -19,7 +19,9 @@ export const auditLog = pgTable(
   "audit_log",
   {
     id: uuid("id").notNull().defaultRandom(),
-    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
 
     actorType: text("actor_type").notNull(),
     actorUserId: text("actor_user_id"),
@@ -46,8 +48,14 @@ export const auditLog = pgTable(
       sql`${t.actorType} IN ('user','system','cron','webhook')`,
     ),
     targetIdx: index("audit_target_idx").on(t.targetType, t.targetId),
-    actorIdx: index("audit_actor_idx").on(t.actorUserId, sql`${t.occurredAt} DESC`),
-    actionIdx: index("audit_action_idx").on(t.action, sql`${t.occurredAt} DESC`),
+    actorIdx: index("audit_actor_idx").on(
+      t.actorUserId,
+      sql`${t.occurredAt} DESC`,
+    ),
+    actionIdx: index("audit_action_idx").on(
+      t.action,
+      sql`${t.occurredAt} DESC`,
+    ),
     requestIdx: index("audit_request_idx").on(t.requestId),
   }),
 );
@@ -65,10 +73,15 @@ export const emailMessage = pgTable(
     lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
     lastError: text("last_error"),
     sentAt: timestamp("sent_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
-    statusChk: check("em_status_chk", sql`${t.status} IN ('queued','sent','failed')`),
+    statusChk: check(
+      "em_status_chk",
+      sql`${t.status} IN ('queued','sent','failed')`,
+    ),
     dispatchIdx: index("em_dispatch_idx").on(t.status, t.lastAttemptAt),
   }),
 );

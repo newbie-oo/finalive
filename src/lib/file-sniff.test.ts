@@ -15,7 +15,9 @@ describe("sniffImageType", () => {
   it("returns unknown for HTML/SVG/exe payloads", () => {
     expect(sniffImageType(Buffer.from("<html"))).toBe("unknown");
     expect(sniffImageType(Buffer.from("<?xml"))).toBe("unknown");
-    expect(sniffImageType(Buffer.from([0x4d, 0x5a, 0x90, 0x00]))).toBe("unknown"); // PE/EXE
+    expect(sniffImageType(Buffer.from([0x4d, 0x5a, 0x90, 0x00]))).toBe(
+      "unknown",
+    ); // PE/EXE
   });
 
   it("returns unknown for too-small buffers", () => {

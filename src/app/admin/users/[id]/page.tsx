@@ -22,7 +22,9 @@ export default async function AdminUserDetailPage({
 
   const session = await getSession();
   if (!session?.user?.id || session.user.role !== "admin") {
-    return <p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>;
+    return (
+      <p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>
+    );
   }
 
   const userRows = await db
@@ -83,7 +85,10 @@ export default async function AdminUserDetailPage({
             </p>
           </div>
         </div>
-        <Link href="/admin/users" className="text-uism font-medium text-(--primary) hover:underline">
+        <Link
+          href="/admin/users"
+          className="text-uism font-medium text-(--primary) hover:underline"
+        >
           ← กลับไปรายชื่อ
         </Link>
       </header>
@@ -101,7 +106,9 @@ export default async function AdminUserDetailPage({
       <div className="space-y-3">
         <h2 className="text-h3">การลงทะเบียน</h2>
         {enrollments.length === 0 ? (
-          <p className="text-body text-(--foreground-muted)">ยังไม่มีการลงทะเบียน</p>
+          <p className="text-body text-(--foreground-muted)">
+            ยังไม่มีการลงทะเบียน
+          </p>
         ) : (
           <ul className="space-y-2">
             {enrollments.map((e) => (
@@ -109,9 +116,12 @@ export default async function AdminUserDetailPage({
                 key={e.id}
                 className="rounded-card border border-(--border) bg-(--surface) p-4 text-ui"
               >
-                <div className="font-medium text-(--foreground)">{e.courseTitle}</div>
+                <div className="font-medium text-(--foreground)">
+                  {e.courseTitle}
+                </div>
                 <div className="text-uism text-(--foreground-muted)">
-                  {e.source} · {e.status} · {e.createdAt?.toLocaleDateString("th-TH")}
+                  {e.source} · {e.status} ·{" "}
+                  {e.createdAt?.toLocaleDateString("th-TH")}
                 </div>
               </li>
             ))}
@@ -130,10 +140,13 @@ export default async function AdminUserDetailPage({
                 key={g.id}
                 className="rounded-card border border-(--border) bg-(--surface) p-4 text-ui"
               >
-                <div className="font-medium text-(--foreground)">{g.courseTitle}</div>
+                <div className="font-medium text-(--foreground)">
+                  {g.courseTitle}
+                </div>
                 <div className="text-uism text-(--foreground-muted)">
                   {g.reason}
-                  {g.note ? ` · ${g.note}` : ""} · {g.grantedAt?.toLocaleDateString("th-TH")}
+                  {g.note ? ` · ${g.note}` : ""} ·{" "}
+                  {g.grantedAt?.toLocaleDateString("th-TH")}
                 </div>
               </li>
             ))}

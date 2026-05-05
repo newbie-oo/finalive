@@ -16,7 +16,11 @@ export default async function CheckoutByRefPage({
   const { user } = await requireSession();
 
   const rows = await db
-    .select({ id: pendingEnrollment.id, userId: pendingEnrollment.userId, status: pendingEnrollment.status })
+    .select({
+      id: pendingEnrollment.id,
+      userId: pendingEnrollment.userId,
+      status: pendingEnrollment.status,
+    })
     .from(pendingEnrollment)
     .where(eq(pendingEnrollment.refCode, refCode))
     .limit(1);

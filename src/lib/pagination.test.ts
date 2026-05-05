@@ -19,7 +19,10 @@ describe("offset pagination", () => {
   });
 
   it("offsetToSql translates page+per_page", () => {
-    expect(offsetToSql({ page: 3, per_page: 10 })).toEqual({ limit: 10, offset: 20 });
+    expect(offsetToSql({ page: 3, per_page: 10 })).toEqual({
+      limit: 10,
+      offset: 20,
+    });
   });
 
   it("buildOffsetResponse computes total_pages and has_next/prev", () => {
@@ -56,7 +59,9 @@ describe("cursor pagination", () => {
   it("decodeCursor returns null for malformed input", () => {
     expect(decodeCursor("not-base64!")).toBeNull();
     expect(decodeCursor(undefined)).toBeNull();
-    expect(decodeCursor(Buffer.from("not json").toString("base64url"))).toBeNull();
+    expect(
+      decodeCursor(Buffer.from("not json").toString("base64url")),
+    ).toBeNull();
     expect(
       decodeCursor(Buffer.from(JSON.stringify({ x: 1 })).toString("base64url")),
     ).toBeNull();

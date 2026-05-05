@@ -7,6 +7,6 @@ import { getEnv } from "@/lib/env";
  * Component) and pass the resolved string down as a prop.
  */
 export function publicUrl(key: string): string {
-	const env = getEnv();
-	return `${env.S3_PUBLIC_BASE_URL.replace(/\/$/, "")}/${encodeURI(key)}`;
+  const env = getEnv();
+  return `${env.S3_PUBLIC_BASE_URL.replace(/\/$/, "")}/${encodeURI(key)}`;
 }

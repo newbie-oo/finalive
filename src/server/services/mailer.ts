@@ -20,7 +20,8 @@ declare global {
 }
 
 function getTransport(): Transporter {
-  if (globalThis.__finalive_mail_transport) return globalThis.__finalive_mail_transport;
+  if (globalThis.__finalive_mail_transport)
+    return globalThis.__finalive_mail_transport;
   const env = getEnv();
   const secure = env.SMTP_PORT === 465;
   globalThis.__finalive_mail_transport = nodemailer.createTransport({
@@ -59,7 +60,9 @@ export interface VerificationEmailArgs {
   url: string;
 }
 
-export async function sendVerificationEmail(args: VerificationEmailArgs): Promise<void> {
+export async function sendVerificationEmail(
+  args: VerificationEmailArgs,
+): Promise<void> {
   const node = VerifyEmail({ name: args.name, url: args.url });
   const [html, text] = await Promise.all([
     render(node),
@@ -74,7 +77,9 @@ export interface PasswordResetEmailArgs {
   url: string;
 }
 
-export async function sendPasswordResetEmail(args: PasswordResetEmailArgs): Promise<void> {
+export async function sendPasswordResetEmail(
+  args: PasswordResetEmailArgs,
+): Promise<void> {
   const node = PasswordReset({ name: args.name, url: args.url });
   const [html, text] = await Promise.all([
     render(node),
@@ -83,7 +88,6 @@ export async function sendPasswordResetEmail(args: PasswordResetEmailArgs): Prom
   await sendMail({ to: args.to, subject: passwordResetSubject, html, text });
 }
 
-
 export interface GrantCourseEmailArgs {
   to: string;
   name: string;
@@ -91,8 +95,14 @@ export interface GrantCourseEmailArgs {
   learnUrl: string;
 }
 
-export async function sendGrantCourseEmail(args: GrantCourseEmailArgs): Promise<void> {
-  const node = GrantCourse({ name: args.name, courseTitle: args.courseTitle, learnUrl: args.learnUrl });
+export async function sendGrantCourseEmail(
+  args: GrantCourseEmailArgs,
+): Promise<void> {
+  const node = GrantCourse({
+    name: args.name,
+    courseTitle: args.courseTitle,
+    learnUrl: args.learnUrl,
+  });
   const [html, text] = await Promise.all([
     render(node),
     render(node, { plainText: true }),

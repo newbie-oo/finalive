@@ -38,7 +38,9 @@ interface Envelope {
  * and only the second INSERT would no-op — the second caller would still
  * return its own freshly-computed response. See code-reviewer C2.
  */
-export async function withIdempotency<T>(args: WithIdempotencyArgs<T>): Promise<T> {
+export async function withIdempotency<T>(
+  args: WithIdempotencyArgs<T>,
+): Promise<T> {
   const ttlMs = args.ttlMs ?? DEFAULT_TTL_MS;
 
   // Race step 1: try to acquire the lease.
@@ -55,7 +57,10 @@ export async function withIdempotency<T>(args: WithIdempotencyArgs<T>): Promise<
           expiresAt: new Date(Date.now() + ttlMs),
         })
         .where(
-          and(eq(idempotencyRecord.scope, args.scope), eq(idempotencyRecord.key, args.key)),
+          and(
+            eq(idempotencyRecord.scope, args.scope),
+            eq(idempotencyRecord.key, args.key),
+          ),
         );
       return result;
     } catch (err) {
@@ -63,7 +68,10 @@ export async function withIdempotency<T>(args: WithIdempotencyArgs<T>): Promise<
       await db
         .delete(idempotencyRecord)
         .where(
-          and(eq(idempotencyRecord.scope, args.scope), eq(idempotencyRecord.key, args.key)),
+          and(
+            eq(idempotencyRecord.scope, args.scope),
+            eq(idempotencyRecord.key, args.key),
+          ),
         );
       throw err;
     }
@@ -73,7 +81,11 @@ export async function withIdempotency<T>(args: WithIdempotencyArgs<T>): Promise<
   return pollForResult(args.scope, args.key, args.schema);
 }
 
-async function tryAcquire(scope: string, key: string, ttlMs: number): Promise<boolean> {
+async function tryAcquire(
+  scope: string,
+  key: string,
+  ttlMs: number,
+): Promise<boolean> {
   try {
     const inserted = await db
       .insert(idempotencyRecord)
@@ -83,7 +95,9 @@ async function tryAcquire(scope: string, key: string, ttlMs: number): Promise<bo
         responseJson: { v: ENVELOPE_VERSION, data: null } satisfies Envelope,
         expiresAt: new Date(Date.now() + ttlMs),
       })
-      .onConflictDoNothing({ target: [idempotencyRecord.scope, idempotencyRecord.key] })
+      .onConflictDoNothing({
+        target: [idempotencyRecord.scope, idempotencyRecord.key],
+      })
       .returning({ scope: idempotencyRecord.scope });
     return inserted.length === 1;
   } catch (e) {
@@ -104,7 +118,9 @@ async function pollForResult<T>(
     const rows = await db
       .select({ responseJson: idempotencyRecord.responseJson })
       .from(idempotencyRecord)
-      .where(and(eq(idempotencyRecord.scope, scope), eq(idempotencyRecord.key, key)))
+      .where(
+        and(eq(idempotencyRecord.scope, scope), eq(idempotencyRecord.key, key)),
+      )
       .limit(1);
     const row = rows[0];
     if (!row) {

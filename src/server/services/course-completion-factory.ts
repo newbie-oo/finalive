@@ -10,10 +10,10 @@ import { getCourseIdByLessonId } from "@/server/repos/course";
  * Wires production repos and infrastructure behind the service seam.
  */
 export function makeCourseCompletionService(): CourseCompletionService {
-	return new CourseCompletionService({
-		markLessonComplete,
-		getCourseIdByLessonId,
-		checkAndMarkCourseComplete,
-		certificateIssuer: certificateIssuerFactory(),
-	});
+  return new CourseCompletionService({
+    markLessonComplete,
+    getCourseIdByLessonId,
+    checkAndMarkCourseComplete,
+    certificateIssuer: certificateIssuerFactory(),
+  });
 }

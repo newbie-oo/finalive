@@ -21,7 +21,9 @@ export default async function LearnCoursePage({
     // No lessons available.
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-sm text-muted-foreground">ยังไม่มีบทเรียนในคอร์สนี้</p>
+        <p className="text-sm text-muted-foreground">
+          ยังไม่มีบทเรียนในคอร์สนี้
+        </p>
       </div>
     );
   }

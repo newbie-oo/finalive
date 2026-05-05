@@ -53,32 +53,76 @@ export async function dispatchEmail(
       break;
     }
     case "course_granted": {
-      node = GrantCourse(params as { name: string; courseTitle: string; learnUrl: string });
+      node = GrantCourse(
+        params as { name: string; courseTitle: string; learnUrl: string },
+      );
       subject = grantCourseSubject;
       break;
     }
     case "slip_received": {
-      node = SlipReceived(params as { name: string; courseTitle: string; refCode: string; amount: string });
+      node = SlipReceived(
+        params as {
+          name: string;
+          courseTitle: string;
+          refCode: string;
+          amount: string;
+        },
+      );
       subject = slipReceivedSubject;
       break;
     }
     case "slip_accepted": {
-      node = SlipAccepted(params as { name: string; courseTitle: string; courseSlug: string; refCode: string; amount: string; baseUrl: string });
+      node = SlipAccepted(
+        params as {
+          name: string;
+          courseTitle: string;
+          courseSlug: string;
+          refCode: string;
+          amount: string;
+          baseUrl: string;
+        },
+      );
       subject = slipAcceptedSubject;
       break;
     }
     case "slip_rejected": {
-      node = SlipRejected(params as { name: string; courseTitle: string; refCode: string; amount: string; reasonLabel: string; note: string | null; baseUrl: string });
+      node = SlipRejected(
+        params as {
+          name: string;
+          courseTitle: string;
+          refCode: string;
+          amount: string;
+          reasonLabel: string;
+          note: string | null;
+          baseUrl: string;
+        },
+      );
       subject = slipRejectedSubject;
       break;
     }
     case "course_completed": {
-      node = CourseCompleted(params as { name: string; courseTitle: string; certCode: string; verifyUrl: string; pdfUrl: string });
+      node = CourseCompleted(
+        params as {
+          name: string;
+          courseTitle: string;
+          certCode: string;
+          verifyUrl: string;
+          pdfUrl: string;
+        },
+      );
       subject = courseCompletedSubject;
       break;
     }
     case "admin_new_slip": {
-      node = AdminNewSlip(params as { studentEmail: string; courseTitle: string; refCode: string; amount: string; reviewUrl: string });
+      node = AdminNewSlip(
+        params as {
+          studentEmail: string;
+          courseTitle: string;
+          refCode: string;
+          amount: string;
+          reviewUrl: string;
+        },
+      );
       subject = adminNewSlipSubject;
       break;
     }

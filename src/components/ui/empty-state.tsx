@@ -7,7 +7,12 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export function EmptyState({ title, description, icon, action }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  description,
+  icon,
+  action,
+}: EmptyStateProps) {
   return (
     <div
       role="status"
@@ -23,7 +28,9 @@ export function EmptyState({ title, description, icon, action }: EmptyStateProps
       ) : null}
       <p className="text-h4 text-(--foreground)">{title}</p>
       {description ? (
-        <p className="mt-1.5 max-w-sm text-body text-(--foreground-muted)">{description}</p>
+        <p className="mt-1.5 max-w-sm text-body text-(--foreground-muted)">
+          {description}
+        </p>
       ) : null}
       {action ? <div className="mt-6">{action}</div> : null}
     </div>

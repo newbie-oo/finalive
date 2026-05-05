@@ -36,7 +36,9 @@ export function CountdownTimer({ expiresAt }: { expiresAt: Date }) {
       className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-mono ${expired ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}
     >
       <span className="relative flex h-2 w-2" aria-hidden="true">
-        {!expired && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />}
+        {!expired && (
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+        )}
         <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
       </span>
       {expired ? "หมดเวลา" : fmt(left)}

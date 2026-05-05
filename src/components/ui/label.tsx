@@ -18,7 +18,10 @@ export function Label({ className, required, children, ...props }: LabelProps) {
   );
 }
 
-export function FieldHelper({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+export function FieldHelper({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
       data-slot="field-helper"
@@ -28,7 +31,10 @@ export function FieldHelper({ className, ...props }: React.HTMLAttributes<HTMLPa
   );
 }
 
-export function FieldError({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+export function FieldError({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
       data-slot="field-error"

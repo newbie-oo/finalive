@@ -21,14 +21,20 @@ beforeAll(() => {
 describe("publicUrl", () => {
   it("joins base url + key, encoding the key path", async () => {
     const { publicUrl } = await import("./r2");
-    expect(publicUrl("certs/abc.pdf")).toBe("http://localhost:9000/public/certs/abc.pdf");
-    expect(publicUrl("path with space.png")).toContain("path%20with%20space.png");
+    expect(publicUrl("certs/abc.pdf")).toBe(
+      "http://localhost:9000/public/certs/abc.pdf",
+    );
+    expect(publicUrl("path with space.png")).toContain(
+      "path%20with%20space.png",
+    );
   });
 
   it("strips trailing slash from base url", async () => {
     process.env.S3_PUBLIC_BASE_URL = "http://localhost:9000/public/";
     const fresh = await import("./r2");
-    expect(fresh.publicUrl("a.png").startsWith("http://localhost:9000/public/")).toBe(true);
+    expect(
+      fresh.publicUrl("a.png").startsWith("http://localhost:9000/public/"),
+    ).toBe(true);
     expect(fresh.publicUrl("a.png")).not.toContain("//a.png");
   });
 });

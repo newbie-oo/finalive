@@ -20,8 +20,12 @@ export const quiz = pgTable(
       .references(() => lesson.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     passScorePct: integer("pass_score_pct").notNull().default(70),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").notNull(),
     updatedByUserId: text("updated_by_user_id"),
@@ -40,8 +44,12 @@ export const quizQuestion = pgTable(
       .references(() => quiz.id, { onDelete: "cascade" }),
     promptMd: text("prompt_md").notNull(),
     sortOrder: integer("sort_order").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => ({
@@ -63,8 +71,12 @@ export const quizChoice = pgTable(
     body: text("body").notNull(),
     isCorrect: boolean("is_correct").notNull().default(false),
     sortOrder: integer("sort_order").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (t) => ({

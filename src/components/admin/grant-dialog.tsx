@@ -37,7 +37,12 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
       const result = await grantCourseAction({
         studentUserId,
         courseId,
-        reason: reason as "promo" | "gift" | "comp" | "refund_replacement" | "other",
+        reason: reason as
+          | "promo"
+          | "gift"
+          | "comp"
+          | "refund_replacement"
+          | "other",
         note: note || undefined,
       });
       if (result.ok) {
@@ -97,7 +102,9 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">หมายเหตุ (ถ้ามี)</label>
+                <label className="mb-1 block text-sm font-medium">
+                  หมายเหตุ (ถ้ามี)
+                </label>
                 <input
                   type="text"
                   value={note}

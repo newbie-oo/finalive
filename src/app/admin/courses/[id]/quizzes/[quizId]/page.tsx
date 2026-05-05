@@ -26,11 +26,17 @@ export default async function AdminQuizEditPage({
   const quiz = await getAdminQuizById(quizId);
   if (!quiz) notFound();
 
-  const canEdit = await canEditCourse(session.user.id, session.user.role, quiz.courseId);
+  const canEdit = await canEditCourse(
+    session.user.id,
+    session.user.role,
+    quiz.courseId,
+  );
   if (!canEdit) {
     return (
       <div className="p-6">
-        <p className="text-sm text-muted-foreground">ไม่มีสิทธิ์แก้ไขคอร์สนี้</p>
+        <p className="text-sm text-muted-foreground">
+          ไม่มีสิทธิ์แก้ไขคอร์สนี้
+        </p>
       </div>
     );
   }
@@ -50,7 +56,11 @@ export default async function AdminQuizEditPage({
         </Link>
       </div>
 
-      <QuizBuilder quizId={quizId} initialPassScorePct={quiz.passScorePct} initialQuestions={quiz.questions} />
+      <QuizBuilder
+        quizId={quizId}
+        initialPassScorePct={quiz.passScorePct}
+        initialQuestions={quiz.questions}
+      />
     </div>
   );
 }

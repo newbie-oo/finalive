@@ -25,10 +25,14 @@ export function SlipRejected({
   // user on the slip upload step.
   const retryUrl = `${baseUrl}/checkout/by-ref/${refCode}`;
   return (
-    <EmailShell preview="สลิปยังตรวจไม่ผ่าน — Finalive" heading="สลิปยังตรวจไม่ผ่าน">
+    <EmailShell
+      preview="สลิปยังตรวจไม่ผ่าน — Finalive"
+      heading="สลิปยังตรวจไม่ผ่าน"
+    >
       <Text className="text-base text-slate-700">สวัสดีคุณ {name},</Text>
       <Text className="text-base text-slate-700">
-        ทีมงานยังไม่สามารถยืนยันสลิปของคุณสำหรับคอร์ส {courseTitle} ได้ คุณสามารถส่งสลิปใหม่ได้
+        ทีมงานยังไม่สามารถยืนยันสลิปของคุณสำหรับคอร์ส {courseTitle} ได้
+        คุณสามารถส่งสลิปใหม่ได้
       </Text>
       <MetaRow label="คอร์ส" value={courseTitle} />
       <MetaRow label="เลขอ้างอิง" value={refCode} />

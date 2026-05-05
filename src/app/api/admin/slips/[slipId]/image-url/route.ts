@@ -30,7 +30,10 @@ export async function GET(
     const media = rows[0];
     if (!media) throw new ApiError("not_found", "slip not found");
     if (media.storage !== "r2_private") {
-      throw new ApiError("invalid_state", "slip image is not in private storage");
+      throw new ApiError(
+        "invalid_state",
+        "slip image is not in private storage",
+      );
     }
 
     const url = await presignReadUrl({

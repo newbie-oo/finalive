@@ -19,7 +19,11 @@ type UploadPhase =
   | "done"
   | "error";
 
-export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUploaderProps) {
+export function VideoUploader({
+  courseId,
+  lessonId,
+  onUploadComplete,
+}: VideoUploaderProps) {
   const [phase, setPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -96,7 +100,13 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
           apiKey?: string;
           message?: string;
         };
-        if (!res.ok || !body.ok || !body.bunnyVideoId || !body.uploadUrl || !body.apiKey) {
+        if (
+          !res.ok ||
+          !body.ok ||
+          !body.bunnyVideoId ||
+          !body.uploadUrl ||
+          !body.apiKey
+        ) {
           throw new Error(body.message || `สร้างวิดีโอล้มเหลว (${res.status})`);
         }
         config = {
@@ -154,7 +164,9 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
           setPhase("done");
           setErrorMsg(null);
           setBunnyVideoId(config.bunnyVideoId);
-          toast.success("อัปโหลดเสร็จแล้ว วิดีโอกำลังเข้ารหัสที่ Bunny (1–5 นาที)");
+          toast.success(
+            "อัปโหลดเสร็จแล้ว วิดีโอกำลังเข้ารหัสที่ Bunny (1–5 นาที)",
+          );
           onUploadComplete?.();
           return;
         }
@@ -209,7 +221,11 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
             accept="video/*"
             className="hidden"
             onChange={handleFileChange}
-            disabled={phase === "creating" || phase === "uploading" || phase === "processing"}
+            disabled={
+              phase === "creating" ||
+              phase === "uploading" ||
+              phase === "processing"
+            }
           />
           <Button size="sm" variant="outline" asChild>
             <span>{buttonLabel}</span>
@@ -227,7 +243,9 @@ export function VideoUploader({ courseId, lessonId, onUploadComplete }: VideoUpl
         )}
 
         {phase === "uploading" && (
-          <span className="text-xs text-muted-foreground tabular-nums">{progress}%</span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {progress}%
+          </span>
         )}
         {phase === "processing" && (
           <span className="text-xs text-muted-foreground">กำลังประมวลผล…</span>

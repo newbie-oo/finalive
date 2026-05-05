@@ -89,7 +89,9 @@ function ResetForm() {
     <AuthCard title="รีเซ็ตรหัสผ่าน" subtitle="กรอกรหัสผ่านใหม่ของคุณ">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <Label htmlFor="password" required>รหัสผ่านใหม่</Label>
+          <Label htmlFor="password" required>
+            รหัสผ่านใหม่
+          </Label>
           <Input
             id="password"
             type="password"
@@ -105,12 +107,21 @@ function ResetForm() {
         </div>
 
         {serverError && (
-          <p role="alert" className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground">
+          <p
+            role="alert"
+            className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
+          >
             {serverError}
           </p>
         )}
 
-        <Button type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting || !token}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="w-full"
+          disabled={isSubmitting || !token}
+        >
           {isSubmitting ? "กำลังบันทึก..." : "บันทึกรหัสผ่านใหม่"}
         </Button>
       </form>

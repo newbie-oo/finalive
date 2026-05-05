@@ -36,7 +36,10 @@ export default async function AdminCoursesPage({
   const courses = await listAdminCourses({ q, status });
   const filtersActive = q.length > 0 || status !== "all";
 
-  const STATUSES: Array<{ key: "all" | "draft" | "published" | "archived"; label: string }> = [
+  const STATUSES: Array<{
+    key: "all" | "draft" | "published" | "archived";
+    label: string;
+  }> = [
     { key: "all", label: "ทั้งหมด" },
     { key: "published", label: "เผยแพร่" },
     { key: "draft", label: "ร่าง" },
@@ -48,7 +51,9 @@ export default async function AdminCoursesPage({
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-h1">คอร์สทั้งหมด</h1>
-          <p className="mt-1 text-body text-(--foreground-muted)">จัดการเนื้อหาและการเผยแพร่</p>
+          <p className="mt-1 text-body text-(--foreground-muted)">
+            จัดการเนื้อหาและการเผยแพร่
+          </p>
         </div>
         <Button asChild variant="primary">
           <Link href="/admin/courses/new">
@@ -114,19 +119,36 @@ export default async function AdminCoursesPage({
           <table className="w-full text-ui">
             <thead>
               <tr className="border-b border-(--border) bg-(--surface-muted) text-left">
-                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">ชื่อ</th>
-                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">URL</th>
-                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">สถานะ</th>
-                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">ราคา</th>
-                <th className="px-5 py-3 text-right text-uism font-semibold text-(--foreground-muted)">ผู้เรียน</th>
+                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                  ชื่อ
+                </th>
+                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                  URL
+                </th>
+                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                  สถานะ
+                </th>
+                <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+                  ราคา
+                </th>
+                <th className="px-5 py-3 text-right text-uism font-semibold text-(--foreground-muted)">
+                  ผู้เรียน
+                </th>
                 <th className="px-5 py-3" aria-label="actions" />
               </tr>
             </thead>
             <tbody>
               {courses.map((c) => (
-                <tr key={c.id} className="border-b border-(--border) last:border-b-0">
-                  <td className="px-5 py-4 font-medium text-(--foreground)">{c.title}</td>
-                  <td className="mono px-5 py-4 text-uism text-(--foreground-muted)">{c.slug}</td>
+                <tr
+                  key={c.id}
+                  className="border-b border-(--border) last:border-b-0"
+                >
+                  <td className="px-5 py-4 font-medium text-(--foreground)">
+                    {c.title}
+                  </td>
+                  <td className="mono px-5 py-4 text-uism text-(--foreground-muted)">
+                    {c.slug}
+                  </td>
                   <td className="px-5 py-4">
                     <StatusChip tone={STATUS_TONE[c.status] ?? "neutral"}>
                       {STATUS_LABEL[c.status] ?? c.status}

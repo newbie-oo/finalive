@@ -15,7 +15,9 @@ describe("generateRefCode", () => {
   });
 
   it("rare collision over 10k iterations", () => {
-    const set = new Set(Array.from({ length: 10_000 }, () => generateRefCode()));
+    const set = new Set(
+      Array.from({ length: 10_000 }, () => generateRefCode()),
+    );
     expect(set.size).toBeGreaterThan(9_990);
   });
 });

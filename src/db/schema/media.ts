@@ -1,4 +1,13 @@
-import { pgTable, uuid, text, bigint, integer, timestamp, index, check } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  text,
+  bigint,
+  integer,
+  timestamp,
+  index,
+  check,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const mediaAsset = pgTable(
@@ -19,7 +28,9 @@ export const mediaAsset = pgTable(
     //   ready          — playable
     //   failed         — Bunny reported a transcode failure
     status: text("status").notNull().default("ready"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     createdByUserId: text("created_by_user_id").notNull(),
   },
   (t) => ({
@@ -27,7 +38,10 @@ export const mediaAsset = pgTable(
       "media_asset_status_chk",
       sql`${t.status} IN ('pending_upload','encoding','ready','failed')`,
     ),
-    storageLookup: index("media_asset_storage_lookup").on(t.storage, t.storageKey),
+    storageLookup: index("media_asset_storage_lookup").on(
+      t.storage,
+      t.storageKey,
+    ),
     pendingIdx: index("media_asset_pending_idx")
       .on(t.createdAt)
       .where(sql`${t.status} = 'pending_upload'`),

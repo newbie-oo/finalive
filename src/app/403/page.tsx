@@ -10,7 +10,9 @@ export default function ForbiddenPage() {
         <Lock size={64} weight="light" className="text-(--foreground-subtle)" />
         <div>
           <h1 className="text-h1">403</h1>
-          <p className="mt-2 text-bodylg text-(--foreground-muted)">บัญชีนี้ไม่มีสิทธิ์เข้าหน้าที่ขอ</p>
+          <p className="mt-2 text-bodylg text-(--foreground-muted)">
+            บัญชีนี้ไม่มีสิทธิ์เข้าหน้าที่ขอ
+          </p>
         </div>
         <Button asChild variant="primary" size="lg">
           <Link href="/">กลับหน้าหลัก</Link>

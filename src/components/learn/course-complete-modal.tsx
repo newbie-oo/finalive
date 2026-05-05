@@ -32,7 +32,9 @@ export function CourseCompleteModal({
 }: CourseCompleteModalProps) {
   // Lazy initialiser reads localStorage once on mount; subsequent renders
   // are pure props/state derivations. SSR-safe via the readShown guard.
-  const [dismissed, setDismissed] = useState<boolean>(() => readShown(courseSlug));
+  const [dismissed, setDismissed] = useState<boolean>(() =>
+    readShown(courseSlug),
+  );
 
   const completed = totalLessons > 0 && doneLessons >= totalLessons;
   const open = completed && !dismissed;
@@ -43,7 +45,10 @@ export function CourseCompleteModal({
   useEffect(() => {
     if (!open) return;
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(`${STORAGE_PREFIX}${courseSlug}`, String(Date.now()));
+    window.localStorage.setItem(
+      `${STORAGE_PREFIX}${courseSlug}`,
+      String(Date.now()),
+    );
   }, [open, courseSlug]);
 
   // Close on Escape for accessibility.
@@ -72,9 +77,7 @@ export function CourseCompleteModal({
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
-      <div
-        className="relative z-10 w-full max-w-md rounded-card border border-(--border) bg-(--surface) p-6 shadow-xl"
-      >
+      <div className="relative z-10 w-full max-w-md rounded-card border border-(--border) bg-(--surface) p-6 shadow-xl">
         <button
           type="button"
           aria-label="ปิด"
@@ -91,7 +94,8 @@ export function CourseCompleteModal({
             จบคอร์สแล้ว 🎉
           </h2>
           <p className="text-body text-(--foreground-muted)">
-            ยินดีด้วย! คุณเรียนครบทุกบทเรียนแล้ว ใบประกาศพร้อมให้ดาวน์โหลดและส่งทางอีเมล
+            ยินดีด้วย! คุณเรียนครบทุกบทเรียนแล้ว
+            ใบประกาศพร้อมให้ดาวน์โหลดและส่งทางอีเมล
           </p>
         </div>
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">

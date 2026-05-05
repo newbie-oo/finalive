@@ -23,7 +23,9 @@ export const adminGrant = pgTable(
       .references(() => course.id),
     reason: text("reason").notNull(),
     note: text("note"),
-    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+    grantedAt: timestamp("granted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     reasonChk: check(
@@ -44,22 +46,31 @@ export const enrollment = pgTable(
       .notNull()
       .references(() => course.id),
     source: text("source").notNull(),
-    sourcePendingId: uuid("source_pending_id").references(() => pendingEnrollment.id),
+    sourcePendingId: uuid("source_pending_id").references(
+      () => pendingEnrollment.id,
+    ),
     sourceGrantId: uuid("source_grant_id").references(() => adminGrant.id),
     priceAtPurchase: numeric("price_at_purchase", { precision: 12, scale: 2 })
       .notNull()
       .default("0"),
     status: text("status").notNull().default("active"),
     completedAt: timestamp("completed_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     sourceChk: check(
       "enroll_source_chk",
       sql`${t.source} IN ('paid','free_course','admin_grant')`,
     ),
-    statusChk: check("enroll_status_chk", sql`${t.status} IN ('active','cancelled')`),
+    statusChk: check(
+      "enroll_status_chk",
+      sql`${t.status} IN ('active','cancelled')`,
+    ),
     sourceIdChk: check(
       "enroll_source_id_chk",
       sql`(${t.source} = 'paid' AND ${t.sourcePendingId} IS NOT NULL AND ${t.sourceGrantId} IS NULL)

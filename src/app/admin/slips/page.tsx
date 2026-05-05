@@ -37,12 +37,25 @@ export default async function AdminSlipsPage({
         <div>
           <h1 className="text-h1">คิวตรวจสลิป</h1>
           <p className="mt-1 text-body text-(--foreground-muted)">
-            ใช้คีย์ลัด: <kbd className="mono rounded border border-(--border) px-1 text-uism">A</kbd> ยอมรับ ·{" "}
-            <kbd className="mono rounded border border-(--border) px-1 text-uism">R</kbd> ปฏิเสธ ·{" "}
-            <kbd className="mono rounded border border-(--border) px-1 text-uism">S</kbd> ข้าม
+            ใช้คีย์ลัด:{" "}
+            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+              A
+            </kbd>{" "}
+            ยอมรับ ·{" "}
+            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+              R
+            </kbd>{" "}
+            ปฏิเสธ ·{" "}
+            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+              S
+            </kbd>{" "}
+            ข้าม
           </p>
         </div>
-        <nav className="flex flex-wrap gap-2 text-uism" aria-label="ตัวกรองสถานะสลิป">
+        <nav
+          className="flex flex-wrap gap-2 text-uism"
+          aria-label="ตัวกรองสถานะสลิป"
+        >
           {STATUS_OPTIONS.map((opt) => {
             const active = opt.value === status;
             return (

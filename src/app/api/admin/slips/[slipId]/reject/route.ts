@@ -27,7 +27,10 @@ export async function POST(
   } catch (e: unknown) {
     if (e instanceof z.ZodError) {
       return NextResponse.json(
-        { code: "validation_failed", message: e.errors[0]?.message ?? "invalid body" },
+        {
+          code: "validation_failed",
+          message: e.errors[0]?.message ?? "invalid body",
+        },
         { status: 400 },
       );
     }

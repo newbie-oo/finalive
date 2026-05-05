@@ -55,7 +55,10 @@ export async function getLearnCourse(
   userId: string | null,
   options: GetLearnCourseOptions = {},
 ): Promise<GetLearnCourseResult | null> {
-  const courseConditions = [eq(course.slug, courseSlug), isNull(course.deletedAt)];
+  const courseConditions = [
+    eq(course.slug, courseSlug),
+    isNull(course.deletedAt),
+  ];
   if (!options.allowUnpublished) {
     courseConditions.push(eq(course.status, "published"));
   }
@@ -81,7 +84,12 @@ export async function getLearnCourse(
       sortOrder: courseModule.sortOrder,
     })
     .from(courseModule)
-    .where(and(eq(courseModule.courseId, courseRow.id), isNull(courseModule.deletedAt)))
+    .where(
+      and(
+        eq(courseModule.courseId, courseRow.id),
+        isNull(courseModule.deletedAt),
+      ),
+    )
     .orderBy(asc(courseModule.sortOrder));
 
   // Scope to this course only — joining via module avoids returning every lesson in DB.
@@ -259,7 +267,11 @@ export async function getLearnLesson(
       isPreview: lesson.isPreview,
       isFree: lesson.isFree,
       videoMediaId: lesson.videoMediaId,
-      bunnyVideoId: sql<string | null>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as("bunny_video_id"),
+      bunnyVideoId: sql<
+        string | null
+      >`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
+        "bunny_video_id",
+      ),
       courseId: course.id,
       courseSlug: course.slug,
       courseTitle: course.title,

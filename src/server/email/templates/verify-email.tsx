@@ -8,7 +8,10 @@ export interface VerifyEmailProps {
 
 export function VerifyEmail({ name, url }: VerifyEmailProps) {
   return (
-    <EmailShell preview="ยืนยันอีเมลของคุณ — Finalive" heading="ยืนยันอีเมลของคุณ">
+    <EmailShell
+      preview="ยืนยันอีเมลของคุณ — Finalive"
+      heading="ยืนยันอีเมลของคุณ"
+    >
       <Text className="text-base text-slate-700">สวัสดีคุณ {name},</Text>
       <Text className="text-base text-slate-700">
         ยืนยันอีเมลของคุณเพื่อเริ่มใช้งาน Finalive

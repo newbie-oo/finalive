@@ -43,7 +43,10 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
   const Ic = meta.icon;
   const pct =
     props.totalLessons > 0
-      ? Math.min(100, Math.round((props.doneLessons / props.totalLessons) * 100))
+      ? Math.min(
+          100,
+          Math.round((props.doneLessons / props.totalLessons) * 100),
+        )
       : props.completedAt
         ? 100
         : 0;
@@ -102,7 +105,9 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
           {pct > 0 && (
             <>
               {" · "}
-              <span className="num font-medium text-(--foreground)">{pct}%</span>
+              <span className="num font-medium text-(--foreground)">
+                {pct}%
+              </span>
             </>
           )}
         </div>

@@ -76,7 +76,9 @@ export function SlipPendingPoll({
     return (
       <Card className="border-destructive">
         <div className="space-y-2">
-          <p className="font-medium text-(--destructive-fg)">รายการนี้หมดอายุ</p>
+          <p className="font-medium text-(--destructive-fg)">
+            รายการนี้หมดอายุ
+          </p>
           <p className="text-body text-(--foreground-muted)">
             กรุณากลับไปหน้าคอร์สและเริ่มใหม่อีกครั้ง
           </p>

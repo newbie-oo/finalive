@@ -54,7 +54,9 @@ describe("MarkdownView", () => {
   });
 
   it("preserves Tiptap-authored underline + alignment via data-align", () => {
-    const out = html(`<p style="text-align: center"><u>centered underline</u></p>`);
+    const out = html(
+      `<p style="text-align: center"><u>centered underline</u></p>`,
+    );
     expect(out).toMatch(/<u>centered underline<\/u>/);
     // Alignment is migrated to a data attribute the prose stylesheet targets,
     // not left as a passthrough inline style.
@@ -63,7 +65,9 @@ describe("MarkdownView", () => {
   });
 
   it("strips inline event handlers (onerror) from images", () => {
-    const out = html(`<p><img src="https://x.com/y.png" onerror="alert(1)" /></p>`);
+    const out = html(
+      `<p><img src="https://x.com/y.png" onerror="alert(1)" /></p>`,
+    );
     expect(out).not.toMatch(/onerror/);
   });
 
@@ -91,7 +95,9 @@ describe("MarkdownView", () => {
     expect(out).toMatch(/<strong>ตัวหนา<\/strong>/);
     expect(out).toMatch(/<em>ตัวเอียง<\/em>/);
     expect(out).toMatch(/<u>ขีดเส้นใต้<\/u>/);
-    expect(out).toMatch(/<img[^>]+src="https:\/\/cdn\.example\.com\/diagram\.png"/);
+    expect(out).toMatch(
+      /<img[^>]+src="https:\/\/cdn\.example\.com\/diagram\.png"/,
+    );
     expect(out).toMatch(/data-align="center"/);
     expect(out).toMatch(/<li>ข้อหนึ่ง<\/li>/);
     expect(out).toMatch(/<blockquote><p>/);

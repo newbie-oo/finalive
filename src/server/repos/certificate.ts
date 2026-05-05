@@ -33,7 +33,9 @@ export interface AdminCertificateListItem {
   revokedAt: Date | null;
 }
 
-export async function listAllCertificates(): Promise<AdminCertificateListItem[]> {
+export async function listAllCertificates(): Promise<
+  AdminCertificateListItem[]
+> {
   const rows = await db
     .select({
       id: certificate.id,
@@ -74,7 +76,9 @@ export interface CertificateListItem {
   revokedAt: Date | null;
 }
 
-export async function listCertificatesByUserId(userId: string): Promise<CertificateListItem[]> {
+export async function listCertificatesByUserId(
+  userId: string,
+): Promise<CertificateListItem[]> {
   const rows = await db
     .select({
       certCode: certificate.certCode,

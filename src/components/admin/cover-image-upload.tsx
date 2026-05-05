@@ -9,8 +9,13 @@ interface CoverImageUploadProps {
   currentCoverUrl?: string | null;
 }
 
-export function CoverImageUpload({ courseId, currentCoverUrl }: CoverImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(currentCoverUrl ?? null);
+export function CoverImageUpload({
+  courseId,
+  currentCoverUrl,
+}: CoverImageUploadProps) {
+  const [preview, setPreview] = useState<string | null>(
+    currentCoverUrl ?? null,
+  );
   const [pending, startTransition] = useTransition();
 
   const handleFile = useCallback(
@@ -44,7 +49,10 @@ export function CoverImageUpload({ courseId, currentCoverUrl }: CoverImageUpload
             setPreview(currentCoverUrl ?? null);
             return;
           }
-          const data = (await res.json()) as { mediaAssetId: string; urls: { cover: string } };
+          const data = (await res.json()) as {
+            mediaAssetId: string;
+            urls: { cover: string };
+          };
 
           const updateForm = new FormData();
           updateForm.append("courseId", courseId);
@@ -85,14 +93,20 @@ export function CoverImageUpload({ courseId, currentCoverUrl }: CoverImageUpload
       {preview ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Cover preview" className="h-full w-full rounded object-cover" />
+          <img
+            src={preview}
+            alt="Cover preview"
+            className="h-full w-full rounded object-cover"
+          />
           <div className="absolute inset-0 flex items-center justify-center rounded bg-black/40 opacity-0 transition-opacity hover:opacity-100">
             <label className="cursor-pointer text-sm text-white">
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                onChange={(e) =>
+                  e.target.files?.[0] && handleFile(e.target.files[0])
+                }
                 disabled={pending}
               />
               {pending ? "กำลังอัปโหลด…" : "เปลี่ยนรูปปก"}
@@ -105,7 +119,9 @@ export function CoverImageUpload({ courseId, currentCoverUrl }: CoverImageUpload
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+            onChange={(e) =>
+              e.target.files?.[0] && handleFile(e.target.files[0])
+            }
             disabled={pending}
           />
           <span>คลิกหรือลากรูปมาที่นี่</span>

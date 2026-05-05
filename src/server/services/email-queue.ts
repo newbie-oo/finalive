@@ -13,22 +13,22 @@ export type EmailTemplate = EmailPayload["template"];
  * before storage; the dispatcher reads it back and renders the React email.
  */
 export async function enqueueEmail(
-	toEmail: string,
-	payload: EmailPayload,
-	userId?: string | null,
-	tx?: DbWriter,
+  toEmail: string,
+  payload: EmailPayload,
+  userId?: string | null,
+  tx?: DbWriter,
 ): Promise<string> {
-	const writer = tx ?? db;
-	const [row] = await writer
-		.insert(emailMessage)
-		.values({
-			toEmail,
-			template: payload.template,
-			paramsJson: payload.params,
-			userId: userId ?? null,
-			status: "queued",
-		})
-		.returning({ id: emailMessage.id });
-	if (!row) throw new Error("enqueueEmail: insert returned no rows");
-	return row.id;
+  const writer = tx ?? db;
+  const [row] = await writer
+    .insert(emailMessage)
+    .values({
+      toEmail,
+      template: payload.template,
+      paramsJson: payload.params,
+      userId: userId ?? null,
+      status: "queued",
+    })
+    .returning({ id: emailMessage.id });
+  if (!row) throw new Error("enqueueEmail: insert returned no rows");
+  return row.id;
 }

@@ -3,7 +3,11 @@ import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { verifyCronSecret } from "@/lib/cron-auth";
 
-function nextMonthName(d = new Date()): { table: string; start: string; end: string } {
+function nextMonthName(d = new Date()): {
+  table: string;
+  start: string;
+  end: string;
+} {
   const y = d.getUTCFullYear();
   const m = d.getUTCMonth() + 1; // 1-12
   const nextM = m === 12 ? 1 : m + 1;
@@ -34,7 +38,12 @@ export async function POST(request: Request) {
     ) AS "exists"
   `);
   if (exists[0]?.exists) {
-    return NextResponse.json({ ok: true, table, created: false, note: "already_exists" });
+    return NextResponse.json({
+      ok: true,
+      table,
+      created: false,
+      note: "already_exists",
+    });
   }
 
   await db.execute(sql`

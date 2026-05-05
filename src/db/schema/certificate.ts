@@ -20,7 +20,9 @@ export const certificate = pgTable(
     pdfMediaId: uuid("pdf_media_id")
       .notNull()
       .references(() => mediaAsset.id),
-    issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+    issuedAt: timestamp("issued_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
     revokedByUserId: text("revoked_by_user_id"),
     revokeReason: text("revoke_reason"),

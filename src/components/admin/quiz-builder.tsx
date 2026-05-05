@@ -19,7 +19,10 @@ interface ServerIdRegistry {
 }
 
 function collectServerIds(questions: AdminQuizQuestion[]): ServerIdRegistry {
-  const registry: ServerIdRegistry = { questions: new Set(), choices: new Set() };
+  const registry: ServerIdRegistry = {
+    questions: new Set(),
+    choices: new Set(),
+  };
   for (const q of questions) {
     registry.questions.add(q.id);
     for (const c of q.choices) registry.choices.add(c.id);
@@ -27,13 +30,20 @@ function collectServerIds(questions: AdminQuizQuestion[]): ServerIdRegistry {
   return registry;
 }
 
-export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: QuizBuilderProps) {
+export function QuizBuilder({
+  quizId,
+  initialPassScorePct,
+  initialQuestions,
+}: QuizBuilderProps) {
   const [passScorePct, setPassScorePct] = useState<number>(initialPassScorePct);
-  const [questions, setQuestions] = useState<AdminQuizQuestion[]>(initialQuestions);
+  const [questions, setQuestions] =
+    useState<AdminQuizQuestion[]>(initialQuestions);
   const [pending, startTransition] = useTransition();
   // Tracks which IDs in current state came from the server vs. were generated
   // locally for newly-added rows. Only server IDs are sent back on save.
-  const serverIds = useRef<ServerIdRegistry>(collectServerIds(initialQuestions));
+  const serverIds = useRef<ServerIdRegistry>(
+    collectServerIds(initialQuestions),
+  );
   // Snapshot the last-saved shape so we can compute isDirty without forcing
   // every mutator to flip a flag manually.
   const lastSavedRef = useRef({
@@ -69,7 +79,9 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
   }
 
   function updateQuestion(index: number, promptMd: string) {
-    setQuestions((prev) => prev.map((q, i) => (i === index ? { ...q, promptMd } : q)));
+    setQuestions((prev) =>
+      prev.map((q, i) => (i === index ? { ...q, promptMd } : q)),
+    );
   }
 
   function addChoice(qIndex: number) {
@@ -80,7 +92,12 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
               ...q,
               choices: [
                 ...q.choices,
-                { id: crypto.randomUUID(), body: "", isCorrect: false, sortOrder: q.choices.length },
+                {
+                  id: crypto.randomUUID(),
+                  body: "",
+                  isCorrect: false,
+                  sortOrder: q.choices.length,
+                },
               ],
             }
           : q,
@@ -91,7 +108,9 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
   function removeChoice(qIndex: number, cIndex: number) {
     setQuestions((prev) =>
       prev.map((q, i) =>
-        i === qIndex ? { ...q, choices: q.choices.filter((_, ci) => ci !== cIndex) } : q,
+        i === qIndex
+          ? { ...q, choices: q.choices.filter((_, ci) => ci !== cIndex) }
+          : q,
       ),
     );
   }
@@ -100,7 +119,12 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
     setQuestions((prev) =>
       prev.map((q, qi) =>
         qi === qIndex
-          ? { ...q, choices: q.choices.map((c, ci) => (ci === cIndex ? { ...c, body } : c)) }
+          ? {
+              ...q,
+              choices: q.choices.map((c, ci) =>
+                ci === cIndex ? { ...c, body } : c,
+              ),
+            }
           : q,
       ),
     );
@@ -110,7 +134,13 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
     setQuestions((prev) =>
       prev.map((q, qi) =>
         qi === qIndex
-          ? { ...q, choices: q.choices.map((c, ci) => ({ ...c, isCorrect: ci === cIndex })) }
+          ? {
+              ...q,
+              choices: q.choices.map((c, ci) => ({
+                ...c,
+                isCorrect: ci === cIndex,
+              })),
+            }
           : q,
       ),
     );
@@ -190,7 +220,9 @@ export function QuizBuilder({ quizId, initialPassScorePct, initialQuestions }: Q
           min={1}
           max={100}
           value={passScorePct}
-          onChange={(e) => setPassScorePct(Math.min(100, Math.max(1, Number(e.target.value))))}
+          onChange={(e) =>
+            setPassScorePct(Math.min(100, Math.max(1, Number(e.target.value))))
+          }
           className="h-9 w-20 rounded border border-border bg-background px-2 text-sm"
         />
       </div>

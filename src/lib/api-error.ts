@@ -23,7 +23,11 @@ export class ApiError extends Error {
   readonly code: ErrorCode;
   readonly details: Record<string, string> | undefined;
 
-  constructor(code: ErrorCode, message?: string, details?: Record<string, string>) {
+  constructor(
+    code: ErrorCode,
+    message?: string,
+    details?: Record<string, string>,
+  ) {
     super(message ?? code);
     this.code = code;
     this.details = details;

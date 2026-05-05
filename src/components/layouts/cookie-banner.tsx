@@ -55,12 +55,16 @@ export function CookieBanner() {
     >
       <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between">
         <div className="text-uism text-(--foreground-muted)">
-          <p id="cookie-banner-title" className="font-medium text-(--foreground)">
+          <p
+            id="cookie-banner-title"
+            className="font-medium text-(--foreground)"
+          >
             เราใช้คุกกี้เพื่อให้บริการพื้นฐาน
           </p>
           <p className="mt-1">
             เว็บไซต์ใช้คุกกี้สำหรับการเข้าสู่ระบบและการชำระเงินซึ่งจำเป็นต้องเปิดเสมอ
-            หากกด “ยอมรับทั้งหมด” เราจะใช้คุกกี้เพิ่มเติมในอนาคตเพื่อปรับปรุงประสบการณ์
+            หากกด “ยอมรับทั้งหมด”
+            เราจะใช้คุกกี้เพิ่มเติมในอนาคตเพื่อปรับปรุงประสบการณ์
             อ่านรายละเอียดที่{" "}
             <Link
               href="/legal/privacy"

@@ -31,8 +31,12 @@ export const course = pgTable(
     status: text("status").notNull().default("draft"),
     sortOrder: integer("sort_order").notNull().default(0),
     publishedAt: timestamp("published_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").notNull(),
     updatedByUserId: text("updated_by_user_id"),
@@ -63,8 +67,12 @@ export const courseModule = pgTable(
     title: text("title").notNull(),
     descriptionMd: text("description_md"),
     sortOrder: integer("sort_order").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").notNull(),
     updatedByUserId: text("updated_by_user_id"),
@@ -95,8 +103,12 @@ export const lesson = pgTable(
     isPreview: boolean("is_preview").notNull().default(false),
     isFree: boolean("is_free").notNull().default(false),
     sortOrder: integer("sort_order").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").notNull(),
     updatedByUserId: text("updated_by_user_id"),
@@ -122,7 +134,9 @@ export const courseCollaborator = pgTable(
       .references(() => course.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     role: text("role").notNull(),
-    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+    grantedAt: timestamp("granted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     grantedByUserId: text("granted_by_user_id").notNull(),
   },
   (t) => ({

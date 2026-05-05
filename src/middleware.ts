@@ -27,7 +27,10 @@ export function middleware(request: NextRequest) {
     request.cookies.has("session_token");
 
   if (!hasSessionCookie) {
-    if (isProtected(pathname, PROTECTED.student) || isProtected(pathname, PROTECTED.admin)) {
+    if (
+      isProtected(pathname, PROTECTED.student) ||
+      isProtected(pathname, PROTECTED.admin)
+    ) {
       const loginUrl = new URL("/login", request.url);
       // Prefer the Referer URL when redirecting from a non-GET (e.g. form
       // POST to /checkout/start). Sending the user back to the POST path

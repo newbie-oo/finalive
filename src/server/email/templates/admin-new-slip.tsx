@@ -17,8 +17,13 @@ export function AdminNewSlip({
   reviewUrl,
 }: AdminNewSlipProps) {
   return (
-    <EmailShell preview="สลิปใหม่รอตรวจ — Finalive Admin" heading="สลิปใหม่รอตรวจ">
-      <Text className="text-base text-slate-700">มีสลิปใหม่รอ admin ตรวจสอบ</Text>
+    <EmailShell
+      preview="สลิปใหม่รอตรวจ — Finalive Admin"
+      heading="สลิปใหม่รอตรวจ"
+    >
+      <Text className="text-base text-slate-700">
+        มีสลิปใหม่รอ admin ตรวจสอบ
+      </Text>
       <MetaRow label="นักเรียน" value={studentEmail} />
       <MetaRow label="คอร์ส" value={courseTitle} />
       <MetaRow label="เลขอ้างอิง" value={refCode} />

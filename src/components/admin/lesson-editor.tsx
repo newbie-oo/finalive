@@ -111,15 +111,23 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
                   <Play size={18} weight="fill" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-ui font-medium text-(--foreground)">มีวิดีโอแล้ว</div>
+                  <div className="text-ui font-medium text-(--foreground)">
+                    มีวิดีโอแล้ว
+                  </div>
                   <div className="text-caption text-(--foreground-muted)">
-                    Bunny ID: <span className="mono">{lesson.bunnyVideoId}</span>
+                    Bunny ID:{" "}
+                    <span className="mono">{lesson.bunnyVideoId}</span>
                   </div>
                 </div>
                 {lesson.durationSeconds && (
                   <div className="flex items-center gap-1 text-caption text-(--foreground-muted)">
                     <Clock size={12} />
-                    <span className="num">{Math.floor(lesson.durationSeconds / 60)}:{(lesson.durationSeconds % 60).toString().padStart(2, "0")}</span>
+                    <span className="num">
+                      {Math.floor(lesson.durationSeconds / 60)}:
+                      {(lesson.durationSeconds % 60)
+                        .toString()
+                        .padStart(2, "0")}
+                    </span>
                   </div>
                 )}
                 <ReencodeButton courseId={courseId} lessonId={lesson.id} />
@@ -163,7 +171,9 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
             {saving ? "กำลังบันทึก…" : "บันทึก"}
           </button>
           {isDirty && (
-            <span className="text-sm text-muted-foreground">มีการเปลี่ยนแปลงยังไม่ได้บันทึก</span>
+            <span className="text-sm text-muted-foreground">
+              มีการเปลี่ยนแปลงยังไม่ได้บันทึก
+            </span>
           )}
         </div>
       </div>
@@ -177,7 +187,13 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
  * source MP4 is fine, but the renditions need rebuilding. Marks the
  * mediaAsset back to 'encoding' so the UI shows the spinner again.
  */
-function ReencodeButton({ courseId, lessonId }: { courseId: string; lessonId: string }) {
+function ReencodeButton({
+  courseId,
+  lessonId,
+}: {
+  courseId: string;
+  lessonId: string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   return (
@@ -185,9 +201,12 @@ function ReencodeButton({ courseId, lessonId }: { courseId: string; lessonId: st
       type="button"
       disabled={busy}
       onClick={async () => {
-        if (!confirm(
-          "เข้ารหัสวิดีโอใหม่ที่ Bunny?\nใช้เมื่อความยาวที่เล่นได้สั้นกว่าไฟล์ต้นฉบับ — ใช้เวลา 1–5 นาที",
-        )) return;
+        if (
+          !confirm(
+            "เข้ารหัสวิดีโอใหม่ที่ Bunny?\nใช้เมื่อความยาวที่เล่นได้สั้นกว่าไฟล์ต้นฉบับ — ใช้เวลา 1–5 นาที",
+          )
+        )
+          return;
         setBusy(true);
         try {
           const res = await fetch("/api/admin/reencode-video", {

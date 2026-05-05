@@ -20,10 +20,14 @@ export function SlipAccepted({
 }: SlipAcceptedProps) {
   const learnUrl = `${baseUrl}/learn/${courseSlug}`;
   return (
-    <EmailShell preview="ได้รับสิทธิ์เรียนแล้ว — Finalive" heading="ได้รับสิทธิ์เรียนแล้ว">
+    <EmailShell
+      preview="ได้รับสิทธิ์เรียนแล้ว — Finalive"
+      heading="ได้รับสิทธิ์เรียนแล้ว"
+    >
       <Text className="text-base text-slate-700">สวัสดีคุณ {name},</Text>
       <Text className="text-base text-slate-700">
-        ทีมงานได้ยืนยันการชำระเงินของคุณแล้ว สามารถเริ่มเรียนคอร์ส {courseTitle} ได้ทันที
+        ทีมงานได้ยืนยันการชำระเงินของคุณแล้ว สามารถเริ่มเรียนคอร์ส {courseTitle}{" "}
+        ได้ทันที
       </Text>
       <MetaRow label="คอร์ส" value={courseTitle} />
       <MetaRow label="เลขอ้างอิง" value={refCode} />

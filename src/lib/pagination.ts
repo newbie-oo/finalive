@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 // Canonical Next 15+ search-params shape for server components.
-export type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+export type SearchParams = Promise<
+  Record<string, string | string[] | undefined>
+>;
 
 // --- Offset pagination -----------------------------------------------------
 
@@ -24,7 +26,10 @@ export interface OffsetResponse<T> {
   };
 }
 
-export function offsetToSql(params: OffsetParams): { limit: number; offset: number } {
+export function offsetToSql(params: OffsetParams): {
+  limit: number;
+  offset: number;
+} {
   return {
     limit: params.per_page,
     offset: (params.page - 1) * params.per_page,
@@ -91,7 +96,8 @@ export function decodeCursor(c: string | undefined): Cursor | null {
       return null;
     }
     const obj = parsed as { created_at: unknown; id: unknown };
-    if (typeof obj.created_at !== "string" || typeof obj.id !== "string") return null;
+    if (typeof obj.created_at !== "string" || typeof obj.id !== "string")
+      return null;
     return { created_at: obj.created_at, id: obj.id };
   } catch {
     return null;

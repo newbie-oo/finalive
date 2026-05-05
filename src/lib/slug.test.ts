@@ -49,6 +49,8 @@ describe("uniqueSlug", () => {
   });
 
   it("walks numbers until free", () => {
-    expect(uniqueSlug("hello", new Set(["hello", "hello-2", "hello-3"]))).toBe("hello-4");
+    expect(uniqueSlug("hello", new Set(["hello", "hello-2", "hello-3"]))).toBe(
+      "hello-4",
+    );
   });
 });

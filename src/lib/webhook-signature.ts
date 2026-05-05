@@ -13,9 +13,7 @@ export function verifyHmacSha256(
   secret: string,
 ): boolean {
   if (!signatureHex || signatureHex.length === 0) return false;
-  const expected = createHmac("sha256", secret)
-    .update(rawBody)
-    .digest();
+  const expected = createHmac("sha256", secret).update(rawBody).digest();
   let provided: Buffer;
   try {
     provided = Buffer.from(signatureHex.trim().toLowerCase(), "hex");

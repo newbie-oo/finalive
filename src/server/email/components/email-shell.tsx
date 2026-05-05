@@ -27,7 +27,9 @@ export function EmailShell({ preview, heading, children }: EmailShellProps) {
         <Body className="bg-slate-50 font-sans">
           <Container className="mx-auto my-8 max-w-[600px] rounded-lg bg-white p-10 shadow-sm">
             <Section className="text-center">
-              <Text className="text-lg font-bold text-indigo-600">Finalive</Text>
+              <Text className="text-lg font-bold text-indigo-600">
+                Finalive
+              </Text>
             </Section>
             <Hr className="my-6 border-slate-200" />
             {heading ? (
@@ -52,7 +54,13 @@ export function EmailShell({ preview, heading, children }: EmailShellProps) {
   );
 }
 
-export function PrimaryButton({ href, children }: { href: string; children: ReactNode }) {
+export function PrimaryButton({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
   return (
     <Section className="my-6 text-center">
       <a

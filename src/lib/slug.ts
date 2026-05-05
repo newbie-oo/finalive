@@ -2,30 +2,97 @@
 // Rationale: Thai chars don't survive most URL slugifiers; this gives a
 // deterministic, readable ASCII slug while still handling all-Thai titles.
 const THAI_MAP: Record<string, string> = {
-  ก: "k", ข: "kh", ฃ: "kh", ค: "kh", ฅ: "kh", ฆ: "kh", ง: "ng",
-  จ: "ch", ฉ: "ch", ช: "ch", ซ: "s", ฌ: "ch", ญ: "y",
-  ฎ: "d", ฏ: "t", ฐ: "th", ฑ: "th", ฒ: "th", ณ: "n",
-  ด: "d", ต: "t", ถ: "th", ท: "th", ธ: "th", น: "n",
-  บ: "b", ป: "p", ผ: "ph", ฝ: "f", พ: "ph", ฟ: "f", ภ: "ph", ม: "m",
-  ย: "y", ร: "r", ล: "l", ว: "w",
-  ศ: "s", ษ: "s", ส: "s", ห: "h", ฬ: "l", อ: "", ฮ: "h",
-  ฤ: "rue", ฦ: "lue",
+  ก: "k",
+  ข: "kh",
+  ฃ: "kh",
+  ค: "kh",
+  ฅ: "kh",
+  ฆ: "kh",
+  ง: "ng",
+  จ: "ch",
+  ฉ: "ch",
+  ช: "ch",
+  ซ: "s",
+  ฌ: "ch",
+  ญ: "y",
+  ฎ: "d",
+  ฏ: "t",
+  ฐ: "th",
+  ฑ: "th",
+  ฒ: "th",
+  ณ: "n",
+  ด: "d",
+  ต: "t",
+  ถ: "th",
+  ท: "th",
+  ธ: "th",
+  น: "n",
+  บ: "b",
+  ป: "p",
+  ผ: "ph",
+  ฝ: "f",
+  พ: "ph",
+  ฟ: "f",
+  ภ: "ph",
+  ม: "m",
+  ย: "y",
+  ร: "r",
+  ล: "l",
+  ว: "w",
+  ศ: "s",
+  ษ: "s",
+  ส: "s",
+  ห: "h",
+  ฬ: "l",
+  อ: "",
+  ฮ: "h",
+  ฤ: "rue",
+  ฦ: "lue",
 };
 
 const THAI_VOWEL_MAP: Record<string, string> = {
-  ะ: "a", "ั": "a", า: "a", "ำ": "am",
-  "ิ": "i", "ี": "i", "ึ": "ue", "ื": "ue",
-  "ุ": "u", "ู": "u",
-  เ: "e", แ: "ae", โ: "o", ใ: "ai", ไ: "ai", ๅ: "a",
+  ะ: "a",
+  "ั": "a",
+  า: "a",
+  ำ: "am",
+  "ิ": "i",
+  "ี": "i",
+  "ึ": "ue",
+  "ื": "ue",
+  "ุ": "u",
+  "ู": "u",
+  เ: "e",
+  แ: "ae",
+  โ: "o",
+  ใ: "ai",
+  ไ: "ai",
+  ๅ: "a",
 };
 
 const THAI_TONES_AND_MARKS = new Set([
-  "่", "้", "๊", "๋", "์", "ํ", "๎", "๏", "๚", "๛",
+  "่",
+  "้",
+  "๊",
+  "๋",
+  "์",
+  "ํ",
+  "๎",
+  "๏",
+  "๚",
+  "๛",
 ]);
 
 const DIGIT_MAP: Record<string, string> = {
-  "๐": "0", "๑": "1", "๒": "2", "๓": "3", "๔": "4",
-  "๕": "5", "๖": "6", "๗": "7", "๘": "8", "๙": "9",
+  "๐": "0",
+  "๑": "1",
+  "๒": "2",
+  "๓": "3",
+  "๔": "4",
+  "๕": "5",
+  "๖": "6",
+  "๗": "7",
+  "๘": "8",
+  "๙": "9",
 };
 
 function transliterate(input: string): string {
@@ -61,7 +128,10 @@ export function slugify(input: string): string {
   return ascii.length > 0 ? ascii : "untitled";
 }
 
-export function uniqueSlug(base: string, existing: ReadonlySet<string>): string {
+export function uniqueSlug(
+  base: string,
+  existing: ReadonlySet<string>,
+): string {
   const root = slugify(base);
   if (!existing.has(root)) return root;
   let i = 2;

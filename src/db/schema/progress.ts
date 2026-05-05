@@ -24,9 +24,15 @@ export const lessonProgress = pgTable(
       .references(() => lesson.id),
     watchedSeconds: integer("watched_seconds").notNull().default(0),
     status: text("status").notNull().default("in_progress"),
-    lastWatchedAt: timestamp("last_watched_at", { withTimezone: true }).notNull().defaultNow(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    lastWatchedAt: timestamp("last_watched_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     statusChk: check(
@@ -49,11 +55,17 @@ export const quizAttempt = pgTable(
     answersJson: jsonb("answers_json").notNull(),
     scorePct: integer("score_pct").notNull(),
     passed: boolean("passed").notNull(),
-    submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+    submittedAt: timestamp("submitted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => ({
     scoreChk: check("qa_score_chk", sql`${t.scorePct} BETWEEN 0 AND 100`),
-    userQuizIdx: index("qa_user_quiz_idx").on(t.userId, t.quizId, sql`${t.submittedAt} DESC`),
+    userQuizIdx: index("qa_user_quiz_idx").on(
+      t.userId,
+      t.quizId,
+      sql`${t.submittedAt} DESC`,
+    ),
   }),
 );
 

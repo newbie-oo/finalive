@@ -9,12 +9,12 @@ import { publicUrl } from "@/lib/r2-url";
  * layer and pass the resolved string as a prop instead.
  */
 export function coverImageUrl(
-	storageKey: string | null | undefined,
+  storageKey: string | null | undefined,
 ): string | null {
-	if (!storageKey) return null;
-	// Defensive: some legacy rows store the full path; most store just the uuid.
-	const key = storageKey.startsWith("covers/")
-		? storageKey
-		: `covers/${storageKey}-640.webp`;
-	return publicUrl(key);
+  if (!storageKey) return null;
+  // Defensive: some legacy rows store the full path; most store just the uuid.
+  const key = storageKey.startsWith("covers/")
+    ? storageKey
+    : `covers/${storageKey}-640.webp`;
+  return publicUrl(key);
 }

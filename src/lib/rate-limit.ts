@@ -28,7 +28,10 @@ export function getClientIP(req: Request): string {
 
   const xff = req.headers.get("x-forwarded-for");
   if (xff) {
-    const hops = xff.split(",").map((s) => s.trim()).filter(Boolean);
+    const hops = xff
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     const last = hops[hops.length - 1];
     if (last) return last;
   }
@@ -87,7 +90,9 @@ export function checkRateLimit(
   }
 
   const elapsed = now - bucket.lastRefill;
-  const refillTokens = Math.floor((elapsed / config.windowMs) * config.maxRequests);
+  const refillTokens = Math.floor(
+    (elapsed / config.windowMs) * config.maxRequests,
+  );
 
   if (refillTokens > 0) {
     bucket.tokens = Math.min(config.maxRequests, bucket.tokens + refillTokens);
