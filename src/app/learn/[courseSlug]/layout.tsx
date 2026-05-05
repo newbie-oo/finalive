@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { unstable_noStore } from "next/cache";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse } from "@/server/repos/learn";
 import { listLatestQuizPassByCourse } from "@/server/repos/quiz";
@@ -7,7 +6,6 @@ import { LearnShellProvider } from "@/components/learn/learn-shell-context";
 import { LearnLayout } from "@/components/learn/learn-layout";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function CourseLearnLayout({
 	params,
@@ -16,7 +14,6 @@ export default async function CourseLearnLayout({
 	params: Promise<{ courseSlug: string }>;
 	children: React.ReactNode;
 }) {
-	unstable_noStore();
 	const { courseSlug } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;

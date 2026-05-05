@@ -162,8 +162,14 @@ export const container = {
 
 	courseCompletion(): CourseCompletionService {
 		return new CourseCompletionService({
-			markLessonComplete: async () => {},
-			getCourseIdByLessonId: async () => null,
+			markLessonComplete: async (userId, lessonId, durationSeconds) => {
+				const { markLessonComplete } = await import("@/server/repos/progress");
+				await markLessonComplete(userId, lessonId, durationSeconds);
+			},
+			getCourseIdByLessonId: async (lessonId) => {
+				const { getCourseIdByLessonId } = await import("@/server/repos/course");
+				return getCourseIdByLessonId(lessonId);
+			},
 			checkAndMarkCourseComplete,
 			certificateIssuer: certificateIssuerFactory(),
 		});

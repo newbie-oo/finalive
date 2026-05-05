@@ -13,6 +13,7 @@ const schema = z.object({
 	lessonId: z.string().uuid(),
 	watchedSeconds: z.number().int().min(0),
 	markComplete: z.boolean().optional(),
+	durationSeconds: z.number().int().min(0).optional(),
 });
 
 const COMPLETE_SENTINEL = 999_000;
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
 			userEmail: user.email,
 			userRole: user.role,
 			lessonId,
+			durationSeconds: parsed.data.durationSeconds,
 		});
 		return NextResponse.json({ ok: true, ...result });
 	}

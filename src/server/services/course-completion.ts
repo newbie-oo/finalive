@@ -11,7 +11,11 @@ export interface CertificateIssuerLike {
 
 export interface CourseCompletionDeps {
 	/** Mark a single lesson as completed for the user. */
-	markLessonComplete: (userId: string, lessonId: string) => Promise<void>;
+	markLessonComplete: (
+		userId: string,
+		lessonId: string,
+		durationSeconds?: number | null,
+	) => Promise<void>;
 	/** Resolve the course ID that owns a lesson. */
 	getCourseIdByLessonId: (lessonId: string) => Promise<string | null>;
 	/** Check if the whole course is completed and mark enrollment if so. */
@@ -49,8 +53,13 @@ export class CourseCompletionService {
 		userEmail: string;
 		userRole?: string;
 		lessonId: string;
+		durationSeconds?: number | null;
 	}): Promise<HandleLessonCompleteResult> {
-		await this.deps.markLessonComplete(params.userId, params.lessonId);
+		await this.deps.markLessonComplete(
+			params.userId,
+			params.lessonId,
+			params.durationSeconds,
+		);
 
 		const courseId = await this.deps.getCourseIdByLessonId(params.lessonId);
 		if (!courseId) {

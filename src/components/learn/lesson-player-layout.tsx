@@ -73,15 +73,12 @@ export function LessonPlayerLayout({
 					lessonId,
 					watchedSeconds: durationSeconds ?? 0,
 					markComplete: true,
+					durationSeconds,
 				}),
 			});
 			if (!res.ok) throw new Error("failed");
 			setLocalCompleted(true);
 			toast.success("จบบทเรียนแล้ว");
-			// Optimistically update sidebar without reload
-			window.dispatchEvent(
-				new CustomEvent("lesson-marked-complete", { detail: { lessonId } }),
-			);
 			router.refresh();
 		} catch {
 			toast.error("บันทึกไม่สำเร็จ");
