@@ -52,7 +52,8 @@ export function LessonPlayerLayout({
 	const router = useRouter();
 	const [activeTab, setActiveTab] = useState<"content" | "notes">("content");
 	const [bookmarked, setBookmarked] = useState(false);
-	const [completed, setCompleted] = useState(isCompleted);
+	const [localCompleted, setLocalCompleted] = useState(false);
+	const completed = localCompleted || isCompleted;
 
 	const handleBookmark = useCallback(() => {
 		setBookmarked((v) => !v);
@@ -75,7 +76,7 @@ export function LessonPlayerLayout({
 				}),
 			});
 			if (!res.ok) throw new Error("failed");
-			setCompleted(true);
+			setLocalCompleted(true);
 			toast.success("จบบทเรียนแล้ว");
 			router.refresh();
 		} catch {
