@@ -73,7 +73,7 @@ export function LessonPlayerLayout({
 					lessonId,
 					watchedSeconds: durationSeconds ?? 0,
 					markComplete: true,
-					durationSeconds,
+					durationSeconds: durationSeconds ?? undefined,
 				}),
 			});
 			if (!res.ok) throw new Error("failed");
