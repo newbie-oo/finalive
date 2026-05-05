@@ -99,7 +99,7 @@ function LoginForm() {
 	return (
 		<div className="flex min-h-full">
 			{/* Left Panel — Form */}
-			<div className="flex w-full flex-col items-center justify-center bg-white px-6 py-12 md:w-1/2 lg:w-[45%]">
+			<div className="flex w-full flex-col items-center justify-center bg-(--surface) px-6 py-12 md:w-1/2 lg:w-[45%]">
 				<div className="w-full max-w-[400px] space-y-6">
 					{/* Logo */}
 					<Link
