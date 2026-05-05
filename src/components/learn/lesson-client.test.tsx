@@ -1,19 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { LessonClient } from "./lesson-client";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
 	useRouter: () => ({ refresh: vi.fn() }),
-}));
-
-// Mock sonner toast
-vi.mock("sonner", () => ({
-	toast: {
-		success: vi.fn(),
-		error: vi.fn(),
-		info: vi.fn(),
-	},
 }));
 
 describe("LessonClient", () => {
@@ -38,6 +29,7 @@ describe("LessonClient", () => {
 				courseSlug="cs1"
 				nextLessonId={null}
 				durationSeconds={120}
+				completed={false}
 			/>,
 		);
 
@@ -54,13 +46,15 @@ describe("LessonClient", () => {
 		);
 	});
 
-	it("does NOT poll /api/learn/progress automatically", async () => {
+	it("renders nothing when not completed", async () => {
 		render(
 			<LessonClient
 				lessonId="l1"
 				courseSlug="cs1"
-				nextLessonId={null}
+				nextLessonId="l2"
+				quizId="q1"
 				durationSeconds={120}
+				completed={false}
 			/>,
 		);
 
@@ -68,71 +62,50 @@ describe("LessonClient", () => {
 			await Promise.resolve();
 		});
 
-		// Only /api/learn/start should have been called
-		expect(fetchSpy).toHaveBeenCalledTimes(1);
-		expect(fetchSpy).toHaveBeenCalledWith(
-			"/api/learn/start",
-			expect.any(Object),
-		);
+		expect(screen.queryByText("เช็คความเข้าใจ")).not.toBeInTheDocument();
 	});
 
-	it("calls /api/learn/progress with markComplete when button is clicked", async () => {
+	it("shows quiz CTA when completed and quiz exists", async () => {
 		render(
 			<LessonClient
 				lessonId="l1"
 				courseSlug="cs1"
-				nextLessonId={null}
+				nextLessonId="l2"
+				quizId="q1"
 				durationSeconds={120}
+				completed={true}
 			/>,
 		);
 
-		const btn = screen.getByRole("button", {
-			name: "ทำเครื่องหมายว่าจบแล้ว",
-		});
-
 		await act(async () => {
-			fireEvent.click(btn);
 			await Promise.resolve();
 		});
 
-		expect(fetchSpy).toHaveBeenCalledWith(
-			"/api/learn/progress",
-			expect.objectContaining({
-				method: "POST",
-				body: JSON.stringify({
-					lessonId: "l1",
-					watchedSeconds: 120,
-					markComplete: true,
-				}),
-			}),
-		);
-	});
-
-	it("changes button text to 'จบบทเรียนแล้ว' after click", async () => {
-		render(
-			<LessonClient
-				lessonId="l1"
-				courseSlug="cs1"
-				nextLessonId={null}
-				durationSeconds={120}
-			/>,
-		);
-
-		const btn = screen.getByRole("button", {
-			name: "ทำเครื่องหมายว่าจบแล้ว",
-		});
-
-		await act(async () => {
-			fireEvent.click(btn);
-			await Promise.resolve();
-		});
-
+		expect(screen.getByText("เช็คความเข้าใจ")).toBeInTheDocument();
 		expect(
-			screen.getByRole("button", { name: /จบบทเรียนแล้ว/ }),
+			screen.getByRole("link", { name: /ทำแบบทดสอบ/ }),
 		).toBeInTheDocument();
 	});
 
-	it("skips all network calls when isAdmin is true", async () => {
+	it("shows next lesson CTA when completed and no quiz", async () => {
+		render(
+			<LessonClient
+				lessonId="l1"
+				courseSlug="cs1"
+				nextLessonId="l2"
+				durationSeconds={120}
+				completed={true}
+			/>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(screen.getByRole("link", { name: /บทถัดไป/ })).toBeInTheDocument();
+	});
+
+	it("skips start call when isAdmin is true", async () => {
 		render(
 			<LessonClient
 				lessonId="l1"
@@ -140,6 +113,7 @@ describe("LessonClient", () => {
 				nextLessonId={null}
 				durationSeconds={120}
 				isAdmin
+				completed={false}
 			/>,
 		);
 
@@ -148,30 +122,5 @@ describe("LessonClient", () => {
 		});
 
 		expect(fetchSpy).not.toHaveBeenCalled();
-	});
-
-	it("shows admin toast when admin clicks complete", async () => {
-		const { toast } = await import("sonner");
-
-		render(
-			<LessonClient
-				lessonId="l1"
-				courseSlug="cs1"
-				nextLessonId={null}
-				durationSeconds={120}
-				isAdmin
-			/>,
-		);
-
-		const btn = screen.getByRole("button", {
-			name: "ทำเครื่องหมายว่าจบแล้ว",
-		});
-
-		await act(async () => {
-			fireEvent.click(btn);
-			await Promise.resolve();
-		});
-
-		expect(toast.info).toHaveBeenCalledWith("admin preview — ไม่บันทึกความคืบหน้า");
 	});
 });
