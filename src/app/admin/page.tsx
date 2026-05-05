@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getAdminDashboardCounts } from "@/server/repos/admin-dashboard";
+import {
+	getAdminDashboardCounts,
+	getMonthlyRevenue,
+	getRecentActivity,
+} from "@/server/repos/admin-dashboard";
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { listPendingSlips } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
@@ -68,11 +72,11 @@ function StatusBadge({ variant, children }: any) {
 	);
 }
 
-function RevenueChart() {
-	const labels = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค."];
-	const current = [82_000, 95_000, 78_000, 128_500, 145_000];
-	const prev = [65_000, 72_000, 68_000, 98_000, 110_000];
-	const maxVal = 160_000;
+function RevenueChart({ data }: { data: { month: string; current: number; previous: number }[] }) {
+	const labels = data.map((d) => d.month);
+	const current = data.map((d) => d.current);
+	const prev = data.map((d) => d.previous);
+	const maxVal = Math.max(...current, ...prev, 1) * 1.1;
 	const w = 600, h = 220, padLeft = 48, padRight = 20, padTop = 20, padBottom = 24;
 	const chartW = w - padLeft - padRight;
 	const chartH = h - padTop - padBottom;
@@ -81,7 +85,13 @@ function RevenueChart() {
 	const currentPoints = current.map((v, i) => [x(i), y(v)] as const);
 	const prevPoints = prev.map((v, i) => [x(i), y(v)] as const);
 	const areaPath = `M ${currentPoints[0]![0]} ${currentPoints[0]![1]} ` + currentPoints.slice(1).map(([px, py]) => `L ${px} ${py}`).join(" ") + ` L ${currentPoints[currentPoints.length - 1]![0]} ${padTop + chartH} ` + ` L ${currentPoints[0]![0]} ${padTop + chartH} Z`;
-	const yLabels = ["฿150k", "฿120k", "฿90k", "฿60k", "฿30k"];
+	const yLabels = [
+		`฿${Math.round(maxVal / 1000)}k`,
+		`฿${Math.round((maxVal * 0.75) / 1000)}k`,
+		`฿${Math.round((maxVal * 0.5) / 1000)}k`,
+		`฿${Math.round((maxVal * 0.25) / 1000)}k`,
+		"฿0",
+	];
 	return (
 		<svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 220 }}>
 			<defs>
@@ -118,10 +128,12 @@ function RevenueChart() {
 }
 
 export default async function AdminDashboardPage() {
-	const [counts, courses, slipsRes] = await Promise.all([
+	const [counts, courses, slipsRes, revenueData, activity] = await Promise.all([
 		getAdminDashboardCounts(),
 		listAdminCourses({ status: "published" }),
 		listPendingSlips({ status: "submitted", per_page: 5 }),
+		getMonthlyRevenue(),
+		getRecentActivity(6),
 	]);
 	const topCourses = courses.filter((c) => c.enrollmentCount > 0).sort((a, b) => b.enrollmentCount - a.enrollmentCount).slice(0, 4);
 	const maxEnroll = topCourses[0]?.enrollmentCount ?? 1;
@@ -135,10 +147,10 @@ export default async function AdminDashboardPage() {
 					<p className="mt-1 text-body text-(--foreground-muted)">ข้อมูลล่าสุด · {thaiDateString(now)} · {thaiTimeString(now)}</p>
 				</div>
 				<div className="flex items-center gap-2">
-					<button type="button" className="inline-flex items-center gap-2 rounded-[10px] border border-(--border) bg-(--surface-muted) px-4 py-2.5 text-ui text-(--foreground) transition-colors hover:bg-(--surface)">
+					<button type="button" disabled title="เร็วๆ นี้" className="inline-flex cursor-not-allowed items-center gap-2 rounded-[10px] border border-(--border) bg-(--surface-muted) px-4 py-2.5 text-ui text-(--foreground-muted) opacity-60 transition-colors">
 						<Calendar size={16} weight="bold" />30 วันล่าสุด
 					</button>
-					<button type="button" className="inline-flex items-center gap-2 rounded-[10px] bg-(--primary) px-4 py-2.5 text-ui font-semibold text-(--primary-fg) transition-colors hover:bg-(--primary-hover)">
+					<button type="button" disabled title="เร็วๆ นี้" className="inline-flex cursor-not-allowed items-center gap-2 rounded-[10px] bg-(--primary) px-4 py-2.5 text-ui font-semibold text-(--primary-fg) opacity-60 transition-colors">
 						<UploadSimple size={16} weight="bold" />Export
 					</button>
 				</div>
@@ -171,13 +183,13 @@ export default async function AdminDashboardPage() {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
 				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 shadow-sm">
 					<div className="mb-6 flex items-start justify-between">
-						<div><div className="text-ui font-semibold text-(--foreground)">รายได้รายเดือน</div><div className="text-caption text-(--foreground-muted)">ม.ค. – พ.ค. 2026</div></div>
+						<div><div className="text-ui font-semibold text-(--foreground)">รายได้รายเดือน</div><div className="text-caption text-(--foreground-muted)">{revenueData[0]?.month} – {revenueData[revenueData.length - 1]?.month} {revenueData[revenueData.length - 1]?.year}</div></div>
 						<div className="flex items-center gap-4">
-							<div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-(--primary)" /><span className="text-caption text-(--foreground-muted)">2026</span></div>
-							<div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-(--border-strong)" /><span className="text-caption text-(--foreground-muted)">2025</span></div>
+							<div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-(--primary)" /><span className="text-caption text-(--foreground-muted)">ปัจจุบัน</span></div>
+							<div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-sm bg-(--border-strong)" /><span className="text-caption text-(--foreground-muted)">ปีที่แล้ว</span></div>
 						</div>
 					</div>
-					<RevenueChart />
+					<RevenueChart data={revenueData} />
 				</div>
 				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 shadow-sm">
 					<div className="mb-1 text-ui font-semibold text-(--foreground)">คอร์สขายดี</div>
