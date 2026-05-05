@@ -1,23 +1,8 @@
 import Link from "next/link";
+import { STUDENT_NAV, ADMIN_NAV } from "@/lib/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import type { SessionUser } from "@/server/auth-session";
-
-const STUDENT_NAV = [
-	{ href: "/dashboard", label: "แดชบอร์ด" },
-	{ href: "/courses", label: "คอร์ส" },
-	{ href: "/instructor", label: "ผู้สอน" },
-	{ href: "/account/enrollments", label: "คอร์สของฉัน" },
-	{ href: "/account/certificates", label: "ใบประกาศ" },
-];
-
-// Admin nav intentionally drops student-only routes (enrollments/certificates)
-// — admins manage those via /admin pages instead.
-const ADMIN_NAV = [
-	{ href: "/courses", label: "คอร์ส" },
-	{ href: "/instructor", label: "ผู้สอน" },
-	{ href: "/admin", label: "แผงควบคุม" },
-];
 
 export function StudentShell({
 	user,

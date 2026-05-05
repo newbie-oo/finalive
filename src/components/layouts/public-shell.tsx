@@ -4,35 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { List, X, YoutubeLogo } from "@phosphor-icons/react";
 import { useSession } from "@/lib/auth-client";
+import { visibleNav } from "@/lib/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import { Button } from "@/components/ui/button";
-
-interface NavItem {
-	href: string;
-	label: string;
-	// 'always' shows for everyone; 'auth' only when logged in;
-	// 'student' only for non-admin authenticated users; 'admin' only for the admin role.
-	visibility?: "always" | "auth" | "student" | "admin";
-}
-
-const NAV: NavItem[] = [
-	{ href: "/dashboard", label: "แดชบอร์ด", visibility: "student" },
-	{ href: "/courses", label: "คอร์ส" },
-	{ href: "/instructor", label: "ผู้สอน" },
-	{ href: "/account/enrollments", label: "คอร์สของฉัน", visibility: "student" },
-	{ href: "/account/certificates", label: "ใบประกาศ", visibility: "student" },
-	{ href: "/admin", label: "Admin Panel", visibility: "admin" },
-];
-
-function visibleNav(role: string | undefined, isAuthed: boolean): NavItem[] {
-	return NAV.filter((n) => {
-		if (n.visibility === "admin") return role === "admin";
-		if (n.visibility === "student") return isAuthed && role !== "admin";
-		if (n.visibility === "auth") return isAuthed;
-		return true;
-	});
-}
 
 const FOOTER_COLS: Array<{
 	heading: string;
