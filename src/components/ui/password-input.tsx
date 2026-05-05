@@ -8,30 +8,45 @@ import { Input } from "./input";
 type PasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 	invalid?: boolean;
 	showStrength?: boolean;
+	icon?: React.ReactNode;
 };
 
-function calculateStrength(value: string): { score: number; color: string } {
+function calculateStrength(value: string): {
+	score: number;
+	barColor: string;
+	textColor: string;
+	label: string;
+} {
 	let score = 0;
 	if (value.length >= 8) score++;
 	if (/\d/.test(value)) score++;
 	if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) score++;
 	if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
 
-	const colors = [
-		"bg-(--foreground-subtle)",
-		"bg-red-500",
-		"bg-orange-500",
-		"bg-yellow-500",
-		"bg-green-500",
+	const styles = [
+		{
+			bar: "bg-(--foreground-subtle)",
+			text: "text-(--foreground-subtle)",
+			label: "อ่อนแอ",
+		},
+		{ bar: "bg-red-500", text: "text-red-500", label: "อ่อน" },
+		{ bar: "bg-orange-500", text: "text-orange-500", label: "ปานกลาง" },
+		{ bar: "bg-yellow-500", text: "text-yellow-500", label: "ดี" },
+		{ bar: "bg-green-500", text: "text-green-500", label: "ดีมาก" },
 	];
-	return { score, color: (colors[score] ?? "bg-(--border)") as string };
+	return {
+		score,
+		barColor: styles[score].bar,
+		textColor: styles[score].text,
+		label: styles[score].label,
+	};
 }
 
 export const PasswordInput = React.forwardRef<
 	HTMLInputElement,
 	PasswordInputProps
 >(function PasswordInput(
-	{ className, invalid, showStrength, value, onChange, ...props },
+	{ className, invalid, showStrength, icon, value, onChange, ...props },
 	ref,
 ) {
 	const [showPassword, setShowPassword] = React.useState(false);
@@ -39,7 +54,7 @@ export const PasswordInput = React.forwardRef<
 
 	const isControlled = value !== undefined;
 	const currentValue = isControlled ? String(value) : internalValue;
-	const { score, color } = calculateStrength(currentValue);
+	const { score, barColor, textColor, label } = calculateStrength(currentValue);
 
 	const handleChange = React.useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,11 +69,16 @@ export const PasswordInput = React.forwardRef<
 	return (
 		<div className={cn("space-y-2", className)}>
 			<div className="relative">
+				{icon && (
+					<div className="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-(--foreground-muted)">
+						{icon}
+					</div>
+				)}
 				<Input
 					ref={ref}
 					type={showPassword ? "text" : "password"}
 					invalid={invalid}
-					className="pr-10"
+					className={cn("pr-10", icon && "pl-10")}
 					value={isControlled ? value : internalValue}
 					onChange={handleChange}
 					{...props}
@@ -74,16 +94,26 @@ export const PasswordInput = React.forwardRef<
 				</button>
 			</div>
 			{showStrength && (
-				<div className="flex gap-1" aria-label="ความแข็งแกร่งของรหัสผ่าน">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<div
-							key={i}
-							className={cn(
-								"h-1 flex-1 rounded-full transition-colors duration-200",
-								i < score ? color : "bg-(--border)",
-							)}
-						/>
-					))}
+				<div
+					className="flex items-center gap-2"
+					aria-label="ความแข็งแกร่งของรหัสผ่าน"
+				>
+					<div className="flex flex-1 gap-1">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<div
+								key={i}
+								className={cn(
+									"h-1 flex-1 rounded-full transition-colors duration-200",
+									i < score ? barColor : "bg-(--border)",
+								)}
+							/>
+						))}
+					</div>
+					{currentValue.length > 0 && (
+						<span className={cn("text-xs font-medium", textColor)}>
+							{label}
+						</span>
+					)}
 				</div>
 			)}
 		</div>

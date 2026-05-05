@@ -3,14 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { Faders, X, CaretDown } from "@phosphor-icons/react";
+import {
+	MagnifyingGlass,
+	X,
+	CaretDown,
+	Faders,
+	Check,
+} from "@phosphor-icons/react";
 
 const PRICE_OPTIONS = [
 	{ label: "ทั้งหมด", value: "" },
 	{ label: "ฟรี", value: "free" },
-	{ label: "1-1,000฿", value: "1-1000" },
-	{ label: "1,000-5,000฿", value: "1000-5000" },
-	{ label: "5,000+฿", value: "5000+" },
+	{ label: "฿1-฿1,000", value: "1-1000" },
+	{ label: "฿1,000-฿5,000", value: "1000-5000" },
+	{ label: "มากกว่า ฿5,000", value: "5000+" },
 ];
 
 const DURATION_OPTIONS = [
@@ -21,10 +27,26 @@ const DURATION_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-	{ label: "ใหม่ล่าสุด", value: "newest" },
-	{ label: "ราคาต่ำ→สูง", value: "price_asc" },
-	{ label: "ราคาสูง→ต่ำ", value: "price_desc" },
 	{ label: "ยอดนิยม", value: "popular" },
+	{ label: "ใหม่ล่าสุด", value: "newest" },
+	{ label: "ราคาต่ำ-สูง", value: "price_asc" },
+	{ label: "ราคาสูง-ต่ำ", value: "price_desc" },
+];
+
+const QUICK_FILTERS = [
+	{ label: "ทั้งหมด", type: "all" as const },
+	{ label: "ฟรี", type: "free" as const },
+	{ label: "1-5 ชม.", type: "duration" as const },
+	{ label: "ยอดนิยม", type: "popular" as const },
+	{ label: "ใหม่ล่าสุด", type: "newest" as const },
+];
+
+const CATEGORIES = [
+	{ label: "การวิเคราะห์หุ้น", count: 5 },
+	{ label: "การเงินส่วนบุคคล", count: 3 },
+	{ label: "Excel & Modeling", count: 2 },
+	{ label: "การลงทุน", count: 4 },
+	{ label: "งบการเงิน", count: 2 },
 ];
 
 interface CourseFiltersProps {
@@ -33,6 +55,7 @@ interface CourseFiltersProps {
 	initialPrice?: string;
 	initialDuration?: string;
 	initialSort?: string;
+	children: React.ReactNode;
 }
 
 export function CourseFilters({
@@ -41,6 +64,7 @@ export function CourseFilters({
 	initialPrice = "",
 	initialDuration = "",
 	initialSort = "newest",
+	children,
 }: CourseFiltersProps) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -57,7 +81,6 @@ export function CourseFilters({
 		q.trim() || freeOnly || price || duration || sortBy !== "newest";
 
 	useEffect(() => {
-		// Skip the initial mount so we don't bounce a router.replace on render.
 		if (isFirstRun.current) {
 			isFirstRun.current = false;
 			return;
@@ -73,12 +96,9 @@ export function CourseFilters({
 		else next.delete("duration");
 		if (sortBy && sortBy !== "newest") next.set("sort", sortBy);
 		else next.delete("sort");
-		// Reset pagination when filters change.
 		next.delete("page");
 		const qs = next.toString();
 		router.replace(qs ? `/courses?${qs}` : "/courses", { scroll: false });
-		// searchParams omitted on purpose: we read once and write back; reading here
-		// would cause an infinite loop on the URL we just set.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedQ, freeOnly, price, duration, sortBy, router]);
 
@@ -90,186 +110,241 @@ export function CourseFilters({
 		setSortBy("newest");
 	};
 
+	const activeQuickFilter =
+		q.trim()
+			? null
+			: freeOnly || price === "free"
+				? "free"
+				: duration === "60-300"
+					? "duration"
+					: sortBy === "popular" && !price && !duration
+						? "popular"
+						: sortBy === "newest" && !price && !duration && !freeOnly
+							? "all"
+							: null;
+
+	const handleQuickFilter = (type: (typeof QUICK_FILTERS)[number]["type"]) => {
+		setQ("");
+		if (type === "all") {
+			setFreeOnly(false);
+			setPrice("");
+			setDuration("");
+			setSortBy("newest");
+		} else if (type === "free") {
+			setFreeOnly(false);
+			setPrice(price === "free" ? "" : "free");
+			setDuration("");
+			setSortBy("newest");
+		} else if (type === "duration") {
+			setFreeOnly(false);
+			setPrice("");
+			setDuration(duration === "60-300" ? "" : "60-300");
+			setSortBy("newest");
+		} else if (type === "popular") {
+			setFreeOnly(false);
+			setPrice("");
+			setDuration("");
+			setSortBy("popular");
+		} else if (type === "newest") {
+			setFreeOnly(false);
+			setPrice("");
+			setDuration("");
+			setSortBy("newest");
+		}
+	};
+
 	return (
-		<div className="space-y-4">
-			{/* Top row: search + sort + mobile toggle */}
-			<div className="flex flex-wrap items-center gap-3">
-				<label className="sr-only" htmlFor="q">
-					ค้นหาคอร์ส
-				</label>
-				<input
-					id="q"
-					name="q"
-					type="search"
-					value={q}
-					onChange={(e) => setQ(e.target.value)}
-					placeholder="ค้นหาคอร์ส (ชื่อหรือคำอธิบาย)"
-					className="h-10 w-full rounded-button border border-(--border) bg-(--surface) px-3 text-ui sm:w-72"
-				/>
+		<div className="flex flex-col">
+			{/* Search Header */}
+			<div className="bg-(--surface-muted)">
+				<div className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
+					<div className="mx-auto max-w-2xl text-center">
+						<h1 className="text-h1">คอร์สทั้งหมด</h1>
+						<p className="mt-2 text-bodylg text-(--foreground-muted)">
+							ค้นหาคอร์สที่เหมาะกับเป้าหมายของคุณ
+						</p>
+					</div>
 
-				{/* Sort dropdown (desktop) */}
-				<div className="relative hidden sm:block">
-					<select
-						value={sortBy}
-						onChange={(e) => setSortBy(e.target.value)}
-						className="h-10 appearance-none rounded-button border border-(--border) bg-(--surface) px-3 pr-8 text-ui"
-						aria-label="เรียงลำดับ"
-					>
-						{SORT_OPTIONS.map((o) => (
-							<option key={o.value} value={o.value}>
-								{o.label}
-							</option>
-						))}
-					</select>
-					<CaretDown
-						size={14}
-						className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
-					/>
-				</div>
+					<div className="mx-auto mt-8 max-w-xl">
+						<label className="sr-only" htmlFor="q">
+							ค้นหาคอร์ส
+						</label>
+						<div className="relative">
+							<MagnifyingGlass
+								size={20}
+								className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-(--foreground-subtle)"
+							/>
+							<input
+								id="q"
+								name="q"
+								type="search"
+								value={q}
+								onChange={(e) => setQ(e.target.value)}
+								placeholder="ค้นหาคอร์ส (ชื่อหรือคำอธิบาย)"
+								className="h-14 w-full rounded-full border border-(--border) bg-(--surface) py-3 pl-14 pr-5 text-body shadow-(--shadow-sm-token) outline-none transition-[border-color,box-shadow] focus:border-(--primary) focus:shadow-[0_0_0_3px_rgba(79,70,229,0.12)]"
+							/>
+							{q && (
+								<button
+									type="button"
+									onClick={() => setQ("")}
+									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-(--foreground-subtle) hover:bg-(--surface-muted) hover:text-(--foreground)"
+									aria-label="ล้างการค้นหา"
+								>
+									<X size={16} />
+								</button>
+							)}
+						</div>
+					</div>
 
-				{/* Mobile filter toggle */}
-				<button
-					type="button"
-					onClick={() => setMobileOpen((v) => !v)}
-					className="inline-flex h-10 items-center gap-2 rounded-button border border-(--border) bg-(--surface) px-3 text-ui sm:hidden"
-					aria-expanded={mobileOpen}
-				>
-					<Faders size={16} />
-					ตัวกรอง
-					{hasFilters && (
-						<span className="flex h-4 w-4 items-center justify-center rounded-full bg-(--primary) text-[10px] font-bold text-white">
-							!
-						</span>
-					)}
-				</button>
-
-				{hasFilters && (
-					<button
-						type="button"
-						onClick={handleClear}
-						className="inline-flex h-10 items-center gap-1 rounded-button px-3 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted)"
-					>
-						<X size={14} />
-						ล้าง
-					</button>
-				)}
-			</div>
-
-			{/* Desktop filter chips */}
-			<div className="hidden sm:block">
-				<div className="flex flex-wrap gap-2" data-testid="filter-chips">
-					{PRICE_OPTIONS.filter((o) => o.value).map((o) => (
-						<button
-							key={o.value}
-							type="button"
-							onClick={() => setPrice(price === o.value ? "" : o.value)}
-							className={`inline-flex h-8 items-center gap-1 rounded-full px-3 text-ui font-medium transition-colors ${
-								price === o.value
-									? "bg-(--primary) text-white"
-									: "bg-(--surface-muted) text-(--foreground-muted) hover:bg-(--surface)"
-							}`}
-							aria-pressed={price === o.value}
-						>
-							{o.label}
-						</button>
-					))}
-					{DURATION_OPTIONS.filter((o) => o.value).map((o) => (
-						<button
-							key={o.value}
-							type="button"
-							onClick={() => setDuration(duration === o.value ? "" : o.value)}
-							className={`inline-flex h-8 items-center gap-1 rounded-full px-3 text-ui font-medium transition-colors ${
-								duration === o.value
-									? "bg-(--primary) text-white"
-									: "bg-(--surface-muted) text-(--foreground-muted) hover:bg-(--surface)"
-							}`}
-							aria-pressed={duration === o.value}
-						>
-							{o.label}
-						</button>
-					))}
+					{/* Quick filter chips */}
+					<div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+						{QUICK_FILTERS.map((chip) => {
+							const active = activeQuickFilter === chip.type;
+							return (
+								<button
+									key={chip.type}
+									type="button"
+									onClick={() => handleQuickFilter(chip.type)}
+									className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-ui font-medium transition-colors ${
+										active
+											? "bg-(--primary) text-white"
+											: "border border-(--border) bg-(--surface) text-(--foreground-muted) hover:border-(--border-strong) hover:text-(--foreground)"
+									}`}
+									aria-pressed={active}
+								>
+									{active && <Check size={14} weight="bold" />}
+									{chip.label}
+								</button>
+							);
+						})}
+						{hasFilters && (
+							<button
+								type="button"
+								onClick={handleClear}
+								className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-ui text-(--foreground-subtle) transition-colors hover:bg-(--surface) hover:text-(--foreground)"
+							>
+								<X size={14} />
+								ล้างตัวกรอง
+							</button>
+						)}
+					</div>
 				</div>
 			</div>
 
-			{/* Mobile filter panel */}
-			{mobileOpen && (
-				<div className="space-y-4 rounded-card border border-(--border) bg-(--surface) p-4 sm:hidden">
-					<div>
-						<span className="mb-2 block text-caption font-medium text-(--foreground-muted)">
-							ช่วงราคา
-						</span>
-						<div className="flex flex-wrap gap-2">
-							{PRICE_OPTIONS.map((o) => (
-								<button
-									key={o.value}
-									type="button"
-									onClick={() => setPrice(price === o.value ? "" : o.value)}
-									className={`inline-flex h-8 items-center rounded-full px-3 text-ui font-medium transition-colors ${
-										price === o.value
-											? "bg-(--primary) text-white"
-											: "bg-(--surface-muted) text-(--foreground-muted)"
-									}`}
-								>
-									{o.label}
-								</button>
-							))}
+			{/* 2-column layout */}
+			<div className="mx-auto max-w-[1200px] px-6 py-8 md:py-10">
+				<div className="flex flex-col gap-8 md:flex-row">
+					{/* Sidebar */}
+					<aside className="w-full shrink-0 md:w-[240px]">
+						<div className="md:sticky md:top-4 md:self-start">
+							{/* Mobile filter toggle */}
+							<button
+								type="button"
+								onClick={() => setMobileOpen((v) => !v)}
+								className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-button border border-(--border) bg-(--surface) py-2.5 text-ui md:hidden"
+								aria-expanded={mobileOpen}
+							>
+								<Faders size={16} />
+								ตัวกรอง
+								{hasFilters && (
+									<span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--primary) text-[10px] font-bold text-white">
+										!
+									</span>
+								)}
+							</button>
+
+							<div
+								className={`space-y-6 ${mobileOpen ? "block" : "hidden md:block"}`}
+							>
+								{/* Categories */}
+								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
+									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+										หมวดหมู่
+									</h3>
+									<ul className="space-y-2.5">
+										{CATEGORIES.map((cat) => (
+											<li key={cat.label}>
+												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
+													<input
+														type="checkbox"
+														className="h-4 w-4 rounded border-(--border) accent-(--primary)"
+													/>
+													<span className="flex-1">{cat.label}</span>
+													<span className="num text-caption text-(--foreground-subtle)">
+														({cat.count})
+													</span>
+												</label>
+											</li>
+										))}
+										</ul>
+									</div>
+
+									{/* Price */}
+									<div className="rounded-card border border-(--border) bg-(--surface) p-4">
+										<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+											ราคา
+										</h3>
+										<ul className="space-y-2.5">
+											{PRICE_OPTIONS.map((o) => (
+												<li key={o.value}>
+													<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
+														<input
+															type="radio"
+															name="price"
+															checked={
+																price === o.value ||
+																(o.value === "free" && freeOnly)
+															}
+															onChange={() => {
+																setPrice(o.value);
+																if (o.value === "free")
+																	setFreeOnly(true);
+																else setFreeOnly(false);
+															}}
+															className="h-4 w-4 accent-(--primary)"
+														/>
+														<span>{o.label}</span>
+													</label>
+												</li>
+											))}
+										</ul>
+									</div>
+
+									{/* Sort */}
+									<div className="rounded-card border border-(--border) bg-(--surface) p-4">
+										<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+											เรียงลำดับ
+										</h3>
+										<div className="relative">
+											<select
+												value={sortBy}
+												onChange={(e) =>
+													setSortBy(e.target.value)
+												}
+												className="h-10 w-full appearance-none rounded-button border border-(--border) bg-(--surface) px-3 pr-8 text-ui outline-none focus:border-(--primary)"
+												aria-label="เรียงลำดับ"
+											>
+												{SORT_OPTIONS.map((o) => (
+													<option key={o.value} value={o.value}>
+														{o.label}
+													</option>
+												))}
+											</select>
+											<CaretDown
+												size={14}
+												className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
+											/>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
-					</div>
-					<div>
-						<span className="mb-2 block text-caption font-medium text-(--foreground-muted)">
-							ระยะเวลา
-						</span>
-						<div className="flex flex-wrap gap-2">
-							{DURATION_OPTIONS.map((o) => (
-								<button
-									key={o.value}
-									type="button"
-									onClick={() =>
-										setDuration(duration === o.value ? "" : o.value)
-									}
-									className={`inline-flex h-8 items-center rounded-full px-3 text-ui font-medium transition-colors ${
-										duration === o.value
-											? "bg-(--primary) text-white"
-											: "bg-(--surface-muted) text-(--foreground-muted)"
-									}`}
-								>
-									{o.label}
-								</button>
-							))}
-						</div>
-					</div>
-					<div>
-						<span className="mb-2 block text-caption font-medium text-(--foreground-muted)">
-							เรียงลำดับ
-						</span>
-						<div className="flex flex-wrap gap-2">
-							{SORT_OPTIONS.map((o) => (
-								<button
-									key={o.value}
-									type="button"
-									onClick={() => setSortBy(o.value)}
-									className={`inline-flex h-8 items-center rounded-full px-3 text-ui font-medium transition-colors ${
-										sortBy === o.value
-											? "bg-(--primary) text-white"
-											: "bg-(--surface-muted) text-(--foreground-muted)"
-									}`}
-								>
-									{o.label}
-								</button>
-							))}
-						</div>
-					</div>
-					<label className="inline-flex items-center gap-2 text-ui">
-						<input
-							type="checkbox"
-							checked={freeOnly}
-							onChange={(e) => setFreeOnly(e.target.checked)}
-							className="h-4 w-4 accent-(--primary)"
-						/>
-						เฉพาะคอร์สฟรี
-					</label>
+					</aside>
+
+					{/* Main content */}
+					<div className="min-w-0 flex-1">{children}</div>
 				</div>
-			)}
+			</div>
 		</div>
 	);
 }
