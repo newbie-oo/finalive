@@ -8,6 +8,7 @@ import { user } from "@/db/schema/auth";
 import {
 	isUserEnrolledInCourse,
 	getCourseIdByLessonId,
+	getPublishedCourseBySlug,
 } from "@/server/repos/course";
 import { updateAdminCourse } from "@/server/repos/admin-course";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
@@ -58,17 +59,10 @@ export const container = {
 	freeEnrollment(): FreeEnrollmentService {
 		return new FreeEnrollmentService({
 			getCourseBySlug: async (slug) => {
-				const rows = await db
-					.select({
-						id: course.id,
-						slug: course.slug,
-						isFree: course.isFree,
-						status: course.status,
-					})
-					.from(course)
-					.where(eq(course.slug, slug))
-					.limit(1);
-				return rows[0];
+				const row = await getPublishedCourseBySlug(slug, {
+					includeUnpublished: true,
+				});
+				return row ?? undefined;
 			},
 			findActiveEnrollment: isUserEnrolledInCourse,
 			createEnrollment: async (args) => {
@@ -169,10 +163,7 @@ export const container = {
 				const { markLessonComplete } = await import("@/server/repos/progress");
 				await markLessonComplete(userId, lessonId, durationSeconds);
 			},
-			getCourseIdByLessonId: async (lessonId) => {
-				const { getCourseIdByLessonId } = await import("@/server/repos/course");
-				return getCourseIdByLessonId(lessonId);
-			},
+			getCourseIdByLessonId,
 			checkAndMarkCourseComplete,
 			certificateIssuer: certificateIssuerFactory(),
 		});
