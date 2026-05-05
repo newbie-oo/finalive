@@ -18,7 +18,7 @@ export default function AdminCoursesLoading() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
+      <div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
         <div className="flex items-center gap-4 border-b border-(--border) bg-(--surface-muted) px-5 py-3">
           <div className="h-4 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
           <div className="h-4 w-20 animate-pulse rounded-md bg-(--surface-muted)" />

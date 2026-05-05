@@ -36,8 +36,8 @@ export default async function AdminUsersPage() {
         </p>
       </header>
 
-      <div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
-        <table className="w-full text-ui">
+      <div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
+        <table className="min-w-[640px] w-full text-ui">
           <thead>
             <tr className="border-b border-(--border) bg-(--surface-muted) text-left">
               <th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
