@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { CaretLeft, Sun, Moon, List, X } from "@phosphor-icons/react";
+import { CaretLeft, Sun, Moon, List, X, Bell } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { useSession } from "@/lib/auth-client";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
 
 interface LearnTopbarProps {
 	courseTitle: string;
@@ -31,6 +33,7 @@ export function LearnTopbar({
 	const prevPathname = useRef(pathname);
 	const [routeChanging, setRouteChanging] = useState(false);
 	const [mounted, setMounted] = useState(false);
+	const { data: session } = useSession();
 
 	useEffect(() => {
 		const t = setTimeout(() => setMounted(true), 0);
@@ -49,7 +52,7 @@ export function LearnTopbar({
 	}, [pathname]);
 
 	return (
-		<header className="relative flex h-14 shrink-0 items-center gap-4 border-b border-(--border) bg-(--background) px-4 lg:px-6">
+		<header className="relative flex h-14 shrink-0 items-center gap-3 border-b border-(--border) bg-(--background) px-4 lg:px-6">
 			{/* Route-change indicator */}
 			{routeChanging && (
 				<div className="absolute inset-x-0 top-0 z-50 h-0.5 overflow-hidden">
@@ -64,34 +67,56 @@ export function LearnTopbar({
 				<CaretLeft size={18} />
 			</Link>
 
-			<div className="min-w-0 flex-1 lg:flex-none">
+			{/* Logo */}
+			<div className="hidden items-center gap-1.5 text-ui font-bold text-(--foreground) lg:flex">
+				<span className="inline-block h-2.5 w-2.5 rounded-full bg-(--primary)" />
+				Finalive
+			</div>
+			<div className="hidden h-6 w-px bg-(--border) lg:block" />
+
+			{/* Course title */}
+			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2 min-w-0">
 					<span className="truncate text-ui font-semibold text-(--foreground)">
-						{lessonTitle}
+						{courseTitle}
 					</span>
 				</div>
 				<div className="hidden text-caption text-(--foreground-muted) lg:block">
-					{courseTitle} · {moduleTitle}
+					{moduleTitle} · {lessonTitle}
 				</div>
 			</div>
 
-			{/* Desktop progress center */}
-			<div className="hidden max-w-[480px] flex-1 items-center gap-4 lg:flex">
-				<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--surface-muted)">
+			{/* Desktop progress */}
+			<div className="hidden items-center gap-3 lg:flex">
+				<span className="text-caption text-(--foreground-muted)">
+					ความคืบหน้า
+				</span>
+				<div className="h-1.5 w-28 overflow-hidden rounded-full bg-(--surface-muted)">
 					<div
 						className="h-full rounded-full bg-(--primary) transition-[width] duration-500"
 						style={{ width: `${progressPct}%` }}
 					/>
 				</div>
-				<span className="num shrink-0 text-caption font-semibold text-(--primary)">
-					{progressPct}% ·{" "}
-					<span className="font-medium text-(--foreground-muted)">
-						{doneLessons}/{totalLessons} บท
-					</span>
+				<span className="num text-caption font-semibold text-(--primary)">
+					{progressPct}%
 				</span>
 			</div>
 
 			<div className="flex items-center gap-2 shrink-0">
+				<button
+					type="button"
+					className="flex h-8 w-8 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+					aria-label="การแจ้งเตือน"
+				>
+					<Bell size={18} />
+				</button>
+				{session?.user ? (
+					<AvatarInitials
+						name={session.user.name || session.user.email || "User"}
+						src={session.user.image}
+						size="sm"
+					/>
+				) : null}
 				<button
 					type="button"
 					onClick={() => setTheme(theme === "dark" ? "light" : "dark")}

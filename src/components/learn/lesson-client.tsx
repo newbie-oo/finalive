@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
-import { CheckCircle, ArrowRight } from "@phosphor-icons/react";
+import { ArrowRight, Question } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 interface LessonClientProps {
@@ -18,6 +16,8 @@ interface LessonClientProps {
 	/** When true, suppress all progress writes — admin previews must not
 	 * accrue completion, otherwise the certificate banner activates. */
 	isAdmin?: boolean;
+	/** Controlled completion state from parent. */
+	completed: boolean;
 }
 
 export function LessonClient({
@@ -25,12 +25,9 @@ export function LessonClient({
 	courseSlug,
 	nextLessonId,
 	quizId,
-	durationSeconds,
 	isAdmin = false,
+	completed,
 }: LessonClientProps) {
-	const router = useRouter();
-	const [completed, setCompleted] = useState(false);
-
 	// Call /api/learn/start once on mount — skipped for admin previews.
 	useEffect(() => {
 		if (isAdmin) return;
@@ -53,54 +50,39 @@ export function LessonClient({
 		};
 	}, [lessonId, isAdmin]);
 
-	const handleMarkComplete = async () => {
-		if (isAdmin) {
-			toast.info("admin preview — ไม่บันทึกความคืบหน้า");
-			return;
-		}
-		try {
-			const res = await fetch("/api/learn/progress", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({
-					lessonId,
-					watchedSeconds: durationSeconds ?? 0,
-					markComplete: true,
-				}),
-			});
-			if (!res.ok) throw new Error("failed");
-			setCompleted(true);
-			toast.success("จบบทเรียนแล้ว");
-			router.refresh();
-		} catch {
-			toast.error("บันทึกไม่สำเร็จ");
-		}
-	};
+	if (!completed) return null;
 
 	return (
-		<div className="flex flex-wrap items-center gap-3">
-			<Button
-				onClick={handleMarkComplete}
-				disabled={completed}
-				variant={completed ? "secondary" : "primary"}
-				size="md"
-			>
-				{completed ? (
-					<>
-						<CheckCircle size={16} weight="fill" /> จบบทเรียนแล้ว
-					</>
-				) : (
-					"ทำเครื่องหมายว่าจบแล้ว"
-				)}
-			</Button>
-			{completed && quizId && (
-				<Button asChild variant="primary" size="md">
-					<Link href={`/learn/${courseSlug}/quiz/${quizId}`}>
-						ทำแบบทดสอบ <ArrowRight size={14} weight="bold" />
-					</Link>
-				</Button>
+		<div className="space-y-4">
+			{quizId && (
+				<div
+					className="rounded-[14px] border border-(--accent)/20 p-6 md:p-7"
+					style={{
+						background:
+							"linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface) 60%)",
+					}}
+				>
+					<div className="mb-5 flex items-center gap-3">
+						<div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-(--accent)/15 text-(--accent)">
+							<Question size={22} />
+						</div>
+						<div>
+							<div className="text-h4 font-semibold text-(--foreground)">
+								เช็คความเข้าใจ
+							</div>
+							<div className="text-caption text-(--foreground-muted)">
+								พร้อมทำแบบทดสอบแล้ว
+							</div>
+						</div>
+					</div>
+					<Button asChild variant="primary" size="md">
+						<Link href={`/learn/${courseSlug}/quiz/${quizId}`}>
+							ทำแบบทดสอบ <ArrowRight size={14} weight="bold" />
+						</Link>
+					</Button>
+				</div>
 			)}
-			{completed && !quizId && nextLessonId && (
+			{!quizId && nextLessonId && (
 				<Button asChild variant="ghost" size="md">
 					<Link href={`/learn/${courseSlug}/${nextLessonId}`}>
 						บทถัดไป <ArrowRight size={14} weight="bold" />

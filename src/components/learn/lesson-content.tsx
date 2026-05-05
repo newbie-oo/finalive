@@ -131,6 +131,7 @@ export function LessonContent({
 					courseSlug={courseSlug}
 					nextLessonId={nextLessonId}
 					quizId={quizId}
+					prevLessonId={_prevLessonId}
 					isAdmin={isAdmin}
 					playerSlot={
 						hlsUrl ? (
