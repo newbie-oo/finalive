@@ -20,6 +20,7 @@ import {
 	type OffsetParams,
 	type OffsetResponse,
 } from "@/lib/pagination";
+import { coverImageUrl } from "@/lib/media-url";
 
 // Reusable subquery: active enrollments per course.
 const enrollmentCountSubq = db
@@ -56,6 +57,8 @@ export interface PublicCourseSummary {
 	isFree: boolean;
 	publishedAt: Date | null;
 	coverStorageKey: string | null;
+	/** Pre-computed public CDN URL. Safe to pass to Client Components. */
+	coverImageUrl: string | null;
 	enrollmentCount: number;
 	/** Course lifecycle: 'draft' | 'published' | 'archived'. Surfaced so admin
 	 * views can chip non-published courses. */
@@ -158,6 +161,7 @@ export async function listPublishedCourses(
 		status: r.status,
 		publishedAt: r.publishedAt,
 		coverStorageKey: r.coverStorageKey ?? null,
+		coverImageUrl: coverImageUrl(r.coverStorageKey),
 		enrollmentCount: r.enrollmentCount ?? 0,
 		totalSeconds: r.totalSeconds ?? 0,
 	}));
@@ -223,6 +227,7 @@ export async function listFeaturedCourses(
 		status: r.status,
 		publishedAt: r.publishedAt,
 		coverStorageKey: r.coverStorageKey ?? null,
+		coverImageUrl: coverImageUrl(r.coverStorageKey),
 		enrollmentCount: r.enrollmentCount ?? 0,
 	}));
 }
@@ -273,6 +278,7 @@ export async function getPublishedCourseBySlug(
 		status: r.status,
 		publishedAt: r.publishedAt,
 		coverStorageKey: r.coverStorageKey ?? null,
+		coverImageUrl: coverImageUrl(r.coverStorageKey),
 		enrollmentCount: r.enrollmentCount ?? 0,
 	};
 }

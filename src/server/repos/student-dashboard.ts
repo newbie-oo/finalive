@@ -7,6 +7,7 @@ import { lessonProgress, quizAttempt } from "@/db/schema/progress";
 import { certificate } from "@/db/schema/certificate";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
+import { coverImageUrl } from "@/lib/media-url";
 
 export interface StudentDashboardData {
 	enrollments: StudentEnrollmentItem[];
@@ -26,6 +27,8 @@ export interface StudentEnrollmentItem {
 	courseSlug: string;
 	courseTitle: string;
 	coverStorageKey: string | null;
+	/** Pre-computed public CDN URL. Safe to pass to Client Components. */
+	coverImageUrl: string | null;
 	totalLessons: number;
 	doneLessons: number;
 	completedAt: Date | null;
@@ -341,6 +344,7 @@ export async function getStudentDashboardData(
 			courseSlug: r.courseSlug,
 			courseTitle: r.courseTitle,
 			coverStorageKey: r.coverStorageKey ?? null,
+			coverImageUrl: coverImageUrl(r.coverStorageKey),
 			totalLessons: r.totalLessons ?? 0,
 			doneLessons: r.doneLessons ?? 0,
 			completedAt: r.completedAt,

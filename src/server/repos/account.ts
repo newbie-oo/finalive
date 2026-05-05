@@ -6,6 +6,7 @@ import { pendingEnrollment } from "@/db/schema/payment";
 import { enrollment } from "@/db/schema/enrollment";
 import { lessonProgress } from "@/db/schema/progress";
 import { mediaAsset } from "@/db/schema/media";
+import { coverImageUrl } from "@/lib/media-url";
 
 export interface AccountPendingItem {
 	pendingId: string;
@@ -16,6 +17,8 @@ export interface AccountPendingItem {
 	courseSlug: string;
 	courseTitle: string;
 	coverStorageKey: string | null;
+	/** Pre-computed public CDN URL. Safe to pass to Client Components. */
+	coverImageUrl: string | null;
 }
 
 // Higher number = stickier row when the same course has multiple pendings.
@@ -40,6 +43,8 @@ export interface AccountEnrollmentItem {
 	completedAt: Date | null;
 	status: string;
 	coverStorageKey: string | null;
+	/** Pre-computed public CDN URL. Safe to pass to Client Components. */
+	coverImageUrl: string | null;
 	totalLessons: number;
 	doneLessons: number;
 }
@@ -112,6 +117,7 @@ export async function listAccountEnrollments(
 		completedAt: r.completedAt,
 		status: r.status,
 		coverStorageKey: r.coverStorageKey ?? null,
+		coverImageUrl: coverImageUrl(r.coverStorageKey),
 		totalLessons: r.totalLessons ?? 0,
 		doneLessons: r.doneLessons ?? 0,
 	}));
@@ -159,5 +165,6 @@ export async function listAccountPendings(
 		courseSlug: r.courseSlug,
 		courseTitle: r.courseTitle,
 		coverStorageKey: r.coverStorageKey ?? null,
+		coverImageUrl: coverImageUrl(r.coverStorageKey),
 	}));
 }

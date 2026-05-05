@@ -12,6 +12,7 @@ function makeCourse(
 		title: "Test Course",
 		summary: "A test course",
 		coverStorageKey: "abc123",
+		coverImageUrl: null,
 		price: "990",
 		isFree: false,
 		status: "published",

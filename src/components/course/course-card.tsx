@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Users } from "@phosphor-icons/react/dist/ssr";
 import type { PublicCourseSummary } from "@/server/repos/course";
-import { coverImageUrl } from "@/lib/media-url";
 import { formatTHB } from "@/lib/format";
 import { StatusChip } from "@/components/ui/status-chip";
 
@@ -22,9 +21,9 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
 				className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)"
 				aria-hidden
 			>
-				{course.coverStorageKey ? (
+				{course.coverImageUrl ? (
 					<Image
-						src={coverImageUrl(course.coverStorageKey)!}
+						src={course.coverImageUrl}
 						alt={course.title}
 						fill
 						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -101,9 +100,9 @@ export function CourseListItem({ course }: { course: PublicCourseSummary }) {
 				className="relative aspect-video h-28 w-44 shrink-0 overflow-hidden rounded-lg bg-(--surface-muted)"
 				aria-hidden
 			>
-				{course.coverStorageKey ? (
+				{course.coverImageUrl ? (
 					<Image
-						src={coverImageUrl(course.coverStorageKey)!}
+						src={course.coverImageUrl}
 						alt={course.title}
 						fill
 						sizes="200px"
