@@ -89,6 +89,79 @@ function CoverFallback({ title }: { title: string }) {
 	);
 }
 
+export function CourseListItem({ course }: { course: PublicCourseSummary }) {
+	const isFree = course.isFree || Number(course.price) === 0;
+	const price = isFree ? "ฟรี" : formatTHB(course.price);
+	return (
+		<Link
+			href={`/courses/${course.slug}`}
+			className="group flex gap-5 overflow-hidden rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+		>
+			<div
+				className="relative aspect-video h-28 w-44 shrink-0 overflow-hidden rounded-lg bg-(--surface-muted)"
+				aria-hidden
+			>
+				{course.coverStorageKey ? (
+					<Image
+						src={coverImageUrl(course.coverStorageKey)!}
+						alt={course.title}
+						fill
+						sizes="200px"
+						className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+						loading="lazy"
+					/>
+				) : (
+					<CoverFallback title={course.title} />
+				)}
+				{isFree && (
+					<span className="absolute left-2 top-2">
+						<StatusChip tone="success">ฟรี</StatusChip>
+					</span>
+				)}
+			</div>
+			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+				<div>
+					<h3 className="line-clamp-1 text-h4 text-(--foreground) group-hover:text-(--primary)">
+						{course.title}
+					</h3>
+					<p className="mt-1 line-clamp-2 text-body text-(--foreground-muted)">
+						{course.summary}
+					</p>
+				</div>
+				<div className="flex items-center justify-between pt-2">
+					<span className="num text-h4 font-semibold text-(--foreground)">
+						{price}
+					</span>
+					<span className="inline-flex items-center gap-1 text-uism text-(--foreground-muted)">
+						<Users size={14} />
+						<span className="num">
+							{course.enrollmentCount.toLocaleString("th-TH")}
+						</span>{" "}
+						ผู้เรียน
+					</span>
+				</div>
+			</div>
+		</Link>
+	);
+}
+
+export function CourseListItemSkeleton() {
+	return (
+		<div className="flex gap-5 overflow-hidden rounded-card border border-(--border) bg-(--surface) p-4">
+			<div
+				className="aspect-video h-28 w-44 shrink-0 animate-pulse rounded-lg bg-(--surface-muted)"
+				aria-hidden
+			/>
+			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+				<div className="h-5 w-2/3 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="h-4 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="h-4 w-1/2 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="mt-2 h-5 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
+			</div>
+		</div>
+	);
+}
+
 export function CourseCardSkeleton() {
 	return (
 		<div className="flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface)">

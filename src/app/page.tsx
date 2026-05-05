@@ -12,6 +12,14 @@ import {
 	VideoCamera,
 	Translate,
 	Trophy,
+	ChartLine,
+	ChartBar,
+	TrendUp,
+	FileText,
+	Money,
+	Globe,
+	CaretRight,
+	Star,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseCard } from "@/components/course/course-card";
@@ -83,6 +91,53 @@ const TESTIMONIALS = [
 		initials: "ธม",
 	},
 ];
+
+const CATEGORIES = [
+	{
+		label: "DCF & Valuation",
+		icon: ChartLine,
+		count: 8,
+		color: "#4F46E5",
+		bg: "#EEF2FF",
+	},
+	{
+		label: "Excel & Modeling",
+		icon: ChartBar,
+		count: 6,
+		color: "#10B981",
+		bg: "#ECFDF5",
+	},
+	{
+		label: "พื้นฐานการลงทุน",
+		icon: TrendUp,
+		count: 12,
+		color: "#F97316",
+		bg: "#FFF7ED",
+	},
+	{
+		label: "บัญชี & งบการเงิน",
+		icon: FileText,
+		count: 5,
+		color: "#8B5CF6",
+		bg: "#F5F3FF",
+	},
+	{
+		label: "การเงินส่วนบุคคล",
+		icon: Money,
+		count: 7,
+		color: "#EC4899",
+		bg: "#FDF2F8",
+	},
+	{
+		label: "Crypto & Web3",
+		icon: Globe,
+		count: 3,
+		color: "#0EA5E9",
+		bg: "#F0F9FF",
+	},
+];
+
+const LOGOS = ["SCB 10X", "KASIKORN", "BAY", "BLS", "FINNOMENA", "JITTA"];
 
 export default async function Home() {
 	const [featured, stats, session] = await Promise.all([
@@ -173,6 +228,34 @@ export default async function Home() {
 				</div>
 			</section>
 
+			{/* Social Proof Bar */}
+			<section className="border-y border-(--border) bg-(--surface) py-8">
+				<div className="mx-auto max-w-[1200px] px-6">
+					<div className="flex flex-col items-center gap-5 md:flex-row md:justify-center">
+						<span
+							className="text-uism text-(--foreground-subtle)"
+							style={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
+						>
+							เรียนรู้กับนักลงทุนและทีมงานจาก
+						</span>
+						<div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:gap-x-8">
+							{LOGOS.map((logo) => (
+								<span
+									key={logo}
+									className="text-uism font-semibold text-(--foreground-muted)"
+									style={{
+										textTransform: "uppercase",
+										letterSpacing: "0.06em",
+									}}
+								>
+									{logo}
+								</span>
+							))}
+						</div>
+					</div>
+				</div>
+			</section>
+
 			{/* Featured */}
 			{featured.length > 0 && (
 				<section className="bg-(--surface-muted) py-16 md:py-24">
@@ -200,8 +283,53 @@ export default async function Home() {
 				</section>
 			)}
 
+			{/* Categories */}
+			<section className="py-16 md:py-24">
+				<div className="mx-auto max-w-[1200px] px-6">
+					<div className="mb-12 text-center">
+						<Eyebrow>หมวดหมู่</Eyebrow>
+						<h2 className="mt-2 text-h2">ค้นหาตามหมวดหมู่</h2>
+						<p className="mt-2 text-body text-(--foreground-muted)">
+							เลือกเรียนตามความสนใจ — จากพื้นฐานสู่ระดับมืออาชีพ
+						</p>
+					</div>
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						{CATEGORIES.map((cat) => {
+							const Ic = cat.icon;
+							return (
+								<Link
+									key={cat.label}
+									href={`/courses?category=${encodeURIComponent(cat.label)}`}
+									className="group flex items-center gap-4 rounded-card border border-(--border) bg-(--surface) p-5 transition-colors hover:border-(--primary)"
+								>
+									<div
+										className="inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-card"
+										style={{ backgroundColor: cat.bg, color: cat.color }}
+									>
+										<Ic size={24} weight="bold" />
+									</div>
+									<div className="min-w-0 flex-1">
+										<div className="text-ui font-semibold text-(--foreground)">
+											{cat.label}
+										</div>
+										<div className="text-caption text-(--foreground-muted)">
+											{cat.count} คอร์ส
+										</div>
+									</div>
+									<CaretRight
+										size={16}
+										weight="bold"
+										className="flex-shrink-0 text-(--foreground-subtle) transition-colors group-hover:text-(--primary)"
+									/>
+								</Link>
+							);
+						})}
+					</div>
+				</div>
+			</section>
+
 			{/* How it works */}
-			<section id="about" className="py-16 md:py-24">
+			<section id="about" className="bg-(--surface-muted) py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>วิธีใช้งาน</Eyebrow>
@@ -242,7 +370,7 @@ export default async function Home() {
 			</section>
 
 			{/* Why Finalive */}
-			<section className="bg-(--surface-muted) py-16 md:py-24">
+			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>ทำไมต้อง Finalive</Eyebrow>
@@ -268,7 +396,7 @@ export default async function Home() {
 			</section>
 
 			{/* Testimonials */}
-			<section className="py-16 md:py-24">
+			<section className="bg-(--surface-muted) py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>รีวิวจากนักเรียน</Eyebrow>
@@ -302,6 +430,115 @@ export default async function Home() {
 								</div>
 							</article>
 						))}
+					</div>
+				</div>
+			</section>
+
+			{/* Instructor Spotlight */}
+			<section className="py-16 md:py-24">
+				<div className="mx-auto max-w-[1200px] px-6">
+					<div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
+						{/* Portrait Card */}
+						<div className="relative overflow-hidden rounded-card border border-(--border) bg-linear-to-br from-[#312E81] to-[#1E1B4B] p-8 md:p-10">
+							<svg
+								aria-hidden
+								className="absolute inset-0 h-full w-full opacity-20"
+								viewBox="0 0 400 400"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<circle cx="80" cy="80" r="120" fill="#818CF8" />
+								<circle cx="350" cy="300" r="100" fill="#F97316" />
+								<circle cx="200" cy="350" r="80" fill="#6366F1" />
+							</svg>
+							<div className="relative">
+								<div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/10 text-3xl font-bold text-white backdrop-blur-sm">
+									อร
+								</div>
+								<div className="text-uism font-medium text-white/70">
+									ผู้ก่อตั้ง & ผู้สอนหลัก
+								</div>
+								<div className="mt-1 text-h3 text-white">อาจารย์อาร์ม</div>
+								<div className="mt-1 text-body text-white/70">
+									CFA Charterholder · 15 ปีประสบการณ์
+								</div>
+							</div>
+						</div>
+
+						{/* Info */}
+						<div>
+							<Eyebrow>ผู้สอนแนะนำ</Eyebrow>
+							<h2 className="mt-2 text-h2">เรียนกับผู้เชี่ยวชาญตัวจริง</h2>
+							<div className="mt-4 flex flex-wrap gap-2">
+								{[
+									"CFA Charterholder",
+									"15 ปีประสบการณ์",
+									"อดีต VP Investment",
+								].map((badge) => (
+									<span
+										key={badge}
+										className="inline-flex items-center rounded-full border border-(--border) bg-(--surface-muted) px-3 py-1 text-uism text-(--foreground-muted)"
+									>
+										{badge}
+									</span>
+								))}
+							</div>
+							<p className="mt-5 text-body text-(--foreground-muted)">
+								อาจารย์อาร์มมีประสบการณ์กว่า 15 ปีในวงการการเงินและการลงทุน
+								เคยดำรงตำแหน่ง VP Investment ในบริษัทจัดการกองทุนชั้นนำ และถือใบอนุญาต
+								CFA Charterholder
+								ด้วยความตั้งใจถ่ายทอดความรู้ให้คนไทยเข้าใจการลงทุนแบบมืออาชีพ
+								ผ่านคอร์สที่ออกแบบมาอย่างเป็นระบบ
+							</p>
+							<div className="mt-6 flex flex-wrap gap-6">
+								<div>
+									<div
+										className="num text-(--foreground)"
+										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
+									>
+										15
+									</div>
+									<div className="mt-1 text-caption text-(--foreground-muted)">
+										คอร์ส
+									</div>
+								</div>
+								<div>
+									<div
+										className="num text-(--foreground)"
+										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
+									>
+										50,000+
+									</div>
+									<div className="mt-1 text-caption text-(--foreground-muted)">
+										นักเรียน
+									</div>
+								</div>
+								<div>
+									<div
+										className="num flex items-center gap-1 text-(--foreground)"
+										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
+									>
+										4.9
+										<Star
+											size={18}
+											weight="fill"
+											className="text-(--warning)"
+										/>
+									</div>
+									<div className="mt-1 text-caption text-(--foreground-muted)">
+										คะแนนเฉลี่ย
+									</div>
+								</div>
+							</div>
+							<div className="mt-8">
+								<Link
+									href="/instructor"
+									className="inline-flex h-12 items-center gap-2 rounded-full bg-(--primary) px-8 text-ui font-medium text-(--primary-fg) transition-colors hover:bg-(--primary-hover)"
+								>
+									เรียนรู้เพิ่มเติม <ArrowRight size={16} weight="bold" />
+								</Link>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
