@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
 	getAdminDashboardCounts,
 	getMonthlyRevenue,
-	getRecentActivity,
 } from "@/server/repos/admin-dashboard";
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { listPendingSlips } from "@/server/repos/slip";
@@ -305,22 +304,28 @@ export default async function AdminDashboardPage() {
 		listAdminCourses({ status: "published" }),
 		listPendingSlips({ status: "submitted", per_page: 5 }),
 		getMonthlyRevenue(),
-		getRecentActivity(6),
 	]);
 	const topCourses = courses
 		.filter((c) => c.enrollmentCount > 0)
 		.sort((a, b) => b.enrollmentCount - a.enrollmentCount)
-		.slice(0, 4);
+		.slice(0, 4)
+		.map((c) => ({
+			id: c.id,
+			title: c.title,
+			enrollmentCount: c.enrollmentCount,
+			isFree: c.isFree,
+			price: c.price,
+		}));
 	const maxEnroll = topCourses[0]?.enrollmentCount ?? 1;
 	const pendingSlips = slipsRes.data;
-	const now = new Date();
+	const nowLabel = `${thaiDateString(new Date())} · ${thaiTimeString(new Date())}`;
 	return (
 		<section className="space-y-6">
 			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<h1 className="text-h1 font-bold text-(--foreground)">ภาพรวมธุรกิจ</h1>
 					<p className="mt-1 text-body text-(--foreground-muted)">
-						ข้อมูลล่าสุด · {thaiDateString(now)} · {thaiTimeString(now)}
+						ข้อมูลล่าสุด · {nowLabel}
 					</p>
 				</div>
 				<div className="flex items-center gap-2">

@@ -20,7 +20,7 @@ export interface PendingSlipRow {
 	reportedAmount: string | null;
 	rejectionReason: string | null;
 	rejectionNote: string | null;
-	createdAt: Date;
+	createdAt: string;
 	pendingId: string;
 	refCode: string;
 	studentUserId: string;
@@ -61,7 +61,7 @@ export async function listPendingSlips(
 		...[statusPredicate, cursorPredicate].filter((p) => p !== undefined),
 	);
 
-	const rows = await db
+	const dbRows = await db
 		.select({
 			id: paymentSlip.id,
 			status: paymentSlip.status,
@@ -89,6 +89,11 @@ export async function listPendingSlips(
 		.where(where)
 		.orderBy(desc(paymentSlip.createdAt), desc(paymentSlip.id))
 		.limit(params.per_page);
+
+	const rows: PendingSlipRow[] = dbRows.map((r) => ({
+		...r,
+		createdAt: r.createdAt.toISOString(),
+	}));
 
 	return buildCursorResponse(rows, params);
 }
