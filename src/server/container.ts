@@ -5,7 +5,10 @@ import { enrollment, adminGrant } from "@/db/schema/enrollment";
 import { course } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { user } from "@/db/schema/auth";
-import { isUserEnrolledInCourse } from "@/server/repos/course";
+import {
+	isUserEnrolledInCourse,
+	getCourseIdByLessonId,
+} from "@/server/repos/course";
 import { updateAdminCourse } from "@/server/repos/admin-course";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { R2ObjectStorage } from "@/server/services/storage";
@@ -186,6 +189,7 @@ export const container = {
 		return new QuizService({
 			getQuizById,
 			isUserEnrolledInCourse,
+			getCourseIdByLessonId,
 			submitQuizAttempt,
 			completionChecker: this.courseCompletionChecker(),
 		});

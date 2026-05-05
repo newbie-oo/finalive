@@ -1,13 +1,14 @@
 import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
-import { isUserEnrolledInCourse } from "@/server/repos/course";
+import {
+	isUserEnrolledInCourse,
+	getCourseIdByLessonId,
+} from "@/server/repos/course";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
-import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { courseModule, lesson } from "@/db/schema/course";
 
 export interface QuizServiceDeps {
 	getQuizById: typeof getQuizById;
 	isUserEnrolledInCourse: typeof isUserEnrolledInCourse;
+	getCourseIdByLessonId: typeof getCourseIdByLessonId;
 	submitQuizAttempt: typeof submitQuizAttempt;
 	completionChecker: CourseCompletionChecker;
 }
@@ -54,13 +55,7 @@ export class QuizService {
 			return { ok: false, error: "quiz_not_found" };
 		}
 
-		const lessonRow = await db
-			.select({ courseId: courseModule.courseId })
-			.from(lesson)
-			.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-			.where(eq(lesson.id, quiz.lessonId))
-			.limit(1);
-		const courseId = lessonRow[0]?.courseId;
+		const courseId = await this.deps.getCourseIdByLessonId(quiz.lessonId);
 
 		if (courseId) {
 			const isEnrolled = await this.deps.isUserEnrolledInCourse(
