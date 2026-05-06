@@ -24,6 +24,7 @@ function fakeDeps() {
 			loadCourseInfo: vi.fn(),
 			reserveMediaAsset: vi.fn(),
 			finalizeUploadTx: vi.fn(),
+			getSlipImageMedia: vi.fn(),
 		},
 		notifier: {
 			notifyStudentOfSlipReceipt: vi.fn().mockResolvedValue(undefined),

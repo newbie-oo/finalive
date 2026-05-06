@@ -38,6 +38,7 @@ function fakeDeps() {
 			runRejectTx: vi.fn().mockResolvedValue({ pendingId: "p1" }),
 			reserveMediaAsset: vi.fn().mockResolvedValue("media-123"),
 			finalizeUploadTx: vi.fn().mockResolvedValue("slip-456"),
+			getSlipImageMedia: vi.fn().mockResolvedValue(null),
 		},
 		storage: {
 			put: vi.fn().mockResolvedValue(undefined),
@@ -61,12 +62,6 @@ function mockSelectReturns(rows: unknown[]) {
 	const where = vi.fn().mockReturnValue({ limit });
 	const from = vi.fn().mockReturnValue({ where });
 	mockDb.select.mockReturnValue({ from });
-}
-
-function mockInsertReturns(rows: unknown[]) {
-	const returning = vi.fn().mockResolvedValue(rows);
-	const values = vi.fn().mockReturnValue({ returning });
-	mockDb.insert.mockReturnValue({ values });
 }
 
 const fakeUser = { id: "user-1", email: "u@example.com", name: "U" };

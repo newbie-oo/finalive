@@ -225,6 +225,24 @@ export const SlipRepo = {
 		return media.id;
 	},
 
+	async getSlipImageMedia(
+		slipId: string,
+	): Promise<
+		{ storageKey: string; storage: string; mimeType: string | null } | undefined
+	> {
+		const rows = await db
+			.select({
+				storageKey: mediaAsset.storageKey,
+				storage: mediaAsset.storage,
+				mimeType: mediaAsset.mimeType,
+			})
+			.from(paymentSlip)
+			.innerJoin(mediaAsset, eq(paymentSlip.imageMediaId, mediaAsset.id))
+			.where(eq(paymentSlip.id, slipId))
+			.limit(1);
+		return rows[0];
+	},
+
 	async finalizeUploadTx(input: {
 		mediaId: string;
 		pendingId: string;
