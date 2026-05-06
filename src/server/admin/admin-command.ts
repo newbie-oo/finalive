@@ -1,12 +1,10 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getSession } from "@/server/auth-session";
 import { canEditCoursePure } from "@/server/services/course-authz";
 import { getAdminCourseById } from "@/server/repos/admin-course";
-import { db } from "@/db/client";
-import { courseCollaborator } from "@/db/schema/course";
+import { getCollaboratorRole } from "@/server/repos/course-authz";
 import type { SessionContext } from "@/server/auth-session";
 import { parseFormData } from "@/lib/form-data";
 
@@ -143,18 +141,9 @@ export async function requireCourseAccess(
 	| { ok: false; error: "not_found" | "forbidden" }
 > {
 	// Parallelize course fetch + collaborator lookup.
-	const [course, collabRows] = await Promise.all([
+	const [course, collaboratorRole] = await Promise.all([
 		getAdminCourseById(courseId),
-		db
-			.select({ role: courseCollaborator.role })
-			.from(courseCollaborator)
-			.where(
-				and(
-					eq(courseCollaborator.courseId, courseId),
-					eq(courseCollaborator.userId, session.user.id),
-				),
-			)
-			.limit(1),
+		getCollaboratorRole(courseId, session.user.id),
 	]);
 
 	if (!course) {
@@ -165,7 +154,7 @@ export async function requireCourseAccess(
 		userId: session.user.id,
 		userRole: session.user.role,
 		courseOwnerId: course.ownerUserId,
-		collaboratorRole: collabRows[0]?.role ?? null,
+		collaboratorRole,
 	});
 
 	if (!editable) {
