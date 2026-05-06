@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Users } from "@phosphor-icons/react/dist/ssr";
 import type { PublicCourseSummary } from "@/server/repos/course";
 import { formatTHB } from "@/lib/format";
+import { coverImageUrl } from "@/lib/media-url";
 import { StatusChip } from "@/components/ui/status-chip";
 
 export function CourseCard({ course }: { course: PublicCourseSummary }) {
@@ -12,6 +13,7 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
 	// create/update, so this is just belt-and-braces.
 	const isFree = course.isFree || Number(course.price) === 0;
 	const price = isFree ? "ฟรี" : formatTHB(course.price);
+	const imageUrl = coverImageUrl(course.coverStorageKey);
 	return (
 		<Link
 			href={`/courses/${course.slug}`}
@@ -21,9 +23,9 @@ export function CourseCard({ course }: { course: PublicCourseSummary }) {
 				className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)"
 				aria-hidden
 			>
-				{course.coverImageUrl ? (
+				{imageUrl ? (
 					<Image
-						src={course.coverImageUrl}
+						src={imageUrl}
 						alt={course.title}
 						fill
 						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -91,6 +93,7 @@ function CoverFallback({ title }: { title: string }) {
 export function CourseListItem({ course }: { course: PublicCourseSummary }) {
 	const isFree = course.isFree || Number(course.price) === 0;
 	const price = isFree ? "ฟรี" : formatTHB(course.price);
+	const imageUrl = coverImageUrl(course.coverStorageKey);
 	return (
 		<Link
 			href={`/courses/${course.slug}`}
@@ -100,9 +103,9 @@ export function CourseListItem({ course }: { course: PublicCourseSummary }) {
 				className="relative aspect-video h-40 w-full shrink-0 overflow-hidden rounded-lg bg-(--surface-muted) sm:h-28 sm:w-44"
 				aria-hidden
 			>
-				{course.coverImageUrl ? (
+				{imageUrl ? (
 					<Image
-						src={course.coverImageUrl}
+						src={imageUrl}
 						alt={course.title}
 						fill
 						sizes="200px"

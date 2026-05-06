@@ -1,5 +1,6 @@
 import "server-only";
 import { ApiError } from "@/lib/api-error";
+import { isUniqueViolation } from "@/lib/pg-error";
 import {
 	REJECT_REASON_LABEL,
 	type RejectReason,
@@ -43,12 +44,21 @@ export class SlipReviewService {
 
 	async accept(slipId: string, adminUserId: string): Promise<AcceptSlipResult> {
 		const row = await this.loadSlipForReview(slipId);
-		const { enrollmentId } = await this.deps.repo.runAcceptTx(
-			slipId,
-			row.pendingId,
-			row,
-			adminUserId,
-		);
+		let enrollmentId: string;
+		try {
+			const result = await this.deps.repo.runAcceptTx(
+				slipId,
+				row.pendingId,
+				row,
+				adminUserId,
+			);
+			enrollmentId = result.enrollmentId;
+		} catch (e) {
+			if (isUniqueViolation(e)) {
+				throw new ApiError("conflict", "นักเรียนมีสิทธิ์เรียนคอร์สนี้อยู่แล้ว");
+			}
+			throw e;
+		}
 
 		await this.deps.notifier.notifyStudentOfSlipAcceptance({
 			toEmail: row.studentEmail,

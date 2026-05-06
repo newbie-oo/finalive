@@ -12,7 +12,6 @@ function makeCourse(
 		title: "Test Course",
 		summary: "A test course",
 		coverStorageKey: "abc123",
-		coverImageUrl: null,
 		price: "990",
 		isFree: false,
 		status: "published",
@@ -54,11 +53,11 @@ describe("CourseCard", () => {
 		expect(screen.getByText("R")).toBeInTheDocument();
 	});
 
-	it("renders cover image when coverImageUrl is provided", () => {
+	it("renders cover image when coverStorageKey is provided", () => {
 		render(
 			<CourseCard
 				course={makeCourse({
-					coverImageUrl: "https://cdn.example.com/abc123.jpg",
+					coverStorageKey: "abc123.jpg",
 				})}
 			/>,
 		);

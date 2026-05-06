@@ -2,8 +2,6 @@ import "server-only";
 import { sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { enrollment } from "@/db/schema/enrollment";
-import { coverImageUrl } from "@/lib/media-url";
-
 // ─── Shared subqueries ───
 
 /** Active enrollments per course. Reused by public and admin list queries. */
@@ -42,7 +40,6 @@ export function mapToPublicCourseSummary(row: CourseListRow): {
 	status: string;
 	publishedAt: Date | null;
 	coverStorageKey: string | null;
-	coverImageUrl: string | null;
 	enrollmentCount: number;
 } {
 	return {
@@ -55,7 +52,6 @@ export function mapToPublicCourseSummary(row: CourseListRow): {
 		status: row.status,
 		publishedAt: row.publishedAt,
 		coverStorageKey: row.coverStorageKey ?? null,
-		coverImageUrl: coverImageUrl(row.coverStorageKey),
 		enrollmentCount: row.enrollmentCount ?? 0,
 	};
 }

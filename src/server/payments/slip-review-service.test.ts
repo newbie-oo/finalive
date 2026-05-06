@@ -4,17 +4,6 @@ vi.mock("server-only", () => ({}));
 
 // --- mocks --------------------------------------------------------------------
 
-const mockDb = {
-	select: vi.fn(),
-	insert: vi.fn(),
-	update: vi.fn(),
-	transaction: vi.fn(),
-};
-
-vi.mock("@/db/client", () => ({
-	db: mockDb,
-}));
-
 const mockIsUniqueViolation = vi.fn().mockReturnValue(false);
 
 vi.mock("@/lib/pg-error", () => ({
@@ -46,18 +35,6 @@ function fakeDeps() {
 			log: vi.fn().mockResolvedValue(undefined),
 		},
 	};
-}
-
-function mockSelectReturns(rows: unknown[]) {
-	const limit = vi.fn().mockResolvedValue(rows);
-	const where = vi.fn().mockReturnValue({ limit });
-	// Support chaining multiple innerJoin calls: .innerJoin().innerJoin().innerJoin().where().limit()
-	const chain: Record<string, unknown> = {};
-	const innerJoin = vi.fn().mockImplementation(() => chain);
-	chain.innerJoin = innerJoin;
-	chain.where = where;
-	const from = vi.fn().mockReturnValue(chain);
-	mockDb.select.mockReturnValue({ from });
 }
 
 function makeReviewRow(
@@ -96,17 +73,13 @@ const adminUserId = "admin-1";
 describe("SlipReviewService", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockDb.select.mockReset();
-		mockDb.insert.mockReset();
-		mockDb.update.mockReset();
-		mockDb.transaction.mockReset();
 		mockIsUniqueViolation.mockReset().mockReturnValue(false);
 	});
 
 	describe("loadSlipForReview", () => {
 		it("throws not_found when slip does not exist", async () => {
-			mockSelectReturns([]);
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(null);
 			const svc = new SlipReviewService(deps);
 
 			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow(
@@ -117,33 +90,16 @@ describe("SlipReviewService", () => {
 
 	describe("accept", () => {
 		it("accepts a slip successfully", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([{ id: "slip-1" }]),
-							}),
-						}),
-					}),
-					insert: vi.fn().mockReturnValue({
-						values: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([{ id: "enroll-1" }]),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runAcceptTx.mockResolvedValue({ enrollmentId: "enroll-1" });
+
 			const svc = new SlipReviewService(deps);
 
 			const result = await svc.accept("slip-1", adminUserId);
 
 			expect(result).toEqual({ slipId: "slip-1", enrollmentId: "enroll-1" });
+			expect(deps.repo.runAcceptTx).toHaveBeenCalled();
 			expect(deps.notifier.notifyStudentOfSlipAcceptance).toHaveBeenCalledWith(
 				expect.objectContaining({
 					toEmail: "student@example.com",
@@ -162,28 +118,17 @@ describe("SlipReviewService", () => {
 					targetId: "slip-1",
 					actorUserId: adminUserId,
 				}),
-				expect.anything(),
+				undefined,
 			);
 		});
 
 		it("throws slip_already_reviewed when race condition", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([]), // 0 rows = race lost
-							}),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runAcceptTx.mockRejectedValue(
+				new Error("slip was reviewed by another admin"),
+			);
+
 			const svc = new SlipReviewService(deps);
 
 			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow(
@@ -192,28 +137,12 @@ describe("SlipReviewService", () => {
 		});
 
 		it("throws enrollment_already_active on unique violation", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([{ id: "slip-1" }]),
-							}),
-						}),
-					}),
-					insert: vi.fn().mockImplementation(() => {
-						throw new Error("unique_violation");
-					}),
-				};
-				return fn(tx);
-			});
-
+			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			const err = new Error("unique_violation");
+			deps.repo.runAcceptTx.mockRejectedValue(err);
 			mockIsUniqueViolation.mockReturnValue(true);
 
-			const deps = fakeDeps();
 			const svc = new SlipReviewService(deps);
 
 			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow(
@@ -222,28 +151,12 @@ describe("SlipReviewService", () => {
 		});
 
 		it("falls back to email when student name is null", async () => {
-			mockSelectReturns([makeReviewRow({ studentName: null })]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([{ id: "slip-1" }]),
-							}),
-						}),
-					}),
-					insert: vi.fn().mockReturnValue({
-						values: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([{ id: "enroll-1" }]),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(
+				makeReviewRow({ studentName: null }),
+			);
+			deps.repo.runAcceptTx.mockResolvedValue({ enrollmentId: "enroll-1" });
+
 			const svc = new SlipReviewService(deps);
 
 			await svc.accept("slip-1", adminUserId);
@@ -258,23 +171,10 @@ describe("SlipReviewService", () => {
 
 	describe("reject", () => {
 		it("rejects a slip successfully", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([{ id: "slip-1" }]),
-							}),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runRejectTx.mockResolvedValue({ pendingId: "pending-1" });
+
 			const svc = new SlipReviewService(deps);
 
 			const result = await svc.reject(
@@ -283,6 +183,7 @@ describe("SlipReviewService", () => {
 			);
 
 			expect(result).toEqual({ slipId: "slip-1", pendingId: "pending-1" });
+			expect(deps.repo.runRejectTx).toHaveBeenCalled();
 			expect(deps.notifier.notifyStudentOfSlipRejection).toHaveBeenCalledWith(
 				expect.objectContaining({
 					toEmail: "student@example.com",
@@ -303,28 +204,17 @@ describe("SlipReviewService", () => {
 					targetId: "slip-1",
 					actorUserId: adminUserId,
 				}),
-				expect.anything(),
+				undefined,
 			);
 		});
 
 		it("throws slip_already_reviewed when race condition", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([]), // 0 rows = race lost
-							}),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runRejectTx.mockRejectedValue(
+				new Error("slip was reviewed by another admin"),
+			);
+
 			const svc = new SlipReviewService(deps);
 
 			await expect(
@@ -333,23 +223,10 @@ describe("SlipReviewService", () => {
 		});
 
 		it("passes note through when provided", async () => {
-			mockSelectReturns([makeReviewRow()]);
-
-			mockDb.transaction.mockImplementation(async (fn) => {
-				const tx = {
-					...mockDb,
-					update: vi.fn().mockReturnValue({
-						set: vi.fn().mockReturnValue({
-							where: vi.fn().mockReturnValue({
-								returning: vi.fn().mockResolvedValue([{ id: "slip-1" }]),
-							}),
-						}),
-					}),
-				};
-				return fn(tx);
-			});
-
 			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runRejectTx.mockResolvedValue({ pendingId: "pending-1" });
+
 			const svc = new SlipReviewService(deps);
 
 			await svc.reject(
