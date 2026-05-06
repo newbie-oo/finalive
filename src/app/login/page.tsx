@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError } from "@/components/ui/label";
+import { Logo } from "@/components/ui/logo";
 
 const loginSchema = z.object({
 	email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -104,12 +105,9 @@ function LoginForm() {
 					{/* Logo */}
 					<Link
 						href="/"
-						className="mx-auto flex items-center justify-center gap-2 text-(--foreground)"
+						className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"
 					>
-						<span
-							className="h-2.5 w-2.5 rounded-full bg-(--primary)"
-							aria-hidden
-						/>
+						<Logo size={24} variant="mark" />
 						<span className="text-[18px] font-semibold tracking-tight">
 							Finalive
 						</span>
