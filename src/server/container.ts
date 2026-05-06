@@ -27,6 +27,7 @@ import { CourseCompletionService } from "@/server/services/course-completion";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
 import { QuizService } from "@/server/services/quiz-service";
 import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
+import { markLessonComplete } from "@/server/repos/progress";
 import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
 /**
@@ -162,10 +163,7 @@ export const container = {
 
 	courseCompletion(): CourseCompletionService {
 		return new CourseCompletionService({
-			markLessonComplete: async (userId, lessonId, durationSeconds) => {
-				const { markLessonComplete } = await import("@/server/repos/progress");
-				await markLessonComplete(userId, lessonId, durationSeconds);
-			},
+			markLessonComplete,
 			getCourseIdByLessonId,
 			checkAndMarkCourseComplete,
 			certificateIssuer: certificateIssuerFactory(),
