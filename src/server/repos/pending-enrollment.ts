@@ -100,4 +100,19 @@ export const PendingEnrollmentRepo = {
 			});
 		return row;
 	},
+
+	async getByRefCode(
+		refCode: string,
+	): Promise<{ id: string; userId: string; status: string } | undefined> {
+		const rows = await db
+			.select({
+				id: pendingEnrollment.id,
+				userId: pendingEnrollment.userId,
+				status: pendingEnrollment.status,
+			})
+			.from(pendingEnrollment)
+			.where(eq(pendingEnrollment.refCode, refCode))
+			.limit(1);
+		return rows[0];
+	},
 };
