@@ -2,10 +2,8 @@ import "server-only";
 import {
 	isUserEnrolledInCourse,
 	getCourseIdByLessonId,
-	getPublishedCourseBySlug,
 	getCourseInfo,
 } from "@/server/repos/course";
-import { updateAdminCourse } from "@/server/repos/admin-course";
 import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { EnrollmentRepo } from "@/server/repos/enrollment";
 import { AdminGrantRepo } from "@/server/repos/admin-grant";
@@ -20,7 +18,6 @@ import { SlipUploadService } from "@/server/payments/slip-upload-service";
 import { SlipRepo } from "@/server/payments/slip-repo";
 import { makeEmailSlipNotifier } from "@/server/services/slip-notifier-factory";
 import { makeDbAuditLogger } from "@/server/services/audit";
-import { sendGrantCourseEmail } from "@/server/services/mailer";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
@@ -32,6 +29,15 @@ import {
 } from "@/server/repos/quiz";
 import { markLessonComplete } from "@/server/repos/progress";
 import { certificateIssuerFactory } from "@/server/services/certificate-factory";
+import { updateCourseCover } from "@/server/adapters/cover-image-adapter";
+import {
+	getCourseBySlugForEnrollment,
+	createActiveEnrollment,
+} from "@/server/adapters/free-enrollment-adapter";
+import {
+	createEnrollmentFromGrant,
+	sendGrantNotification,
+} from "@/server/adapters/course-grant-adapter";
 
 /**
  * Central service composition root.
@@ -46,24 +52,15 @@ export const container = {
 			storage: new R2ObjectStorage("public"),
 			getMediaAsset: MediaAssetRepo.getById,
 			deleteMediaAsset: MediaAssetRepo.delete,
-			updateCourseCover: async (courseId, mediaAssetId) => {
-				await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
-			},
+			updateCourseCover,
 		});
 	},
 
 	freeEnrollment(): FreeEnrollmentService {
 		return new FreeEnrollmentService({
-			getCourseBySlug: async (slug) => {
-				const row = await getPublishedCourseBySlug(slug, {
-					includeUnpublished: true,
-				});
-				return row ?? undefined;
-			},
+			getCourseBySlug: getCourseBySlugForEnrollment,
 			findActiveEnrollment: EnrollmentRepo.hasActive,
-			createEnrollment: async (args) => {
-				await EnrollmentRepo.create({ ...args, status: "active" });
-			},
+			createEnrollment: createActiveEnrollment,
 		});
 	},
 
@@ -71,26 +68,10 @@ export const container = {
 		return new CourseGrantService({
 			hasActiveEnrollment: EnrollmentRepo.hasActive,
 			createGrant: AdminGrantRepo.create,
-			createEnrollment: async (args) => {
-				await EnrollmentRepo.create({
-					userId: args.userId,
-					courseId: args.courseId,
-					source: "admin_grant",
-					sourceGrantId: args.grantId,
-					priceAtPurchase: "0",
-					status: "active",
-				});
-			},
+			createEnrollment: createEnrollmentFromGrant,
 			getStudentContact: UserRepo.getContact,
 			getCourseInfo,
-			sendNotification: async (n) => {
-				await sendGrantCourseEmail({
-					to: n.to,
-					name: n.name ?? "",
-					courseTitle: n.courseTitle,
-					learnUrl: n.learnUrl,
-				});
-			},
+			sendNotification: sendGrantNotification,
 		});
 	},
 
