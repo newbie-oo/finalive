@@ -1,18 +1,18 @@
 "use server";
 
-import { getSession } from "@/server/auth-session";
+import { z } from "zod";
 import { revokeCertificate } from "@/server/repos/certificate";
+import { adminAction, jsonParser } from "@/server/admin/admin-command";
 
-export async function revokeCertificateAction(certId: string, reason: string) {
-  const session = await getSession();
-  if (!session?.user?.id || session.user.role !== "admin") {
-    return { ok: false, error: "unauthorized" as const };
-  }
+const revokeSchema = z.object({
+	certId: z.string().uuid(),
+	reason: z.string().min(1),
+});
 
-  if (!reason.trim()) {
-    return { ok: false, error: "reason_required" as const };
-  }
-
-  await revokeCertificate(certId, session.user.id, reason.trim());
-  return { ok: true };
-}
+export const revokeCertificateAction = adminAction(
+	jsonParser(revokeSchema),
+	async ({ session, input }) => {
+		await revokeCertificate(input.certId, session.user.id, input.reason);
+		return { ok: true as const };
+	},
+);

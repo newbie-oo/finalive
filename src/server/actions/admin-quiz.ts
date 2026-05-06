@@ -10,9 +10,12 @@ import {
 	type AdminQuiz,
 } from "@/server/repos/admin-quiz";
 import {
-	requireAdminSession,
+	adminAction,
+	jsonParser,
+	requireAdmin,
 	requireCourseAccess,
 } from "@/server/admin/admin-command";
+
 const saveQuizSchema = z.object({
 	quizId: z.string().uuid(),
 	passScorePct: z.number().int().min(1).max(100).default(60),
@@ -47,7 +50,7 @@ type SaveQuizResult =
 export async function saveQuizAction(
 	input: z.infer<typeof saveQuizSchema>,
 ): Promise<SaveQuizResult> {
-	const auth = await requireAdminSession();
+	const auth = await requireAdmin();
 	if (!auth.ok) return { ok: false, error: auth.error };
 
 	const parsed = saveQuizSchema.safeParse(input);
@@ -85,32 +88,25 @@ const createQuizSchema = z.object({
 	passScorePct: z.number().int().min(1).max(100).default(60),
 });
 
-export async function createQuizAction(
-	input: z.infer<typeof createQuizSchema>,
-) {
-	const auth = await requireAdminSession();
-	if (!auth.ok) return { ok: false, error: auth.error } as const;
+export const createQuizAction = adminAction(
+	jsonParser(createQuizSchema),
+	async ({ session, input }) => {
+		const courseId = await getCourseIdByLessonId(input.lessonId);
+		if (!courseId) {
+			return { ok: false as const, error: "not_found" as const };
+		}
 
-	const parsed = createQuizSchema.safeParse(input);
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" as const };
-	}
+		const access = await requireCourseAccess(session, courseId);
+		if (!access.ok) return { ok: false, error: access.error };
 
-	const courseId = await getCourseIdByLessonId(parsed.data.lessonId);
-	if (!courseId) {
-		return { ok: false, error: "not_found" as const };
-	}
+		const quizId = await createAdminQuiz({
+			lessonId: input.lessonId,
+			title: input.title,
+			passScorePct: input.passScorePct ?? 60,
+			createdByUserId: session.user.id,
+		});
 
-	const access = await requireCourseAccess(auth.session, courseId);
-	if (!access.ok) return { ok: false, error: access.error } as const;
-
-	const quizId = await createAdminQuiz({
-		lessonId: parsed.data.lessonId,
-		title: parsed.data.title,
-		passScorePct: parsed.data.passScorePct,
-		createdByUserId: auth.session.user.id,
-	});
-
-	revalidatePath(`/admin/courses/${courseId}/curriculum`);
-	return { ok: true, quizId };
-}
+		revalidatePath(`/admin/courses/${courseId}/curriculum`);
+		return { ok: true as const, quizId };
+	},
+);
