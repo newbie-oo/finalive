@@ -16,6 +16,7 @@ import { signUp } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
@@ -103,12 +104,9 @@ export default function RegisterPage() {
 						{/* Logo */}
 						<Link
 							href="/"
-							className="mx-auto flex items-center justify-center gap-2 text-(--foreground)"
+							className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"
 						>
-							<span
-								className="h-2.5 w-2.5 rounded-full bg-(--primary)"
-								aria-hidden
-							/>
+							<Logo size={24} variant="mark" />
 							<span className="text-[18px] font-semibold tracking-tight">
 								Finalive
 							</span>
