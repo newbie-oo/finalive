@@ -1,5 +1,5 @@
 import "server-only";
-import type { CurriculumModule } from "@/server/repos/course";
+import type { CurriculumModule } from "@/server/repos/curriculum-repo";
 
 function classifyDbError(
 	err: unknown,

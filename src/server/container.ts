@@ -18,8 +18,9 @@ import { FreeEnrollmentService } from "@/server/services/free-enrollment";
 import { CourseGrantService } from "@/server/services/course-grant";
 import { SlipReviewService } from "@/server/payments/slip-review-service";
 import { SlipUploadService } from "@/server/payments/slip-upload-service";
+import { SlipRepo } from "@/server/payments/slip-repo";
 import { EmailSlipNotifier } from "@/server/services/slip-notifier";
-import { makeDbAuditLogger } from "@/server/services/audit-logger";
+import { makeDbAuditLogger } from "@/server/services/audit";
 import { sendGrantCourseEmail } from "@/server/services/mailer";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
@@ -144,6 +145,7 @@ export const container = {
 
 	slipReview(): SlipReviewService {
 		return new SlipReviewService({
+			repo: SlipRepo,
 			notifier: new EmailSlipNotifier(),
 			auditLogger: makeDbAuditLogger(),
 		});
@@ -151,6 +153,7 @@ export const container = {
 
 	slipUpload(): SlipUploadService {
 		return new SlipUploadService({
+			repo: SlipRepo,
 			storage: new R2ObjectStorage("private"),
 			notifier: new EmailSlipNotifier(),
 			auditLogger: makeDbAuditLogger(),

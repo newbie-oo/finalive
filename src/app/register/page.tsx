@@ -9,10 +9,12 @@ import {
 	Check,
 	EnvelopeSimple,
 	LockSimple,
+	Play,
 } from "@phosphor-icons/react";
 import { signUp } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
@@ -95,9 +97,9 @@ export default function RegisterPage() {
 
 	return (
 		<PublicShell hideFooter>
-			<div className="flex min-h-full">
-				{/* Left Panel — Form */}
-				<div className="flex w-full flex-col items-center justify-center bg-(--surface) px-6 py-12 md:w-1/2 lg:w-[45%]">
+			<AuthSplitLayout
+				gradient="linear-gradient(160deg, #4F46E5, #3730A3)"
+				left={
 					<div className="w-full max-w-[400px] space-y-6">
 						{/* Logo */}
 						<Link
@@ -113,10 +115,15 @@ export default function RegisterPage() {
 						{/* Step indicator */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between text-uism text-(--foreground-muted)">
-								<span>ขั้นตอนที่ 1 จาก 2</span>
+								<span>
+									ขั้นตอนที่{" "}
+									<span className="font-semibold text-(--primary)">1</span> จาก{" "}
+									<span className="font-semibold">2</span>
+								</span>
+								<span className="font-semibold text-(--primary)">50%</span>
 							</div>
-							<div className="h-1.5 w-full rounded-full bg-(--surface-muted)">
-								<div className="h-1.5 w-1/2 rounded-full bg-(--primary)" />
+							<div className="h-1 w-full overflow-hidden rounded-sm bg-(--surface-muted)">
+								<div className="h-full w-1/2 rounded-sm bg-(--primary)" />
 							</div>
 						</div>
 
@@ -124,7 +131,7 @@ export default function RegisterPage() {
 							<header className="space-y-1">
 								<h1 className="text-h2">สมัครสมาชิก</h1>
 								<p className="text-body text-(--foreground-muted)">
-									เริ่มต้นเรียนคอร์สแรกของคุณ
+									เริ่มเรียนฟรีวันนี้ ไม่ต้องใช้บัตรเครดิต
 								</p>
 							</header>
 
@@ -250,7 +257,7 @@ export default function RegisterPage() {
 									className="w-full"
 									disabled={isSubmitting}
 								>
-									{isSubmitting ? "กำลังสมัคร..." : "สมัครสมาชิก"}
+									{isSubmitting ? "กำลังสมัคร..." : "สมัครสมาชิกฟรี"}
 								</Button>
 							</form>
 						</div>
@@ -265,84 +272,70 @@ export default function RegisterPage() {
 							</Link>
 						</div>
 					</div>
-				</div>
+				}
+				right={
+					<>
+						<div className="relative z-10">
+							<h2 className="mb-8 text-3xl font-bold leading-tight">
+								เริ่มเรียนฟรีวันนี้
+							</h2>
+							<div className="flex flex-col gap-5">
+								{[
+									["เข้าถึงคอร์สตัวอย่างฟรีทันที", "เริ่มเรียนได้ภายใน 2 นาที"],
+									["รับใบประกาศเมื่อเรียนจบ", "พิมพ์หรือแชร์ลง LinkedIn ได้"],
+									["เรียนได้ตลอดชีพ ไม่หมดอายุ", "กลับมาทบทวนได้เสมอ"],
+									["ถามผู้สอนได้ผ่าน Q&A", "ตอบกลับภายใน 24 ชั่วโมง"],
+								].map(([title, sub], i) => (
+									<div key={i} className="flex items-start gap-3.5">
+										<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.15]">
+											<Check size={16} className="text-white" weight="bold" />
+										</div>
+										<div>
+											<p className="text-[15px] font-semibold text-white">
+												{title}
+											</p>
+											<p className="text-[13px] text-white/70">{sub}</p>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
 
-				{/* Right Panel — Benefits */}
-				<div
-					className="relative hidden flex-col justify-between p-12 text-white md:flex md:w-1/2 lg:w-[55%]"
-					style={{
-						background: "linear-gradient(160deg, #4F46E5, #3730A3)",
-					}}
-				>
-					<svg
-						className="absolute inset-0 opacity-10"
-						width="100%"
-						height="100%"
-						aria-hidden
-					>
-						<defs>
-							<pattern
-								id="dots-register"
-								x="0"
-								y="0"
-								width="20"
-								height="20"
-								patternUnits="userSpaceOnUse"
-							>
-								<circle cx="2" cy="2" r="1" fill="white" />
-							</pattern>
-						</defs>
-						<rect width="100%" height="100%" fill="url(#dots-register)" />
-					</svg>
-
-					<div className="relative z-10">
-						<h2 className="mb-4 text-3xl font-bold leading-tight">
-							เริ่มเรียนฟรีวันนี้
-						</h2>
-						<div className="space-y-3">
-							<div className="flex items-center gap-3">
-								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-									<Check size={14} weight="bold" />
-								</div>
-								<p className="text-white/90">เข้าถึงคอร์สตัวอย่างฟรีทันที</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-									<Check size={14} weight="bold" />
-								</div>
-								<p className="text-white/90">รับใบประกาศเมื่อเรียนจบ</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-									<Check size={14} weight="bold" />
-								</div>
-								<p className="text-white/90">เรียนได้ตลอดชีพ ไม่หมดอายุ</p>
-							</div>
-							<div className="flex items-center gap-3">
-								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-									<Check size={14} weight="bold" />
-								</div>
-								<p className="text-white/90">ถามผู้สอนได้ผ่าน Q&A</p>
+						<div className="relative z-10">
+							<p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-white/80">
+								คอร์สฟรีของคุณ
+							</p>
+							<div className="flex flex-col gap-2.5">
+								{[
+									["พื้นฐานการลงทุนหุ้นไทย", "4 ชม. · 12 บท", "#10B981"],
+									["Excel for Finance — Intro", "1 ชม. · 5 บท", "#F97316"],
+								].map(([title, meta, color], i) => (
+									<div
+										key={i}
+										className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 p-3"
+									>
+										<div
+											className="flex h-10 w-14 shrink-0 items-center justify-center rounded-lg"
+											style={{ backgroundColor: color }}
+										>
+											<Play size={18} className="text-white" />
+										</div>
+										<div className="flex-1">
+											<p className="text-[14px] font-semibold text-white">
+												{title}
+											</p>
+											<p className="text-[12px] text-white/70">{meta}</p>
+										</div>
+										<span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+											ฟรี
+										</span>
+									</div>
+								))}
 							</div>
 						</div>
-					</div>
-
-					<div className="relative z-10 flex gap-8 border-t border-white/20 pt-8">
-						<div>
-							<p className="text-2xl font-bold">45+</p>
-							<p className="text-sm text-white/70">คอร์ส</p>
-						</div>
-						<div>
-							<p className="text-2xl font-bold">12</p>
-							<p className="text-sm text-white/70">ผู้สอน CFA</p>
-						</div>
-						<div>
-							<p className="text-2xl font-bold">ตลอดชีพ</p>
-							<p className="text-sm text-white/70">การเข้าถึง</p>
-						</div>
-					</div>
-				</div>
-			</div>
+					</>
+				}
+			/>
 		</PublicShell>
 	);
 }

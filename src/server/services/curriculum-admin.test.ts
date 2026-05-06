@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createCurriculumAdminService } from "./curriculum-admin";
-import type { CurriculumModule } from "@/server/repos/course";
+import type { CurriculumModule } from "@/server/repos/curriculum-repo";
 
 vi.mock("server-only", () => ({}));
 

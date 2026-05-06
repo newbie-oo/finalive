@@ -8,13 +8,14 @@ import { z } from "zod";
 import {
 	EnvelopeSimple,
 	LockSimple,
-	PlayCircle,
-	Table,
+	Video,
+	FileText,
 	Certificate,
 } from "@phosphor-icons/react";
 import { signIn } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -98,9 +99,9 @@ function LoginForm() {
 	}
 
 	return (
-		<div className="flex min-h-full">
-			{/* Left Panel — Form */}
-			<div className="flex w-full flex-col items-center justify-center bg-(--surface) px-6 py-12 md:w-1/2 lg:w-[45%]">
+		<AuthSplitLayout
+			gradient="linear-gradient(135deg, #4F46E5, #7C3AED)"
+			left={
 				<div className="w-full max-w-[400px] space-y-6">
 					{/* Logo */}
 					<Link
@@ -220,95 +221,81 @@ function LoginForm() {
 						</Link>
 					</div>
 				</div>
-			</div>
+			}
+			right={
+				<>
+					<div className="relative z-10">
+						<p className="mb-3 text-sm font-medium tracking-wide text-white/80">
+							เรียนรู้การเงินอย่างจริงจัง
+						</p>
+						<h2 className="mb-4 text-3xl font-bold leading-tight">
+							พลิกความรู้การเงินเป็นทักษะที่ใช้งานได้จริง
+						</h2>
+						<p className="max-w-md text-base leading-relaxed text-white/80">
+							คอร์สออนไลน์ที่ออกแบบมาสำหรับคนทำงานสายการเงิน เรียนรู้จากผู้สอนมืออาชีพ
+							พร้อมเครื่องมือใช้งานจริง
+						</p>
+					</div>
 
-			{/* Right Panel — Testimonial */}
-			<div
-				className="relative hidden flex-col justify-between p-12 text-white md:flex md:w-1/2 lg:w-[55%]"
-				style={{
-					background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
-				}}
-			>
-				<svg
-					className="absolute inset-0 opacity-10"
-					width="100%"
-					height="100%"
-					aria-hidden
-				>
-					<defs>
-						<pattern
-							id="dots-login"
-							x="0"
-							y="0"
-							width="20"
-							height="20"
-							patternUnits="userSpaceOnUse"
-						>
-							<circle cx="2" cy="2" r="1" fill="white" />
-						</pattern>
-					</defs>
-					<rect width="100%" height="100%" fill="url(#dots-login)" />
-				</svg>
+					<div className="relative z-10 space-y-4">
+						<div className="flex items-start gap-3.5">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+								<Video size={18} />
+							</div>
+							<div>
+								<p className="text-[15px] font-semibold text-white">
+									วิดีโอคุณภาพสูง
+								</p>
+								<p className="text-[13px] text-white/70">
+									เรียนได้ทุกอุปกรณ์ ตลอดชีพ
+								</p>
+							</div>
+						</div>
+						<div className="flex items-start gap-3.5">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+								<FileText size={18} />
+							</div>
+							<div>
+								<p className="text-[15px] font-semibold text-white">
+									Excel template ใช้งานจริง
+								</p>
+								<p className="text-[13px] text-white/70">
+									ดาวน์โหลดทุกไฟล์เพื่อต่อยอด
+								</p>
+							</div>
+						</div>
+						<div className="flex items-start gap-3.5">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+								<Certificate size={18} />
+							</div>
+							<div>
+								<p className="text-[15px] font-semibold text-white">
+									ใบประกาศที่ตรวจสอบได้
+								</p>
+								<p className="text-[13px] text-white/70">
+									แชร์ลง LinkedIn ได้ทันที
+								</p>
+							</div>
+						</div>
+					</div>
 
-				<div className="relative z-10">
-					<p className="mb-3 text-sm font-medium tracking-wide text-white/80">
-						เรียนรู้การเงินอย่างจริงจัง
-					</p>
-					<h2 className="mb-4 text-3xl font-bold leading-tight">
-						พลิกความรู้การเงินเป็นทักษะที่ใช้งานได้จริง
-					</h2>
-					<p className="max-w-md text-base leading-relaxed text-white/80">
-						คอร์สออนไลน์ที่ออกแบบมาสำหรับคนทำงานสายการเงิน เรียนรู้จากผู้สอนมืออาชีพ
-						พร้อมเครื่องมือใช้งานจริง
-					</p>
-				</div>
-
-				<div className="relative z-10 space-y-4">
-					<div className="flex items-start gap-3">
-						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
-							<PlayCircle size={20} weight="fill" />
+					<div className="relative z-10 flex gap-8 border-t border-white/20 pt-8">
+						<div>
+							<p className="text-2xl font-bold">45+</p>
+							<p className="text-sm text-white/70">คอร์ส</p>
 						</div>
 						<div>
-							<p className="font-medium">วิดีโอคุณภาพสูง</p>
-							<p className="text-sm text-white/70">เรียนได้ทุกอุปกรณ์ ตลอดชีพ</p>
-						</div>
-					</div>
-					<div className="flex items-start gap-3">
-						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
-							<Table size={20} weight="fill" />
+							<p className="text-2xl font-bold">12</p>
+							<p className="text-sm text-white/70">ผู้สอน CFA</p>
 						</div>
 						<div>
-							<p className="font-medium">Excel template ใช้งานจริง</p>
-							<p className="text-sm text-white/70">ดาวน์โหลดทุกไฟล์เพื่อต่อยอด</p>
+							<p className="text-2xl font-bold">ตลอดชีพ</p>
+							<p className="text-sm text-white/70">การเข้าถึง</p>
 						</div>
 					</div>
-					<div className="flex items-start gap-3">
-						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
-							<Certificate size={20} weight="fill" />
-						</div>
-						<div>
-							<p className="font-medium">ใบประกาศที่ตรวจสอบได้</p>
-							<p className="text-sm text-white/70">แชร์ลง LinkedIn ได้ทันที</p>
-						</div>
-					</div>
-				</div>
-
-				<div className="relative z-10 flex gap-8 border-t border-white/20 pt-8">
-					<div>
-						<p className="text-2xl font-bold">45+</p>
-						<p className="text-sm text-white/70">คอร์ส</p>
-					</div>
-					<div>
-						<p className="text-2xl font-bold">12</p>
-						<p className="text-sm text-white/70">ผู้สอน CFA</p>
-					</div>
-					<div>
-						<p className="text-2xl font-bold">ตลอดชีพ</p>
-						<p className="text-sm text-white/70">การเข้าถึง</p>
-					</div>
-				</div>
-			</div>
-		</div>
+				</>
+			}
+		/>
 	);
 }
 
@@ -317,16 +304,16 @@ export default function LoginPage() {
 		<PublicShell hideFooter>
 			<Suspense
 				fallback={
-					<div className="flex min-h-full">
-						<div className="flex w-full flex-col items-center justify-center px-6 py-12 md:w-1/2 lg:w-[45%]">
+					<AuthSplitLayout
+						left={
 							<div className="w-full max-w-[400px] space-y-6">
 								<div className="mx-auto h-8 w-48 animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="h-12 w-full animate-pulse rounded-md bg-(--surface-muted)" />
 							</div>
-						</div>
-					</div>
+						}
+					/>
 				}
 			>
 				<LoginForm />
