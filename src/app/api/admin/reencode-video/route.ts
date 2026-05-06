@@ -1,8 +1,4 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { mediaAsset } from "@/db/schema/media";
-import { lesson, courseModule } from "@/db/schema/course";
 import { apiRoute } from "@/lib/api-route";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
@@ -11,6 +7,7 @@ import {
 	getCollaboratorRole,
 } from "@/server/repos/course-authz";
 import { canEditCoursePure } from "@/server/services/course-authz";
+import { LessonVideoRepo } from "@/server/repos/lesson-video";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,17 +40,7 @@ export const POST = apiRoute({
 			return { code: "forbidden" };
 		}
 
-		const [row] = await db
-			.select({
-				assetId: mediaAsset.id,
-				storage: mediaAsset.storage,
-				bunnyId: mediaAsset.storageKey,
-			})
-			.from(lesson)
-			.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-			.innerJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
-			.where(eq(lesson.id, lessonId))
-			.limit(1);
+		const row = await LessonVideoRepo.getLessonVideoAsset(lessonId);
 
 		if (!row || row.storage !== "bunny_stream") {
 			return { code: "not_found" };
@@ -80,10 +67,7 @@ export const POST = apiRoute({
 			return { code: "bunny_error", message: `Bunny ${res.status}` };
 		}
 
-		await db
-			.update(mediaAsset)
-			.set({ status: "encoding" })
-			.where(eq(mediaAsset.id, row.assetId));
+		await LessonVideoRepo.setAssetEncoding(row.assetId);
 
 		logger.info("reencode-video.requested", {
 			lessonId,

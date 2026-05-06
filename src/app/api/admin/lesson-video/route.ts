@@ -1,8 +1,4 @@
 import { z } from "zod";
-import { eq, and, ne, sql } from "drizzle-orm";
-import { db } from "@/db/client";
-import { mediaAsset } from "@/db/schema/media";
-import { lesson } from "@/db/schema/course";
 import {
 	requireSession,
 	getUserRole,
@@ -17,6 +13,7 @@ import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { HttpBunnyStreamClient } from "@/server/services/bunny-stream";
 import { LessonVideoService } from "@/server/services/lesson-video";
+import { LessonVideoRepo } from "@/server/repos/lesson-video";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,65 +22,12 @@ function makeService() {
 	const bunny = new HttpBunnyStreamClient();
 	return new LessonVideoService({
 		bunny,
-		getLessonVideoMediaId: async (lessonId) => {
-			const rows = await db
-				.select({ videoMediaId: lesson.videoMediaId })
-				.from(lesson)
-				.where(eq(lesson.id, lessonId))
-				.limit(1);
-			return rows[0]?.videoMediaId ?? null;
-		},
-		createVideoAsset: async (args) => {
-			const [row] = await db
-				.insert(mediaAsset)
-				.values({
-					kind: "video",
-					storage: "bunny_stream",
-					storageKey: args.storageKey,
-					mimeType: "video/mp4",
-					sizeBytes: null,
-					status: "encoding",
-					createdByUserId: args.userId,
-				})
-				.returning({ id: mediaAsset.id });
-			return { id: row!.id };
-		},
-		updateLessonVideo: async (lessonId, mediaAssetId) => {
-			await db
-				.update(lesson)
-				.set({ videoMediaId: mediaAssetId, updatedAt: new Date() })
-				.where(eq(lesson.id, lessonId));
-		},
-		findAssetByBunnyId: async (bunnyVideoId) => {
-			const rows = await db
-				.select({ id: mediaAsset.id })
-				.from(mediaAsset)
-				.where(
-					and(
-						eq(mediaAsset.storage, "bunny_stream"),
-						eq(mediaAsset.storageKey, bunnyVideoId),
-					),
-				)
-				.limit(1);
-			return rows[0] ?? null;
-		},
-		findPreviousVideoMediaId: async (lessonId, excludeAssetId) => {
-			const rows = await db
-				.select({ mediaId: lesson.videoMediaId })
-				.from(lesson)
-				.where(
-					and(
-						eq(lesson.id, lessonId),
-						ne(lesson.videoMediaId, excludeAssetId),
-						sql`${lesson.videoMediaId} IS NOT NULL`,
-					),
-				)
-				.limit(1);
-			return rows[0]?.mediaId ?? null;
-		},
-		deleteMediaAsset: async (assetId) => {
-			await db.delete(mediaAsset).where(eq(mediaAsset.id, assetId));
-		},
+		getLessonVideoMediaId: LessonVideoRepo.getLessonVideoMediaId,
+		createVideoAsset: LessonVideoRepo.createVideoAsset,
+		updateLessonVideo: LessonVideoRepo.updateLessonVideo,
+		findAssetByBunnyId: LessonVideoRepo.findAssetByBunnyId,
+		findPreviousVideoMediaId: LessonVideoRepo.findPreviousVideoMediaId,
+		deleteMediaAsset: LessonVideoRepo.deleteMediaAsset,
 	});
 }
 
