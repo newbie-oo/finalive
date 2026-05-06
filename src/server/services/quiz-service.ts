@@ -1,16 +1,22 @@
-import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
-import type { QuestionResult } from "@/server/repos/quiz";
+import {
+	getQuizById,
+	getCorrectChoices,
+	insertQuizAttempt,
+} from "@/server/repos/quiz";
+import type { QuestionResult } from "@/lib/quiz-types";
 import {
 	isUserEnrolledInCourse,
 	getCourseIdByLessonId,
 } from "@/server/repos/course";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
+import { QuizScorer } from "@/server/services/quiz-scorer";
 
 export interface QuizServiceDeps {
 	getQuizById: typeof getQuizById;
+	getCorrectChoices: typeof getCorrectChoices;
 	isUserEnrolledInCourse: typeof isUserEnrolledInCourse;
 	getCourseIdByLessonId: typeof getCourseIdByLessonId;
-	submitQuizAttempt: typeof submitQuizAttempt;
+	insertQuizAttempt: typeof insertQuizAttempt;
 	completionChecker: CourseCompletionChecker;
 }
 
@@ -61,14 +67,28 @@ export class QuizService {
 			}
 		}
 
-		const result = await this.deps.submitQuizAttempt({
+		const correctChoices = await this.deps.getCorrectChoices(params.quizId);
+		const scorer = new QuizScorer();
+		const score = scorer.score({
+			questions: quiz.questions.map((q) => ({ id: q.id })),
+			correctChoices: correctChoices.map((c) => ({
+				questionId: c.questionId,
+				choiceId: c.choiceId,
+			})),
+			answers: params.answers,
+			passScorePct: quiz.passScorePct,
+		});
+
+		const result = await this.deps.insertQuizAttempt({
 			userId: params.userId,
 			quizId: params.quizId,
-			answers: params.answers,
+			answersJson: params.answers,
+			scorePct: score.scorePct,
+			passed: score.passed,
 		});
 
 		let courseCompleted = false;
-		if (result.passed && courseId) {
+		if (score.passed && courseId) {
 			const checkResult =
 				await this.deps.completionChecker.reevaluateCourseCompletion({
 					userId: params.userId,
@@ -82,11 +102,11 @@ export class QuizService {
 		return {
 			ok: true,
 			attemptId: result.attemptId,
-			passed: result.passed,
-			scorePct: result.scorePct,
-			totalQuestions: result.totalQuestions,
-			correctCount: result.correctCount,
-			questionResults: result.questionResults,
+			passed: score.passed,
+			scorePct: score.scorePct,
+			totalQuestions: score.totalQuestions,
+			correctCount: score.correctCount,
+			questionResults: score.questionResults,
 			courseCompleted,
 		};
 	}

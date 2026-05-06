@@ -25,7 +25,11 @@ import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
 import { QuizService } from "@/server/services/quiz-service";
-import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
+import {
+	getQuizById,
+	getCorrectChoices,
+	insertQuizAttempt,
+} from "@/server/repos/quiz";
 import { markLessonComplete } from "@/server/repos/progress";
 import { certificateIssuerFactory } from "@/server/services/certificate-factory";
 
@@ -126,9 +130,10 @@ export const container = {
 	quizService(): QuizService {
 		return new QuizService({
 			getQuizById,
+			getCorrectChoices,
 			isUserEnrolledInCourse,
 			getCourseIdByLessonId,
-			submitQuizAttempt,
+			insertQuizAttempt,
 			completionChecker: this.courseCompletionChecker(),
 		});
 	},

@@ -138,84 +138,47 @@ export async function getQuizById(
 	};
 }
 
-export interface SubmitAttemptInput {
-	userId: string;
-	quizId: string;
-	answers: Record<string, string>; // questionId -> choiceId
-}
-
-import type { QuestionResult, ScoreResult } from "@/lib/quiz-types";
-export type { QuestionResult };
-
-export interface SubmitAttemptResult {
-	attemptId: string;
-	scorePct: number;
-	passed: boolean;
-	totalQuestions: number;
-	correctCount: number;
-	questionResults: QuestionResult[];
-}
-
-export async function submitQuizAttempt(
-	input: SubmitAttemptInput,
-): Promise<SubmitAttemptResult> {
-	const { QuizScorer } = await import("@/server/services/quiz-scorer");
-
-	const questions = await db
-		.select({ id: quizQuestion.id })
-		.from(quizQuestion)
-		.where(
-			and(
-				eq(quizQuestion.quizId, input.quizId),
-				isNull(quizQuestion.deletedAt),
-			),
-		);
-
-	const correctChoices = await db
+export async function getCorrectChoices(
+	quizId: string,
+): Promise<Array<{ questionId: string; choiceId: string }>> {
+	const rows = await db
 		.select({
 			questionId: quizChoice.questionId,
-			id: quizChoice.id,
+			choiceId: quizChoice.id,
 		})
 		.from(quizChoice)
 		.innerJoin(quizQuestion, eq(quizChoice.questionId, quizQuestion.id))
 		.where(
 			and(
-				eq(quizQuestion.quizId, input.quizId),
+				eq(quizQuestion.quizId, quizId),
 				eq(quizChoice.isCorrect, true),
 				isNull(quizChoice.deletedAt),
 			),
 		);
+	return rows;
+}
 
-	const quizRow = await db
-		.select({ passScorePct: quiz.passScorePct })
-		.from(quiz)
-		.where(eq(quiz.id, input.quizId))
-		.limit(1);
+export interface InsertAttemptInput {
+	userId: string;
+	quizId: string;
+	answersJson: Record<string, string>;
+	scorePct: number;
+	passed: boolean;
+}
 
-	const scorer = new QuizScorer();
-	const score: ScoreResult = scorer.score({
-		questions,
-		correctChoices: correctChoices.map((c) => ({
-			questionId: c.questionId,
-			choiceId: c.id,
-		})),
-		answers: input.answers,
-		passScorePct: quizRow[0]?.passScorePct ?? 70,
-	});
-
+export async function insertQuizAttempt(
+	input: InsertAttemptInput,
+): Promise<{ attemptId: string }> {
 	const [inserted] = await db
 		.insert(quizAttempt)
 		.values({
 			userId: input.userId,
 			quizId: input.quizId,
-			answersJson: input.answers,
-			scorePct: score.scorePct,
-			passed: score.passed,
+			answersJson: input.answersJson,
+			scorePct: input.scorePct,
+			passed: input.passed,
 		})
 		.returning({ id: quizAttempt.id });
 
-	return {
-		attemptId: inserted!.id,
-		...score,
-	};
+	return { attemptId: inserted!.id };
 }
