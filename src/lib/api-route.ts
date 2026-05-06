@@ -2,6 +2,27 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSessionThrow, requireRoleThrow } from "@/server/auth-session";
 import { ApiError, statusForCode } from "@/lib/api-error";
+import {
+	checkRateLimit,
+	getClientIP,
+	type RateLimitConfig,
+} from "@/lib/rate-limit";
+
+function checkRateLimitOrThrow(
+	req: NextRequest,
+	config: RateLimitConfig | undefined,
+	_rid: string,
+): void {
+	if (!config) return;
+	const ip = getClientIP(req);
+	const result = checkRateLimit(ip, req.url, config);
+	if (!result.allowed) {
+		throw new ApiError(
+			"rate_limited",
+			`Rate limit exceeded. Retry after ${result.resetAt}.`,
+		);
+	}
+}
 
 /** Auth requirement for an API route. */
 export type ApiAuth = "required" | "admin";
@@ -20,6 +41,8 @@ interface ApiRouteOptions<
 > {
 	/** Auth requirement. Omit for public routes. */
 	auth?: ApiAuth;
+	/** Rate-limit config. Checked before auth to avoid burning session lookups. */
+	rateLimit?: RateLimitConfig;
 	/** Zod schema for JSON body. Omit for routes that don't parse JSON. */
 	body?: z.ZodSchema<TBody>;
 	/** Zod schema for query params. Omit for routes without query validation. */
@@ -42,6 +65,8 @@ interface ApiRouteRawOptions<
 > {
 	/** Auth requirement. Omit for public routes. */
 	auth?: ApiAuth;
+	/** Rate-limit config. Checked before auth to avoid burning session lookups. */
+	rateLimit?: RateLimitConfig;
 	/** Zod schema for query params. Omit for routes without query validation. */
 	query?: z.ZodType<TQuery, z.ZodTypeDef, unknown>;
 	/**
@@ -151,6 +176,7 @@ export function apiRoute<
 	return async (req: NextRequest): Promise<NextResponse> => {
 		const rid = requestId();
 		try {
+			checkRateLimitOrThrow(req, options.rateLimit, rid);
 			const user = await resolveAuth(options.auth);
 
 			const qResult = resolveQuery(req, options.query, rid);
@@ -211,6 +237,7 @@ export function apiRouteRaw<
 	return async (req: NextRequest): Promise<NextResponse> => {
 		const rid = requestId();
 		try {
+			checkRateLimitOrThrow(req, options.rateLimit, rid);
 			const user = await resolveAuth(options.auth);
 
 			const qResult = resolveQuery(req, options.query, rid);
