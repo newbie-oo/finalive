@@ -1,9 +1,5 @@
 import "server-only";
-import {
-	isUserEnrolledInCourse,
-	getCourseIdByLessonId,
-	getCourseInfo,
-} from "@/server/repos/course";
+import { getCourseIdByLessonId, getCourseInfo } from "@/server/repos/course";
 import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { EnrollmentRepo } from "@/server/repos/enrollment";
 import { AdminGrantRepo } from "@/server/repos/admin-grant";
@@ -112,7 +108,7 @@ export const container = {
 		return new QuizService({
 			getQuizById,
 			getCorrectChoices,
-			isUserEnrolledInCourse,
+			isUserEnrolledInCourse: EnrollmentRepo.hasActive,
 			getCourseIdByLessonId,
 			insertQuizAttempt,
 			completionChecker: this.courseCompletionChecker(),

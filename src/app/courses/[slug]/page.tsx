@@ -21,8 +21,8 @@ import { CourseTabs } from "./course-tabs";
 import {
 	getPublishedCourseBySlug,
 	getCourseCurriculum,
-	isUserEnrolledInCourse,
 } from "@/server/repos/course";
+import { EnrollmentRepo } from "@/server/repos/enrollment";
 import { getSession } from "@/server/auth-session";
 import { formatTHB } from "@/lib/format";
 import { coverImageUrl } from "@/lib/media-url";
@@ -49,7 +49,7 @@ export default async function CourseDetailPage({
 	});
 	if (!course) notFound();
 	const isEnrolled = userId
-		? await isUserEnrolledInCourse(userId, course.id)
+		? await EnrollmentRepo.hasActive(userId, course.id)
 		: false;
 	const curriculum = await getCourseCurriculum(course.id, {
 		includeEmptyModules: false,

@@ -4,17 +4,15 @@ import {
 	insertQuizAttempt,
 } from "@/server/repos/quiz";
 import type { QuestionResult } from "@/lib/quiz-types";
-import {
-	isUserEnrolledInCourse,
-	getCourseIdByLessonId,
-} from "@/server/repos/course";
+import { EnrollmentRepo } from "@/server/repos/enrollment";
+import { getCourseIdByLessonId } from "@/server/repos/course";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
 import { QuizScorer } from "@/server/services/quiz-scorer";
 
 export interface QuizServiceDeps {
 	getQuizById: typeof getQuizById;
 	getCorrectChoices: typeof getCorrectChoices;
-	isUserEnrolledInCourse: typeof isUserEnrolledInCourse;
+	isUserEnrolledInCourse: typeof EnrollmentRepo.hasActive;
 	getCourseIdByLessonId: typeof getCourseIdByLessonId;
 	insertQuizAttempt: typeof insertQuizAttempt;
 	completionChecker: CourseCompletionChecker;
