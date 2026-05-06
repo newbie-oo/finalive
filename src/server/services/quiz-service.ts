@@ -1,4 +1,5 @@
 import { getQuizById, submitQuizAttempt } from "@/server/repos/quiz";
+import type { QuestionResult } from "@/server/repos/quiz";
 import {
 	isUserEnrolledInCourse,
 	getCourseIdByLessonId,
@@ -11,13 +12,6 @@ export interface QuizServiceDeps {
 	getCourseIdByLessonId: typeof getCourseIdByLessonId;
 	submitQuizAttempt: typeof submitQuizAttempt;
 	completionChecker: CourseCompletionChecker;
-}
-
-export interface QuestionResult {
-	questionId: string;
-	selectedChoiceId: string;
-	correctChoiceId: string;
-	isCorrect: boolean;
 }
 
 export interface SubmitQuizResult {
