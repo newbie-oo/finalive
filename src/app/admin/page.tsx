@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
 	getAdminDashboardCounts,
-	getMonthlyRevenue,
+	getMonthlyRevenueRaw,
 } from "@/server/repos/admin-dashboard";
+import { formatMonthlyRevenue } from "@/server/services/admin-dashboard-presenter";
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { listPendingSlips } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
@@ -303,7 +304,7 @@ export default async function AdminDashboardPage() {
 		getAdminDashboardCounts(),
 		listAdminCourses({ status: "published" }),
 		listPendingSlips({ status: "submitted", per_page: 5 }),
-		getMonthlyRevenue(),
+		getMonthlyRevenueRaw().then(formatMonthlyRevenue),
 	]);
 	const topCourses = courses
 		.filter((c) => c.enrollmentCount > 0)

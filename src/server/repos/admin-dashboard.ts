@@ -17,21 +17,19 @@ export interface AdminDashboardCounts {
 	certsMtd: number;
 }
 
-export interface MonthlyRevenue {
-	month: string; // "ม.ค."
+export interface MonthlyRevenueRaw {
+	monthIndex: number; // 0-11
 	year: number;
 	current: number;
 	previous: number;
 }
 
-export interface ActivityRow {
-	time: string;
-	userName: string;
-	userColor: string;
+export interface RawActivityRow {
+	time: Date;
+	userName: string | null;
 	action: string;
-	amount: string | null;
-	status: "success" | "warning" | "primary";
-	statusLabel: string;
+	amount: number | null;
+	status: string; // "success" | "warning" | "primary"
 }
 
 function startOfToday(): Date {
@@ -46,21 +44,6 @@ function startOfMonth(): Date {
 	d.setHours(0, 0, 0, 0);
 	return d;
 }
-
-const MONTH_LABELS = [
-	"ม.ค.",
-	"ก.พ.",
-	"มี.ค.",
-	"เม.ย.",
-	"พ.ค.",
-	"มิ.ย.",
-	"ก.ค.",
-	"ส.ค.",
-	"ก.ย.",
-	"ต.ค.",
-	"พ.ย.",
-	"ธ.ค.",
-];
 
 function startOfMonthAt(year: number, month: number): Date {
 	const d = new Date(year, month, 1);
@@ -139,9 +122,9 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
 	};
 }
 
-export async function getMonthlyRevenue(): Promise<MonthlyRevenue[]> {
+export async function getMonthlyRevenueRaw(): Promise<MonthlyRevenueRaw[]> {
 	const now = new Date();
-	const results: MonthlyRevenue[] = [];
+	const results: MonthlyRevenueRaw[] = [];
 
 	for (let i = 4; i >= 0; i--) {
 		const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -178,7 +161,7 @@ export async function getMonthlyRevenue(): Promise<MonthlyRevenue[]> {
 		]);
 
 		results.push({
-			month: MONTH_LABELS[month]!,
+			monthIndex: month,
 			year,
 			current: cur[0]?.total ?? 0,
 			previous: prev[0]?.total ?? 0,
@@ -188,16 +171,9 @@ export async function getMonthlyRevenue(): Promise<MonthlyRevenue[]> {
 	return results;
 }
 
-const ACTIVITY_COLORS = [
-	"#4F46E5",
-	"#10B981",
-	"#F97316",
-	"#8B5CF6",
-	"#EC4899",
-	"#0EA5E9",
-];
-
-export async function getRecentActivity(limit = 6): Promise<ActivityRow[]> {
+export async function getRecentActivityRaw(
+	limit = 6,
+): Promise<RawActivityRow[]> {
 	// Build a unified activity stream from enrollments + slips + certificates.
 	// We run 3 queries and merge in memory because each table has different shapes.
 	const [enrollRows, slipRows, certRows] = await Promise.all([
@@ -234,7 +210,7 @@ export async function getRecentActivity(limit = 6): Promise<ActivityRow[]> {
 				time: certificate.issuedAt,
 				userName: userTable.name,
 				action: sql<string>`'รับใบประกาศ ' || ${course.title}`,
-				amount: sql<string>`'—'`,
+				amount: sql<number>`0`,
 			})
 			.from(certificate)
 			.innerJoin(enrollment, eq(enrollment.id, certificate.enrollmentId))
@@ -244,56 +220,30 @@ export async function getRecentActivity(limit = 6): Promise<ActivityRow[]> {
 			.limit(limit),
 	]);
 
-	const all = [
+	const all: RawActivityRow[] = [
 		...enrollRows.map((r) => ({
 			time: r.time,
-			userName: r.userName ?? "ผู้ใช้",
+			userName: r.userName,
 			action: r.action,
-			amount:
-				Number(r.amount) > 0
-					? `฿${Number(r.amount).toLocaleString("th-TH")}`
-					: null,
-			status: "success" as const,
-			statusLabel: "สำเร็จ",
+			amount: Number(r.amount) > 0 ? Number(r.amount) : null,
+			status: "success",
 		})),
 		...slipRows.map((r) => ({
 			time: r.time,
-			userName: r.userName ?? "ผู้ใช้",
+			userName: r.userName,
 			action: r.action,
-			amount: `฿${Number(r.amount).toLocaleString("th-TH")}`,
-			status: "warning" as const,
-			statusLabel: "รอตรวจ",
+			amount: Number(r.amount),
+			status: "warning",
 		})),
 		...certRows.map((r) => ({
 			time: r.time,
-			userName: r.userName ?? "ผู้ใช้",
+			userName: r.userName,
 			action: r.action,
 			amount: null,
-			status: "primary" as const,
-			statusLabel: "รับใบประกาศ",
+			status: "primary",
 		})),
 	];
 
 	all.sort((a, b) => b.time.getTime() - a.time.getTime());
-
-	return all.slice(0, limit).map((r, i) => ({
-		...r,
-		userColor: ACTIVITY_COLORS[i % ACTIVITY_COLORS.length]!,
-		time: formatActivityTime(r.time),
-	}));
-}
-
-function formatActivityTime(d: Date): string {
-	const now = new Date();
-	const diffMs = now.getTime() - d.getTime();
-	const diffMin = Math.floor(diffMs / 60000);
-	const diffHour = Math.floor(diffMs / 3600000);
-	const diffDay = Math.floor(diffMs / 86400000);
-
-	if (diffMin < 1) return "เมื่อสักครู่";
-	if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`;
-	if (diffHour < 24) return `${diffHour} ชม. ที่แล้ว`;
-	if (diffDay === 1) return "เมื่อวาน";
-	if (diffDay < 7) return `${diffDay} วันที่แล้ว`;
-	return `${d.getDate()} ${MONTH_LABELS[d.getMonth()]} ${d.getFullYear() + 543}`;
+	return all.slice(0, limit);
 }
