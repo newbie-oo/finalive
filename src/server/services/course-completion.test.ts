@@ -41,7 +41,7 @@ describe("CourseCompletionService", () => {
 			courseCompleted: false,
 			certificateIssued: false,
 		});
-		expect(deps.markLessonComplete).toHaveBeenCalledWith("u1", "l1");
+		expect(deps.markLessonComplete).toHaveBeenCalledWith("u1", "l1", undefined);
 		expect(deps.certificateIssuer.issue).not.toHaveBeenCalled();
 	});
 

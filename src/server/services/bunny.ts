@@ -54,17 +54,18 @@ export interface HlsUrlArgs {
 	videoId: string;
 	expiresAt?: number;
 	userIp?: string;
+	secretOverride?: string;
 }
 
 export function buildHlsUrl(args: HlsUrlArgs): string {
 	const env = getEnv();
 	const cdn = env.BUNNY_CDN_HOSTNAME ?? "video.bunnycdn.com";
-	const secret = env.BUNNY_CDN_TOKEN_SECRET;
+	const secret = args.secretOverride ?? env.BUNNY_CDN_TOKEN_SECRET;
 	if (!secret) {
 		// Dev fallback: unsigned URL when token auth not configured
 		return `https://${cdn}/${args.videoId}/playlist.m3u8`;
 	}
-	const { token, expires } = signHlsToken(args);
+	const { token, expires } = signHlsToken({ ...args, secretOverride: secret });
 	return `https://${cdn}/${args.videoId}/playlist.m3u8?token=${token}&expires=${expires}`;
 }
 
