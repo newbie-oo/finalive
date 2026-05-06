@@ -7,8 +7,6 @@ import { z } from "zod";
 import {
 	CheckCircle,
 	Check,
-	Clock,
-	BookOpen,
 	EnvelopeSimple,
 	LockSimple,
 } from "@phosphor-icons/react";
@@ -297,77 +295,50 @@ export default function RegisterPage() {
 						<rect width="100%" height="100%" fill="url(#dots-register)" />
 					</svg>
 
-					<div className="relative z-10 space-y-8">
-						<div>
-							<h2 className="mb-4 text-3xl font-bold leading-tight">
-								เริ่มเรียนฟรีวันนี้
-							</h2>
-							<div className="space-y-3">
-								<div className="flex items-center gap-3">
-									<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-										<Check size={14} weight="bold" />
-									</div>
-									<p className="text-white/90">เข้าถึงคอร์สตัวอย่างฟรีทันที</p>
+					<div className="relative z-10">
+						<h2 className="mb-4 text-3xl font-bold leading-tight">
+							เริ่มเรียนฟรีวันนี้
+						</h2>
+						<div className="space-y-3">
+							<div className="flex items-center gap-3">
+								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
+									<Check size={14} weight="bold" />
 								</div>
-								<div className="flex items-center gap-3">
-									<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-										<Check size={14} weight="bold" />
-									</div>
-									<p className="text-white/90">รับใบประกาศเมื่อเรียนจบ</p>
+								<p className="text-white/90">เข้าถึงคอร์สตัวอย่างฟรีทันที</p>
+							</div>
+							<div className="flex items-center gap-3">
+								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
+									<Check size={14} weight="bold" />
 								</div>
-								<div className="flex items-center gap-3">
-									<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-										<Check size={14} weight="bold" />
-									</div>
-									<p className="text-white/90">เรียนได้ตลอดชีพ ไม่หมดอายุ</p>
+								<p className="text-white/90">รับใบประกาศเมื่อเรียนจบ</p>
+							</div>
+							<div className="flex items-center gap-3">
+								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
+									<Check size={14} weight="bold" />
 								</div>
-								<div className="flex items-center gap-3">
-									<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
-										<Check size={14} weight="bold" />
-									</div>
-									<p className="text-white/90">ถามผู้สอนได้ผ่าน Q&A</p>
+								<p className="text-white/90">เรียนได้ตลอดชีพ ไม่หมดอายุ</p>
+							</div>
+							<div className="flex items-center gap-3">
+								<div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-400 text-indigo-900">
+									<Check size={14} weight="bold" />
 								</div>
+								<p className="text-white/90">ถามผู้สอนได้ผ่าน Q&A</p>
 							</div>
 						</div>
+					</div>
 
+					<div className="relative z-10 flex gap-8 border-t border-white/20 pt-8">
 						<div>
-							<p className="mb-3 text-sm font-medium text-white/70">
-								คอร์สฟรีของคุณ
-							</p>
-							<div className="space-y-3">
-								<div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-									<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500">
-										<BookOpen size={20} weight="fill" className="text-white" />
-									</div>
-									<div className="min-w-0">
-										<p className="truncate font-medium">พื้นฐานการลงทุนหุ้นไทย</p>
-										<div className="flex items-center gap-2 text-xs text-white/70">
-											<span className="flex items-center gap-1">
-												<Clock size={12} />4 ชม.
-											</span>
-											<span>·</span>
-											<span>12 บท</span>
-										</div>
-									</div>
-								</div>
-								<div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-									<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500">
-										<BookOpen size={20} weight="fill" className="text-white" />
-									</div>
-									<div className="min-w-0">
-										<p className="truncate font-medium">
-											Excel for Finance — Intro
-										</p>
-										<div className="flex items-center gap-2 text-xs text-white/70">
-											<span className="flex items-center gap-1">
-												<Clock size={12} />1 ชม.
-											</span>
-											<span>·</span>
-											<span>5 บท</span>
-										</div>
-									</div>
-								</div>
-							</div>
+							<p className="text-2xl font-bold">45+</p>
+							<p className="text-sm text-white/70">คอร์ส</p>
+						</div>
+						<div>
+							<p className="text-2xl font-bold">12</p>
+							<p className="text-sm text-white/70">ผู้สอน CFA</p>
+						</div>
+						<div>
+							<p className="text-2xl font-bold">ตลอดชีพ</p>
+							<p className="text-sm text-white/70">การเข้าถึง</p>
 						</div>
 					</div>
 				</div>
