@@ -1,7 +1,8 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { db } from "@/db/client";
 import { enrollment } from "@/db/schema/enrollment";
+import { course } from "@/db/schema/course";
 
 export const EnrollmentRepo = {
 	async hasActive(userId: string, courseId: string): Promise<boolean> {
@@ -35,5 +36,28 @@ export const EnrollmentRepo = {
 			priceAtPurchase: args.priceAtPurchase,
 			status: args.status,
 		});
+	},
+
+	async listByUserId(userId: string): Promise<
+		Array<{
+			id: string;
+			courseTitle: string;
+			source: string;
+			status: string;
+			createdAt: Date | null;
+		}>
+	> {
+		return db
+			.select({
+				id: enrollment.id,
+				courseTitle: course.title,
+				source: enrollment.source,
+				status: enrollment.status,
+				createdAt: enrollment.createdAt,
+			})
+			.from(enrollment)
+			.innerJoin(course, eq(enrollment.courseId, course.id))
+			.where(eq(enrollment.userId, userId))
+			.orderBy(desc(enrollment.createdAt));
 	},
 };

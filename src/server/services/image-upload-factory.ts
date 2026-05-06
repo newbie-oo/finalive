@@ -1,7 +1,6 @@
 import "server-only";
 import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@/db/client";
-import { mediaAsset } from "@/db/schema/media";
+import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { R2ObjectStorage } from "./storage";
 import {
 	ImageUploadService,
@@ -26,20 +25,7 @@ export function createImageUploadService(options: ImageUploadFactoryOptions) {
 		storage,
 		maxSizeBytes: options.maxSizeBytes,
 		processImage: options.processImage,
-		createMediaAsset: async (args) => {
-			const [row] = await db
-				.insert(mediaAsset)
-				.values({
-					kind: "image",
-					storage: "r2_public",
-					storageKey: args.storageKey,
-					mimeType: args.mimeType,
-					status: "ready",
-					createdByUserId: args.userId,
-				})
-				.returning({ id: mediaAsset.id });
-			return { id: row!.id };
-		},
+		createMediaAsset: MediaAssetRepo.createImageAsset,
 	});
 }
 

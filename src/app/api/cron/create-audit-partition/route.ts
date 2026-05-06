@@ -1,6 +1,5 @@
-import { sql } from "drizzle-orm";
-import { db } from "@/db/client";
 import { cronRoute } from "@/lib/cron-route";
+import { AuditCronRepo } from "@/server/repos/audit-cron";
 
 function nextMonthName(d = new Date()): {
 	table: string;
@@ -24,15 +23,8 @@ export const POST = cronRoute({
 	handler: async () => {
 		const { table, start, end } = nextMonthName();
 
-		const exists = await db.execute<{ exists: boolean }>(sql`
-			SELECT EXISTS (
-				SELECT 1 FROM pg_class c
-				JOIN pg_namespace n ON n.oid = c.relnamespace
-				WHERE n.nspname = 'public'
-					AND c.relname = ${table}
-			) AS "exists"
-		`);
-		if (exists[0]?.exists) {
+		const exists = await AuditCronRepo.partitionExists(table);
+		if (exists) {
 			return {
 				ok: true,
 				table,
@@ -41,10 +33,7 @@ export const POST = cronRoute({
 			};
 		}
 
-		await db.execute(sql`
-			CREATE TABLE ${sql.raw(table)} PARTITION OF audit_log
-			FOR VALUES FROM (${start}) TO (${end})
-		`);
+		await AuditCronRepo.createPartition(table, start, end);
 
 		return { ok: true, table, created: true };
 	},
