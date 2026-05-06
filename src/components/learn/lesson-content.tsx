@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { LearnTopbar } from "./learn-topbar";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, X } from "@phosphor-icons/react";
 import { useLearnShell } from "./learn-shell-context";
 import { LessonPlayerLayout } from "./lesson-player-layout";
+import { useAutoplayCountdown } from "@/hooks/use-autoplay-countdown";
+import { useLessonCompletionEvent } from "@/hooks/use-lesson-completion-event";
 
 interface LessonContentProps {
 	courseSlug: string;
@@ -49,57 +51,20 @@ export function LessonContent({
 	const router = useRouter();
 	const { sidebarOpen, toggleSidebar, toggleMobileDrawer } = useLearnShell();
 
-	// Autoplay-next countdown state
-	const [showCountdown, setShowCountdown] = useState(false);
-	const [countdownValue, setCountdownValue] = useState(10);
-	const countdownCancelledRef = useRef(false);
-	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const { showCountdown, countdownValue, startCountdown, cancelCountdown } =
+		useAutoplayCountdown({
+			onNavigate: () => router.push(`/learn/${courseSlug}/${nextLessonId}`),
+		});
 
-	// Listen for video completion event from VidstackPlayer
-	useEffect(() => {
-		const handler = (e: Event) => {
-			const custom = e as CustomEvent;
-			if (custom.detail?.lessonId === lessonId) {
-				router.refresh();
-			}
-		};
-		window.addEventListener("lesson-completed", handler);
-		return () => window.removeEventListener("lesson-completed", handler);
-	}, [router, lessonId]);
+	useLessonCompletionEvent({
+		lessonId,
+		onCompleted: () => router.refresh(),
+	});
 
-	// Start countdown when video ends (if no quiz and next lesson exists)
 	const handleVideoEnded = useCallback(() => {
 		if (quizId || !nextLessonId) return;
-		if (countdownCancelledRef.current) return;
-		setShowCountdown(true);
-		setCountdownValue(10);
-
-		if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-		let remaining = 10;
-		countdownTimerRef.current = setInterval(() => {
-			remaining -= 1;
-			setCountdownValue(remaining);
-			if (remaining <= 0) {
-				if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-				router.push(`/learn/${courseSlug}/${nextLessonId}`);
-			}
-		}, 1000);
-	}, [quizId, nextLessonId, courseSlug, router]);
-
-	const cancelCountdown = useCallback(() => {
-		countdownCancelledRef.current = true;
-		setShowCountdown(false);
-		if (countdownTimerRef.current) {
-			clearInterval(countdownTimerRef.current);
-			countdownTimerRef.current = null;
-		}
-	}, []);
-
-	useEffect(() => {
-		return () => {
-			if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-		};
-	}, []);
+		startCountdown();
+	}, [quizId, nextLessonId, startCountdown]);
 
 	const handleToggleSidebar = useCallback(() => {
 		if (window.innerWidth < 1024) {
