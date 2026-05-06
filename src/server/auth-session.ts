@@ -1,9 +1,8 @@
 import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
 import { auth } from "./auth";
-import { db, schema } from "@/db/client";
+import { UserRepo } from "@/server/repos/user";
 import { ApiError } from "@/lib/api-error";
 
 export type Role = "admin" | "user";
@@ -45,12 +44,7 @@ export async function getSession(): Promise<SessionContext | null> {
 	// Fall back to the database so role updates (e.g. admin promotion)
 	// are reflected immediately without requiring re-login.
 	if (role === undefined || role === null) {
-		const [row] = await db
-			.select({ role: schema.user.role })
-			.from(schema.user)
-			.where(eq(schema.user.id, result.user.id))
-			.limit(1);
-		role = row?.role ?? undefined;
+		role = (await UserRepo.getRoleById(result.user.id)) ?? undefined;
 	}
 
 	return {

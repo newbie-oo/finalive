@@ -68,4 +68,13 @@ export const UserRepo = {
 			.limit(1);
 		return rows[0]?.name ?? null;
 	},
+
+	async getRoleById(userId: string): Promise<string | null> {
+		const rows = await db
+			.select({ role: user.role })
+			.from(user)
+			.where(eq(user.id, userId))
+			.limit(1);
+		return rows[0]?.role ?? null;
+	},
 };
