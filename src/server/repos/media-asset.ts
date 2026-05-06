@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
 
@@ -17,5 +17,38 @@ export const MediaAssetRepo = {
 
 	async delete(id: string): Promise<void> {
 		await db.delete(mediaAsset).where(eq(mediaAsset.id, id));
+	},
+
+	async findAssetByBunnyId(
+		bunnyId: string,
+	): Promise<
+		| { id: string; currentStatus: string; currentDuration: number | null }
+		| undefined
+	> {
+		const rows = await db
+			.select({
+				id: mediaAsset.id,
+				currentStatus: mediaAsset.status,
+				currentDuration: mediaAsset.durationSeconds,
+			})
+			.from(mediaAsset)
+			.where(
+				and(
+					eq(mediaAsset.storage, "bunny_stream"),
+					eq(mediaAsset.storageKey, bunnyId),
+				),
+			)
+			.limit(1);
+		return rows[0];
+	},
+
+	async updateAsset(
+		assetId: string,
+		updates: Partial<{
+			status: string;
+			durationSeconds: number | null;
+		}>,
+	): Promise<void> {
+		await db.update(mediaAsset).set(updates).where(eq(mediaAsset.id, assetId));
 	},
 };

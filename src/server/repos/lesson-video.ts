@@ -108,4 +108,14 @@ export const LessonVideoRepo = {
 			.set({ status: "encoding" })
 			.where(eq(mediaAsset.id, assetId));
 	},
+
+	async updateLessonDuration(
+		assetId: string,
+		durationSeconds: number,
+	): Promise<void> {
+		await db
+			.update(lesson)
+			.set({ durationSeconds, updatedAt: new Date() })
+			.where(eq(lesson.videoMediaId, assetId));
+	},
 };
