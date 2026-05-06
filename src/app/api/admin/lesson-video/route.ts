@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { eq, and, ne, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
@@ -18,19 +18,6 @@ import { logger } from "@/lib/logger";
 import { HttpBunnyStreamClient } from "@/server/services/bunny-stream";
 import { LessonVideoService } from "@/server/services/lesson-video";
 
-/**
- * Admin video upload — two-step flow so the browser uploads directly to Bunny.
- *
- * Step 1 (server): POST { action: "create", courseId, lessonId, fileName }
- *   → Server creates Bunny video + DB records, returns uploadUrl + apiKey.
- *
- * Step 2 (client): XHR PUT uploadUrl
- *   → Body = raw file bytes, header AccessKey = apiKey.
- *   → Bunny receives the file directly; server is not in the data path.
- *
- * Step 3 (client, on failure): POST { action: "cancel", courseId, lessonId, bunnyVideoId }
- *   → Server deletes the orphaned Bunny video and restores the previous lesson video.
- */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -100,6 +87,14 @@ function makeService() {
 	});
 }
 
+const bodySchema = z.object({
+	action: z.enum(["create", "cancel"]),
+	courseId: z.string().uuid(),
+	lessonId: z.string().uuid(),
+	fileName: z.string().optional(),
+	bunnyVideoId: z.string().optional(),
+});
+
 export async function POST(req: Request): Promise<Response> {
 	const ctx = await requireSession();
 	const role = normalizeRole(getUserRole(ctx.user));
@@ -108,22 +103,24 @@ export async function POST(req: Request): Promise<Response> {
 	try {
 		body = (await req.json()) as Record<string, unknown>;
 	} catch {
-		return NextResponse.json(
+		return Response.json(
 			{ code: "validation_failed", message: "invalid JSON" },
 			{ status: 400 },
 		);
 	}
 
-	const action = String(body.action ?? "");
-	const courseId = String(body.courseId ?? "");
-	const lessonId = String(body.lessonId ?? "");
-
-	if (!courseId || !lessonId) {
-		return NextResponse.json(
-			{ code: "validation_failed", message: "missing courseId/lessonId" },
+	const parsed = bodySchema.safeParse(body);
+	if (!parsed.success) {
+		return Response.json(
+			{
+				code: "validation_failed",
+				message: parsed.error.errors[0]?.message ?? "invalid body",
+			},
 			{ status: 400 },
 		);
 	}
+
+	const { action, courseId, lessonId } = parsed.data;
 
 	const [courseOwnerId, collaboratorRole] = await Promise.all([
 		getCourseOwnerId(courseId),
@@ -137,13 +134,13 @@ export async function POST(req: Request): Promise<Response> {
 			collaboratorRole,
 		})
 	) {
-		return NextResponse.json({ code: "forbidden" }, { status: 403 });
+		return Response.json({ code: "forbidden" }, { status: 403 });
 	}
 
 	const env = getEnv();
 	const apiKey = env.BUNNY_API_KEY;
 	if (!apiKey) {
-		return NextResponse.json(
+		return Response.json(
 			{ code: "bunny_not_configured", message: "Bunny credentials missing" },
 			{ status: 500 },
 		);
@@ -155,7 +152,7 @@ export async function POST(req: Request): Promise<Response> {
 		try {
 			const result = await service.createVideo({
 				lessonId,
-				fileName: String(body.fileName ?? "video.mp4"),
+				fileName: parsed.data.fileName ?? "video.mp4",
 				userId: ctx.user.id,
 			});
 			logger.info("lesson-video.created", {
@@ -164,7 +161,7 @@ export async function POST(req: Request): Promise<Response> {
 				assetId: result.assetId,
 				oldMediaId: result.oldMediaId,
 			});
-			return NextResponse.json({
+			return Response.json({
 				ok: true,
 				bunnyVideoId: result.bunnyVideoId,
 				uploadUrl: result.uploadUrl,
@@ -175,17 +172,14 @@ export async function POST(req: Request): Promise<Response> {
 			const message =
 				err instanceof Error ? err.message : "Bunny create failed";
 			logger.error("lesson-video.create_failed", err, { lessonId });
-			return NextResponse.json(
-				{ code: "bunny_error", message },
-				{ status: 502 },
-			);
+			return Response.json({ code: "bunny_error", message }, { status: 502 });
 		}
 	}
 
 	if (action === "cancel") {
-		const bunnyVideoId = String(body.bunnyVideoId ?? "");
+		const bunnyVideoId = parsed.data.bunnyVideoId;
 		if (!bunnyVideoId) {
-			return NextResponse.json(
+			return Response.json(
 				{ code: "validation_failed", message: "missing bunnyVideoId" },
 				{ status: 400 },
 			);
@@ -193,13 +187,13 @@ export async function POST(req: Request): Promise<Response> {
 
 		const result = await service.cancelVideo({ lessonId, bunnyVideoId });
 		logger.info("lesson-video.cancelled", { bunnyVideoId, lessonId });
-		return NextResponse.json({
+		return Response.json({
 			ok: true,
 			restoredMediaId: result.restoredMediaId,
 		});
 	}
 
-	return NextResponse.json(
+	return Response.json(
 		{ code: "validation_failed", message: "action must be create or cancel" },
 		{ status: 400 },
 	);
