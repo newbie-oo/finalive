@@ -1,7 +1,6 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { enrollment, adminGrant } from "@/db/schema/enrollment";
 import { course } from "@/db/schema/course";
 import { user } from "@/db/schema/auth";
 import {
@@ -11,6 +10,8 @@ import {
 } from "@/server/repos/course";
 import { updateAdminCourse } from "@/server/repos/admin-course";
 import { MediaAssetRepo } from "@/server/repos/media-asset";
+import { EnrollmentRepo } from "@/server/repos/enrollment";
+import { AdminGrantRepo } from "@/server/repos/admin-grant";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { R2ObjectStorage } from "@/server/services/storage";
 import { CoverImageService } from "@/server/services/cover-image";
@@ -57,54 +58,24 @@ export const container = {
 				});
 				return row ?? undefined;
 			},
-			findActiveEnrollment: isUserEnrolledInCourse,
+			findActiveEnrollment: EnrollmentRepo.hasActive,
 			createEnrollment: async (args) => {
-				await db.insert(enrollment).values({
-					userId: args.userId,
-					courseId: args.courseId,
-					source: args.source,
-					priceAtPurchase: args.priceAtPurchase,
-					status: "active",
-				});
+				await EnrollmentRepo.create({ ...args, status: "active" });
 			},
 		});
 	},
 
 	courseGrant(): CourseGrantService {
 		return new CourseGrantService({
-			hasActiveEnrollment: async (studentUserId, courseId) => {
-				const rows = await db
-					.select({ id: enrollment.id })
-					.from(enrollment)
-					.where(
-						and(
-							eq(enrollment.userId, studentUserId),
-							eq(enrollment.courseId, courseId),
-							eq(enrollment.status, "active"),
-						),
-					)
-					.limit(1);
-				return rows.length > 0;
-			},
-			createGrant: async (args) => {
-				const [row] = await db
-					.insert(adminGrant)
-					.values({
-						adminUserId: args.adminUserId,
-						studentUserId: args.studentUserId,
-						courseId: args.courseId,
-						reason: args.reason,
-						note: args.note,
-					})
-					.returning({ id: adminGrant.id });
-				return row!.id;
-			},
+			hasActiveEnrollment: EnrollmentRepo.hasActive,
+			createGrant: AdminGrantRepo.create,
 			createEnrollment: async (args) => {
-				await db.insert(enrollment).values({
+				await EnrollmentRepo.create({
 					userId: args.userId,
 					courseId: args.courseId,
 					source: "admin_grant",
 					sourceGrantId: args.grantId,
+					priceAtPurchase: "0",
 					status: "active",
 				});
 			},
