@@ -5,6 +5,7 @@ import { formatMonthlyRevenue } from "@/server/services/admin-dashboard-presente
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { listPendingSlips } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
+import { thaiDateString, thaiTimeString } from "@/lib/format-time";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import {
 	Calendar,
@@ -24,28 +25,6 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 const fmtCount = (n: number) => n.toLocaleString("th-TH");
-
-function thaiDateString(d: Date): string {
-	const months = [
-		"ม.ค.",
-		"ก.พ.",
-		"มี.ค.",
-		"เม.ย.",
-		"พ.ค.",
-		"มิ.ย.",
-		"ก.ค.",
-		"ส.ค.",
-		"ก.ย.",
-		"ต.ค.",
-		"พ.ย.",
-		"ธ.ค.",
-	];
-	return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
-}
-
-function thaiTimeString(d: Date): string {
-	return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-}
 
 interface KpiCardProps {
 	icon: React.ElementType;

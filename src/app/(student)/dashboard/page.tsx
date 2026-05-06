@@ -7,14 +7,16 @@ import {
 	Trophy,
 	ArrowRight,
 	CaretRight,
-	CheckCircle,
-	XCircle,
-	Play,
-	Certificate,
 } from "@phosphor-icons/react/dist/ssr";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
+import { formatActivityTime } from "@/lib/format-time";
+import { AchievementIcon } from "@/components/dashboard/achievement-icon";
+import {
+	getActivityIcon,
+	getActivityBadge,
+} from "@/components/dashboard/activity-icons";
 
 export const dynamic = "force-dynamic";
 
@@ -29,74 +31,6 @@ function formatDurationLabel(totalSeconds: number): string {
 	const hours = Math.floor(totalSeconds / 3600);
 	if (hours > 0) return `ชั่วโมง`;
 	return `นาที`;
-}
-
-function timeAgo(date: Date): string {
-	const now = new Date();
-	const diff = now.getTime() - date.getTime();
-	const minutes = Math.floor(diff / 60000);
-	const hours = Math.floor(minutes / 60);
-	const days = Math.floor(hours / 24);
-	if (minutes < 1) return "เมื่อสักครู่";
-	if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
-	if (hours < 24) return `${hours} ชม. ที่แล้ว`;
-	if (days < 7) return `${days} วันที่แล้ว`;
-	return date.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
-}
-
-function getActivityIcon(type: string) {
-	switch (type) {
-		case "lesson_complete":
-			return (
-				<CheckCircle size={18} weight="fill" className="text-(--primary)" />
-			);
-		case "quiz_pass":
-			return (
-				<CheckCircle size={18} weight="fill" className="text-(--success)" />
-			);
-		case "quiz_fail":
-			return (
-				<XCircle size={18} weight="fill" className="text-(--destructive)" />
-			);
-		case "course_complete":
-			return (
-				<Certificate size={18} weight="fill" className="text-(--accent)" />
-			);
-		default:
-			return <Play size={18} weight="fill" className="text-(--primary)" />;
-	}
-}
-
-function getActivityBadge(type: string): string | null {
-	switch (type) {
-		case "lesson_complete":
-			return "จบบทเรียน";
-		case "quiz_pass":
-			return "สอบผ่าน";
-		case "quiz_fail":
-			return "สอบไม่ผ่าน";
-		case "course_complete":
-			return "เรียนจบ";
-		default:
-			return null;
-	}
-}
-
-function AchievementIcon({ icon }: { icon: string }) {
-	switch (icon) {
-		case "trophy":
-			return <Trophy size={22} weight="bold" />;
-		case "flame":
-			return <Flame size={22} weight="bold" />;
-		case "books":
-			return <Books size={22} weight="bold" />;
-		case "check-circle":
-			return <CheckCircle size={22} weight="bold" />;
-		case "certificate":
-			return <Certificate size={22} weight="bold" />;
-		default:
-			return <Trophy size={22} weight="bold" />;
-	}
 }
 
 export default async function DashboardPage() {
@@ -427,7 +361,7 @@ export default async function DashboardPage() {
 									</span>
 								)}
 								<span className="shrink-0 text-uism text-(--foreground-muted)">
-									{timeAgo(a.at)}
+									{formatActivityTime(a.at)}
 								</span>
 							</div>
 						))}

@@ -52,3 +52,13 @@ export function timeAgo(date: Date): string {
 	if (diffMonth < 12) return `${diffMonth} เดือนที่แล้ว`;
 	return `${Math.floor(diffMonth / 12)} ปีที่แล้ว`;
 }
+
+/** "6 พ.ค. 2568" */
+export function thaiDateString(d: Date): string {
+	return `${d.getDate()} ${MONTH_LABELS[d.getMonth()]} ${d.getFullYear() + 543}`;
+}
+
+/** "14:30" */
+export function thaiTimeString(d: Date): string {
+	return d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+}
