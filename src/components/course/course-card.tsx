@@ -163,16 +163,19 @@ export function CourseListItemSkeleton() {
 
 export function CourseCardSkeleton() {
 	return (
-		<div className="flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface)">
+		<div className="flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm)">
 			<div
 				className="aspect-video w-full animate-pulse bg-(--surface-muted)"
 				aria-hidden
 			/>
-			<div className="flex flex-col gap-3 p-5">
+			<div className="flex flex-1 flex-col gap-2 p-5">
 				<div className="h-5 w-3/4 animate-pulse rounded-md bg-(--surface-muted)" />
 				<div className="h-4 w-full animate-pulse rounded-md bg-(--surface-muted)" />
 				<div className="h-4 w-2/3 animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="mt-2 h-5 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="mt-auto flex items-center justify-between pt-2">
+					<div className="h-5 w-16 animate-pulse rounded-md bg-(--surface-muted)" />
+					<div className="h-4 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
+				</div>
 			</div>
 		</div>
 	);
