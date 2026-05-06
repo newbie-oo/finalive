@@ -9,11 +9,13 @@ import {
 	updateAdminModule,
 	deleteAdminModule,
 	deleteAdminLesson,
-	reorderAdminModules,
-	reorderAdminLessons,
 	moduleExistsInCourse,
 	lessonExistsInCourse,
 } from "@/server/repos/admin-course";
+import {
+	reorderAdminModules,
+	reorderAdminLessons,
+} from "@/server/repos/reorder";
 import { getCourseCurriculum } from "@/server/repos/course";
 import { createCurriculumAdminService } from "@/server/services/curriculum-admin";
 import {
