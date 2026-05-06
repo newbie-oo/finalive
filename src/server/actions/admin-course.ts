@@ -6,12 +6,12 @@ import {
 	updateAdminCourse,
 } from "@/server/repos/admin-course";
 import {
-	requireAdminSession,
-	requireCourseAccess,
+	adminAction,
+	adminCourseAction,
+	formDataParser,
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 import { container } from "@/server/container";
-import { parseFormData } from "@/lib/form-data";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -32,30 +32,23 @@ const createSchema = z.object({
 	isFree: z.coerce.boolean(),
 });
 
-export async function createCourseAction(formData: FormData) {
-	const auth = await requireAdminSession();
-	if (!auth.ok) return { ok: false, error: auth.error } as const;
-	if (auth.session.user.role !== "admin") {
-		return { ok: false, error: "forbidden" as const };
-	}
-
-	const parsed = parseFormData(formData, createSchema);
-	if (!parsed.ok) return { ok: false, error: parsed.error };
-
-	const courseId = await createAdminCourse({
-		slug: parsed.data.slug,
-		title: parsed.data.title,
-		summary: parsed.data.summary,
-		descriptionMd: parsed.data.description || undefined,
-		coverMediaId: parsed.data.coverMediaId || undefined,
-		isFree: parsed.data.isFree,
-		price: parsed.data.price ?? "0.00",
-		ownerUserId: auth.session.user.id,
-	});
-
-	revalidateCourseAdminPaths(courseId);
-	return { ok: true, courseId };
-}
+export const createCourseAction = adminAction(
+	formDataParser(createSchema),
+	async ({ session, input }) => {
+		const courseId = await createAdminCourse({
+			slug: input.slug,
+			title: input.title,
+			summary: input.summary,
+			descriptionMd: input.description || undefined,
+			coverMediaId: input.coverMediaId || undefined,
+			isFree: input.isFree,
+			price: input.price ?? "0.00",
+			ownerUserId: session.user.id,
+		});
+		revalidateCourseAdminPaths(courseId);
+		return { courseId };
+	},
+);
 
 const updateSchema = z.object({
 	courseId: z.string().uuid(),
@@ -75,54 +68,46 @@ const updateSchema = z.object({
 	status: z.enum(["draft", "published", "archived"]).optional(),
 });
 
-export async function updateCourseAction(formData: FormData) {
-	const auth = await requireAdminSession();
-	if (!auth.ok) return { ok: false, error: auth.error } as const;
+export const updateCourseAction = adminCourseAction(
+	formDataParser(updateSchema),
+	(input) => input.courseId,
+	async ({ course, input }) => {
+		const { courseId: _, ...updates } = input;
+		await updateAdminCourse(course.id, {
+			...(updates.slug !== undefined && { slug: updates.slug }),
+			...(updates.title !== undefined && { title: updates.title }),
+			...(updates.summary !== undefined && { summary: updates.summary }),
+			...(updates.price !== undefined && { price: updates.price }),
+			...(updates.isFree !== undefined && { isFree: updates.isFree }),
+			...(updates.status !== undefined && { status: updates.status }),
+		});
 
-	const courseId = formData.get("courseId") as string;
-	const access = await requireCourseAccess(auth.session, courseId);
-	if (!access.ok) return { ok: false, error: access.error } as const;
+		if (updates.slug && updates.slug !== course.slug) {
+			revalidateCourseAdminPaths(course.id, course.slug);
+			revalidateCourseAdminPaths(course.id, updates.slug);
+		} else {
+			revalidateCourseAdminPaths(course.id, course.slug);
+		}
+		return {};
+	},
+);
 
-	const parsed = parseFormData(formData, updateSchema);
-	if (!parsed.ok) return { ok: false, error: parsed.error };
-
-	const { courseId: _, ...updates } = parsed.data;
-	await updateAdminCourse(courseId, {
-		...(updates.slug !== undefined && { slug: updates.slug }),
-		...(updates.title !== undefined && { title: updates.title }),
-		...(updates.summary !== undefined && { summary: updates.summary }),
-		...(updates.price !== undefined && { price: updates.price }),
-		...(updates.isFree !== undefined && { isFree: updates.isFree }),
-		...(updates.status !== undefined && { status: updates.status }),
-	});
-
-	// Revalidate old slug path if slug changed
-	if (updates.slug && updates.slug !== access.course.slug) {
-		revalidateCourseAdminPaths(courseId, access.course.slug);
-		revalidateCourseAdminPaths(courseId, updates.slug);
-	} else {
-		revalidateCourseAdminPaths(courseId, access.course.slug);
-	}
-	return { ok: true };
-}
-
-export async function updateCourseCoverAction(formData: FormData) {
-	const auth = await requireAdminSession();
-	if (!auth.ok) return { ok: false, error: auth.error } as const;
-
-	const courseId = formData.get("courseId") as string;
-	const mediaAssetId = formData.get("mediaAssetId") as string;
-
-	const access = await requireCourseAccess(auth.session, courseId);
-	if (!access.ok) return { ok: false, error: access.error } as const;
-
-	const service = container.coverImage();
-	await service.replaceCover({
-		courseId,
-		newMediaAssetId: mediaAssetId,
-		oldCoverMediaId: access.course.coverMediaId,
-	});
-
-	revalidateCourseAdminPaths(courseId, access.course.slug);
-	return { ok: true };
-}
+export const updateCourseCoverAction = adminCourseAction(
+	formDataParser(
+		z.object({
+			courseId: z.string().uuid(),
+			mediaAssetId: z.string().uuid(),
+		}),
+	),
+	(input) => input.courseId,
+	async ({ course, input }) => {
+		const service = container.coverImage();
+		await service.replaceCover({
+			courseId: course.id,
+			newMediaAssetId: input.mediaAssetId,
+			oldCoverMediaId: course.coverMediaId,
+		});
+		revalidateCourseAdminPaths(course.id, course.slug);
+		return {};
+	},
+);
