@@ -161,8 +161,16 @@ function handleApiError(e: unknown, rid: string): NextResponse {
  * Declarative API route wrapper that handles auth, validation, and error
  * formatting so handlers focus purely on business logic.
  *
+ * **Return value contract:**
+ * - Returning a plain object → wrapped in `NextResponse.json()` with standard
+ *   headers and request_id injection.
+ * - Returning `NextResponse` directly → passed through unchanged. This escape
+ *   hatch is intentional for routes that need custom response shapes
+ *   (redirects, raw binary, streaming). Use it sparingly — most routes should
+ *   return plain objects so cross-cutting concerns are handled uniformly.
+ *
  * Usage:
- *   export const POST = apiRoute({
+ *   const POST = apiRoute({
  *     auth: "required",
  *     body: z.object({ lessonId: z.string().uuid() }),
  *     handler: async ({ body, user }) => { … }
@@ -221,8 +229,11 @@ export function apiRoute<
  * Variant of apiRoute for handlers that parse their own body
  * (e.g. FormData, multipart uploads). Skips JSON body parsing.
  *
+ * **Return value contract:** same as `apiRoute` — plain objects are wrapped,
+ * `NextResponse` is passed through.
+ *
  * Usage:
- *   export const POST = apiRouteRaw({
+ *   const POST = apiRouteRaw({
  *     auth: "required",
  *     handler: async ({ req, user }) => {
  *       const formData = await req.formData();
