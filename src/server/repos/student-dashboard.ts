@@ -7,33 +7,13 @@ import { lessonProgress, quizAttempt } from "@/db/schema/progress";
 import { certificate } from "@/db/schema/certificate";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
-import { coverImageUrl } from "@/lib/media-url";
-import {
-	computeStreak,
-	buildHeatmap,
-	buildAchievements,
-} from "@/server/services/student-dashboard";
 
-export interface StudentDashboardData {
-	enrollments: StudentEnrollmentItem[];
-	totalWatchedSeconds: number;
-	weeklyWatchedSeconds: number;
-	certCount: number;
-	completedCourses: number;
-	streak: number;
-	heatmap: number[];
-	recentActivity: RecentActivityItem[];
-	achievements: AchievementItem[];
-}
-
-export interface StudentEnrollmentItem {
+export interface StudentEnrollmentItemRaw {
 	enrollmentId: string;
 	courseId: string;
 	courseSlug: string;
 	courseTitle: string;
 	coverStorageKey: string | null;
-	/** Pre-computed public CDN URL. Safe to pass to Client Components. */
-	coverImageUrl: string | null;
 	totalLessons: number;
 	doneLessons: number;
 	completedAt: Date | null;
@@ -51,16 +31,24 @@ export interface RecentActivityItem {
 	at: Date;
 }
 
-export interface AchievementItem {
-	icon: "trophy" | "flame" | "books" | "check-circle" | "certificate";
-	title: string;
-	desc: string;
-	color: string;
+export interface StudentDashboardRaw {
+	enrollments: StudentEnrollmentItemRaw[];
+	totalWatchedSeconds: number;
+	weeklyWatchedSeconds: number;
+	certCount: number;
+	completedCourses: number;
+	streakDates: string[];
+	heatmapDays: number;
+	heatStart: Date;
+	heatMapByDate: Map<string, number>;
+	recentActivity: RecentActivityItem[];
+	quizPassCount: number;
+	totalDoneLessons: number;
 }
 
-export async function getStudentDashboardData(
+export async function getStudentDashboardDataRaw(
 	userId: string,
-): Promise<StudentDashboardData> {
+): Promise<StudentDashboardRaw> {
 	// ── Enrollments with progress ──
 	const lessonCountByCourse = db
 		.select({
@@ -122,7 +110,7 @@ export async function getStudentDashboardData(
 
 	// ── Weekly watched seconds (this week Mon 00:00 UTC) ──
 	const now = new Date();
-	const dayOfWeek = now.getUTCDay(); // 0=Sun,1=Mon
+	const dayOfWeek = now.getUTCDay();
 	const monday = new Date(now);
 	monday.setUTCDate(now.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 	monday.setUTCHours(0, 0, 0, 0);
@@ -157,10 +145,7 @@ export async function getStudentDashboardData(
 		.where(eq(lessonProgress.userId, userId))
 		.orderBy(desc(sql`date`));
 
-	const streak = computeStreak(streakRows.map((r) => r.date));
-
 	// ── Heatmap: activity intensity per day for last 35 days ──
-	// Intensity = number of lessons with progress (capped at 4)
 	const heatmapDays = 35;
 	const heatStart = new Date(now);
 	heatStart.setDate(now.getDate() - heatmapDays + 1);
@@ -187,8 +172,6 @@ export async function getStudentDashboardData(
 	for (const r of heatRows) {
 		heatMapByDate.set(r.date, r.lessons);
 	}
-
-	const heatmap = buildHeatmap(heatmapDays, heatStart, heatMapByDate);
 
 	// ── Recent activity ──
 	const recentLessons = await db
@@ -271,19 +254,11 @@ export async function getStudentDashboardData(
 		.sort((a, b) => b.at.getTime() - a.at.getTime())
 		.slice(0, 10);
 
-	// ── Achievements ──
 	const totalDoneLessons = enrollments.reduce(
 		(sum, e) => sum + (e.doneLessons ?? 0),
 		0,
 	);
 	const quizPassCount = recentQuizzes.filter((q) => q.passed).length;
-
-	const achievements = buildAchievements(
-		certRows[0]?.count ?? 0,
-		streak,
-		totalDoneLessons,
-		quizPassCount,
-	);
 
 	return {
 		enrollments: enrollments.map((r) => ({
@@ -292,7 +267,6 @@ export async function getStudentDashboardData(
 			courseSlug: r.courseSlug,
 			courseTitle: r.courseTitle,
 			coverStorageKey: r.coverStorageKey ?? null,
-			coverImageUrl: coverImageUrl(r.coverStorageKey),
 			totalLessons: r.totalLessons ?? 0,
 			doneLessons: r.doneLessons ?? 0,
 			completedAt: r.completedAt,
@@ -301,9 +275,12 @@ export async function getStudentDashboardData(
 		weeklyWatchedSeconds: weeklyRows[0]?.total ?? 0,
 		certCount: certRows[0]?.count ?? 0,
 		completedCourses: enrollments.filter((e) => e.completedAt).length,
-		streak,
-		heatmap,
+		streakDates: streakRows.map((r) => r.date),
+		heatmapDays,
+		heatStart,
+		heatMapByDate,
 		recentActivity: activity,
-		achievements,
+		quizPassCount,
+		totalDoneLessons,
 	};
 }

@@ -1,22 +1,31 @@
-import type {
-	StudentEnrollmentItem,
-	RecentActivityItem,
-	AchievementItem,
+import { coverImageUrl } from "@/lib/media-url";
+import {
+	type StudentDashboardRaw,
+	type StudentEnrollmentItemRaw,
+	getStudentDashboardDataRaw,
 } from "@/server/repos/student-dashboard";
 
-/** Raw data fetched by the repository — passed to the service for transformation. */
-export interface StudentDashboardRaw {
-	enrollments: StudentEnrollmentItem[];
-	totalWatchedSeconds: number;
-	weeklyWatchedSeconds: number;
-	certCount: number;
-	completedCourses: number;
-	streakDays: string[]; // ISO date strings from DB
-	heatmapDays: number; // e.g. 35
-	heatStart: Date;
-	heatMapLessonsByDate: Map<string, number>;
-	recentActivity: RecentActivityItem[];
-	quizPassCount: number;
+export interface StudentEnrollmentItem extends StudentEnrollmentItemRaw {
+	coverImageUrl: string | null;
+}
+
+export interface RecentActivityItem {
+	type:
+		| "lesson_complete"
+		| "quiz_pass"
+		| "quiz_fail"
+		| "course_complete"
+		| "enroll";
+	title: string;
+	meta?: string;
+	at: Date;
+}
+
+export interface AchievementItem {
+	icon: "trophy" | "flame" | "books" | "check-circle" | "certificate";
+	title: string;
+	desc: string;
+	color: string;
 }
 
 /** Compute streak from sorted distinct date strings. */
@@ -35,7 +44,6 @@ export function computeStreak(sortedDates: string[]): number {
 	const mostRecent = dates[0]!;
 	const oneDay = 86400000;
 
-	// Allow today or yesterday as the start of the streak
 	if (mostRecent < today.getTime() - oneDay) return 0;
 
 	let streak = 1;
@@ -61,7 +69,6 @@ export function buildHeatmap(
 		d.setDate(start.getDate() + i);
 		const key = d.toISOString().slice(0, 10);
 		const lessons = lessonsByDate.get(key) ?? 0;
-		// 0 = none, 1 = 1 lesson, 2 = 2-3, 3 = 4-5, 4 = 6+
 		if (lessons === 0) heatmap.push(0);
 		else if (lessons === 1) heatmap.push(1);
 		else if (lessons <= 3) heatmap.push(2);
@@ -111,7 +118,7 @@ export function buildAchievements(
 	return achievements;
 }
 
-/** Transform raw repo data into the full dashboard view model. */
+/** Build view model from raw repo data. */
 export function buildDashboardViewModel(raw: StudentDashboardRaw): {
 	enrollments: StudentEnrollmentItem[];
 	totalWatchedSeconds: number;
@@ -123,27 +130,27 @@ export function buildDashboardViewModel(raw: StudentDashboardRaw): {
 	recentActivity: RecentActivityItem[];
 	achievements: AchievementItem[];
 } {
-	const streak = computeStreak(raw.streakDays);
+	const enrollments = raw.enrollments.map((e) => ({
+		...e,
+		coverImageUrl: coverImageUrl(e.coverStorageKey),
+	}));
+
+	const streak = computeStreak(raw.streakDates);
 	const heatmap = buildHeatmap(
 		raw.heatmapDays,
 		raw.heatStart,
-		raw.heatMapLessonsByDate,
-	);
-
-	const totalDoneLessons = raw.enrollments.reduce(
-		(sum, e) => sum + (e.doneLessons ?? 0),
-		0,
+		raw.heatMapByDate,
 	);
 
 	const achievements = buildAchievements(
 		raw.certCount,
 		streak,
-		totalDoneLessons,
+		raw.totalDoneLessons,
 		raw.quizPassCount,
 	);
 
 	return {
-		enrollments: raw.enrollments,
+		enrollments,
 		totalWatchedSeconds: raw.totalWatchedSeconds,
 		weeklyWatchedSeconds: raw.weeklyWatchedSeconds,
 		certCount: raw.certCount,
@@ -153,4 +160,10 @@ export function buildDashboardViewModel(raw: StudentDashboardRaw): {
 		recentActivity: raw.recentActivity,
 		achievements,
 	};
+}
+
+/** Orchestrator: fetch raw data then build view model. */
+export async function getStudentDashboard(userId: string) {
+	const raw = await getStudentDashboardDataRaw(userId);
+	return buildDashboardViewModel(raw);
 }
