@@ -36,15 +36,22 @@ function relative(p) {
 const violations = [];
 
 // ── Rule 1: Services must not import db (except factories/adapters) ──
-const serviceDir = path.join(ROOT, "src/server/services");
-const serviceFiles = findFiles(serviceDir, ".ts").filter(
-	(f) =>
-		!f.includes(".test.ts") &&
-		!f.includes(".factory.ts") &&
-		!f.includes("-factory") &&
-		!f.includes("-adapter") &&
-		!path.basename(f).startsWith("audit.ts"),
-);
+const serviceDirs = [
+	path.join(ROOT, "src/server/services"),
+	path.join(ROOT, "src/server/payments"),
+	path.join(ROOT, "src/server/certificates"),
+];
+const serviceFiles = serviceDirs
+	.flatMap((dir) => (fs.existsSync(dir) ? findFiles(dir, ".ts") : []))
+	.filter(
+		(f) =>
+			!f.includes(".test.ts") &&
+			!f.includes(".factory.ts") &&
+			!f.includes("-factory") &&
+			!f.includes("-adapter") &&
+			!f.includes("-repo") &&
+			!path.basename(f).startsWith("audit.ts"),
+	);
 
 for (const file of serviceFiles) {
 	const content = fs.readFileSync(file, "utf-8");
