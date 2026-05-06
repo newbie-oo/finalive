@@ -5,6 +5,25 @@ import { courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
 
+/** Shared lesson columns for queries. */
+export const lessonSelectColumns = {
+	id: lesson.id,
+	moduleId: lesson.moduleId,
+	title: lesson.title,
+	bodyMd: lesson.bodyMd,
+	durationSeconds: lesson.durationSeconds,
+	isPreview: lesson.isPreview,
+	isFree: lesson.isFree,
+	sortOrder: lesson.sortOrder,
+	videoMediaId: lesson.videoMediaId,
+	bunnyVideoId: sql<
+		string | null
+	>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
+		"bunny_video_id",
+	),
+	quizId: quiz.id,
+};
+
 export interface CurriculumLesson {
 	id: string;
 	title: string;
@@ -57,23 +76,7 @@ export async function getCurriculumTree(
 	const moduleIds = modules.map((m) => m.id);
 
 	const lessonsRows = await db
-		.select({
-			id: lesson.id,
-			moduleId: lesson.moduleId,
-			title: lesson.title,
-			bodyMd: lesson.bodyMd,
-			durationSeconds: lesson.durationSeconds,
-			isPreview: lesson.isPreview,
-			isFree: lesson.isFree,
-			sortOrder: lesson.sortOrder,
-			videoMediaId: lesson.videoMediaId,
-			bunnyVideoId: sql<
-				string | null
-			>`case when ${mediaAsset.storage} = 'bunny_stream' then ${mediaAsset.storageKey} end`.as(
-				"bunny_video_id",
-			),
-			quizId: quiz.id,
-		})
+		.select(lessonSelectColumns)
 		.from(lesson)
 		.leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
 		.leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))

@@ -149,7 +149,7 @@ export function PublicShell({
 						<div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
 							<div>
 								<div className="mb-3 flex items-center gap-2.5">
-									<Logo size={22} variant="mark" className="text-(--primary)" />
+									<Logo size={22} variant="mark" />
 									<span className="text-[18px] font-semibold">Finalive</span>
 								</div>
 								<p className="max-w-xs text-body text-(--foreground-muted)">

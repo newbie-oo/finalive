@@ -1,16 +1,5 @@
 import "server-only";
-import {
-	and,
-	asc,
-	count,
-	desc,
-	eq,
-	ilike,
-	inArray,
-	isNull,
-	or,
-	sql,
-} from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -336,21 +325,7 @@ export async function getPreviewLesson(
 	};
 }
 
-export interface CurriculumLesson {
-	id: string;
-	title: string;
-	durationSeconds: number | null;
-	isPreview: boolean;
-	isFree: boolean;
-	sortOrder: number;
-}
-
-export interface CurriculumModule {
-	id: string;
-	title: string;
-	sortOrder: number;
-	lessons: CurriculumLesson[];
-}
+import { getCurriculumTree } from "./curriculum-repo";
 
 export interface GetCourseCurriculumOptions {
 	/**
@@ -360,66 +335,16 @@ export interface GetCourseCurriculumOptions {
 	includeEmptyModules?: boolean;
 }
 
+/** Re-export from curriculum-repo with public-type narrowing. */
 export async function getCourseCurriculum(
 	courseId: string,
 	options: GetCourseCurriculumOptions = {},
-): Promise<CurriculumModule[]> {
-	const { includeEmptyModules = true } = options;
-	const modules = await db
-		.select({
-			id: courseModule.id,
-			title: courseModule.title,
-			sortOrder: courseModule.sortOrder,
-		})
-		.from(courseModule)
-		.where(
-			and(eq(courseModule.courseId, courseId), isNull(courseModule.deletedAt)),
-		)
-		.orderBy(asc(courseModule.sortOrder));
-
-	if (modules.length === 0) return [];
-
-	const moduleIds = modules.map((m) => m.id);
-
-	const lessons = await db
-		.select({
-			id: lesson.id,
-			moduleId: lesson.moduleId,
-			title: lesson.title,
-			durationSeconds: lesson.durationSeconds,
-			isPreview: lesson.isPreview,
-			isFree: lesson.isFree,
-			sortOrder: lesson.sortOrder,
-		})
-		.from(lesson)
-		.where(and(isNull(lesson.deletedAt), inArray(lesson.moduleId, moduleIds)))
-		.orderBy(asc(lesson.sortOrder));
-
-	const byModule = new Map<string, CurriculumLesson[]>();
-	for (const l of lessons) {
-		const list = byModule.get(l.moduleId) ?? [];
-		list.push({
-			id: l.id,
-			title: l.title,
-			durationSeconds: l.durationSeconds,
-			isPreview: l.isPreview,
-			isFree: l.isFree,
-			sortOrder: l.sortOrder,
-		});
-		byModule.set(l.moduleId, list);
+): Promise<import("./curriculum-repo").CurriculumModule[]> {
+	const tree = await getCurriculumTree(courseId);
+	if (!options.includeEmptyModules) {
+		return tree.filter((m) => m.lessons.length > 0);
 	}
-
-	const result = modules.map((m) => ({
-		id: m.id,
-		title: m.title,
-		sortOrder: m.sortOrder,
-		lessons: byModule.get(m.id) ?? [],
-	}));
-
-	if (!includeEmptyModules) {
-		return result.filter((m) => m.lessons.length > 0);
-	}
-	return result;
+	return tree;
 }
 
 /**

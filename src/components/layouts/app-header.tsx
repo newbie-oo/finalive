@@ -42,7 +42,7 @@ export function AppHeader({
 					href="/"
 					className="flex items-center gap-2.5 text-(--foreground)"
 				>
-					<Logo size={24} variant="mark" className="text-(--primary)" />
+					<Logo size={24} variant="mark" />
 					<span className="text-[18px] font-semibold tracking-tight">
 						Finalive
 					</span>

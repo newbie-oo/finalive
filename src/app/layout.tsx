@@ -44,7 +44,8 @@ export const metadata: Metadata = {
 		description: "คอร์สออนไลน์สำหรับคนทำงานสายการเงิน นักวิเคราะห์ และผู้สนใจลงทุน",
 	},
 	icons: {
-		icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+		icon: [{ url: "/logo.png", type: "image/png", sizes: "625x625" }],
+		apple: [{ url: "/logo.png", type: "image/png", sizes: "625x625" }],
 	},
 };
 
