@@ -12,7 +12,6 @@ import {
 import {
 	adminAction,
 	jsonParser,
-	requireAdmin,
 	requireCourseAccess,
 } from "@/server/admin/admin-command";
 
@@ -47,40 +46,33 @@ type SaveQuizResult =
 			error: "unauthorized" | "invalid_input" | "not_found" | "forbidden";
 	  };
 
-export async function saveQuizAction(
-	input: z.infer<typeof saveQuizSchema>,
-): Promise<SaveQuizResult> {
-	const auth = await requireAdmin();
-	if (!auth.ok) return { ok: false, error: auth.error };
+export const saveQuizAction = adminAction(
+	jsonParser(saveQuizSchema),
+	async ({ session, input }): Promise<SaveQuizResult> => {
+		const quiz = await getAdminQuizById(input.quizId);
+		if (!quiz) {
+			return { ok: false, error: "not_found" };
+		}
 
-	const parsed = saveQuizSchema.safeParse(input);
-	if (!parsed.success) {
-		return { ok: false, error: "invalid_input" };
-	}
+		const access = await requireCourseAccess(session, quiz.courseId);
+		if (!access.ok) return { ok: false, error: access.error };
 
-	const quiz = await getAdminQuizById(parsed.data.quizId);
-	if (!quiz) {
-		return { ok: false, error: "not_found" };
-	}
+		await saveAdminQuiz(input.quizId, {
+			passScorePct: input.passScorePct ?? 60,
+			questions: input.questions,
+		});
 
-	const access = await requireCourseAccess(auth.session, quiz.courseId);
-	if (!access.ok) return { ok: false, error: access.error };
+		const fresh = await getAdminQuizById(input.quizId);
+		if (!fresh) {
+			return { ok: false, error: "not_found" };
+		}
 
-	await saveAdminQuiz(parsed.data.quizId, {
-		passScorePct: parsed.data.passScorePct,
-		questions: parsed.data.questions,
-	});
+		revalidatePath(`/admin/courses/${quiz.courseId}/quizzes/${quiz.id}`);
+		revalidatePath(`/admin/courses/${quiz.courseId}/curriculum`);
 
-	const fresh = await getAdminQuizById(parsed.data.quizId);
-	if (!fresh) {
-		return { ok: false, error: "not_found" };
-	}
-
-	revalidatePath(`/admin/courses/${quiz.courseId}/quizzes/${quiz.id}`);
-	revalidatePath(`/admin/courses/${quiz.courseId}/curriculum`);
-
-	return { ok: true, quiz: fresh };
-}
+		return { ok: true, quiz: fresh };
+	},
+);
 
 const createQuizSchema = z.object({
 	lessonId: z.string().uuid(),
