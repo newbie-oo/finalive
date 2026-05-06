@@ -23,7 +23,7 @@ export function certificateIssuerFactory(): CertificateIssuer {
 	return new CertificateIssuer({
 		renderer: new ReactPdfCertificateRenderer(),
 		storage: new R2ObjectStorage("public"),
-		notifier: new EmailCourseCompletionNotifier(),
+		notifier: new EmailCourseCompletionNotifier(db),
 
 		getCertificateByEnrollmentId,
 

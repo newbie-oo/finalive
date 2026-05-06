@@ -17,7 +17,7 @@ vi.mock("@/db/client", () => ({
 
 const mockWithIdempotency = vi.fn();
 
-vi.mock("@/server/services/idempotency", () => ({
+vi.mock("@/server/repos/idempotency", () => ({
 	withIdempotency: mockWithIdempotency,
 }));
 

@@ -6,6 +6,7 @@ import { pendingEnrollment } from "@/db/schema/payment";
 import { enrollment } from "@/db/schema/enrollment";
 import { lessonProgress } from "@/db/schema/progress";
 import { mediaAsset } from "@/db/schema/media";
+
 export interface AccountPendingItem {
 	pendingId: string;
 	status: string;
@@ -17,9 +18,6 @@ export interface AccountPendingItem {
 	coverStorageKey: string | null;
 }
 
-// Higher number = stickier row when the same course has multiple pendings.
-// "paid" beats everything else so a successful pay doesn't get overshadowed
-// by an earlier expired/awaiting attempt for the same course.
 const STATUS_PRIORITY: Record<string, number> = {
 	paid: 5,
 	slip_submitted: 4,
@@ -46,8 +44,6 @@ export interface AccountEnrollmentItem {
 export async function listAccountEnrollments(
 	userId: string,
 ): Promise<AccountEnrollmentItem[]> {
-	// Per-course lesson totals (only published / non-deleted lessons +
-	// modules) so the progress bar matches what the student actually sees.
 	const lessonCountByCourse = db
 		.select({
 			courseId: courseModule.courseId,
@@ -61,7 +57,6 @@ export async function listAccountEnrollments(
 		.groupBy(courseModule.courseId)
 		.as("lesson_count_by_course");
 
-	// Per-(user, course) completed lesson count.
 	const doneByCourse = db
 		.select({
 			courseId: courseModule.courseId,
@@ -138,9 +133,6 @@ export async function listAccountPendings(
 		.orderBy(desc(pendingEnrollment.createdAt))
 		.limit(50);
 
-	// Collapse to one row per course. Without this, the page showed the same
-	// course twice when a stale awaiting/expired pending sat alongside a
-	// later paid one — confusing for the student.
 	const byCourse = new Map<string, (typeof rows)[number]>();
 	for (const r of rows) {
 		const existing = byCourse.get(r.courseId);

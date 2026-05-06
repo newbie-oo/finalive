@@ -3,7 +3,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { z } from "zod";
 import { ApiError } from "@/lib/api-error";
 import { sniffSlipFile } from "@/lib/file-sniff";
-import { withIdempotency } from "@/server/services/idempotency";
+import { withIdempotency } from "@/server/repos/idempotency";
 import type { ObjectStorage } from "@/server/services/storage";
 import type { SlipNotifier } from "@/server/services/slip-notifier";
 import type { AuditLogger } from "@/server/services/audit";

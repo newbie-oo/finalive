@@ -1,31 +1,21 @@
+import type {
+	ScoringQuestion,
+	ScoringCorrectChoice,
+	QuestionResult,
+	ScoreResult,
+} from "@/lib/quiz-types";
+
+export type {
+	ScoringQuestion,
+	ScoringCorrectChoice,
+	QuestionResult,
+	ScoreResult,
+};
+
 /**
  * Pure quiz scoring — no DB access, no side effects.
  * All data is injected so tests can run in milliseconds with plain objects.
  */
-
-export interface ScoringQuestion {
-	id: string;
-}
-
-export interface ScoringCorrectChoice {
-	questionId: string;
-	choiceId: string;
-}
-
-export interface QuestionResult {
-	questionId: string;
-	selectedChoiceId: string;
-	correctChoiceId: string;
-	isCorrect: boolean;
-}
-
-export interface ScoreResult {
-	scorePct: number;
-	passed: boolean;
-	totalQuestions: number;
-	correctCount: number;
-	questionResults: QuestionResult[];
-}
 
 export class QuizScorer {
 	score(params: {

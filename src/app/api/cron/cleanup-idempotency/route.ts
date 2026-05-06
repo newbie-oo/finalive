@@ -1,5 +1,5 @@
 import { cronRoute } from "@/lib/cron-route";
-import { cleanupExpiredIdempotency } from "@/server/services/idempotency";
+import { cleanupExpiredIdempotency } from "@/server/repos/idempotency";
 
 export const POST = cronRoute({
 	handler: async () => {

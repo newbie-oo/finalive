@@ -144,10 +144,7 @@ export interface SubmitAttemptInput {
 	answers: Record<string, string>; // questionId -> choiceId
 }
 
-import type {
-	QuestionResult,
-	ScoreResult,
-} from "@/server/services/quiz-scorer";
+import type { QuestionResult, ScoreResult } from "@/lib/quiz-types";
 export type { QuestionResult };
 
 export interface SubmitAttemptResult {

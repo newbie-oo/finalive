@@ -1,11 +1,12 @@
 "use server";
 
 import { z } from "zod";
-import { eq, isNull, and } from "drizzle-orm";
-import { db } from "@/db/client";
-import { course, lesson, courseModule } from "@/db/schema/course";
-import { updateAdminCourse } from "@/server/repos/admin-course";
+import {
+	getCourseMetaForPublish,
+	getLessonsForPublish,
+} from "@/server/repos/publish";
 import { getCourseCurriculum } from "@/server/repos/course";
+import { updateAdminCourse } from "@/server/repos/admin-course";
 import { CoursePublishValidator } from "@/server/services/course-publish-validator";
 import {
 	adminCourseAction,
@@ -18,34 +19,9 @@ const publishSchema = z.object({
 
 function makePublishValidator() {
 	return new CoursePublishValidator({
-		getCourseMeta: async (courseId) => {
-			const rows = await db
-				.select({ title: course.title, summary: course.summary })
-				.from(course)
-				.where(and(eq(course.id, courseId), isNull(course.deletedAt)))
-				.limit(1);
-			return rows[0] ?? null;
-		},
+		getCourseMeta: getCourseMetaForPublish,
 		getCurriculum: getCourseCurriculum,
-		getLessons: async (courseId) => {
-			const rows = await db
-				.select({
-					id: lesson.id,
-					title: lesson.title,
-					bodyMd: lesson.bodyMd,
-					videoMediaId: lesson.videoMediaId,
-				})
-				.from(lesson)
-				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-				.where(
-					and(
-						eq(courseModule.courseId, courseId),
-						isNull(lesson.deletedAt),
-						isNull(courseModule.deletedAt),
-					),
-				);
-			return rows;
-		},
+		getLessons: getLessonsForPublish,
 	});
 }
 

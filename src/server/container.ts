@@ -109,7 +109,7 @@ export const container = {
 	slipReview(): SlipReviewService {
 		return new SlipReviewService({
 			repo: SlipRepo,
-			notifier: new EmailSlipNotifier(),
+			notifier: new EmailSlipNotifier(db),
 			auditLogger: makeDbAuditLogger(),
 		});
 	},
@@ -118,7 +118,7 @@ export const container = {
 		return new SlipUploadService({
 			repo: SlipRepo,
 			storage: new R2ObjectStorage("private"),
-			notifier: new EmailSlipNotifier(),
+			notifier: new EmailSlipNotifier(db),
 			auditLogger: makeDbAuditLogger(),
 		});
 	},
