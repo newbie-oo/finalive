@@ -3,32 +3,15 @@
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatTHB } from "@/lib/format";
 import type { SlipQueueStatus } from "@/server/repos/slip";
 import { SlipDetailPanel } from "./slip-detail-panel";
 import { REJECT_REASONS } from "./slip-reject-options";
-import { Eye } from "@phosphor-icons/react";
-
-interface SlipRow {
-	id: string;
-	status: string;
-	expectedAmount: string;
-	reportedAmount: string | null;
-	rejectionReason: string | null;
-	rejectionNote: string | null;
-	createdAt: string;
-	pendingId: string;
-	refCode: string;
-	studentUserId: string;
-	studentName: string | null;
-	studentEmail: string | null;
-	courseId: string;
-	courseSlug: string;
-	courseTitle: string;
-}
+import { SlipTable } from "./slip-table";
+import { SlipEmptyState } from "./slip-empty-state";
+import { SlipMobileDrawer } from "./slip-mobile-drawer";
 
 interface PageResponse {
-	data: SlipRow[];
+	data: import("./slip-table").SlipRow[];
 	pagination: {
 		next_cursor: string | null;
 		per_page: number;
@@ -76,15 +59,10 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 		[query.data],
 	);
 
-	// Only open the detail panel when the URL says so (?selected=...). The
-	// previous code auto-selected rows[0] on the submitted tab, which made
-	// the panel look stuck open on every fresh load and prevented closing
-	// by clicking elsewhere.
 	const activeId = initialSelectedId;
 	const active = rows.find((r) => r.id === activeId) ?? null;
 	const activeIndex = active ? rows.findIndex((r) => r.id === active.id) : -1;
 
-	// When the polled queue drops the selected slip, clear ?selected=.
 	useEffect(() => {
 		if (!initialSelectedId) return;
 		if (rows.length > 0 && !rows.some((r) => r.id === initialSelectedId)) {
@@ -164,83 +142,62 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 		}
 	}, [active, busy, refresh]);
 
-	// Bulk accept/reject UIs are wired in the API + state but the trigger
-	// controls were removed from the layout pending a follow-up redesign.
-	// Keep the callbacks behind underscore-prefixed names so the eslint
-	// unused-vars rule passes without losing the implementation.
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const _bulkAccept = useCallback(async () => {
+	async function runBulkAction(
+		endpoint: string,
+		body: Record<string, unknown>,
+		onSuccess?: () => void,
+	) {
 		if (effectiveSelected.size === 0 || busy) return;
 		setBusy(true);
 		setError(null);
 		try {
-			const res = await fetch("/api/admin/slips/bulk-accept", {
+			const res = await fetch(endpoint, {
 				method: "POST",
 				headers: { "content-type": "application/json" },
-				body: JSON.stringify({ slipIds: Array.from(effectiveSelected) }),
+				body: JSON.stringify(body),
 			});
-			const body = (await res.json().catch(() => ({}))) as {
+			const data = (await res.json().catch(() => ({}))) as {
 				succeeded?: string[];
 				failed?: Array<{ slipId: string; message: string }>;
 				message?: string;
 			};
 			if (!res.ok) {
-				setError(body.message ?? `bulk accept failed (${res.status})`);
+				setError(data.message ?? `bulk action failed (${res.status})`);
 				return;
 			}
-			if (body.failed && body.failed.length > 0) {
+			if (data.failed && data.failed.length > 0) {
 				setError(
-					`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`,
+					`สำเร็จ ${data.succeeded?.length ?? 0} · ล้มเหลว ${data.failed.length}`,
 				);
 			}
 			setSelected(new Set());
+			onSuccess?.();
 			await refresh();
 		} finally {
 			setBusy(false);
 		}
-	}, [effectiveSelected, busy, refresh]);
+	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const _bulkReject = useCallback(
-		async (reason: (typeof REJECT_REASONS)[number]) => {
-			if (effectiveSelected.size === 0 || busy) return;
-			setBusy(true);
-			setError(null);
-			try {
-				const res = await fetch("/api/admin/slips/bulk-reject", {
-					method: "POST",
-					headers: { "content-type": "application/json" },
-					body: JSON.stringify({
-						slipIds: Array.from(effectiveSelected),
-						reason,
-					}),
-				});
-				const body = (await res.json().catch(() => ({}))) as {
-					succeeded?: string[];
-					failed?: Array<{ slipId: string; message: string }>;
-					message?: string;
-				};
-				if (!res.ok) {
-					setError(body.message ?? `bulk reject failed (${res.status})`);
-					return;
-				}
-				if (body.failed && body.failed.length > 0) {
-					setError(
-						`สำเร็จ ${body.succeeded?.length ?? 0} · ล้มเหลว ${body.failed.length}`,
-					);
-				}
-				setSelected(new Set());
-				setBulkMode("none");
-				await refresh();
-			} finally {
-				setBusy(false);
-			}
-		},
+	const _bulkAccept = useCallback(
+		() =>
+			runBulkAction("/api/admin/slips/bulk-accept", {
+				slipIds: Array.from(effectiveSelected),
+			}),
 		[effectiveSelected, busy, refresh],
 	);
 
-	// Silence "value is never read" lint while keeping the implementations
-	// for the pending bulk-actions redesign.
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const _bulkReject = useCallback(
+		(reason: (typeof REJECT_REASONS)[number]) =>
+			runBulkAction(
+				"/api/admin/slips/bulk-reject",
+				{ slipIds: Array.from(effectiveSelected), reason },
+				() => setBulkMode("none"),
+			),
+		[effectiveSelected, busy, refresh],
+	);
+
 	void _bulkAccept;
 	void _bulkReject;
 
@@ -272,7 +229,6 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 		[active, busy, refresh],
 	);
 
-	// Hotkeys
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
 			const target = e.target as HTMLElement | null;
@@ -343,155 +299,16 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 			className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_540px] lg:items-start"
 			style={{ minHeight: "calc(100vh - 3.5rem - 3rem)" }}
 		>
-			{/* Table — overflow-x-auto so we never collapse columns to 1-char
-          widths on the narrow split-pane left column. The sticky split-pane
-          shrinks the table area noticeably; without min-width the fixed
-          layout was squishing student name + course title to "Q..." / "D...". */}
-			<div className="rounded-[14px] border border-(--border) bg-(--surface) overflow-x-auto min-w-0">
-				<table
-					className="w-full border-collapse min-w-[520px]"
-					style={{ tableLayout: "fixed" }}
-				>
-					<thead>
-						<tr className="border-b border-(--border) bg-(--surface-muted)">
-							<th
-								className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
-								style={{ width: 140 }}
-							>
-								รหัส
-							</th>
-							<th
-								className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
-								style={{ minWidth: 150 }}
-							>
-								ผู้เรียน
-							</th>
-							<th
-								className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
-								style={{ minWidth: 140 }}
-							>
-								คอร์ส
-							</th>
-							<th
-								className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
-								style={{ width: 110 }}
-							>
-								จำนวน
-							</th>
-							<th
-								className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-(--foreground-muted)"
-								style={{ width: 100 }}
-							>
-								เวลา
-							</th>
-							<th className="px-3 py-2.5" style={{ width: 80 }} />
-						</tr>
-					</thead>
-					<tbody>
-						{query.isLoading && rows.length === 0 ? (
-							<tr>
-								<td
-									colSpan={6}
-									className="p-4 text-caption text-(--foreground-muted)"
-								>
-									กำลังโหลด…
-								</td>
-							</tr>
-						) : rows.length === 0 ? (
-							<tr>
-								<td
-									colSpan={6}
-									className="p-4 text-caption text-(--foreground-muted)"
-								>
-									— ไม่มีสลิปในคิวนี้ —
-								</td>
-							</tr>
-						) : (
-							rows.map((slip) => {
-								const isActive = slip.id === activeId;
-								return (
-									<tr
-										key={slip.id}
-										className="cursor-pointer border-b border-(--border) transition-colors"
-										style={{
-											background: isActive
-												? "color-mix(in srgb, var(--primary) 6%, transparent)"
-												: "transparent",
-										}}
-										onClick={() => select(slip.id)}
-									>
-										<td className="px-3 py-2.5">
-											<span className="mono text-[12px] text-(--foreground-muted)">
-												{slip.refCode}
-											</span>
-										</td>
-										<td className="px-3 py-2.5">
-											<div className="flex items-center gap-2.5">
-												<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[11px] font-semibold text-white">
-													{(slip.studentName || "?").trim().charAt(0)}
-												</span>
-												<div className="min-w-0">
-													<div className="truncate text-ui font-medium text-(--foreground)">
-														{slip.studentName ||
-															slip.studentEmail ||
-															slip.refCode}
-													</div>
-													{slip.studentEmail && (
-														<div className="truncate text-caption text-(--foreground-muted)">
-															{slip.studentEmail}
-														</div>
-													)}
-												</div>
-											</div>
-										</td>
-										<td className="px-3 py-2.5">
-											<div className="truncate text-ui text-(--foreground)">
-												{slip.courseTitle}
-											</div>
-										</td>
-										<td className="px-3 py-2.5">
-											<span className="num text-[13px] font-semibold">
-												{formatTHB(slip.expectedAmount)}
-											</span>
-										</td>
-										<td className="px-3 py-2.5">
-											<span className="text-caption text-(--foreground-muted)">
-												{new Date(slip.createdAt).toLocaleDateString("th-TH")}
-											</span>
-										</td>
-										<td className="px-3 py-2.5 text-right">
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													select(slip.id);
-												}}
-												className="inline-flex h-8 items-center gap-1.5 rounded-[8px] px-2.5 text-uism text-(--foreground) transition-colors hover:bg-(--surface-muted)"
-											>
-												<Eye size={14} /> ดู
-											</button>
-										</td>
-									</tr>
-								);
-							})
-						)}
-					</tbody>
-				</table>
-				{query.hasNextPage ? (
-					<button
-						type="button"
-						onClick={() => query.fetchNextPage()}
-						disabled={query.isFetchingNextPage}
-						className="w-full border-t border-(--border) px-3 py-2.5 text-sm text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) disabled:opacity-50"
-					>
-						{query.isFetchingNextPage ? "กำลังโหลด…" : "โหลดเพิ่ม"}
-					</button>
-				) : null}
-			</div>
+			<SlipTable
+				rows={rows}
+				activeId={activeId}
+				isLoading={query.isLoading}
+				hasNextPage={query.hasNextPage}
+				isFetchingNextPage={query.isFetchingNextPage}
+				onSelect={select}
+				onFetchNextPage={() => query.fetchNextPage()}
+			/>
 
-			{/* Slip Detail — desktop split-pane (always rendered as sibling, with
-          empty state when no selection); mobile uses a fullscreen overlay
-          dialog so the table doesn't shrink to nothing on small screens. */}
 			<aside className="hidden min-w-0 lg:block lg:sticky lg:top-20">
 				{active ? (
 					<div className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[14px] border border-(--border) bg-(--surface) shadow-sm">
@@ -511,58 +328,24 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 						/>
 					</div>
 				) : (
-					<div className="flex h-full min-h-[480px] flex-col items-center justify-center gap-2 rounded-[14px] border border-dashed border-(--border) bg-(--surface) p-10 text-center">
-						<p className="text-ui font-medium text-(--foreground)">
-							เลือกสลิปจากรายการเพื่อดูรายละเอียด
-						</p>
-						<p className="text-uism text-(--foreground-muted)">
-							คีย์ลัด: <span className="mono">j/k</span> เลื่อน ·{" "}
-							<span className="mono">a</span> อนุมัติ ·{" "}
-							<span className="mono">r</span> ปฏิเสธ ·{" "}
-							<span className="mono">Esc</span> ปิด
-						</p>
-					</div>
+					<SlipEmptyState />
 				)}
 			</aside>
 
-			{/* Mobile fallback: render as a fullscreen overlay sheet so the table
-          can still hand off to the detail view on small screens. Reuses the
-          same controls + state as desktop. */}
 			{active && (
-				<div
-					// z-[60] so the mobile dialog sits above the public shell's
-					// sticky header (z-50) — otherwise the close button at the top
-					// of the sheet was hidden under the brand bar on small screens.
-					className="fixed inset-0 z-[60] flex justify-end lg:hidden"
-					style={{
-						background: "rgba(15,23,42,0.5)",
-						backdropFilter: "blur(4px)",
-					}}
-					onClick={(e) => {
-						if (e.target === e.currentTarget) clearSelection();
-					}}
-				>
-					<div
-						className="flex h-full w-full max-w-[540px] flex-col bg-(--surface) shadow-lg"
-						style={{ borderLeft: "1px solid var(--border)" }}
-						onClick={(e) => e.stopPropagation()}
-					>
-						<SlipDetailPanel
-							slip={active}
-							busy={busy}
-							error={error}
-							rejectOpen={rejectOpen}
-							onReject={reject}
-							onToggleReject={() => setRejectOpen((v) => !v)}
-							onAccept={accept}
-							onMovePrev={() => moveSelection(-1)}
-							onMoveNext={() => moveSelection(1)}
-							onClose={clearSelection}
-							rejectButtonRef={rejectButtonRef}
-							showKeyboardHints={false}
-						/>
-					</div>
-				</div>
+				<SlipMobileDrawer
+					slip={active}
+					busy={busy}
+					error={error}
+					rejectOpen={rejectOpen}
+					rejectButtonRef={rejectButtonRef}
+					onAccept={accept}
+					onReject={reject}
+					onToggleReject={() => setRejectOpen((v) => !v)}
+					onMovePrev={() => moveSelection(-1)}
+					onMoveNext={() => moveSelection(1)}
+					onClose={clearSelection}
+				/>
 			)}
 		</div>
 	);
