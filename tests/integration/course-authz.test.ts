@@ -4,156 +4,176 @@ import { randomUUID } from "node:crypto";
 import { db } from "@/db/client";
 import { course, courseCollaborator } from "@/db/schema/course";
 import { user as userTable } from "@/db/schema/auth";
-import { getCourseAccess, canEditCourse } from "@/server/services/course-authz";
+import {
+	getCourseAccessPure,
+	canEditCoursePure,
+} from "@/server/services/course-authz";
+import {
+	getCourseOwnerId,
+	getCollaboratorRole,
+} from "@/server/repos/course-authz";
 
 async function reset() {
-  await db.execute(sql`TRUNCATE course_collaborator, course, "user" CASCADE`);
+	await db.execute(sql`TRUNCATE course_collaborator, course, "user" CASCADE`);
 }
 
-describe("course-authz", () => {
-  beforeEach(reset);
+describe("course-authz pure", () => {
+	it("admin gets owner access", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "admin",
+			courseOwnerId: "u2",
+			collaboratorRole: null,
+		});
+		expect(access.role).toBe("owner");
+		expect(access.canEdit).toBe(true);
+		expect(access.canPublish).toBe(true);
+	});
 
-  it("admin gets owner access", async () => {
-    const access = await getCourseAccess("any-id", "admin", randomUUID());
-    expect(access.role).toBe("owner");
-    expect(access.canEdit).toBe(true);
-    expect(access.canPublish).toBe(true);
-  });
+	it("course owner gets owner access", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "user",
+			courseOwnerId: "u1",
+			collaboratorRole: null,
+		});
+		expect(access.role).toBe("owner");
+		expect(access.canEdit).toBe(true);
+	});
 
-  it("course owner gets owner access", async () => {
-    const ownerId = randomUUID();
-    await db.insert(userTable).values({
-      id: ownerId,
-      email: "owner@test",
-      name: "Owner",
-      role: "user",
-    });
+	it("instructor collaborator gets edit + publish access", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "user",
+			courseOwnerId: "u2",
+			collaboratorRole: "instructor",
+		});
+		expect(access.role).toBe("instructor");
+		expect(access.canEdit).toBe(true);
+		expect(access.canPublish).toBe(true);
+	});
 
-    const [c] = await db
-      .insert(course)
-      .values({
-        slug: "owner-course",
-        title: "Owner Course",
-        summary: "S",
-        ownerUserId: ownerId,
-        createdByUserId: ownerId,
-      })
-      .returning({ id: course.id });
+	it("editor collaborator gets edit but no publish", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "user",
+			courseOwnerId: "u2",
+			collaboratorRole: "editor",
+		});
+		expect(access.role).toBe("editor");
+		expect(access.canEdit).toBe(true);
+		expect(access.canPublish).toBe(false);
+	});
 
-    const access = await getCourseAccess(ownerId, "user", c!.id);
-    expect(access.role).toBe("owner");
-    expect(access.canEdit).toBe(true);
-  });
+	it("viewer collaborator gets no edit access", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "user",
+			courseOwnerId: "u2",
+			collaboratorRole: "viewer",
+		});
+		expect(access.role).toBe("viewer");
+		expect(access.canEdit).toBe(false);
+		expect(access.canPublish).toBe(false);
+	});
 
-  it("instructor collaborator gets edit + publish access", async () => {
-    const ownerId = randomUUID();
-    const instructorId = randomUUID();
-    await db.insert(userTable).values([
-      { id: ownerId, email: "owner@test", name: "Owner", role: "user" },
-      { id: instructorId, email: "inst@test", name: "Instructor", role: "user" },
-    ]);
+	it("unrelated user gets none access", () => {
+		const access = getCourseAccessPure({
+			userId: "u1",
+			userRole: "user",
+			courseOwnerId: "u2",
+			collaboratorRole: null,
+		});
+		expect(access.role).toBe("none");
+		expect(access.canEdit).toBe(false);
+	});
 
-    const [c] = await db
-      .insert(course)
-      .values({
-        slug: "collab-course",
-        title: "Collab Course",
-        summary: "S",
-        ownerUserId: ownerId,
-        createdByUserId: ownerId,
-      })
-      .returning({ id: course.id });
+	it("canEditCoursePure returns correct boolean", () => {
+		expect(
+			canEditCoursePure({
+				userId: "u1",
+				userRole: "user",
+				courseOwnerId: "u1",
+				collaboratorRole: null,
+			}),
+		).toBe(true);
+		expect(
+			canEditCoursePure({
+				userId: "u1",
+				userRole: "user",
+				courseOwnerId: "u2",
+				collaboratorRole: null,
+			}),
+		).toBe(false);
+		expect(
+			canEditCoursePure({
+				userId: "u1",
+				userRole: "user",
+				courseOwnerId: "u2",
+				collaboratorRole: "editor",
+			}),
+		).toBe(true);
+	});
+});
 
-    await db.insert(courseCollaborator).values({
-      courseId: c!.id,
-      userId: instructorId,
-      role: "instructor",
-      grantedByUserId: ownerId,
-    });
+describe("course-authz repo", () => {
+	beforeEach(reset);
 
-    const access = await getCourseAccess(instructorId, "user", c!.id);
-    expect(access.role).toBe("instructor");
-    expect(access.canEdit).toBe(true);
-    expect(access.canPublish).toBe(true);
-  });
+	it("getCourseOwnerId returns owner id", async () => {
+		const ownerId = randomUUID();
+		await db.insert(userTable).values({
+			id: ownerId,
+			email: "owner@test",
+			name: "Owner",
+			role: "user",
+		});
+		const [c] = await db
+			.insert(course)
+			.values({
+				slug: "owner-course",
+				title: "Owner Course",
+				summary: "S",
+				ownerUserId: ownerId,
+				createdByUserId: ownerId,
+			})
+			.returning({ id: course.id });
 
-  it("viewer collaborator gets no edit access", async () => {
-    const ownerId = randomUUID();
-    const viewerId = randomUUID();
-    await db.insert(userTable).values([
-      { id: ownerId, email: "owner@test", name: "Owner", role: "user" },
-      { id: viewerId, email: "viewer@test", name: "Viewer", role: "user" },
-    ]);
+		const result = await getCourseOwnerId(c!.id);
+		expect(result).toBe(ownerId);
+	});
 
-    const [c] = await db
-      .insert(course)
-      .values({
-        slug: "view-course",
-        title: "View Course",
-        summary: "S",
-        ownerUserId: ownerId,
-        createdByUserId: ownerId,
-      })
-      .returning({ id: course.id });
+	it("getCollaboratorRole returns role", async () => {
+		const ownerId = randomUUID();
+		const instructorId = randomUUID();
+		await db.insert(userTable).values([
+			{ id: ownerId, email: "owner@test", name: "Owner", role: "user" },
+			{
+				id: instructorId,
+				email: "inst@test",
+				name: "Instructor",
+				role: "user",
+			},
+		]);
 
-    await db.insert(courseCollaborator).values({
-      courseId: c!.id,
-      userId: viewerId,
-      role: "viewer",
-      grantedByUserId: ownerId,
-    });
+		const [c] = await db
+			.insert(course)
+			.values({
+				slug: "collab-course",
+				title: "Collab Course",
+				summary: "S",
+				ownerUserId: ownerId,
+				createdByUserId: ownerId,
+			})
+			.returning({ id: course.id });
 
-    const access = await getCourseAccess(viewerId, "user", c!.id);
-    expect(access.role).toBe("viewer");
-    expect(access.canEdit).toBe(false);
-    expect(access.canPublish).toBe(false);
-  });
+		await db.insert(courseCollaborator).values({
+			courseId: c!.id,
+			userId: instructorId,
+			role: "instructor",
+			grantedByUserId: ownerId,
+		});
 
-  it("unrelated user gets none access", async () => {
-    const ownerId = randomUUID();
-    const otherId = randomUUID();
-    await db.insert(userTable).values([
-      { id: ownerId, email: "owner@test", name: "Owner", role: "user" },
-      { id: otherId, email: "other@test", name: "Other", role: "user" },
-    ]);
-
-    const [c] = await db
-      .insert(course)
-      .values({
-        slug: "other-course",
-        title: "Other Course",
-        summary: "S",
-        ownerUserId: ownerId,
-        createdByUserId: ownerId,
-      })
-      .returning({ id: course.id });
-
-    const access = await getCourseAccess(otherId, "user", c!.id);
-    expect(access.role).toBe("none");
-    expect(access.canEdit).toBe(false);
-  });
-
-  it("canEditCourse returns correct boolean", async () => {
-    const ownerId = randomUUID();
-    await db.insert(userTable).values({
-      id: ownerId,
-      email: "owner@test",
-      name: "Owner",
-      role: "user",
-    });
-
-    const [c] = await db
-      .insert(course)
-      .values({
-        slug: "edit-course",
-        title: "Edit Course",
-        summary: "S",
-        ownerUserId: ownerId,
-        createdByUserId: ownerId,
-      })
-      .returning({ id: course.id });
-
-    expect(await canEditCourse(ownerId, "user", c!.id)).toBe(true);
-    expect(await canEditCourse(randomUUID(), "user", c!.id)).toBe(false);
-  });
+		const role = await getCollaboratorRole(c!.id, instructorId);
+		expect(role).toBe("instructor");
+	});
 });

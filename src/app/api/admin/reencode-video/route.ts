@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { requireRole } from "@/server/auth-session";
-import { canEditCourse } from "@/server/services/course-authz";
+import {
+	getCourseOwnerId,
+	getCollaboratorRole,
+} from "@/server/repos/course-authz";
+import { canEditCoursePure } from "@/server/services/course-authz";
 import { db } from "@/db/client";
 import { mediaAsset } from "@/db/schema/media";
 import { lesson, courseModule } from "@/db/schema/course";
@@ -23,76 +27,87 @@ export const dynamic = "force-dynamic";
 const BUNNY_API_BASE = "https://video.bunnycdn.com";
 
 export async function POST(req: Request) {
-  const { user } = await requireRole("admin");
-  let body: { lessonId?: string; courseId?: string } = {};
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ code: "validation_failed" }, { status: 400 });
-  }
+	const { user } = await requireRole("admin");
+	let body: { lessonId?: string; courseId?: string } = {};
+	try {
+		body = await req.json();
+	} catch {
+		return NextResponse.json({ code: "validation_failed" }, { status: 400 });
+	}
 
-  const { lessonId, courseId } = body;
-  if (!lessonId || !courseId) {
-    return NextResponse.json({ code: "validation_failed" }, { status: 400 });
-  }
+	const { lessonId, courseId } = body;
+	if (!lessonId || !courseId) {
+		return NextResponse.json({ code: "validation_failed" }, { status: 400 });
+	}
 
-  if (!(await canEditCourse(user.id, user.role, courseId))) {
-    return NextResponse.json({ code: "forbidden" }, { status: 403 });
-  }
+	const [courseOwnerId, collaboratorRole] = await Promise.all([
+		getCourseOwnerId(courseId),
+		getCollaboratorRole(courseId, user.id),
+	]);
+	if (
+		!canEditCoursePure({
+			userId: user.id,
+			userRole: user.role,
+			courseOwnerId,
+			collaboratorRole,
+		})
+	) {
+		return NextResponse.json({ code: "forbidden" }, { status: 403 });
+	}
 
-  // Lookup the Bunny video GUID via the lesson → mediaAsset relation, also
-  // confirming the lesson really belongs to this course.
-  const [row] = await db
-    .select({
-      assetId: mediaAsset.id,
-      storage: mediaAsset.storage,
-      bunnyId: mediaAsset.storageKey,
-    })
-    .from(lesson)
-    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-    .innerJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
-    .where(eq(lesson.id, lessonId))
-    .limit(1);
+	// Lookup the Bunny video GUID via the lesson → mediaAsset relation, also
+	// confirming the lesson really belongs to this course.
+	const [row] = await db
+		.select({
+			assetId: mediaAsset.id,
+			storage: mediaAsset.storage,
+			bunnyId: mediaAsset.storageKey,
+		})
+		.from(lesson)
+		.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+		.innerJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
+		.where(eq(lesson.id, lessonId))
+		.limit(1);
 
-  if (!row || row.storage !== "bunny_stream") {
-    return NextResponse.json({ code: "not_found" }, { status: 404 });
-  }
+	if (!row || row.storage !== "bunny_stream") {
+		return NextResponse.json({ code: "not_found" }, { status: 404 });
+	}
 
-  const env = getEnv();
-  const lib = env.BUNNY_LIBRARY_ID;
-  const apiKey = env.BUNNY_API_KEY;
-  if (!lib || !apiKey) {
-    return NextResponse.json({ code: "bunny_not_configured" }, { status: 500 });
-  }
+	const env = getEnv();
+	const lib = env.BUNNY_LIBRARY_ID;
+	const apiKey = env.BUNNY_API_KEY;
+	if (!lib || !apiKey) {
+		return NextResponse.json({ code: "bunny_not_configured" }, { status: 500 });
+	}
 
-  const res = await fetch(
-    `${BUNNY_API_BASE}/library/${lib}/videos/${row.bunnyId}/reencode`,
-    {
-      method: "POST",
-      headers: { AccessKey: apiKey, accept: "application/json" },
-    },
-  );
+	const res = await fetch(
+		`${BUNNY_API_BASE}/library/${lib}/videos/${row.bunnyId}/reencode`,
+		{
+			method: "POST",
+			headers: { AccessKey: apiKey, accept: "application/json" },
+		},
+	);
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    logger.error("reencode-video.bunny_failed", { status: res.status, text });
-    return NextResponse.json(
-      { code: "bunny_error", message: `Bunny ${res.status}` },
-      { status: 502 },
-    );
-  }
+	if (!res.ok) {
+		const text = await res.text().catch(() => "");
+		logger.error("reencode-video.bunny_failed", { status: res.status, text });
+		return NextResponse.json(
+			{ code: "bunny_error", message: `Bunny ${res.status}` },
+			{ status: 502 },
+		);
+	}
 
-  // Reset our local status so the polling UI shows the spinner again.
-  await db
-    .update(mediaAsset)
-    .set({ status: "encoding" })
-    .where(eq(mediaAsset.id, row.assetId));
+	// Reset our local status so the polling UI shows the spinner again.
+	await db
+		.update(mediaAsset)
+		.set({ status: "encoding" })
+		.where(eq(mediaAsset.id, row.assetId));
 
-  logger.info("reencode-video.requested", {
-    lessonId,
-    bunnyId: row.bunnyId,
-    requestedBy: user.id,
-  });
+	logger.info("reencode-video.requested", {
+		lessonId,
+		bunnyId: row.bunnyId,
+		requestedBy: user.id,
+	});
 
-  return NextResponse.json({ ok: true, bunnyVideoId: row.bunnyId });
+	return NextResponse.json({ ok: true, bunnyVideoId: row.bunnyId });
 }

@@ -3,7 +3,6 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { enrollment, adminGrant } from "@/db/schema/enrollment";
 import { course } from "@/db/schema/course";
-import { mediaAsset } from "@/db/schema/media";
 import { user } from "@/db/schema/auth";
 import {
 	isUserEnrolledInCourse,
@@ -11,6 +10,7 @@ import {
 	getPublishedCourseBySlug,
 } from "@/server/repos/course";
 import { updateAdminCourse } from "@/server/repos/admin-course";
+import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { R2ObjectStorage } from "@/server/services/storage";
 import { CoverImageService } from "@/server/services/cover-image";
@@ -41,17 +41,8 @@ export const container = {
 	coverImage(): CoverImageService {
 		return new CoverImageService({
 			storage: new R2ObjectStorage("public"),
-			getMediaAsset: async (mediaAssetId) => {
-				const rows = await db
-					.select({ id: mediaAsset.id, storageKey: mediaAsset.storageKey })
-					.from(mediaAsset)
-					.where(eq(mediaAsset.id, mediaAssetId))
-					.limit(1);
-				return rows[0] ?? null;
-			},
-			deleteMediaAsset: async (mediaAssetId) => {
-				await db.delete(mediaAsset).where(eq(mediaAsset.id, mediaAssetId));
-			},
+			getMediaAsset: MediaAssetRepo.getById,
+			deleteMediaAsset: MediaAssetRepo.delete,
 			updateCourseCover: async (courseId, mediaAssetId) => {
 				await updateAdminCourse(courseId, { coverMediaId: mediaAssetId });
 			},
