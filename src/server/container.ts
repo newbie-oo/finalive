@@ -1,17 +1,15 @@
 import "server-only";
-import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { course } from "@/db/schema/course";
-import { user } from "@/db/schema/auth";
 import {
 	isUserEnrolledInCourse,
 	getCourseIdByLessonId,
 	getPublishedCourseBySlug,
+	getCourseInfo,
 } from "@/server/repos/course";
 import { updateAdminCourse } from "@/server/repos/admin-course";
 import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { EnrollmentRepo } from "@/server/repos/enrollment";
 import { AdminGrantRepo } from "@/server/repos/admin-grant";
+import { UserRepo } from "@/server/repos/user";
 import { checkAndMarkCourseComplete } from "@/server/repos/learn-completion";
 import { R2ObjectStorage } from "@/server/services/storage";
 import { CoverImageService } from "@/server/services/cover-image";
@@ -20,7 +18,7 @@ import { CourseGrantService } from "@/server/services/course-grant";
 import { SlipReviewService } from "@/server/payments/slip-review-service";
 import { SlipUploadService } from "@/server/payments/slip-upload-service";
 import { SlipRepo } from "@/server/payments/slip-repo";
-import { EmailSlipNotifier } from "@/server/services/slip-notifier";
+import { makeEmailSlipNotifier } from "@/server/services/slip-notifier-factory";
 import { makeDbAuditLogger } from "@/server/services/audit";
 import { sendGrantCourseEmail } from "@/server/services/mailer";
 import { getEnv } from "@/lib/env";
@@ -79,22 +77,8 @@ export const container = {
 					status: "active",
 				});
 			},
-			getStudentContact: async (userId) => {
-				const rows = await db
-					.select({ email: user.email, name: user.name })
-					.from(user)
-					.where(eq(user.id, userId))
-					.limit(1);
-				return rows[0] ?? null;
-			},
-			getCourseInfo: async (courseId) => {
-				const rows = await db
-					.select({ title: course.title, slug: course.slug })
-					.from(course)
-					.where(eq(course.id, courseId))
-					.limit(1);
-				return rows[0] ?? null;
-			},
+			getStudentContact: UserRepo.getContact,
+			getCourseInfo,
 			sendNotification: async (n) => {
 				await sendGrantCourseEmail({
 					to: n.to,
@@ -109,7 +93,7 @@ export const container = {
 	slipReview(): SlipReviewService {
 		return new SlipReviewService({
 			repo: SlipRepo,
-			notifier: new EmailSlipNotifier(db),
+			notifier: makeEmailSlipNotifier(),
 			auditLogger: makeDbAuditLogger(),
 		});
 	},
@@ -118,7 +102,7 @@ export const container = {
 		return new SlipUploadService({
 			repo: SlipRepo,
 			storage: new R2ObjectStorage("private"),
-			notifier: new EmailSlipNotifier(db),
+			notifier: makeEmailSlipNotifier(),
 			auditLogger: makeDbAuditLogger(),
 		});
 	},

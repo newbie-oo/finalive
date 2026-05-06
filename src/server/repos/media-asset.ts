@@ -70,4 +70,14 @@ export const MediaAssetRepo = {
 			.returning({ id: mediaAsset.id });
 		return { id: row!.id };
 	},
+
+	async createRaw(
+		values: typeof mediaAsset.$inferInsert,
+	): Promise<{ id: string }> {
+		const [media] = await db
+			.insert(mediaAsset)
+			.values(values)
+			.returning({ id: mediaAsset.id });
+		return media!;
+	},
 };

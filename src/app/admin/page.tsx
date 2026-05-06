@@ -1,8 +1,6 @@
 import Link from "next/link";
-import {
-	getAdminDashboardCounts,
-	getMonthlyRevenueRaw,
-} from "@/server/repos/admin-dashboard";
+import { AdminStatsRepo } from "@/server/repos/admin-stats";
+import { RevenueRepo } from "@/server/repos/revenue";
 import { formatMonthlyRevenue } from "@/server/services/admin-dashboard-presenter";
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { listPendingSlips } from "@/server/repos/slip";
@@ -301,10 +299,10 @@ function RevenueChart({
 
 export default async function AdminDashboardPage() {
 	const [counts, courses, slipsRes, revenueData] = await Promise.all([
-		getAdminDashboardCounts(),
+		AdminStatsRepo.getCounts(),
 		listAdminCourses({ status: "published" }),
 		listPendingSlips({ status: "submitted", per_page: 5 }),
-		getMonthlyRevenueRaw().then(formatMonthlyRevenue),
+		RevenueRepo.getMonthlyRevenue().then(formatMonthlyRevenue),
 	]);
 	const topCourses = courses
 		.filter((c) => c.enrollmentCount > 0)

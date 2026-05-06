@@ -60,4 +60,31 @@ export const EnrollmentRepo = {
 			.where(eq(enrollment.userId, userId))
 			.orderBy(desc(enrollment.createdAt));
 	},
+
+	async getById(enrollmentId: string): Promise<{
+		id: string;
+		userId: string;
+		completedAt: Date | null;
+	} | null> {
+		const rows = await db
+			.select({
+				id: enrollment.id,
+				userId: enrollment.userId,
+				completedAt: enrollment.completedAt,
+			})
+			.from(enrollment)
+			.where(eq(enrollment.id, enrollmentId))
+			.limit(1);
+		return rows[0] ?? null;
+	},
+
+	async getCourseTitleById(enrollmentId: string): Promise<string | null> {
+		const rows = await db
+			.select({ title: course.title })
+			.from(enrollment)
+			.innerJoin(course, eq(enrollment.courseId, course.id))
+			.where(eq(enrollment.id, enrollmentId))
+			.limit(1);
+		return rows[0]?.title ?? null;
+	},
 };

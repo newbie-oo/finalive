@@ -1,9 +1,7 @@
 import "server-only";
-import {
-	type AdminDashboardCounts,
-	type MonthlyRevenueRaw,
-	type RawActivityRow,
-} from "@/server/repos/admin-dashboard";
+import { type AdminDashboardCounts } from "@/server/repos/admin-stats";
+import { type MonthlyRevenueRaw } from "@/server/repos/revenue";
+import { type RawActivityRow } from "@/server/repos/activity";
 import { formatActivityTime } from "@/lib/format-time";
 
 const MONTH_LABELS = [

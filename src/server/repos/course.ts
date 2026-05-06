@@ -360,3 +360,14 @@ export async function getCourseIdByLessonId(
 		.limit(1);
 	return row?.courseId ?? null;
 }
+
+export async function getCourseInfo(
+	courseId: string,
+): Promise<{ title: string; slug: string } | null> {
+	const rows = await db
+		.select({ title: course.title, slug: course.slug })
+		.from(course)
+		.where(eq(course.id, courseId))
+		.limit(1);
+	return rows[0] ?? null;
+}

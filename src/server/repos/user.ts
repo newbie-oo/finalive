@@ -48,4 +48,24 @@ export const UserRepo = {
 			.limit(1);
 		return rows[0];
 	},
+
+	async getContact(
+		userId: string,
+	): Promise<{ email: string; name: string | null } | null> {
+		const rows = await db
+			.select({ email: user.email, name: user.name })
+			.from(user)
+			.where(eq(user.id, userId))
+			.limit(1);
+		return rows[0] ?? null;
+	},
+
+	async getNameById(userId: string): Promise<string | null> {
+		const rows = await db
+			.select({ name: user.name })
+			.from(user)
+			.where(eq(user.id, userId))
+			.limit(1);
+		return rows[0]?.name ?? null;
+	},
 };
