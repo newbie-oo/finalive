@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -15,6 +15,8 @@ import {
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import { cn } from "@/lib/utils";
 import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
+import { useLessonAccess } from "@/hooks/use-lesson-access";
+import { useNotePreview } from "@/hooks/use-note-preview";
 
 interface SidebarLesson {
 	id: string;
@@ -137,20 +139,7 @@ function StatusIcon({
 }
 
 function SidebarNotesCard({ lessonId }: { lessonId: string }) {
-	const [preview] = useState(() => {
-		if (typeof window === "undefined") return "";
-		try {
-			const keys = Object.keys(localStorage);
-			const noteKey = keys.find(
-				(k) => k.startsWith(`finalive-notes-`) && k.endsWith(`-${lessonId}`),
-			);
-			if (!noteKey) return "";
-			const val = localStorage.getItem(noteKey) || "";
-			return val.length > 80 ? val.slice(0, 80) + "…" : val;
-		} catch {
-			return "";
-		}
-	});
+	const preview = useNotePreview(lessonId);
 
 	if (!preview) return null;
 
@@ -185,6 +174,12 @@ export function CurriculumSidebar({
 	const { progressMap, doneCount, lessonCount, progressPct, remainingSeconds } =
 		useCurriculumProgress(modules, progress, totalLessons);
 
+	const { lessonLocked, moduleLocked } = useLessonAccess({
+		modules,
+		isEnrolled,
+		isAdmin,
+	});
+
 	return (
 		<nav className="flex h-full flex-col bg-(--surface)">
 			{/* Progress header */}
@@ -205,15 +200,11 @@ export function CurriculumSidebar({
 
 			{/* Lesson list */}
 			<div className="flex-1 overflow-y-auto p-3">
-				{modules.map((mod, modIdx) => {
+				{modules.map((mod) => {
 					const modCompleted = mod.lessons.filter(
 						(l) => progressMap.get(l.id) === "completed",
 					).length;
-					const modLocked =
-						!isAdmin &&
-						!isEnrolled &&
-						modIdx > 0 &&
-						!mod.lessons.some((l) => l.isPreview || l.isFree);
+					const modLocked = moduleLocked.get(mod.id) ?? false;
 
 					return (
 						<div key={mod.id} className="mb-4">
@@ -240,8 +231,7 @@ export function CurriculumSidebar({
 								<ul className="flex flex-col gap-0.5">
 									{mod.lessons.map((les) => {
 										const isActive = les.id === activeLessonId;
-										const locked =
-											!isAdmin && !isEnrolled && !les.isPreview && !les.isFree;
+										const locked = lessonLocked.get(les.id) ?? false;
 										const stat = progressMap.get(les.id) ?? "not_started";
 
 										const baseClass =
