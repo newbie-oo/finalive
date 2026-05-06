@@ -1,24 +1,19 @@
 import { coverImageUrl } from "@/lib/media-url";
 import {
-	type StudentDashboardRaw,
 	type StudentEnrollmentItemRaw,
-	getStudentDashboardDataRaw,
-} from "@/server/repos/student-dashboard";
+	StudentEnrollmentRepo,
+} from "@/server/repos/student-enrollment";
+import { WatchTimeRepo } from "@/server/repos/watch-time";
+import { countByUserId as countCertificatesByUserId } from "@/server/repos/certificate";
+import { StreakRepo } from "@/server/repos/streak";
+import { HeatmapRepo } from "@/server/repos/heatmap";
+import {
+	type RecentActivityItem,
+	StudentActivityRepo,
+} from "@/server/repos/student-activity";
 
 export interface StudentEnrollmentItem extends StudentEnrollmentItemRaw {
 	coverImageUrl: string | null;
-}
-
-export interface RecentActivityItem {
-	type:
-		| "lesson_complete"
-		| "quiz_pass"
-		| "quiz_fail"
-		| "course_complete"
-		| "enroll";
-	title: string;
-	meta?: string;
-	at: Date;
 }
 
 export interface AchievementItem {
@@ -118,52 +113,64 @@ export function buildAchievements(
 	return achievements;
 }
 
-/** Build view model from raw repo data. */
-export function buildDashboardViewModel(raw: StudentDashboardRaw): {
-	enrollments: StudentEnrollmentItem[];
-	totalWatchedSeconds: number;
-	weeklyWatchedSeconds: number;
-	certCount: number;
-	completedCourses: number;
-	streak: number;
-	heatmap: number[];
-	recentActivity: RecentActivityItem[];
-	achievements: AchievementItem[];
-} {
-	const enrollments = raw.enrollments.map((e) => ({
+/** Orchestrator: fetch raw data from focused repos then build view model. */
+export async function getStudentDashboard(userId: string) {
+	const [
+		enrollmentsRaw,
+		totalWatchedSeconds,
+		weeklyWatchedSeconds,
+		certCount,
+		streakDates,
+		heatMapByDate,
+		recentActivity,
+	] = await Promise.all([
+		StudentEnrollmentRepo.listWithProgress(userId),
+		WatchTimeRepo.getTotal(userId),
+		WatchTimeRepo.getWeekly(userId),
+		countCertificatesByUserId(userId),
+		StreakRepo.getDates(userId),
+		HeatmapRepo.getData(userId, 35),
+		StudentActivityRepo.getRecent(userId),
+	]);
+
+	const enrollments = enrollmentsRaw.map((e) => ({
 		...e,
 		coverImageUrl: coverImageUrl(e.coverStorageKey),
 	}));
 
-	const streak = computeStreak(raw.streakDates);
-	const heatmap = buildHeatmap(
-		raw.heatmapDays,
-		raw.heatStart,
-		raw.heatMapByDate,
+	const completedCourses = enrollments.filter((e) => e.completedAt).length;
+	const totalDoneLessons = enrollments.reduce(
+		(sum, e) => sum + e.doneLessons,
+		0,
 	);
 
+	const streak = computeStreak(streakDates);
+
+	const heatStart = new Date();
+	heatStart.setDate(heatStart.getDate() - 35 + 1);
+	heatStart.setHours(0, 0, 0, 0);
+	const heatmap = buildHeatmap(35, heatStart, heatMapByDate);
+
+	const quizPassCount = recentActivity.filter(
+		(a) => a.type === "quiz_pass",
+	).length;
+
 	const achievements = buildAchievements(
-		raw.certCount,
+		certCount,
 		streak,
-		raw.totalDoneLessons,
-		raw.quizPassCount,
+		totalDoneLessons,
+		quizPassCount,
 	);
 
 	return {
 		enrollments,
-		totalWatchedSeconds: raw.totalWatchedSeconds,
-		weeklyWatchedSeconds: raw.weeklyWatchedSeconds,
-		certCount: raw.certCount,
-		completedCourses: raw.completedCourses,
+		totalWatchedSeconds,
+		weeklyWatchedSeconds,
+		certCount,
+		completedCourses,
 		streak,
 		heatmap,
-		recentActivity: raw.recentActivity,
+		recentActivity,
 		achievements,
 	};
-}
-
-/** Orchestrator: fetch raw data then build view model. */
-export async function getStudentDashboard(userId: string) {
-	const raw = await getStudentDashboardDataRaw(userId);
-	return buildDashboardViewModel(raw);
 }

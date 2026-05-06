@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { SquaresFour, List } from "@phosphor-icons/react";
 import type { OffsetResponse } from "@/lib/pagination";
-import type { PublicCourseSummary } from "@/server/repos/course";
 import {
 	CourseCard,
 	CourseCardSkeleton,
 	CourseListItem,
+	type CourseCardData,
 } from "@/components/course/course-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 
 interface CourseCatalogProps {
-	result: OffsetResponse<PublicCourseSummary>;
+	result: OffsetResponse<CourseCardData>;
 	searchParams: string;
 }
 

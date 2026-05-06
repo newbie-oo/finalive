@@ -3,17 +3,20 @@ import Link from "next/link";
 import { Users } from "@phosphor-icons/react/dist/ssr";
 import type { PublicCourseSummary } from "@/server/repos/course";
 import { formatTHB } from "@/lib/format";
-import { coverImageUrl } from "@/lib/media-url";
 import { StatusChip } from "@/components/ui/status-chip";
 
-export function CourseCard({ course }: { course: PublicCourseSummary }) {
+export interface CourseCardData extends PublicCourseSummary {
+	coverImageUrl: string | null;
+}
+
+export function CourseCard({ course }: { course: CourseCardData }) {
 	// Defensive: if a row slipped through with price=0 && isFree=false (the
 	// legacy bug fixed by migration), still render it as free in the catalog
 	// so students don't see "฿0.00" tags. The repos enforce the invariant on
 	// create/update, so this is just belt-and-braces.
 	const isFree = course.isFree || Number(course.price) === 0;
 	const price = isFree ? "ฟรี" : formatTHB(course.price);
-	const imageUrl = coverImageUrl(course.coverStorageKey);
+	const imageUrl = course.coverImageUrl;
 	return (
 		<Link
 			href={`/courses/${course.slug}`}
@@ -90,10 +93,10 @@ function CoverFallback({ title }: { title: string }) {
 	);
 }
 
-export function CourseListItem({ course }: { course: PublicCourseSummary }) {
+export function CourseListItem({ course }: { course: CourseCardData }) {
 	const isFree = course.isFree || Number(course.price) === 0;
 	const price = isFree ? "ฟรี" : formatTHB(course.price);
-	const imageUrl = coverImageUrl(course.coverStorageKey);
+	const imageUrl = course.coverImageUrl;
 	return (
 		<Link
 			href={`/courses/${course.slug}`}

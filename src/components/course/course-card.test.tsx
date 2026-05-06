@@ -1,17 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { CourseCard } from "./course-card";
-import type { PublicCourseSummary } from "@/server/repos/course";
+import type { CourseCardData } from "./course-card";
 
-function makeCourse(
-	overrides: Partial<PublicCourseSummary> = {},
-): PublicCourseSummary {
+function makeCourse(overrides: Partial<CourseCardData> = {}): CourseCardData {
 	return {
 		id: "c1",
 		slug: "test-course",
 		title: "Test Course",
 		summary: "A test course",
 		coverStorageKey: "abc123",
+		coverImageUrl: "https://cdn.example.com/covers/abc123-640.webp",
 		price: "990",
 		isFree: false,
 		status: "published",
@@ -46,7 +45,11 @@ describe("CourseCard", () => {
 	it("renders fallback cover when no coverStorageKey", () => {
 		render(
 			<CourseCard
-				course={makeCourse({ coverStorageKey: null, title: "React Mastery" })}
+				course={makeCourse({
+					coverStorageKey: null,
+					coverImageUrl: null,
+					title: "React Mastery",
+				})}
 			/>,
 		);
 		// Fallback shows the first letter of the title
