@@ -140,7 +140,6 @@ export function VidstackPlayer({
 				<DefaultVideoLayout icons={defaultLayoutIcons} />
 			</MediaPlayer>
 
-			{/* Completion overlay */}
 			{showCompleteOverlay && (
 				<div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded bg-black/80 backdrop-blur-sm">
 					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--success)">

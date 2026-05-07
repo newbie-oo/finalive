@@ -5,7 +5,6 @@ export type SearchParams = Promise<
 	Record<string, string | string[] | undefined>
 >;
 
-// --- Offset pagination -----------------------------------------------------
 
 export const offsetSchema = z.object({
 	page: z.coerce.number().int().min(1).default(1),
@@ -55,7 +54,6 @@ export function buildOffsetResponse<T>(
 	};
 }
 
-// --- Cursor pagination -----------------------------------------------------
 
 export const cursorSchema = z.object({
 	cursor: z.string().optional(),

@@ -64,7 +64,6 @@ export default async function QuizPage({
 
   return (
     <>
-      {/* Quiz header */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-(--border) bg-(--background) px-4 lg:px-6">
         <Link
           href={`/learn/${courseSlug}/${quizData.lessonId}`}
@@ -80,7 +79,6 @@ export default async function QuizPage({
       </header>
 
       <main className="mx-auto w-full max-w-[720px] flex-1 overflow-y-auto px-4 py-6 md:px-6 md:py-10">
-        {/* Breadcrumb + title */}
         <div className="mb-5">
           <div className="text-caption text-(--foreground-muted) mb-1.5 flex items-center gap-1.5">
             <span className="text-(--primary)">{courseData.course.title}</span>

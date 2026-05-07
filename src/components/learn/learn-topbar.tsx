@@ -53,7 +53,6 @@ export function LearnTopbar({
 
   return (
     <header className="relative flex h-14 shrink-0 items-center gap-3 border-b border-(--border) bg-(--background) px-4 lg:px-6">
-      {/* Route-change indicator */}
       {routeChanging && (
         <div className="absolute inset-x-0 top-0 z-50 h-0.5 overflow-hidden">
           <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] bg-(--primary)" />
@@ -67,14 +66,12 @@ export function LearnTopbar({
         <CaretLeft size={18} />
       </Link>
 
-      {/* Logo */}
       <div className="hidden items-center gap-1.5 text-ui font-bold text-(--foreground) lg:flex">
         <span className="inline-block h-2.5 w-2.5 rounded-full bg-(--primary)" />
         Finalive
       </div>
       <div className="hidden h-6 w-px bg-(--border) lg:block" />
 
-      {/* Course title */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 min-w-0">
           <span className="truncate text-ui font-semibold text-(--foreground)">
@@ -86,7 +83,6 @@ export function LearnTopbar({
         </div>
       </div>
 
-      {/* Desktop progress */}
       <div className="hidden items-center gap-3 lg:flex">
         <span className="text-caption text-(--foreground-muted)">
           ความคืบหน้า

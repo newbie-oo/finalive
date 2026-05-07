@@ -137,7 +137,6 @@ const LOGOS = ["SCB 10X", "KASIKORN", "BAY", "BLS", "FINNOMENA", "JITTA"];
 export default function Home() {
 	return (
 		<PublicShell>
-			{/* Hero */}
 			<section className="mx-auto max-w-[1200px] px-6 py-16 md:py-24">
 				<div className="grid items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-16">
 					<div>
@@ -175,7 +174,6 @@ export default function Home() {
 							</Link>
 						</div>
 
-						{/* Trust row */}
 						<div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
 							<TrustStat value="12,500+" label="นักเรียนที่ลงทะเบียน" />
 							<span
@@ -195,7 +193,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Social Proof Bar */}
 			<section className="border-y border-(--border) bg-(--surface) py-8">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="flex flex-col items-center gap-5 md:flex-row md:justify-center">
@@ -223,7 +220,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Featured Courses — Static */}
 			<section className="bg-(--surface-muted) py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-8 flex flex-wrap items-end justify-between gap-3">
@@ -274,7 +270,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Categories */}
 			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
@@ -319,7 +314,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* How it works */}
 			<section id="about" className="bg-(--surface-muted) py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
@@ -360,7 +354,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Why Finalive */}
 			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
@@ -386,7 +379,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Testimonials */}
 			<section className="bg-(--surface-muted) py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
@@ -425,11 +417,9 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* Instructor Spotlight */}
 			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-						{/* Portrait Card */}
 						<div className="relative overflow-hidden rounded-card border border-(--border) bg-linear-to-br from-[#312E81] to-[#1E1B4B] p-8 md:p-10">
 							<svg
 								aria-hidden
@@ -456,7 +446,6 @@ export default function Home() {
 							</div>
 						</div>
 
-						{/* Info */}
 						<div>
 							<Eyebrow>ผู้สอนแนะนำ</Eyebrow>
 							<h2 className="mt-2 text-h2">เรียนกับผู้เชี่ยวชาญตัวจริง</h2>
@@ -534,7 +523,6 @@ export default function Home() {
 				</div>
 			</section>
 
-			{/* CTA banner */}
 			<section className="bg-(--primary) py-14 md:py-20">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-center md:gap-8">
@@ -697,7 +685,6 @@ function HeroVisual() {
 			className="relative ml-auto hidden w-full max-w-[540px] select-none grid-cols-2 gap-5 md:grid"
 			style={{ pointerEvents: "none" }}
 		>
-			{/* Big featured card */}
 			<div className="col-span-2 overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-lg)">
 				<div className="relative aspect-video bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
 					<div
@@ -743,7 +730,6 @@ function HeroVisual() {
 				</div>
 			</div>
 
-			{/* Course library card */}
 			<div className="rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-md)">
 				<div className="mb-3.5 flex items-center gap-2.5">
 					<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-(--primary)/10 text-(--primary)">
@@ -777,7 +763,6 @@ function HeroVisual() {
 				</div>
 			</div>
 
-			{/* Cert card */}
 			<div className="flex flex-col rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-md)">
 				<div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-(--success-bg) text-(--success)">
 					<Certificate size={18} weight="bold" />

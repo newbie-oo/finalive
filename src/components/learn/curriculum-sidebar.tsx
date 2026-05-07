@@ -182,7 +182,6 @@ export function CurriculumSidebar({
 
 	return (
 		<nav className="flex h-full flex-col bg-(--surface)">
-			{/* Progress header */}
 			<div className="border-b border-(--border) px-5 py-4">
 				<div className="flex items-center gap-4">
 					<CircularProgress pct={progressPct} size={64} />
@@ -198,7 +197,6 @@ export function CurriculumSidebar({
 				</div>
 			</div>
 
-			{/* Lesson list */}
 			<div className="flex-1 overflow-y-auto p-3">
 				{modules.map((mod) => {
 					const modCompleted = mod.lessons.filter(
@@ -208,7 +206,6 @@ export function CurriculumSidebar({
 
 					return (
 						<div key={mod.id} className="mb-4">
-							{/* Module header */}
 							<div
 								className={cn(
 									"flex items-center gap-2 px-2 py-2 text-uism font-semibold",
@@ -226,7 +223,6 @@ export function CurriculumSidebar({
 								)}
 							</div>
 
-							{/* Lessons */}
 							{!modLocked && (
 								<ul className="flex flex-col gap-0.5">
 									{mod.lessons.map((les) => {
@@ -327,7 +323,6 @@ export function CurriculumSidebar({
 					);
 				})}
 
-				{/* Notes preview */}
 				{activeLessonId && <SidebarNotesCard lessonId={activeLessonId} />}
 			</div>
 		</nav>

@@ -1,7 +1,6 @@
 export default function AdminSlipsLoading() {
   return (
     <section className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <div className="h-10 w-40 animate-pulse rounded-lg bg-(--surface-muted)" />
@@ -17,7 +16,6 @@ export default function AdminSlipsLoading() {
         </div>
       </div>
 
-      {/* Slip queue cards */}
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div

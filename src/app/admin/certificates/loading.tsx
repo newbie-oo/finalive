@@ -1,13 +1,11 @@
 export default function AdminCertificatesLoading() {
   return (
     <section className="space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <div className="h-10 w-48 animate-pulse rounded-lg bg-(--surface-muted)" />
         <div className="h-5 w-16 animate-pulse rounded-md bg-(--surface-muted)" />
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
         <div className="flex items-center gap-4 border-b border-(--border) bg-(--surface-muted) px-5 py-3">
           <div className="h-4 w-16 animate-pulse rounded-md bg-(--surface-muted)" />

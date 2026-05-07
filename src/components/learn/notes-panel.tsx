@@ -67,7 +67,6 @@ export function NotesPanel({ lessonId }: NotesPanelProps) {
 
   return (
     <div className="space-y-3" data-testid="notes-panel">
-      {/* Mobile toggle */}
       <button
         type="button"
         onClick={() => setMobileOpen((v) => !v)}

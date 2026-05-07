@@ -56,7 +56,6 @@ export default async function PreviewLessonPage({
 					</div>
 				)}
 
-				{/* Desktop CTA */}
 				<div className="mt-10 hidden items-center justify-between gap-4 rounded-card border border-(--border) bg-(--surface-muted) p-5 sm:flex">
 					<div className="flex items-center gap-3">
 						<LockSimple size={20} weight="bold" className="text-(--primary)" />
@@ -70,7 +69,6 @@ export default async function PreviewLessonPage({
 				</div>
 			</section>
 
-			{/* Mobile sticky CTA */}
 			<div className="fixed inset-x-0 bottom-0 z-50 border-t border-(--border) bg-(--surface) p-4 sm:hidden">
 				<div className="mx-auto flex max-w-[960px] items-center gap-3">
 					<LockSimple

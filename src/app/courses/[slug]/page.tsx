@@ -104,7 +104,6 @@ export default async function CourseDetailPage({
 					</nav>
 
 					<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
-						{/* Left column — hero */}
 						<div>
 							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
 								{coverImageUrl(course.coverStorageKey) ? (
@@ -130,7 +129,6 @@ export default async function CourseDetailPage({
 								)}
 							</div>
 
-							{/* Badges */}
 							<div className="mb-4 flex flex-wrap items-center gap-2">
 								{isBestseller && (
 									<span className="inline-flex h-[22px] items-center gap-1 rounded-full px-2.5 text-[12px] font-medium leading-none whitespace-nowrap bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-(--accent)">
@@ -150,12 +148,10 @@ export default async function CourseDetailPage({
 								)}
 							</div>
 
-							{/* Title */}
 							<h1 className="text-h1 break-words text-(--foreground)">
 								{course.title}
 							</h1>
 
-							{/* Meta row */}
 							<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-uism text-(--foreground-muted)">
 								<span className="inline-flex items-center gap-1.5">
 									<Users size={16} />
@@ -174,7 +170,6 @@ export default async function CourseDetailPage({
 								<span>ภาษาไทย</span>
 							</div>
 
-							{/* Instructor row */}
 							<a
 								href="#instructor"
 								className="mt-5 inline-flex items-center gap-3 rounded-[14px] border border-transparent p-1 transition-colors hover:border-(--border) hover:bg-(--surface-muted)"
@@ -195,12 +190,10 @@ export default async function CourseDetailPage({
 								</div>
 							</a>
 
-							{/* Summary */}
 							<p className="mt-5 text-bodylg text-(--foreground-muted)">
 								{course.summary}
 							</p>
 
-							{/* Feature pills */}
 							<div className="mt-6 flex flex-wrap gap-3">
 								{featurePills.map(({ icon: Icon, label }, i) => (
 									<span
@@ -214,10 +207,8 @@ export default async function CourseDetailPage({
 							</div>
 						</div>
 
-						{/* Right column — sticky CTA card */}
 						<aside className="lg:sticky lg:top-24 lg:self-start">
 							<Card className="shadow-(--shadow-md)">
-								{/* Price */}
 								<div className="mb-5">
 									{course.isFree ? (
 										<div className="text-h2 font-semibold text-(--success)">
@@ -235,10 +226,8 @@ export default async function CourseDetailPage({
 									)}
 								</div>
 
-								{/* Divider */}
 								<div className="mb-5 h-px bg-(--border)" />
 
-								{/* Feature checklist */}
 								<ul className="mb-6 space-y-3">
 									{CTA_FEATURES.map((label) => (
 										<li
@@ -255,7 +244,6 @@ export default async function CourseDetailPage({
 									))}
 								</ul>
 
-								{/* CTA buttons */}
 								<div className="space-y-2.5">
 									{isAdmin ? (
 										<Button
@@ -314,7 +302,6 @@ export default async function CourseDetailPage({
 									)}
 								</div>
 
-								{/* Enrollment footer */}
 								<div className="mt-5 border-t border-(--border) pt-4 text-center">
 									<span className="text-caption text-(--foreground-muted)">
 										<span className="num font-semibold text-(--foreground)">

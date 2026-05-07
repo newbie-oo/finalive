@@ -149,7 +149,6 @@ export function TiptapEditor({
   return (
     <div className="rounded border border-border bg-background">
       <div className="flex flex-wrap items-center gap-1 border-b border-border px-2 py-1.5">
-        {/* Inline formatting */}
         {btn(
           editor.isActive("bold"),
           () => editor.chain().focus().toggleBold().run(),
@@ -176,7 +175,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* Headings */}
         {btn(
           editor.isActive("heading", { level: 2 }),
           () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
@@ -191,7 +189,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* Lists & blocks */}
         {btn(
           editor.isActive("bulletList"),
           () => editor.chain().focus().toggleBulletList().run(),
@@ -218,7 +215,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* Alignment */}
         {btn(
           editor.isActive({ textAlign: "left" }),
           () => setAlign("left"),
@@ -239,7 +235,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* Media & link */}
         <button
           type="button"
           onClick={() => {
@@ -274,7 +269,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* Utilities */}
         {btn(
           false,
           () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
@@ -283,7 +277,6 @@ export function TiptapEditor({
         )}
         <span className="mx-1 h-4 w-px bg-border" />
 
-        {/* History */}
         {btn(
           false,
           () => editor.chain().focus().undo().run(),

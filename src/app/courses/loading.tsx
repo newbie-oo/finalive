@@ -3,7 +3,6 @@ import { CourseCardSkeleton } from "@/components/course/course-card";
 export default function CoursesLoading() {
 	return (
 		<div className="flex flex-col">
-			{/* Search Header — matches CourseFilters */}
 			<div className="bg-(--surface-muted)">
 				<div className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
 					<div className="mx-auto max-w-2xl text-center">
@@ -13,7 +12,6 @@ export default function CoursesLoading() {
 					<div className="mx-auto mt-8 max-w-xl">
 						<div className="h-14 w-full animate-pulse rounded-full bg-(--surface) shadow-(--shadow-sm-token)" />
 					</div>
-					{/* Quick filter chips */}
 					<div className="mt-6 flex flex-wrap items-center justify-center gap-2">
 						{Array.from({ length: 5 }).map((_, i) => (
 							<div
@@ -25,15 +23,11 @@ export default function CoursesLoading() {
 				</div>
 			</div>
 
-			{/* 2-column layout — matches CourseFilters */}
 			<div className="mx-auto max-w-[1200px] px-6 py-8 md:py-10">
 				<div className="flex flex-col gap-8 md:flex-row md:items-start">
-					{/* Sidebar */}
 					<aside className="w-full shrink-0 md:w-[240px]">
-						{/* Mobile filter toggle */}
 						<div className="mb-4 h-10 w-full animate-pulse rounded-button bg-(--surface) md:hidden" />
 						<div className="space-y-6">
-							{/* Categories card */}
 							<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 								<div className="mb-3 h-4 w-16 animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="space-y-3">
@@ -46,7 +40,6 @@ export default function CoursesLoading() {
 									))}
 								</div>
 							</div>
-							{/* Price card */}
 							<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 								<div className="mb-3 h-4 w-12 animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="space-y-3">
@@ -58,7 +51,6 @@ export default function CoursesLoading() {
 									))}
 								</div>
 							</div>
-							{/* Sort card */}
 							<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 								<div className="mb-3 h-4 w-20 animate-pulse rounded-md bg-(--surface-muted)" />
 								<div className="h-10 w-full animate-pulse rounded-button bg-(--surface-muted)" />
@@ -66,9 +58,7 @@ export default function CoursesLoading() {
 						</div>
 					</aside>
 
-					{/* Main content — matches CourseCatalogSkeleton */}
 					<div className="min-w-0 flex-1">
-						{/* Results bar */}
 						<div className="mb-5 flex items-center justify-between">
 							<div className="h-4 w-52 animate-pulse rounded-md bg-(--surface-muted)" />
 							<div className="inline-flex h-9 w-[72px] rounded-button border border-(--border) bg-(--surface) p-0.5">
@@ -76,7 +66,6 @@ export default function CoursesLoading() {
 								<div className="h-8 w-8 rounded-md" />
 							</div>
 						</div>
-						{/* Course grid */}
 						<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 							{Array.from({ length: 6 }).map((_, i) => (
 								<li key={i}>
@@ -84,7 +73,6 @@ export default function CoursesLoading() {
 								</li>
 							))}
 						</ul>
-						{/* Pagination */}
 						<div className="mt-10 flex items-center justify-center gap-2">
 							<div className="h-9 w-20 animate-pulse rounded-button bg-(--surface-muted)" />
 							<div className="flex items-center gap-1.5">

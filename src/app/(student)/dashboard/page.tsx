@@ -44,7 +44,6 @@ export default async function DashboardPage() {
 
 	return (
 		<section className="space-y-8">
-			{/* Welcome banner */}
 			<div
 				className="relative overflow-hidden rounded-card border border-(--border) p-6 md:p-8"
 				style={{
@@ -94,7 +93,6 @@ export default async function DashboardPage() {
 				</div>
 			</div>
 
-			{/* Quick stats */}
 			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 				{[
 					{
@@ -146,7 +144,6 @@ export default async function DashboardPage() {
 				))}
 			</div>
 
-			{/* Continue learning */}
 			{inProgress.length > 0 && (
 				<div>
 					<div className="mb-5 flex items-baseline justify-between">
@@ -220,9 +217,7 @@ export default async function DashboardPage() {
 				</div>
 			)}
 
-			{/* Heatmap + Achievements */}
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-				{/* Heatmap */}
 				<div className="rounded-card border border-(--border) bg-(--surface) p-6">
 					<div className="mb-1 flex items-baseline justify-between">
 						<h3 className="text-h3 font-bold text-(--foreground)">
@@ -304,7 +299,6 @@ export default async function DashboardPage() {
 					</div>
 				</div>
 
-				{/* Achievements */}
 				<div className="rounded-card border border-(--border) bg-(--surface) p-6">
 					<div className="mb-5 flex items-baseline justify-between">
 						<h3 className="text-h3 font-bold text-(--foreground)">ความสำเร็จ</h3>
@@ -335,7 +329,6 @@ export default async function DashboardPage() {
 				</div>
 			</div>
 
-			{/* Recent activity */}
 			{data.recentActivity.length > 0 && (
 				<div>
 					<h2 className="mb-5 text-h2 font-bold text-(--foreground)">

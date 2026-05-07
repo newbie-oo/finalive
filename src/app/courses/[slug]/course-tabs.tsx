@@ -371,9 +371,7 @@ export function CourseTabs({
 		<section ref={instructorRef} id="instructor" className="py-12 md:py-16">
 			<div className="mx-auto max-w-[1200px] px-6">
 				<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
-					{/* Left column — tabs */}
 					<div>
-						{/* Tab nav */}
 						<div className="mb-8 flex gap-1 border-b border-(--border)">
 							{TABS.map((tab) => (
 								<button
@@ -396,7 +394,6 @@ export function CourseTabs({
 							))}
 						</div>
 
-						{/* Tab panels */}
 						{activeTab === "curriculum" && (
 							<>
 								<LearningOutcomes
@@ -414,7 +411,6 @@ export function CourseTabs({
 						{activeTab === "faq" && <FaqTab />}
 					</div>
 
-					{/* Right column — instructor + contents */}
 					<div>
 						<InstructorCard />
 						<CourseContentsCard

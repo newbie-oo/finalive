@@ -1,10 +1,8 @@
 export default function CourseDetailLoading() {
   return (
     <div>
-      {/* Hero section */}
       <div className="bg-(--surface-sunken)">
         <div className="mx-auto max-w-[1200px] px-6 py-12 md:py-16">
-          {/* Breadcrumb */}
           <div className="mb-6 flex items-center gap-2">
             <div className="h-4 w-20 animate-pulse rounded-md bg-(--surface-muted)" />
             <div className="h-4 w-4 animate-pulse rounded-md bg-(--surface-muted)" />
@@ -13,19 +11,15 @@ export default function CourseDetailLoading() {
 
           <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
             <div>
-              {/* Tags */}
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <div className="h-6 w-28 animate-pulse rounded-full bg-(--surface-muted)" />
                 <div className="h-6 w-16 animate-pulse rounded-full bg-(--surface-muted)" />
               </div>
-              {/* Title */}
               <div className="mb-4 h-10 w-full animate-pulse rounded-lg bg-(--surface-muted)" />
-              {/* Summary */}
               <div className="space-y-2">
                 <div className="h-5 w-full animate-pulse rounded-md bg-(--surface-muted)" />
                 <div className="h-5 w-4/5 animate-pulse rounded-md bg-(--surface-muted)" />
               </div>
-              {/* Instructor */}
               <div className="mt-6 flex items-center gap-3">
                 <div className="h-10 w-10 animate-pulse rounded-full bg-(--surface-muted)" />
                 <div>
@@ -33,7 +27,6 @@ export default function CourseDetailLoading() {
                   <div className="mt-1 h-3 w-40 animate-pulse rounded-md bg-(--surface-muted)" />
                 </div>
               </div>
-              {/* Meta */}
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
                 <div className="h-4 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
                 <div className="h-4 w-20 animate-pulse rounded-md bg-(--surface-muted)" />
@@ -42,7 +35,6 @@ export default function CourseDetailLoading() {
               </div>
             </div>
 
-            {/* Purchase card */}
             <div className="rounded-card border border-(--border) bg-(--surface) p-6 shadow-(--shadow-md)">
               <div className="mb-4 aspect-video w-full animate-pulse rounded-lg bg-(--surface-muted)" />
               <div className="mb-5 h-8 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
@@ -60,7 +52,6 @@ export default function CourseDetailLoading() {
         </div>
       </div>
 
-      {/* Tabs section */}
       <div className="py-12 md:py-16">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="mb-6 flex gap-6 border-b border-(--border)">

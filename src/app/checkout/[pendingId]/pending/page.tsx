@@ -60,7 +60,6 @@ export default async function CheckoutPendingPage({
 				}
 			`}</style>
       <div className="mx-auto max-w-[560px]">
-        {/* Hero status card */}
         <Card className="relative overflow-hidden p-10 text-center">
           <div
             className="pointer-events-none absolute inset-0"
@@ -71,7 +70,6 @@ export default async function CheckoutPendingPage({
           />
           <div className="relative">
             <div className="relative mx-auto mb-5 inline-flex items-center justify-center">
-              {/* Pulsing rings */}
               <div className="fa-pulse-ring absolute h-24 w-24 rounded-full bg-(--warning)/15" />
               <div className="fa-pulse-ring fa-pulse-ring-delay absolute h-24 w-24 rounded-full bg-(--warning)/15" />
               <div className="relative z-[2] flex h-[72px] w-[72px] items-center justify-center rounded-full bg-(--warning) text-white shadow-[0_8px_24px_rgba(245,158,11,0.3)]">
@@ -92,7 +90,6 @@ export default async function CheckoutPendingPage({
           </div>
         </Card>
 
-        {/* Order ref + amount strip */}
         <Card className="mt-6 overflow-hidden p-0">
           <div className="grid grid-cols-3">
             <div className="border-r border-(--border) px-6 py-5">
@@ -122,13 +119,11 @@ export default async function CheckoutPendingPage({
           </div>
         </Card>
 
-        {/* Timeline */}
         <Card className="mt-6 p-7">
           <div className="text-ui mb-6 font-semibold text-(--foreground)">
             สถานะการตรวจสอบ
           </div>
           <div className="relative">
-            {/* vertical rail */}
             <div className="absolute bottom-3.5 left-3.5 top-3.5 w-0.5 bg-(--border)" />
             <TimelineItem
               state="done"
@@ -161,7 +156,6 @@ export default async function CheckoutPendingPage({
           </div>
         </Card>
 
-        {/* Email confirmation note */}
         <div className="mt-6 flex items-center gap-3.5 rounded-[12px] border border-(--primary)/15 bg-(--primary)/5 p-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-(--surface) text-(--primary)">
             <EnvelopeSimple size={18} weight="fill" />
@@ -180,7 +174,6 @@ export default async function CheckoutPendingPage({
           </Button>
         </div>
 
-        {/* Actions */}
         <div className="mt-8 grid grid-cols-2 gap-3">
           <Button asChild variant="secondary" size="lg" className="w-full">
             <Link href="/">
@@ -196,7 +189,6 @@ export default async function CheckoutPendingPage({
           </Button>
         </div>
 
-        {/* FAQ */}
         <Card className="mt-8 p-6">
           <div className="text-ui mb-4 font-semibold text-(--foreground)">
             คำถามที่พบบ่อย
@@ -242,7 +234,6 @@ export default async function CheckoutPendingPage({
           </div>
         </Card>
 
-        {/* Support footer */}
         <p className="mt-6 text-center text-caption text-(--foreground-subtle)">
           มีปัญหา? ติดต่อเราที่{" "}
           <a

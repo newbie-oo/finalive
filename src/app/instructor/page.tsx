@@ -68,9 +68,7 @@ export default async function InstructorPage() {
 
 	return (
 		<PublicShell>
-			{/* ─── Hero ─── */}
 			<section className="relative overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B4AE3] to-[#7C6BED] text-white">
-				{/* Dot pattern overlay */}
 				<div
 					className="pointer-events-none absolute inset-0 opacity-[0.08]"
 					style={{
@@ -81,7 +79,6 @@ export default async function InstructorPage() {
 				/>
 
 				<div className="relative mx-auto max-w-[1200px] px-6 pb-24 pt-16">
-					{/* Breadcrumb */}
 					<nav className="mb-8 flex items-center gap-2 text-sm text-white/75">
 						<span>หน้าแรก</span>
 						<CaretRight size={14} />
@@ -91,7 +88,6 @@ export default async function InstructorPage() {
 					</nav>
 
 					<div className="flex flex-col items-start gap-8 md:flex-row md:items-start">
-						{/* Avatar */}
 						<div className="relative shrink-0">
 							<div className="rounded-full border-4 border-white/25 bg-white/10 p-1">
 								<AvatarInitials
@@ -105,7 +101,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* Info */}
 						<div className="min-w-0 flex-1">
 							<div className="mb-3 flex flex-wrap items-center gap-2">
 								<span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/[0.18] px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">
@@ -131,7 +126,6 @@ export default async function InstructorPage() {
 								เชี่ยวชาญด้าน DCF valuation และ financial modeling
 							</p>
 
-							{/* Mini stats */}
 							<div className="mt-6 flex flex-wrap gap-8">
 								{[
 									[String(stats.publishedCourses), "คอร์ส"],
@@ -149,7 +143,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* CTAs */}
 						<div className="flex shrink-0 flex-col gap-2.5 md:min-w-[200px]">
 							<Link
 								href="/courses"
@@ -172,12 +165,9 @@ export default async function InstructorPage() {
 				</div>
 			</section>
 
-			{/* ─── Body ─── */}
 			<section className="mx-auto max-w-[1200px] px-6 pb-20 pt-12">
 				<div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-					{/* ── Left column ── */}
 					<div className="min-w-0 flex-1 space-y-8">
-						{/* Bio */}
 						<div className="rounded-card border border-(--border) bg-(--surface) p-6 md:p-8">
 							<h2 className="text-h3 font-bold text-(--foreground)">
 								ประวัติผู้สอน
@@ -235,7 +225,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* Expertise */}
 						<div className="rounded-card border border-(--border) bg-(--surface) p-6 md:p-8">
 							<h2 className="text-h3 font-bold text-(--foreground)">
 								เชี่ยวชาญด้าน
@@ -263,7 +252,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* Courses */}
 						<div>
 							<div className="mb-5 flex items-baseline justify-between">
 								<h2 className="text-h2 font-bold text-(--foreground)">
@@ -296,9 +284,7 @@ export default async function InstructorPage() {
 						</div>
 					</div>
 
-					{/* ── Right column (sticky) ── */}
 					<aside className="shrink-0 space-y-4 lg:w-80 lg:sticky lg:top-6">
-						{/* Info card */}
 						<div className="rounded-card border border-(--border) bg-(--surface) p-5">
 							<div className="mb-4 text-ui font-semibold text-(--foreground)">
 								ข้อมูลผู้สอน
@@ -324,7 +310,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* Latest article */}
 						<div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
 							<div className="relative flex h-24 items-end bg-gradient-to-br from-[#2E1065] to-[#4F46E5] p-4">
 								<span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
@@ -350,7 +335,6 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						{/* Social */}
 						<div className="rounded-card border border-(--border) bg-(--surface) p-5">
 							<div className="mb-4 text-ui font-semibold text-(--foreground)">
 								ติดตามผู้สอน

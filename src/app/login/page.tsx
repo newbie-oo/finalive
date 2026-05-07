@@ -103,7 +103,6 @@ function LoginForm() {
 			gradient="linear-gradient(135deg, #4F46E5, #7C3AED)"
 			left={
 				<div className="w-full max-w-[400px] space-y-6">
-					{/* Logo */}
 					<Link
 						href="/"
 						className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"

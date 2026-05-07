@@ -147,7 +147,6 @@ export function CourseFilters({
 
 	return (
 		<div className="flex flex-col">
-			{/* Search Header */}
 			<div className="bg-(--surface-muted)">
 				<div className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
 					<div className="mx-auto max-w-2xl text-center">
@@ -188,7 +187,6 @@ export function CourseFilters({
 						</div>
 					</div>
 
-					{/* Quick filter chips */}
 					<div className="mt-6 flex flex-wrap items-center justify-center gap-2">
 						{QUICK_FILTERS.map((chip) => {
 							const active = activeQuickFilter === chip.type;
@@ -223,13 +221,10 @@ export function CourseFilters({
 				</div>
 			</div>
 
-			{/* 2-column layout */}
 			<div className="mx-auto max-w-[1200px] px-6 py-8 md:py-10">
 				<div className="flex flex-col gap-8 md:flex-row md:items-start">
-					{/* Sidebar */}
 					<aside className="w-full shrink-0 md:w-[240px]">
 						<div className="md:sticky md:top-4 md:self-start">
-							{/* Mobile filter toggle */}
 							<button
 								type="button"
 								onClick={() => setMobileOpen((v) => !v)}
@@ -248,7 +243,6 @@ export function CourseFilters({
 							<div
 								className={`space-y-6 ${mobileOpen ? "block" : "hidden md:block"}`}
 							>
-								{/* Categories */}
 								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
 										หมวดหมู่
@@ -271,7 +265,6 @@ export function CourseFilters({
 									</ul>
 								</div>
 
-								{/* Price */}
 								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
 										ราคา
@@ -301,7 +294,6 @@ export function CourseFilters({
 									</ul>
 								</div>
 
-								{/* Sort */}
 								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
 									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
 										เรียงลำดับ
@@ -329,7 +321,6 @@ export function CourseFilters({
 						</div>
 					</aside>
 
-					{/* Main content */}
 					<div className="min-w-0 flex-1">{children}</div>
 				</div>
 			</div>

@@ -213,7 +213,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 			<div className="space-y-6">
 				<QuizCelebration passed={result.passed} />
 
-				{/* Score card */}
 				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center md:p-9">
 					<ScoreCircle
 						score={result.scorePct}
@@ -240,7 +239,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 					</p>
 				</div>
 
-				{/* Per-question feedback */}
 				<div>
 					<div className="text-uism font-medium uppercase tracking-widest text-(--foreground-subtle) mb-3">
 						สรุปผลแต่ละข้อ
@@ -278,7 +276,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 					</div>
 				</div>
 
-				{/* Next-lesson CTA */}
 				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center">
 					<h3 className="text-h3 mb-1">
 						{result.passed ? "พร้อมไปต่อแล้ว!" : "อย่าลืมทบทวนเนื้อหา"}
@@ -352,7 +349,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 
 	return (
 		<div className="space-y-6">
-			{/* Progress */}
 			<div>
 				<div className="mb-2 flex justify-between">
 					<span className="text-uism font-semibold text-(--foreground-muted)">
@@ -371,7 +367,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				</div>
 			</div>
 
-			{/* Question card */}
 			<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 md:p-7">
 				<div className="text-uism font-medium uppercase tracking-widest text-(--foreground-subtle) mb-3">
 					คำถามที่ <span className="num">{currentIndex + 1}</span>
@@ -431,7 +426,6 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				</div>
 			</div>
 
-			{/* Bottom actions */}
 			<div className="flex flex-col-reverse items-center justify-between gap-3 sm:flex-row">
 				<button
 					type="button"

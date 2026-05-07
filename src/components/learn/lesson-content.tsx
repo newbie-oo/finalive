@@ -118,7 +118,6 @@ export function LessonContent({
 									/>
 								</div>
 
-								{/* Autoplay-next countdown overlay */}
 								{showCountdown && (
 									<div
 										data-testid="autoplay-countdown"

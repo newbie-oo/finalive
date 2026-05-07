@@ -59,7 +59,6 @@ export function SlipDetailPanel({
 }: SlipDetailPanelProps) {
 	return (
 		<>
-			{/* Header */}
 			<div className="flex h-[52px] shrink-0 items-center justify-between border-b border-(--border) px-5">
 				<div className="flex items-center gap-2.5 min-w-0">
 					<SlipStatusChip status={slip.status} />
@@ -101,9 +100,7 @@ export function SlipDetailPanel({
 				</div>
 			</div>
 
-			{/* Body */}
 			<div className="flex-1 overflow-y-auto">
-				{/* Image viewer */}
 				<div className="border-b border-(--border) bg-(--surface-sunken) p-5">
 					<div className="mb-3 flex items-center justify-between">
 						<span className="text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">
@@ -118,9 +115,7 @@ export function SlipDetailPanel({
 					<SlipImageViewer slipId={slip.id} />
 				</div>
 
-				{/* Meta panel */}
 				<div className="flex flex-col gap-4 p-5">
-					{/* Student card */}
 					<div className="flex items-center gap-3 rounded-[14px] border border-(--border) bg-(--surface) p-3.5">
 						<span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[14px] font-semibold text-white">
 							{(slip.studentName || "?").trim().slice(0, 2)}
@@ -135,7 +130,6 @@ export function SlipDetailPanel({
 						</div>
 					</div>
 
-					{/* Course card */}
 					<div className="flex items-center gap-3 rounded-[14px] border border-(--border) bg-(--surface) p-3.5">
 						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
 							<Coins size={20} weight="bold" />
@@ -150,7 +144,6 @@ export function SlipDetailPanel({
 						</div>
 					</div>
 
-					{/* Submitted info */}
 					<div className="rounded-[14px] border border-(--border) bg-(--surface-muted) p-4">
 						<div className="mb-3 text-caption font-semibold uppercase tracking-widest text-(--foreground-subtle)">
 							ข้อมูลการชำระ
@@ -229,7 +222,6 @@ export function SlipDetailPanel({
 				</div>
 			</div>
 
-			{/* Action bar */}
 			{slip.status === "submitted" ? (
 				<div className="flex shrink-0 items-center gap-2 border-t border-(--border) bg-(--surface) p-3.5">
 					{onMoveNext && (

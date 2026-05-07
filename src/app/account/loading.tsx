@@ -1,20 +1,17 @@
 export default function AccountLoading() {
   return (
     <div className="mx-auto max-w-[800px] px-6 py-12">
-      {/* Header */}
       <div className="mb-8">
         <div className="mb-2 h-8 w-48 animate-pulse rounded-lg bg-(--surface-muted)" />
         <div className="h-4 w-64 animate-pulse rounded-md bg-(--surface-muted)" />
       </div>
 
-      {/* Tabs */}
       <div className="mb-6 flex gap-4 border-b border-(--border)">
         <div className="h-10 w-20 animate-pulse rounded-md bg-(--surface-muted)" />
         <div className="h-10 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
         <div className="h-10 w-28 animate-pulse rounded-md bg-(--surface-muted)" />
       </div>
 
-      {/* Content cards */}
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div

@@ -88,10 +88,8 @@ export function LessonPlayerLayout({
 
 	return (
 		<>
-			{/* Player slot */}
 			{playerSlot}
 
-			{/* Mobile progress strip */}
 			<div className="flex items-center gap-3 border-b border-(--border) px-4 py-3 lg:hidden">
 				<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--surface-muted)">
 					<div
@@ -109,7 +107,6 @@ export function LessonPlayerLayout({
 				</span>
 			</div>
 
-			{/* Lesson header */}
 			<div className="px-4 pt-5 lg:px-8 lg:pt-8 max-w-[920px] mx-auto">
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="min-w-0 flex-1">
@@ -161,16 +158,13 @@ export function LessonPlayerLayout({
 				</div>
 			</div>
 
-			{/* Certificate claim banner */}
 			{totalLessons > 0 && doneLessons >= totalLessons && (
 				<div className="mx-auto max-w-[920px] px-4 pt-4 lg:px-8">
 					<CertificateClaim variant="banner" />
 				</div>
 			)}
 
-			{/* Tabs + body */}
 			<div className="px-4 py-5 pb-8 lg:px-8 lg:py-8 lg:pb-12 max-w-[920px] mx-auto">
-				{/* Tabs */}
 				<div
 					className="flex gap-6 border-b border-(--border) mb-6"
 					role="tablist"
@@ -208,7 +202,6 @@ export function LessonPlayerLayout({
 					<NotesPanel lessonId={lessonId} />
 				) : (
 					<>
-						{/* Lesson body */}
 						{lessonBodyMd && (
 							<article className="prose-style mb-8">
 								<MarkdownView text={lessonBodyMd} />
@@ -227,7 +220,6 @@ export function LessonPlayerLayout({
 					</>
 				)}
 
-				{/* Prev/Next navigation */}
 				<div className="mt-8 flex items-center justify-between border-t border-(--border) pt-6">
 					{prevLessonId ? (
 						<Button variant="secondary" size="md" asChild>

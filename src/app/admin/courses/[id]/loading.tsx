@@ -1,13 +1,11 @@
 export default function AdminCourseEditLoading() {
   return (
     <section className="mx-auto max-w-3xl space-y-8">
-      {/* Header */}
       <div className="space-y-2">
         <div className="h-10 w-32 animate-pulse rounded-lg bg-(--surface-muted)" />
         <div className="h-5 w-64 animate-pulse rounded-md bg-(--surface-muted)" />
       </div>
 
-      {/* Form fields */}
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="h-4 w-12 animate-pulse rounded-md bg-(--surface-muted)" />

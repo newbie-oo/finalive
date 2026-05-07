@@ -39,7 +39,6 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 
 	return (
 		<>
-			{/* Results bar */}
 			<div className="mb-5 flex items-center justify-between">
 				<span className="text-uism text-(--foreground-muted)">
 					แสดง{" "}
@@ -83,7 +82,6 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 				</div>
 			</div>
 
-			{/* Course grid/list */}
 			{viewMode === "grid" ? (
 				<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{data.map((c) => (
@@ -118,16 +116,13 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 export function CourseCatalogSkeleton() {
 	return (
 		<>
-			{/* Results bar */}
 			<div className="mb-5 flex items-center justify-between">
 				<div className="h-4 w-52 animate-pulse rounded-md bg-(--surface-muted)" />
-				{/* Grid/list toggle */}
 				<div className="inline-flex h-9 w-[72px] rounded-button border border-(--border) bg-(--surface) p-0.5">
 					<div className="h-8 w-8 animate-pulse rounded-md bg-(--surface-muted)" />
 					<div className="h-8 w-8 rounded-md" />
 				</div>
 			</div>
-			{/* Course grid */}
 			<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				{Array.from({ length: 6 }).map((_, i) => (
 					<li key={i}>
@@ -135,7 +130,6 @@ export function CourseCatalogSkeleton() {
 					</li>
 				))}
 			</ul>
-			{/* Pagination */}
 			<div className="mt-10 flex items-center justify-center gap-2">
 				<div className="h-9 w-20 animate-pulse rounded-button bg-(--surface-muted)" />
 				<div className="flex items-center gap-1.5">

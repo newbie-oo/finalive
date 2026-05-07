@@ -101,7 +101,6 @@ export default function RegisterPage() {
 				gradient="linear-gradient(160deg, #4F46E5, #3730A3)"
 				left={
 					<div className="w-full max-w-[400px] space-y-6">
-						{/* Logo */}
 						<Link
 							href="/"
 							className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"
@@ -112,7 +111,6 @@ export default function RegisterPage() {
 							</span>
 						</Link>
 
-						{/* Step indicator */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between text-uism text-(--foreground-muted)">
 								<span>

@@ -51,12 +51,10 @@ export default async function CheckoutPage({
     <CheckoutShell step={1}>
       <div className="mx-auto max-w-[560px]">
         <div className="mt-8 space-y-4">
-            {/* Order summary */}
             <Card className="p-6">
               <h2 className="text-h4 mb-4">สรุปการสั่งซื้อ</h2>
               <div className="flex gap-3.5 pb-4 mb-4 border-b border-(--border)">
                 <div className="h-16 w-24 shrink-0 overflow-hidden rounded-[10px] bg-primary/10">
-                  {/* Course thumbnail placeholder */}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-ui font-semibold text-(--foreground) mb-1">
@@ -80,7 +78,6 @@ export default async function CheckoutPage({
               </div>
             </Card>
 
-            {/* Payment method */}
             <div className="space-y-3">
               <h2 className="text-h4">วิธีชำระเงิน</h2>
               <PaymentMethodTabs
@@ -89,7 +86,6 @@ export default async function CheckoutPage({
               />
             </div>
 
-            {/* Reference code */}
             <div className="rounded-card border border-primary/20 bg-primary/5 p-5">
               <div className="mb-2">
                 <span className="text-uism text-(--foreground-muted)">
@@ -134,7 +130,6 @@ export default async function CheckoutPage({
               </Card>
             )}
 
-            {/* Inline slip upload / waiting state */}
             {alreadySubmitted ? (
               <SlipPendingPoll
                 pendingId={pending.id}
@@ -144,13 +139,11 @@ export default async function CheckoutPage({
               <InlineSlipUpload pendingId={pending.id} />
             )}
 
-            {/* Security */}
             <p className="flex items-center justify-center gap-1.5 text-center text-caption text-(--foreground-subtle)">
               <Shield size={14} className="text-(--success)" />
               ข้อมูลของคุณปลอดภัย · เข้ารหัส SSL 256-bit
             </p>
 
-            {/* Next steps */}
             <div className="flex items-start gap-3 rounded-card bg-(--surface-muted) p-4">
               <Sparkle size={18} className="mt-0.5 shrink-0 text-primary" />
               <div>

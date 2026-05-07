@@ -331,7 +331,6 @@ export function CurriculumTree({
 
 	return (
 		<div className="flex h-[calc(100vh-8rem)] gap-4">
-			{/* Left: Tree */}
 			<div className="flex w-80 flex-col border-r border-border pr-4">
 				<div className="mb-3 flex items-center justify-between">
 					<h2 className="font-medium">เนื้อหา</h2>
@@ -407,7 +406,6 @@ export function CurriculumTree({
 				</DndContext>
 			</div>
 
-			{/* Right: Detail */}
 			<div className="flex-1 overflow-auto">
 				{selectedLesson ? (
 					<LessonDetailPanel courseId={courseId} lesson={selectedLesson} />
