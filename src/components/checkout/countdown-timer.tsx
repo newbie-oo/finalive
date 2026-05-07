@@ -16,14 +16,39 @@ function fmt(ms: number): string {
 }
 
 export function CountdownTimer({ expiresAt }: { expiresAt: Date }) {
-  const [left, setLeft] = useState(() => expiresAt.getTime() - Date.now());
+  const [mounted, setMounted] = useState(false);
+  const [left, setLeft] = useState(0);
 
   useEffect(() => {
+    // Compute initial value and mark as mounted in the same effect so the
+    // first painted value is stable and matches the server-rendered HTML.
+    setLeft(expiresAt.getTime() - Date.now());
+    setMounted(true);
+
     const id = setInterval(() => {
       setLeft(expiresAt.getTime() - Date.now());
     }, 1000);
     return () => clearInterval(id);
   }, [expiresAt]);
+
+  // Before hydration completes, render a neutral placeholder so the SSR
+  // output and the initial client render are identical (no hydration mismatch).
+  if (!mounted) {
+    return (
+      <div
+        role="timer"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label="countdown-timer"
+        className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-mono bg-primary/10 text-primary"
+      >
+        <span className="relative flex h-2 w-2" aria-hidden="true">
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-current" />
+        </span>
+        --:--:--
+      </div>
+    );
+  }
 
   const expired = left <= 0;
 

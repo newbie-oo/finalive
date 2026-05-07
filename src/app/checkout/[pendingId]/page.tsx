@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { WarningCircle, Shield, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { InlineSlipUpload } from "@/components/checkout/inline-slip-upload";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
@@ -13,9 +13,10 @@ import {
   getPromptPayQrImageUrl,
 } from "@/server/repos/app-setting";
 import { formatTHB } from "@/lib/format";
-import { isExpired } from "@/server/services/pending-fsm";
+import { isExpired, isSubmitted, type PendingStatus } from "@/server/services/pending-fsm";
 import { CountdownTimer } from "@/components/checkout/countdown-timer";
 import { PaymentMethodTabs } from "@/components/checkout/payment-method-tabs";
+import { SlipPendingPoll } from "@/components/checkout/slip-pending-poll";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,13 @@ export default async function CheckoutPage({
   const { user } = await requireSession();
   const pending = await getCheckoutPending(pendingId, user.id);
   if (!pending) notFound();
+
+  if (pending.status === "paid") {
+    redirect(`/learn/${pending.courseSlug}`);
+  }
+
   const expired = isExpired(pending.expiresAt);
+  const alreadySubmitted = isSubmitted(pending.status as PendingStatus);
   const [bank, qrImageUrl] = await Promise.all([
     getBankDisplay(),
     getPromptPayQrImageUrl(),
@@ -133,8 +140,15 @@ export default async function CheckoutPage({
               </div>
             </div>
 
-            {/* Inline slip upload */}
-            <InlineSlipUpload pendingId={pending.id} />
+            {/* Inline slip upload / waiting state */}
+            {alreadySubmitted ? (
+              <SlipPendingPoll
+                pendingId={pending.id}
+                fallbackCourseSlug={pending.courseSlug}
+              />
+            ) : (
+              <InlineSlipUpload pendingId={pending.id} />
+            )}
 
             {/* Security */}
             <p className="flex items-center justify-center gap-1.5 text-center text-caption text-(--foreground-subtle)">
