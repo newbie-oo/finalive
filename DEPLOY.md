@@ -35,7 +35,7 @@
 | `BUNNY_CDN_HOSTNAME` | Bunny CDN | `vz-....b-cdn.net` |
 | `BUNNY_CDN_TOKEN_SECRET` | Bunny CDN pull zone | `...` |
 | `BUNNY_STREAM_TOKEN_SECRET` | Bunny Stream library | `...` |
-| `BUNNY_WEBHOOK_SECRET` | Self-generated | `...` |
+| `BUNNY_WEBHOOK_SECRET` | Library Read-Only API Key | `...` |
 | `ADMIN_NOTIFY_EMAIL` | Admin inbox | `admin@finalive.dev` |
 | `CRON_SECRET` | `openssl rand -hex 16` | `...` |
 

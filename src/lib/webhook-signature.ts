@@ -3,9 +3,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 /**
  * Verify a webhook body against an HMAC-SHA256 signature.
  *
- * Bunny supports a few schemes; we standardise on a header
- * (`X-Webhook-Signature`) carrying the lowercase hex digest of
- * HMAC-SHA256(body, secret). Constant-time comparison.
+ * Matches Bunny Stream's native scheme: header `X-BunnyStream-Signature`
+ * carries the lowercase hex digest of HMAC-SHA256(rawBody, readOnlyApiKey).
+ * Constant-time comparison.
  */
 export function verifyHmacSha256(
   rawBody: string | Uint8Array,

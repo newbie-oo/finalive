@@ -22,7 +22,12 @@ export const POST = apiRouteRaw({
 		const rawBody = await req.text();
 
 		if (webhookSecret) {
-			const sig = req.headers.get("x-webhook-signature");
+			const version = req.headers.get("x-bunnystream-signature-version");
+			const algorithm = req.headers.get("x-bunnystream-signature-algorithm");
+			const sig = req.headers.get("x-bunnystream-signature");
+			if (version !== "v1" || algorithm !== "hmac-sha256") {
+				return { error: "unsupported_signature_scheme" };
+			}
 			if (!verifyHmacSha256(rawBody, sig, webhookSecret)) {
 				return { error: "unauthorized" };
 			}
