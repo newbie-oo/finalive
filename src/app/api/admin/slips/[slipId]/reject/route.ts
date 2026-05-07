@@ -11,7 +11,7 @@ export const POST = apiRoute({
 	auth: "admin",
 	body,
 	handler: async ({ req, body }) => {
-		const slipId = new URL(req.url).pathname.split("/").pop()!;
+		const slipId = new URL(req.url).pathname.split("/").slice(-2)[0]!;
 		return rejectSlip({ slipId, reason: body.reason, note: body.note });
 	},
 });
