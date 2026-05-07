@@ -25,9 +25,7 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
 
   function handlePublish() {
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append("courseId", courseId);
-      const result = await publishCourseAction(formData);
+      const result = await publishCourseAction({ courseId });
       if (result.ok) {
         toast.success("เผยแพร่คอร์สสำเร็จ");
         setShowDialog(false);

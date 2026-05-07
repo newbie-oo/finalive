@@ -26,7 +26,8 @@ import {
 } from "@/server/admin/admin-command";
 
 const svc = createCurriculumAdminService({
-	getCourseCurriculum,
+	getCourseCurriculum: (courseId) =>
+		getCourseCurriculum(courseId, { includeEmptyModules: true }),
 	moduleExistsInCourse,
 	lessonExistsInCourse,
 	createAdminModule,
@@ -40,15 +41,15 @@ const svc = createCurriculumAdminService({
 });
 
 export const createModuleAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			title: z.string().min(1).max(200),
 		}),
 	),
 	(input) => input.courseId,
-	async ({ input, course }) => {
-		const result = await svc.createModule(input.courseId, input.title, "");
+	async ({ input, course, session }) => {
+		const result = await svc.createModule(input.courseId, input.title, session.user.id);
 		if (!result.ok) return result as { ok: false; error: string };
 		revalidateCourseAdminPaths(input.courseId, course.slug);
 		return { moduleId: result.moduleId };
@@ -56,7 +57,7 @@ export const createModuleAction = adminCourseAction(
 );
 
 export const createLessonAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			moduleId: z.string().uuid(),
@@ -64,12 +65,12 @@ export const createLessonAction = adminCourseAction(
 		}),
 	),
 	(input) => input.courseId,
-	async ({ input }) => {
+	async ({ input, session }) => {
 		const result = await svc.createLesson(
 			input.courseId,
 			input.moduleId,
 			input.title,
-			"",
+			session.user.id,
 		);
 		if (!result.ok) return result as { ok: false; error: string };
 		revalidatePath(`/admin/courses/${input.courseId}/curriculum`);
@@ -78,14 +79,14 @@ export const createLessonAction = adminCourseAction(
 );
 
 export const updateLessonAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			lessonId: z.string().uuid(),
 			title: z.string().min(1).max(200).optional(),
 			bodyMd: z.string().optional(),
-			isPreview: z.coerce.boolean().optional(),
-			isFree: z.coerce.boolean().optional(),
+			isPreview: z.boolean().optional(),
+			isFree: z.boolean().optional(),
 		}),
 	),
 	(input) => input.courseId,
@@ -100,7 +101,7 @@ export const updateLessonAction = adminCourseAction(
 );
 
 export const reorderModulesAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			moduleIds: z.array(z.string().uuid()),
@@ -116,7 +117,7 @@ export const reorderModulesAction = adminCourseAction(
 );
 
 export const reorderLessonsAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			moduleId: z.string().uuid(),

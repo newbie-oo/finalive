@@ -11,6 +11,7 @@ import { CoursePublishValidator } from "@/server/services/course-publish-validat
 import {
 	adminCourseAction,
 	formDataParser,
+	jsonParser,
 } from "@/server/admin/admin-command";
 
 const publishSchema = z.object({
@@ -26,7 +27,7 @@ function makePublishValidator() {
 }
 
 export const publishCourseAction = adminCourseAction(
-	formDataParser(publishSchema),
+	jsonParser(publishSchema),
 	(input) => input.courseId,
 	async ({ input }) => {
 		const validator = makePublishValidator();

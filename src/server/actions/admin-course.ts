@@ -9,6 +9,7 @@ import {
 	adminAction,
 	adminCourseAction,
 	formDataParser,
+	jsonParser,
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 import { container } from "@/server/container";
@@ -33,7 +34,7 @@ const createSchema = z.object({
 });
 
 export const createCourseAction = adminAction(
-	formDataParser(createSchema),
+	jsonParser(createSchema),
 	async ({ session, input }) => {
 		const courseId = await createAdminCourse({
 			slug: input.slug,
@@ -69,7 +70,7 @@ const updateSchema = z.object({
 });
 
 export const updateCourseAction = adminCourseAction(
-	formDataParser(updateSchema),
+	jsonParser(updateSchema),
 	(input) => input.courseId,
 	async ({ course, input }) => {
 		const { courseId: _, ...updates } = input;
@@ -93,7 +94,7 @@ export const updateCourseAction = adminCourseAction(
 );
 
 export const updateCourseCoverAction = adminCourseAction(
-	formDataParser(
+	jsonParser(
 		z.object({
 			courseId: z.string().uuid(),
 			mediaAssetId: z.string().uuid(),

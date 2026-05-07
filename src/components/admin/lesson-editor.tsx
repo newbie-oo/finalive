@@ -28,15 +28,14 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
 
   function handleSave() {
     startSave(async () => {
-      const formData = new FormData();
-      formData.append("courseId", courseId);
-      formData.append("lessonId", lesson.id);
-      formData.append("title", title);
-      formData.append("bodyMd", bodyMd);
-      formData.append("isPreview", String(isPreview));
-      formData.append("isFree", String(isFree));
-
-      const result = await updateLessonAction(formData);
+      const result = await updateLessonAction({
+        courseId,
+        lessonId: lesson.id,
+        title,
+        bodyMd,
+        isPreview,
+        isFree,
+      });
       if (result.ok) {
         setIsDirty(false);
         toast.success("บันทึกสำเร็จ");

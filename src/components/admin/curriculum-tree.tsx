@@ -103,7 +103,7 @@ export function CurriculumTree({
 		const formData = new FormData(form);
 		const title = String(formData.get("title") ?? "");
 		startTransition(async () => {
-			const result = await createModuleAction(formData);
+			const result = await createModuleAction({ courseId, title });
 			if (result.ok && result.moduleId) {
 				toast.success("สร้างโมดูลสำเร็จ");
 				setAddingModule(false);
@@ -136,7 +136,7 @@ export function CurriculumTree({
 		const moduleId = String(formData.get("moduleId") ?? "");
 		const title = String(formData.get("title") ?? "");
 		startTransition(async () => {
-			const result = await createLessonAction(formData);
+			const result = await createLessonAction({ courseId, moduleId, title });
 			if (result.ok && result.lessonId) {
 				toast.success("สร้างบทเรียนสำเร็จ");
 				setAddingLessonModuleId(null);
@@ -242,14 +242,11 @@ export function CurriculumTree({
 			const key = `modules-${courseId}`;
 			if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
 			debounceRef.current[key] = setTimeout(() => {
-				const formData = new FormData();
-				formData.append("courseId", courseId);
-				formData.append(
-					"moduleIds",
-					JSON.stringify(newModules.map((m) => m.id)),
-				);
 				startTransition(async () => {
-					const result = await reorderModulesAction(formData);
+					const result = await reorderModulesAction({
+						courseId,
+						moduleIds: newModules.map((m) => m.id),
+					});
 					if (!result.ok) {
 						toast.error("บันทึกลำดับโมดูลไม่สำเร็จ");
 					}
@@ -264,15 +261,12 @@ export function CurriculumTree({
 			const key = `lessons-${moduleId}`;
 			if (debounceRef.current[key]) clearTimeout(debounceRef.current[key]);
 			debounceRef.current[key] = setTimeout(() => {
-				const formData = new FormData();
-				formData.append("courseId", courseId);
-				formData.append("moduleId", moduleId);
-				formData.append(
-					"lessonIds",
-					JSON.stringify(newLessons.map((l) => l.id)),
-				);
 				startTransition(async () => {
-					const result = await reorderLessonsAction(formData);
+					const result = await reorderLessonsAction({
+						courseId,
+						moduleId,
+						lessonIds: newLessons.map((l) => l.id),
+					});
 					if (!result.ok) {
 						toast.error("บันทึกลำดับบทเรียนไม่สำเร็จ");
 					}

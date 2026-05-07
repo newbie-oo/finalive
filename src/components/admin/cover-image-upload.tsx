@@ -54,10 +54,10 @@ export function CoverImageUpload({
             urls: { cover: string };
           };
 
-          const updateForm = new FormData();
-          updateForm.append("courseId", courseId);
-          updateForm.append("mediaAssetId", data.mediaAssetId);
-          const result = await updateCourseCoverAction(updateForm);
+          const result = await updateCourseCoverAction({
+            courseId,
+            mediaAssetId: data.mediaAssetId,
+          });
 
           if (result.ok) {
             setPreview(data.urls.cover);

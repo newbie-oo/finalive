@@ -80,11 +80,11 @@ export function SortableLesson({
 		if (field === "isPreview") setIsPreview(newValue);
 		else setIsFree(newValue);
 		startTransition(async () => {
-			const formData = new FormData();
-			formData.append("courseId", courseId);
-			formData.append("lessonId", lesson.id);
-			formData.append(field, String(newValue));
-			await updateLessonAction(formData);
+			await updateLessonAction({
+				courseId,
+				lessonId: lesson.id,
+				[field]: newValue,
+			});
 		});
 	}
 
