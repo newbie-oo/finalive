@@ -35,12 +35,6 @@ export function isSubmitted(status: PendingStatus): boolean {
 	return status === "slip_submitted" || status === "paid";
 }
 
-// Centralizes the impure expiry check; callers should mark their RSC force-dynamic.
-// react-hooks/purity doesn't fire on plain server modules, so no disable comment is needed here.
-export function isExpired(expiresAt: Date): boolean {
-	return expiresAt.getTime() < Date.now();
-}
-
 export const PENDING_STATUS_LABEL: Record<PendingStatus, string> = {
 	awaiting_payment: "รอชำระเงิน",
 	slip_submitted: "รอ admin ตรวจ",

@@ -4,7 +4,6 @@ import {
   isTerminal,
   isActionable,
   isSubmitted,
-  isExpired,
   PENDING_STATUS_LABEL,
   type PendingStatus,
 } from "./pending-fsm";
@@ -46,11 +45,6 @@ describe("pending FSM", () => {
     expect(isSubmitted("slip_submitted")).toBe(true);
     expect(isSubmitted("paid")).toBe(true);
     expect(isSubmitted("awaiting_payment")).toBe(false);
-  });
-
-  it("isExpired compares against now", () => {
-    expect(isExpired(new Date(Date.now() - 1000))).toBe(true);
-    expect(isExpired(new Date(Date.now() + 60_000))).toBe(false);
   });
 
   it("PENDING_STATUS_LABEL covers all states", () => {

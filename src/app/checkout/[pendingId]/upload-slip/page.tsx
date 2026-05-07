@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaretLeft, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
-import { CountdownTimer } from "@/components/checkout/countdown-timer";
 import { SlipUploadForm } from "@/components/checkout/slip-upload-form";
 import { SlipPendingPoll } from "@/components/checkout/slip-pending-poll";
 import { requireSession } from "@/server/auth-session";
@@ -91,12 +90,6 @@ export default async function UploadSlipPage({
 									<p className="mono mt-1 text-uism font-semibold text-(--foreground)">
 										{pending.refCode}
 									</p>
-								</div>
-							</div>
-							<div className="border-t border-(--border) pt-4">
-								<p className="text-uism text-(--foreground-subtle)">หมดอายุใน</p>
-								<div className="mt-2">
-									<CountdownTimer expiresAt={pending.expiresAt} />
 								</div>
 							</div>
 						</div>
