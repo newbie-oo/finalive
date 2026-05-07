@@ -32,6 +32,7 @@ function fakeDeps() {
 	return {
 		repo: {
 			loadForReview: vi.fn().mockResolvedValue(null),
+			countSlipsForPending: vi.fn().mockResolvedValue(0),
 			loadPending: vi.fn().mockResolvedValue(null),
 			loadCourseInfo: vi.fn().mockResolvedValue(null),
 			runAcceptTx: vi.fn().mockResolvedValue({ enrollmentId: "enr-1" }),

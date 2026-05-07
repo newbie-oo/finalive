@@ -51,12 +51,18 @@ export function SlipPendingPoll({
       redirectedRef.current = true;
       router.replace(`/learn/${query.data.courseSlug ?? fallbackCourseSlug}`);
       router.refresh();
+    } else if (query.data?.status === "awaiting_payment") {
+      // Admin rejected the slip — bounce back to upload form by re-rendering
+      // the RSC, which will swap this poll for <InlineSlipUpload>.
+      redirectedRef.current = true;
+      router.refresh();
     }
   }, [query.data, router, fallbackCourseSlug]);
 
   const status = query.data?.status ?? "slip_submitted";
   const isExpired = status === "expired" || status === "cancelled";
   const isPaid = status === "paid";
+  const isRejected = status === "awaiting_payment";
 
   if (isPaid) {
     return (
@@ -67,6 +73,21 @@ export function SlipPendingPoll({
             <p className="font-medium">ตรวจสอบเรียบร้อย พร้อมเรียนแล้ว</p>
             <p className="mt-1 text-uism">กำลังพาคุณไปยังหน้าคอร์ส…</p>
           </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (isRejected) {
+    return (
+      <Card className="border-destructive">
+        <div className="space-y-2">
+          <p className="font-medium text-destructive-foreground">
+            สลิปถูกปฏิเสธ
+          </p>
+          <p className="text-body text-(--foreground-muted)">
+            กำลังพากลับไปหน้าอัปโหลดสลิปใหม่…
+          </p>
         </div>
       </Card>
     );

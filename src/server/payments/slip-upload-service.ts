@@ -70,9 +70,15 @@ export class SlipUploadService {
 			);
 		}
 
-		// 2. Idempotency key
+		// 2. Idempotency key — scoped to the current submission attempt so
+		// re-uploads after admin rejection are NOT collapsed into the prior
+		// slip. We include the count of existing slips for this pending as
+		// a per-attempt salt: 0 on first try, N after N rejections.
+		const attempt = await this.deps.repo.countSlipsForPending(input.pendingId);
 		const idemKey = createHash("sha256")
 			.update(input.pendingId)
+			.update(":")
+			.update(String(attempt))
 			.update(":")
 			.update(input.bytes)
 			.digest("hex");

@@ -1,22 +1,26 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { WarningCircle, Shield, Sparkle } from "@phosphor-icons/react/dist/ssr";
+import { Shield, Sparkle, Warning } from "@phosphor-icons/react/dist/ssr";
 import { InlineSlipUpload } from "@/components/checkout/inline-slip-upload";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
 import { RefCodeCopy } from "./ref-code-copy";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requireSession } from "@/server/auth-session";
-import { getCheckoutPending } from "@/server/repos/checkout";
+import {
+  getCheckoutPending,
+  getLatestSlipForPending,
+} from "@/server/repos/checkout";
 import {
   getBankDisplay,
   getPromptPayQrImageUrl,
 } from "@/server/repos/app-setting";
 import { formatTHB } from "@/lib/format";
-import { isExpired, isSubmitted, type PendingStatus } from "@/server/services/pending-fsm";
-import { CountdownTimer } from "@/components/checkout/countdown-timer";
+import { isSubmitted, type PendingStatus } from "@/server/services/pending-fsm";
 import { PaymentMethodTabs } from "@/components/checkout/payment-method-tabs";
 import { SlipPendingPoll } from "@/components/checkout/slip-pending-poll";
+import {
+  REJECT_REASON_LABEL,
+  type RejectReason,
+} from "@/components/admin/slip-reject-options";
 
 export const dynamic = "force-dynamic";
 
@@ -34,55 +38,19 @@ export default async function CheckoutPage({
     redirect(`/learn/${pending.courseSlug}`);
   }
 
-  const expired = isExpired(pending.expiresAt);
   const alreadySubmitted = isSubmitted(pending.status as PendingStatus);
-  const [bank, qrImageUrl] = await Promise.all([
+  const [bank, qrImageUrl, latestSlip] = await Promise.all([
     getBankDisplay(),
     getPromptPayQrImageUrl(),
+    alreadySubmitted ? Promise.resolve(null) : getLatestSlipForPending(pending.id),
   ]);
+  const rejectedSlip =
+    latestSlip && latestSlip.status === "rejected" ? latestSlip : null;
 
   return (
     <CheckoutShell step={1}>
       <div className="mx-auto max-w-[560px]">
-        {expired ? (
-          <div className="mt-8 space-y-4">
-            <Card className="flex items-start gap-3 border-destructive bg-destructive-bg">
-              <WarningCircle
-                size={24}
-                weight="fill"
-                className="text-destructive shrink-0"
-              />
-              <div className="flex-1 text-body text-destructive-foreground">
-                <p className="font-medium">การชำระเงินหมดอายุแล้ว</p>
-                <p className="mt-1 text-uism">
-                  เลขอ้างอิง <span className="mono">{pending.refCode}</span>{" "}
-                  ไม่สามารถใช้ได้ — ต้องเริ่มชำระเงินใหม่
-                </p>
-              </div>
-            </Card>
-            <form action="/checkout/start" method="post">
-              <input
-                type="hidden"
-                name="courseSlug"
-                value={pending.courseSlug}
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full"
-              >
-                เริ่มชำระเงินใหม่
-              </Button>
-            </form>
-            <Button asChild variant="ghost" size="lg" className="w-full">
-              <Link href={`/courses/${pending.courseSlug}`}>
-                กลับไปหน้าคอร์ส
-              </Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="mt-8 space-y-4">
+        <div className="mt-8 space-y-4">
             {/* Order summary */}
             <Card className="p-6">
               <h2 className="text-h4 mb-4">สรุปการสั่งซื้อ</h2>
@@ -123,14 +91,13 @@ export default async function CheckoutPage({
 
             {/* Reference code */}
             <div className="rounded-card border border-primary/20 bg-primary/5 p-5">
-              <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="mb-2">
                 <span className="text-uism text-(--foreground-muted)">
                   เลขอ้างอิง{" "}
                   <span className="text-(--foreground-subtle)">
                     (โอนเงินแล้วระบุในสลิป)
                   </span>
                 </span>
-                <CountdownTimer expiresAt={pending.expiresAt} />
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="mono text-[28px] font-bold tracking-wide text-primary">
@@ -139,6 +106,33 @@ export default async function CheckoutPage({
                 <RefCodeCopy refCode={pending.refCode} />
               </div>
             </div>
+
+            {/* Rejection notice — shown when previous slip was rejected
+                and the user is back at awaiting_payment. */}
+            {rejectedSlip && (
+              <Card className="flex items-start gap-3 border-destructive bg-destructive-bg">
+                <Warning
+                  size={24}
+                  weight="fill"
+                  className="text-destructive shrink-0"
+                />
+                <div className="flex-1 text-body text-destructive-foreground">
+                  <p className="font-medium">สลิปก่อนหน้าถูกปฏิเสธ</p>
+                  <p className="mt-1 text-uism">
+                    เหตุผล:{" "}
+                    {REJECT_REASON_LABEL[
+                      rejectedSlip.rejectionReason as RejectReason
+                    ] ?? rejectedSlip.rejectionReason}
+                    {rejectedSlip.rejectionNote
+                      ? ` — ${rejectedSlip.rejectionNote}`
+                      : ""}
+                  </p>
+                  <p className="mt-1 text-uism">
+                    กรุณาอัปโหลดสลิปใหม่ตามเลขอ้างอิงด้านบน
+                  </p>
+                </div>
+              </Card>
+            )}
 
             {/* Inline slip upload / waiting state */}
             {alreadySubmitted ? (
@@ -170,7 +164,6 @@ export default async function CheckoutPage({
               </div>
             </div>
           </div>
-        )}
       </div>
     </CheckoutShell>
   );

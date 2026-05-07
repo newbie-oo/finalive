@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
@@ -72,6 +72,14 @@ export const SlipRepo = {
 			.where(eq(paymentSlip.id, slipId))
 			.limit(1);
 		return rows[0] ?? null;
+	},
+
+	async countSlipsForPending(pendingId: string): Promise<number> {
+		const rows = await db
+			.select({ total: sql<number>`count(*)::int` })
+			.from(paymentSlip)
+			.where(eq(paymentSlip.pendingEnrollmentId, pendingId));
+		return rows[0]?.total ?? 0;
 	},
 
 	async loadPending(pendingId: string): Promise<PendingRow | null> {

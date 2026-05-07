@@ -18,6 +18,7 @@ function fakeDeps() {
 	return {
 		repo: {
 			loadForReview: vi.fn(),
+			countSlipsForPending: vi.fn(),
 			runAcceptTx: vi.fn(),
 			runRejectTx: vi.fn(),
 			loadPending: vi.fn(),

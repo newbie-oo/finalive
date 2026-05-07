@@ -1,8 +1,8 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
-import { pendingEnrollment } from "@/db/schema/payment";
+import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
 
 export interface CheckoutPending {
   id: string;
@@ -40,6 +40,28 @@ export async function getCheckoutPending(
         eq(pendingEnrollment.userId, userId),
       ),
     )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export interface LatestSlipInfo {
+  status: string;
+  rejectionReason: string | null;
+  rejectionNote: string | null;
+}
+
+export async function getLatestSlipForPending(
+  pendingId: string,
+): Promise<LatestSlipInfo | null> {
+  const rows = await db
+    .select({
+      status: paymentSlip.status,
+      rejectionReason: paymentSlip.rejectionReason,
+      rejectionNote: paymentSlip.rejectionNote,
+    })
+    .from(paymentSlip)
+    .where(eq(paymentSlip.pendingEnrollmentId, pendingId))
+    .orderBy(desc(paymentSlip.createdAt))
     .limit(1);
   return rows[0] ?? null;
 }

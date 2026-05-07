@@ -43,7 +43,7 @@ export const POST = apiRouteRaw({
 		});
 
 		return NextResponse.redirect(
-			new URL(`/checkout/${result.pendingId}/success`, req.url),
+			new URL(`/checkout/${result.pendingId}`, req.url),
 			303,
 		);
 	},
