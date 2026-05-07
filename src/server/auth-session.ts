@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "./auth";
@@ -35,29 +36,34 @@ export function getUserRole(user: unknown): string | null | undefined {
 	return undefined;
 }
 
-export async function getSession(): Promise<SessionContext | null> {
-	const result = await auth.api.getSession({ headers: await headers() });
-	if (!result?.user || !result.session) return null;
+// React `cache` memoizes per-request, so layouts and pages that both call
+// getSession() during the same render trigger only one Better Auth lookup
+// (and at most one role-fallback DB query).
+export const getSession = cache(
+	async (): Promise<SessionContext | null> => {
+		const result = await auth.api.getSession({ headers: await headers() });
+		if (!result?.user || !result.session) return null;
 
-	let role = getUserRole(result.user);
-	// Better Auth session may not include plugin-added fields like `role`.
-	// Fall back to the database so role updates (e.g. admin promotion)
-	// are reflected immediately without requiring re-login.
-	if (role === undefined || role === null) {
-		role = (await UserRepo.getRoleById(result.user.id)) ?? undefined;
-	}
+		let role = getUserRole(result.user);
+		// Better Auth session may not include plugin-added fields like `role`.
+		// Fall back to the database so role updates (e.g. admin promotion)
+		// are reflected immediately without requiring re-login.
+		if (role === undefined || role === null) {
+			role = (await UserRepo.getRoleById(result.user.id)) ?? undefined;
+		}
 
-	return {
-		sessionId: result.session.id,
-		user: {
-			id: result.user.id,
-			email: result.user.email,
-			name: result.user.name,
-			role: normalizeRole(role),
-			emailVerified: result.user.emailVerified,
-		},
-	};
-}
+		return {
+			sessionId: result.session.id,
+			user: {
+				id: result.user.id,
+				email: result.user.email,
+				name: result.user.name,
+				role: normalizeRole(role),
+				emailVerified: result.user.emailVerified,
+			},
+		};
+	},
+);
 
 /** Pure check: returns context or throws ApiError. No framework coupling. */
 export function checkSession(ctx: SessionContext | null): SessionContext {

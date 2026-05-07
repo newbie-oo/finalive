@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
 	getCourseMetaForPublish,
@@ -12,6 +13,7 @@ import {
 	adminCourseAction,
 	formDataParser,
 	jsonParser,
+	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 
 const publishSchema = z.object({
@@ -29,7 +31,7 @@ function makePublishValidator() {
 export const publishCourseAction = adminCourseAction(
 	jsonParser(publishSchema),
 	(input) => input.courseId,
-	async ({ input }) => {
+	async ({ course, input }) => {
 		const validator = makePublishValidator();
 		const result = await validator.validate(input.courseId);
 		if (!result.ok) {
@@ -44,6 +46,9 @@ export const publishCourseAction = adminCourseAction(
 			status: "published",
 			publishedAt: new Date(),
 		});
+
+		revalidateCourseAdminPaths(input.courseId, course.slug);
+		revalidatePath("/sitemap.xml");
 
 		return { ok: true as const };
 	},

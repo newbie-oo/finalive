@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { container } from "@/server/container";
 import { adminAction, jsonParser } from "@/server/admin/admin-command";
@@ -24,6 +25,9 @@ export const grantCourseAction = adminAction(
 				note: input.note,
 				baseUrl: container.baseUrl(),
 			});
+			revalidatePath(`/admin/users/${input.studentUserId}`);
+			revalidatePath("/dashboard");
+			revalidatePath("/account/enrollments");
 			return { ok: true as const, grantId: result.grantId };
 		} catch (e: unknown) {
 			if (e instanceof Error && e.message === "already_enrolled") {

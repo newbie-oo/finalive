@@ -85,8 +85,11 @@ export class QuizService {
 			passed: score.passed,
 		});
 
+		// Always re-evaluate after a quiz attempt — a failed re-take of a
+		// previously-passed quiz must un-complete the course, so we cannot
+		// short-circuit on `score.passed`.
 		let courseCompleted = false;
-		if (score.passed && courseId) {
+		if (courseId) {
 			const checkResult =
 				await this.deps.completionChecker.reevaluateCourseCompletion({
 					userId: params.userId,

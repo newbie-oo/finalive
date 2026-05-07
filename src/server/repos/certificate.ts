@@ -153,15 +153,17 @@ export async function revokeCertificate(
 	certId: string,
 	adminUserId: string,
 	reason: string,
-): Promise<void> {
-	await db
+): Promise<{ certCode: string } | null> {
+	const [row] = await db
 		.update(certificate)
 		.set({
 			revokedAt: new Date(),
 			revokedByUserId: adminUserId,
 			revokeReason: reason,
 		})
-		.where(eq(certificate.id, certId));
+		.where(eq(certificate.id, certId))
+		.returning({ certCode: certificate.certCode });
+	return row ?? null;
 }
 
 export interface CertificateListItem {

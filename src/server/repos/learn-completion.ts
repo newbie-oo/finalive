@@ -7,12 +7,36 @@ import { lessonProgress, quizAttempt } from "@/db/schema/progress";
 import { quiz } from "@/db/schema/quiz";
 
 /**
+ * Clear `completedAt` on the user's active enrollment when criteria stop
+ * holding (e.g. latest quiz attempt failed after a previous pass). Returns
+ * the enrollment id when a row was un-completed.
+ */
+async function unmarkCourseComplete(
+  userId: string,
+  courseId: string,
+): Promise<string | null> {
+  const [updated] = await db
+    .update(enrollment)
+    .set({ completedAt: null, updatedAt: new Date() })
+    .where(
+      and(
+        eq(enrollment.userId, userId),
+        eq(enrollment.courseId, courseId),
+        eq(enrollment.status, "active"),
+      ),
+    )
+    .returning({ id: enrollment.id });
+  return updated?.id ?? null;
+}
+
+/**
  * Mark a course as completed for the user iff:
  *  1. Every published lesson under the course has a 'completed' progress row.
  *  2. Every quiz attached to those lessons has at least one passed attempt
  *     by this user (latest attempt is the source of truth — a re-take that
  *     fails after a pass un-completes the course).
  *
+ * If criteria no longer hold but `completedAt` is set, the row is un-marked.
  * Idempotent on the enrollment side: if `completedAt` is already set, the
  * UPDATE returns the same row and the caller can issue the certificate.
  */
@@ -51,8 +75,10 @@ export async function checkAndMarkCourseComplete(
     );
 
   const completedCount = completedRows[0]?.completedCount ?? 0;
-  if (completedCount !== lessonCount)
+  if (completedCount !== lessonCount) {
+    await unmarkCourseComplete(userId, courseId);
     return { completed: false, enrollmentId: null };
+  }
 
   // Quiz gate: every quiz attached to the course's lessons must have been
   // passed (latest attempt). Without this, the certificate fires the moment
@@ -93,6 +119,7 @@ export async function checkAndMarkCourseComplete(
     }
     for (const id of quizIds) {
       if (latestPass.get(id) !== true) {
+        await unmarkCourseComplete(userId, courseId);
         return { completed: false, enrollmentId: null };
       }
     }

@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidatePath } from "next/cache";
 import {
   makePendingEnrollmentService,
   type CreatePendingResult,
@@ -12,5 +13,7 @@ export async function createPendingEnrollment(
 ): Promise<CreatePendingResult> {
   const { user } = await requireSession("/login");
   const service = makePendingEnrollmentService();
-  return service.create(user.id, courseSlug);
+  const result = await service.create(user.id, courseSlug);
+  revalidatePath(`/courses/${courseSlug}`);
+  return result;
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidatePath } from "next/cache";
 import { requireRole } from "@/server/auth-session";
 import { container } from "@/server/container";
 import {
@@ -22,30 +23,47 @@ export type {
 	BulkResult,
 };
 
+function revalidateSlipPaths(): void {
+	revalidatePath("/admin/slips");
+	revalidatePath("/admin");
+	revalidatePath("/dashboard");
+	revalidatePath("/account/enrollments");
+}
+
 export async function acceptSlip(slipId: string): Promise<AcceptSlipResult> {
 	const { user: admin } = await requireRole("admin");
-	return container.slipReview().accept(slipId, admin.id);
+	const result = await container.slipReview().accept(slipId, admin.id);
+	revalidateSlipPaths();
+	return result;
 }
 
 export async function rejectSlip(
 	input: RejectSlipInput,
 ): Promise<RejectSlipResult> {
 	const { user: admin } = await requireRole("admin");
-	return container.slipReview().reject(input, admin.id);
+	const result = await container.slipReview().reject(input, admin.id);
+	revalidateSlipPaths();
+	return result;
 }
 
-export function bulkAcceptSlips(slipIds: string[]): Promise<BulkResult> {
-	return requireRole("admin").then(({ user: admin }) =>
-		container.slipReview().bulkAccept(slipIds, admin.id),
-	);
+export async function bulkAcceptSlips(
+	slipIds: string[],
+): Promise<BulkResult> {
+	const { user: admin } = await requireRole("admin");
+	const result = await container.slipReview().bulkAccept(slipIds, admin.id);
+	revalidateSlipPaths();
+	return result;
 }
 
-export function bulkRejectSlips(
+export async function bulkRejectSlips(
 	slipIds: string[],
 	reason: RejectReason,
 	note?: string,
 ): Promise<BulkResult> {
-	return requireRole("admin").then(({ user: admin }) =>
-		container.slipReview().bulkReject(slipIds, reason, note, admin.id),
-	);
+	const { user: admin } = await requireRole("admin");
+	const result = await container
+		.slipReview()
+		.bulkReject(slipIds, reason, note, admin.id);
+	revalidateSlipPaths();
+	return result;
 }

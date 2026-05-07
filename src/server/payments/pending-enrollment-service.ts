@@ -92,6 +92,14 @@ export class PendingEnrollmentService {
 				if (isUniqueViolation(e, "pending_enrollment_ref_code_unique"))
 					continue;
 				if (isUniqueViolation(e, "one_active_pending")) {
+					// Concurrent caller inserted between our findExisting / insert
+					// (TOCTOU). Re-read the canonical row and hand it back instead
+					// of erroring — the user wins the race they were going to win.
+					const winner = await this.deps.findExistingPending(
+						userId,
+						courseRow.id,
+					);
+					if (winner) return winner;
 					throw new ApiError(
 						"conflict",
 						"another pending enrollment already exists",

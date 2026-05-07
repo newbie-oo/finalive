@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getSession } from "@/server/auth-session";
 import { container } from "@/server/container";
@@ -41,6 +42,10 @@ export async function submitQuizAction(formData: FormData) {
 	if (!result.ok) {
 		return { ok: false, error: result.error };
 	}
+
+	// Invalidate any cached learn-route data (curriculum progress, quiz pass
+	// status). 'layout' scope re-renders all routes under the learn segment.
+	revalidatePath("/learn/[courseSlug]", "layout");
 
 	return { ok: true, result };
 }

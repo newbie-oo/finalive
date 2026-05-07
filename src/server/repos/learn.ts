@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
@@ -50,7 +51,24 @@ export interface GetLearnCourseOptions {
 	allowUnpublished?: boolean;
 }
 
-export async function getLearnCourse(
+// Memoized per-request: layout, page, and nested route segments under
+// /learn/[courseSlug] all call getLearnCourse with the same args during
+// a single render. React cache() keys on argument identity, so we
+// collapse `options` to a single boolean primitive before delegating.
+const _getLearnCourseCached = cache(
+	(courseSlug: string, userId: string | null, allowUnpublished: boolean) =>
+		_getLearnCourse(courseSlug, userId, { allowUnpublished }),
+);
+
+export function getLearnCourse(
+	courseSlug: string,
+	userId: string | null,
+	options: GetLearnCourseOptions = {},
+): Promise<GetLearnCourseResult | null> {
+	return _getLearnCourseCached(courseSlug, userId, options.allowUnpublished ?? false);
+}
+
+async function _getLearnCourse(
 	courseSlug: string,
 	userId: string | null,
 	options: GetLearnCourseOptions = {},

@@ -41,8 +41,27 @@ export function SlipPendingPoll({
   const query = useQuery<StatusResponse, Error & { code?: string }>({
     queryKey: ["pending-status", pendingId],
     queryFn: () => fetchStatus(pendingId),
-    refetchInterval: 15_000,
+    refetchInterval: (q) => {
+      // Stop polling once the row hits a terminal state — paid (redirect),
+      // awaiting_payment (admin rejected), expired, cancelled, or gone.
+      if (q.state.error?.code === "gone") return false;
+      const status = q.state.data?.status;
+      if (
+        status === "paid" ||
+        status === "awaiting_payment" ||
+        status === "expired" ||
+        status === "cancelled"
+      ) {
+        return false;
+      }
+      return 15_000;
+    },
     refetchOnWindowFocus: true,
+    retry: (failureCount, error) => {
+      // Don't retry when the pending row is gone — terminal.
+      if (error.code === "gone") return false;
+      return failureCount < 3;
+    },
   });
 
   useEffect(() => {
@@ -59,8 +78,9 @@ export function SlipPendingPoll({
     }
   }, [query.data, router, fallbackCourseSlug]);
 
+  const isGone = query.error?.code === "gone";
   const status = query.data?.status ?? "slip_submitted";
-  const isExpired = status === "expired" || status === "cancelled";
+  const isExpired = status === "expired" || status === "cancelled" || isGone;
   const isPaid = status === "paid";
   const isRejected = status === "awaiting_payment";
 
