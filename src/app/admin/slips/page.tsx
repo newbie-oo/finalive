@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 import type { SearchParams } from "@/lib/pagination";
 import { SlipQueue } from "@/components/admin/slip-queue";
+import { SlipQueueRefreshButton } from "@/components/admin/slip-queue-refresh-button";
 
 const STATUS_OPTIONS: Array<{ value: SlipQueueStatus; label: string }> = [
   { value: "submitted", label: "รอตรวจ" },
@@ -52,11 +53,13 @@ export default async function AdminSlipsPage({
             ข้าม
           </p>
         </div>
-        <nav
-          className="flex flex-wrap gap-2 text-uism"
-          aria-label="ตัวกรองสถานะสลิป"
-        >
-          {STATUS_OPTIONS.map((opt) => {
+        <div className="flex flex-wrap items-center gap-2">
+          <SlipQueueRefreshButton />
+          <nav
+            className="flex flex-wrap gap-2 text-uism"
+            aria-label="ตัวกรองสถานะสลิป"
+          >
+            {STATUS_OPTIONS.map((opt) => {
             const active = opt.value === status;
             return (
               <Link
@@ -69,11 +72,12 @@ export default async function AdminSlipsPage({
                     : "border-(--border) text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
                 }`}
               >
-                {opt.label}
-              </Link>
-            );
-          })}
-        </nav>
+                  {opt.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </header>
 
       <SlipQueue status={status} initialSelectedId={selectedId} />

@@ -82,8 +82,6 @@ export function useSlipQueue({
 		queryFn: ({ pageParam }) => fetchPage({ pageParam, status }),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (last) => last.pagination.next_cursor ?? undefined,
-		refetchInterval: 30_000,
-		refetchIntervalInBackground: false,
 	});
 
 	const rows = useMemo(
