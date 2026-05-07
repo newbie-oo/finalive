@@ -61,14 +61,14 @@ export default async function CheckoutSuccessPage({
           </ol>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild variant="primary" size="lg" className="w-full">
-            <Link href="/account/enrollments">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button asChild variant="primary" size="lg" className="w-full sm:w-auto sm:flex-1">
+            <Link href="/account/enrollments" className="flex items-center justify-center gap-2">
               <ListBullets size={16} weight="bold" /> ดูคอร์สของฉัน
             </Link>
           </Button>
-          <Button asChild variant="secondary" size="lg" className="w-full">
-            <Link href="/courses">
+          <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto sm:flex-1">
+            <Link href="/courses" className="flex items-center justify-center gap-2">
               ค้นหาคอร์สเพิ่ม <ArrowRight size={16} />
             </Link>
           </Button>
