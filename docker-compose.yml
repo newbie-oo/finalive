@@ -1,4 +1,27 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finalive-app
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    env_file: [.env]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://finalive:dev@db:5432/finalive
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      S3_ENDPOINT: http://minio:9000
+      BETTER_AUTH_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
   db:
     image: postgres:16-alpine
     container_name: finalive-db
