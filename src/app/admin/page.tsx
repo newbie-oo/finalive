@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { AdminStatsRepo } from "@/server/repos/admin-stats";
 import { RevenueRepo } from "@/server/repos/revenue";
-import { formatMonthlyRevenue } from "@/server/services/admin-dashboard-presenter";
-import { listAdminCourses } from "@/server/repos/admin-course";
+import { ActivityRepo } from "@/server/repos/activity";
+import {
+	formatActivityRows,
+	formatMonthlyRevenue,
+} from "@/server/services/admin-dashboard-presenter";
 import { listPendingSlips } from "@/server/repos/slip";
 import { formatTHB } from "@/lib/format";
 import { thaiDateString, thaiTimeString } from "@/lib/format-time";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { RevenueChart } from "@/components/admin/revenue-chart";
 import {
-	Calendar,
-	UploadSimple,
 	Money,
 	Users,
 	Books,
@@ -26,14 +28,20 @@ export const dynamic = "force-dynamic";
 
 const fmtCount = (n: number) => n.toLocaleString("th-TH");
 
+interface KpiDelta {
+	value: number; // signed percentage, e.g. 12 or -8
+	label?: string; // optional caption next to the delta, e.g. "YoY"
+}
+
 interface KpiCardProps {
 	icon: React.ElementType;
 	iconColorClass: string;
 	iconBgClass: string;
 	value: string | number;
 	label: string;
-	trend: string;
-	trendPositive?: boolean;
+	delta?: KpiDelta;
+	subtext?: string;
+	subtextTone?: "muted" | "warning" | "success";
 	href?: string;
 }
 
@@ -43,10 +51,17 @@ function KpiCard({
 	iconBgClass,
 	value,
 	label,
-	trend,
-	trendPositive = true,
+	delta,
+	subtext,
+	subtextTone = "muted",
 	href,
 }: KpiCardProps) {
+	const positive = delta ? delta.value >= 0 : true;
+	const subtextToneClass = {
+		muted: "text-(--foreground-subtle)",
+		warning: "text-(--warning)",
+		success: "text-(--success)",
+	}[subtextTone];
 	const content = (
 		<div className="flex h-full flex-col rounded-[14px] border border-(--border) bg-(--surface) p-5 shadow-sm transition-colors hover:border-(--border-strong)">
 			<div className="mb-4 flex items-start justify-between">
@@ -58,19 +73,32 @@ function KpiCard({
 				>
 					<Icon size={22} weight="bold" className={iconColorClass} />
 				</div>
-				<span
-					className={cn(
-						"text-uism num font-semibold",
-						trendPositive ? "text-(--success)" : "text-(--warning)",
-					)}
-				>
-					{trend}
-				</span>
+				{delta && (
+					<span
+						className={cn(
+							"text-uism num font-semibold",
+							positive ? "text-(--success)" : "text-(--warning)",
+						)}
+						aria-label={`${positive ? "เพิ่มขึ้น" : "ลดลง"} ${Math.abs(delta.value).toFixed(0)} เปอร์เซ็นต์${delta.label ? ` ${delta.label}` : ""}`}
+					>
+						{positive ? "↑" : "↓"} {Math.abs(delta.value).toFixed(0)}%
+						{delta.label ? (
+							<span className="ml-1 font-normal text-(--foreground-subtle)">
+								{delta.label}
+							</span>
+						) : null}
+					</span>
+				)}
 			</div>
 			<div className="text-h1 num mb-1 font-semibold text-(--foreground)">
 				{value}
 			</div>
 			<div className="text-caption text-(--foreground-muted)">{label}</div>
+			{subtext && (
+				<div className={cn("mt-1 text-caption", subtextToneClass)}>
+					{subtext}
+				</div>
+			)}
 		</div>
 	);
 	return href ? (
@@ -114,218 +142,37 @@ function StatusBadge({
 	);
 }
 
-function RevenueChart({
-	data,
-}: {
-	data: { month: string; current: number; previous: number }[];
-}) {
-	const labels = data.map((d) => d.month);
-	const current = data.map((d) => d.current);
-	const prev = data.map((d) => d.previous);
-	const maxVal = Math.max(...current, ...prev, 1) * 1.1;
-	const w = 600,
-		h = 220,
-		padLeft = 48,
-		padRight = 20,
-		padTop = 20,
-		padBottom = 24;
-	const chartW = w - padLeft - padRight;
-	const chartH = h - padTop - padBottom;
-	const x = (i: number) => padLeft + (i / (labels.length - 1)) * chartW;
-	const y = (v: number) => padTop + chartH - (v / maxVal) * chartH;
-	const currentPoints = current.map((v, i) => [x(i), y(v)] as const);
-	const prevPoints = prev.map((v, i) => [x(i), y(v)] as const);
-	const areaPath =
-		`M ${currentPoints[0]![0]} ${currentPoints[0]![1]} ` +
-		currentPoints
-			.slice(1)
-			.map(([px, py]) => `L ${px} ${py}`)
-			.join(" ") +
-		` L ${currentPoints[currentPoints.length - 1]![0]} ${padTop + chartH} ` +
-		` L ${currentPoints[0]![0]} ${padTop + chartH} Z`;
-	const yLabels = [
-		`฿${Math.round(maxVal / 1000)}k`,
-		`฿${Math.round((maxVal * 0.75) / 1000)}k`,
-		`฿${Math.round((maxVal * 0.5) / 1000)}k`,
-		`฿${Math.round((maxVal * 0.25) / 1000)}k`,
-		"฿0",
-	];
-	return (
-		<svg viewBox={`0 0 ${w} ${h}`} className="w-full" style={{ height: 220 }}>
-			<defs>
-				<linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
-					<stop offset="0%" stopColor="var(--primary)" stopOpacity="0.35" />
-					<stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-				</linearGradient>
-			</defs>
-			{yLabels.map((_, i) => {
-				const yp = padTop + (i / (yLabels.length - 1)) * chartH;
-				return (
-					<line
-						key={i}
-						x1={padLeft}
-						y1={yp}
-						x2={w - padRight}
-						y2={yp}
-						stroke="var(--border-strong)"
-						strokeWidth="0.5"
-						strokeDasharray="3 3"
-					/>
-				);
-			})}
-			{yLabels.map((l, i) => (
-				<text
-					key={i}
-					x={padLeft - 8}
-					y={padTop + i * (chartH / (yLabels.length - 1)) + 4}
-					textAnchor="end"
-					fill="var(--foreground-subtle)"
-					fontSize="10"
-					fontFamily="var(--font-numeric)"
-				>
-					{l}
-				</text>
-			))}
-			<polyline
-				points={prevPoints.map(([px, py]) => `${px},${py}`).join(" ")}
-				fill="none"
-				stroke="var(--border-strong)"
-				strokeWidth="2"
-				strokeDasharray="5 4"
-			/>
-			<path d={areaPath} fill="url(#revFill)" />
-			<polyline
-				points={currentPoints.map(([px, py]) => `${px},${py}`).join(" ")}
-				fill="none"
-				stroke="var(--primary)"
-				strokeWidth="2.5"
-			/>
-			{currentPoints.map(([px, py], i) => (
-				<circle
-					key={i}
-					cx={px}
-					cy={py}
-					r="4.5"
-					fill="var(--surface)"
-					stroke="var(--primary)"
-					strokeWidth="2"
-				/>
-			))}
-			{(() => {
-				const last = currentPoints[currentPoints.length - 1]!;
-				const [tx, ty] = last;
-				return (
-					<g>
-						<line
-							x1={tx}
-							y1={padTop}
-							x2={tx}
-							y2={padTop + chartH}
-							stroke="var(--accent)"
-							strokeWidth="1"
-							strokeDasharray="3 3"
-						/>
-						<circle cx={tx} cy={ty} r="6" fill="var(--accent)" />
-						<rect
-							x={tx - 52}
-							y={padTop - 2}
-							width={104}
-							height={36}
-							rx={6}
-							fill="var(--surface)"
-							stroke="var(--border-strong)"
-							strokeWidth="1"
-						/>
-						<text
-							x={tx}
-							y={padTop + 12}
-							textAnchor="middle"
-							fill="var(--foreground-muted)"
-							fontSize="10"
-							fontFamily="var(--font-numeric)"
-						>
-							{labels[labels.length - 1]}
-						</text>
-						<text
-							x={tx}
-							y={padTop + 26}
-							textAnchor="middle"
-							fill="var(--foreground)"
-							fontSize="12"
-							fontWeight="600"
-							fontFamily="var(--font-numeric)"
-						>
-							{formatTHB(current[current.length - 1]!)}
-						</text>
-					</g>
-				);
-			})()}
-			{labels.map((m, i) => (
-				<text
-					key={i}
-					x={x(i)}
-					y={h - 4}
-					textAnchor="middle"
-					fill="var(--foreground-subtle)"
-					fontSize="11"
-				>
-					{m}
-				</text>
-			))}
-		</svg>
-	);
-}
-
 export default async function AdminDashboardPage() {
-	const [counts, courses, slipsRes, revenueData] = await Promise.all([
-		AdminStatsRepo.getCounts(),
-		listAdminCourses({ status: "published" }),
-		listPendingSlips({ status: "submitted", per_page: 5 }),
-		RevenueRepo.getMonthlyRevenue().then(formatMonthlyRevenue),
-	]);
-	const topCourses = courses
-		.filter((c) => c.enrollmentCount > 0)
-		.sort((a, b) => b.enrollmentCount - a.enrollmentCount)
-		.slice(0, 4)
-		.map((c) => ({
-			id: c.id,
-			title: c.title,
-			enrollmentCount: c.enrollmentCount,
-			isFree: c.isFree,
-			price: c.price,
-		}));
+	const [counts, topCourses, slipsRes, revenueData, activityRows] =
+		await Promise.all([
+			AdminStatsRepo.getCounts(),
+			RevenueRepo.getTopCoursesByEnrollment(4),
+			listPendingSlips({ status: "submitted", per_page: 5 }),
+			RevenueRepo.getMonthlyRevenue().then(formatMonthlyRevenue),
+			ActivityRepo.getRecent(6).then(formatActivityRows),
+		]);
 	const maxEnroll = topCourses[0]?.enrollmentCount ?? 1;
 	const pendingSlips = slipsRes.data;
 	const nowLabel = `${thaiDateString(new Date())} · ${thaiTimeString(new Date())}`;
+
+	// Compute revenue YoY delta from the most recent month with data, comparing
+	// against the same month last year. Only show when both values are non-zero
+	// to avoid misleading "infinite growth" arrows.
+	const lastMonth = revenueData[revenueData.length - 1];
+	const revenueDelta: KpiDelta | undefined =
+		lastMonth && lastMonth.previous > 0
+			? {
+					value: ((lastMonth.current - lastMonth.previous) / lastMonth.previous) * 100,
+					label: "YoY",
+				}
+			: undefined;
 	return (
 		<section className="space-y-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div>
-					<h1 className="text-h1 font-bold text-(--foreground)">ภาพรวมธุรกิจ</h1>
-					<p className="mt-1 text-body text-(--foreground-muted)">
-						ข้อมูลล่าสุด · {nowLabel}
-					</p>
-				</div>
-				<div className="flex items-center gap-2">
-					<button
-						type="button"
-						disabled
-						title="เร็วๆ นี้"
-						className="inline-flex cursor-not-allowed items-center gap-2 rounded-[10px] border border-(--border) bg-(--surface-muted) px-4 py-2.5 text-ui text-(--foreground-muted) opacity-60 transition-colors"
-					>
-						<Calendar size={16} weight="bold" />
-						30 วันล่าสุด
-					</button>
-					<button
-						type="button"
-						disabled
-						title="เร็วๆ นี้"
-						className="inline-flex cursor-not-allowed items-center gap-2 rounded-[10px] bg-(--primary) px-4 py-2.5 text-ui font-semibold text-(--primary-fg) opacity-60 transition-colors"
-					>
-						<UploadSimple size={16} weight="bold" />
-						Export
-					</button>
-				</div>
+			<div>
+				<h1 className="text-h1 font-bold text-(--foreground)">ภาพรวมธุรกิจ</h1>
+				<p className="mt-1 text-body text-(--foreground-muted)">
+					ข้อมูลล่าสุด · {nowLabel}
+				</p>
 			</div>
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
 				<Link
@@ -390,9 +237,8 @@ export default async function AdminDashboardPage() {
 					iconColorClass="text-(--success)"
 					iconBgClass="bg-(--success)/10"
 					value={formatTHB(counts.revenueMtd)}
-					label="รายได้รวม"
-					trend="↑ 12%"
-					trendPositive
+					label="รายได้เดือนนี้"
+					delta={revenueDelta}
 				/>
 				<KpiCard
 					icon={Users}
@@ -400,17 +246,15 @@ export default async function AdminDashboardPage() {
 					iconBgClass="bg-(--primary)/10"
 					value={fmtCount(counts.enrollmentsActive)}
 					label="นักเรียน"
-					trend="↑ 8%"
-					trendPositive
+					subtext="ลงทะเบียนใช้งาน"
 				/>
 				<KpiCard
 					icon={Books}
 					iconColorClass="text-(--accent)"
 					iconBgClass="bg-(--accent)/10"
 					value={fmtCount(counts.coursesPublished)}
-					label="คอร์ส active"
-					trend="+2 ใหม่"
-					trendPositive
+					label="คอร์ส"
+					subtext="เผยแพร่อยู่"
 				/>
 				<KpiCard
 					icon={Hourglass}
@@ -418,8 +262,8 @@ export default async function AdminDashboardPage() {
 					iconBgClass="bg-(--warning)/10"
 					value={fmtCount(counts.slipsSubmitted)}
 					label="สลิปรอตรวจ"
-					trend="⚠ ต้องดู"
-					trendPositive={counts.slipsSubmitted === 0}
+					subtext={counts.slipsSubmitted === 0 ? "ทันสมัย" : "ต้องดำเนินการ"}
+					subtextTone={counts.slipsSubmitted === 0 ? "success" : "warning"}
 					href="/admin/slips?status=submitted"
 				/>
 			</div>
@@ -485,9 +329,7 @@ export default async function AdminDashboardPage() {
 												<span className="num">{c.enrollmentCount}</span>
 												{" · "}
 												<span className="num font-semibold text-(--foreground)">
-													{c.isFree
-														? "ฟรี"
-														: formatTHB(Number(c.price) * c.enrollmentCount)}
+													{c.isFree ? "ฟรี" : formatTHB(c.revenue)}
 												</span>
 											</span>
 										</div>
@@ -570,102 +412,59 @@ export default async function AdminDashboardPage() {
 						ดูทั้งหมด →
 					</Link>
 				</div>
-				<div className="overflow-x-auto">
-					<table className="w-full border-collapse">
-						<thead>
-							<tr className="bg-(--surface-muted)">
-								{["เวลา", "ผู้ใช้", "การกระทำ", "จำนวน", "สถานะ"].map((h) => (
-									<th
-										key={h}
-										className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-(--foreground-subtle)"
-									>
-										{h}
-									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody>
-							{[
-								{
-									time: "10:23",
-									user: "สมชาย กิตติพร",
-									action: "สมัครคอร์ส DCF Masterclass",
-									amount: "฿2,490",
-									status: "success" as const,
-									statusLabel: "สำเร็จ",
-								},
-								{
-									time: "09:15",
-									user: "สมหญิง ปรีชา",
-									action: "อัปโหลดสลิปการชำระเงิน",
-									amount: "฿1,490",
-									status: "warning" as const,
-									statusLabel: "รอตรวจ",
-								},
-								{
-									time: "08:42",
-									user: "Admin",
-									action: "อนุมัติสลิป REF-001234",
-									amount: "฿890",
-									status: "success" as const,
-									statusLabel: "อนุมัติ",
-								},
-								{
-									time: "08:15",
-									user: "ธนภัทร เกษม",
-									action: 'จบคอร์ส "Excel for Finance"',
-									amount: "—",
-									status: "primary" as const,
-									statusLabel: "รับใบประกาศ",
-								},
-								{
-									time: "07:30",
-									user: "นภัส วิชัยพล",
-									action: "อัปโหลดสลิปการชำระเงิน",
-									amount: "฿2,990",
-									status: "warning" as const,
-									statusLabel: "รอตรวจ",
-								},
-								{
-									time: "Yesterday",
-									user: "ปวีณ์ จิระพร",
-									action: "สมัครคอร์ส Excel for Finance",
-									amount: "฿1,990",
-									status: "success" as const,
-									statusLabel: "สำเร็จ",
-								},
-							].map((r, i) => (
-								<tr
-									key={i}
-									className="border-t border-(--border) transition-colors hover:bg-(--surface-muted)/50"
-								>
-									<td className="px-6 py-3.5 text-[13px] tabular-nums text-(--foreground-muted)">
-										{r.time}
-									</td>
-									<td className="px-6 py-3.5">
-										<div className="flex items-center gap-2.5">
-											<AvatarInitials name={r.user} size="sm" />
-											<span className="text-uism font-medium text-(--foreground)">
-												{r.user}
-											</span>
-										</div>
-									</td>
-									<td className="px-6 py-3.5 text-uism text-(--foreground)">
-										{r.action}
-									</td>
-									<td className="px-6 py-3.5 text-uism num font-semibold text-(--foreground)">
-										{r.amount}
-									</td>
-									<td className="px-6 py-3.5">
-										<StatusBadge variant={r.status}>
-											{r.statusLabel}
-										</StatusBadge>
-									</td>
+				{activityRows.length === 0 ? (
+					<div className="px-6 py-10 text-center text-caption text-(--foreground-muted)">
+						ยังไม่มีกิจกรรมล่าสุด
+					</div>
+				) : (
+					<div className="overflow-x-auto">
+						<table className="w-full border-collapse">
+							<thead>
+								<tr className="bg-(--surface-muted)">
+									{["เวลา", "ผู้ใช้", "การกระทำ", "จำนวน", "สถานะ"].map((h) => (
+										<th
+											key={h}
+											className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-(--foreground-subtle)"
+										>
+											{h}
+										</th>
+									))}
 								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+							</thead>
+							<tbody>
+								{activityRows.map((r, i) => (
+									<tr
+										key={i}
+										className="border-t border-(--border) transition-colors hover:bg-(--surface-muted)/50"
+									>
+										<td className="px-6 py-3.5 text-[13px] tabular-nums text-(--foreground-muted)">
+											{r.time}
+										</td>
+										<td className="px-6 py-3.5">
+											<div className="flex items-center gap-2.5">
+												<AvatarInitials name={r.userName} size="sm" />
+												<span className="text-uism font-medium text-(--foreground)">
+													{r.userName}
+												</span>
+											</div>
+										</td>
+										<td className="px-6 py-3.5 text-uism text-(--foreground)">
+											{r.action}
+										</td>
+										<td className="px-6 py-3.5 text-uism num font-semibold text-(--foreground)">
+											{r.amount ?? "—"}
+										</td>
+										<td className="px-6 py-3.5">
+											<StatusBadge variant={r.status}>
+												{r.statusLabel}
+											</StatusBadge>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
 			</div>
 		</section>
 	);

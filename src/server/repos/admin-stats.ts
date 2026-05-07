@@ -75,7 +75,7 @@ export const AdminStatsRepo = {
 				.where(and(eq(course.status, "published"), isNull(course.deletedAt))),
 			db
 				.select({
-					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase})::int, 0)`,
+					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase}), 0)::float8`,
 				})
 				.from(enrollment)
 				.where(

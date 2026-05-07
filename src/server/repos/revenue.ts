@@ -1,7 +1,8 @@
 import "server-only";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { enrollment } from "@/db/schema/enrollment";
+import { course } from "@/db/schema/course";
 
 export interface MonthlyRevenueRaw {
 	monthIndex: number; // 0-11
@@ -42,7 +43,7 @@ export const RevenueRepo = {
 				.select({
 					year: sql<number>`extract(year from ${enrollment.createdAt})::int`,
 					month: sql<number>`extract(month from ${enrollment.createdAt})::int - 1`,
-					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase})::int, 0)`,
+					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase}), 0)::float8`,
 				})
 				.from(enrollment)
 				.where(
@@ -60,7 +61,7 @@ export const RevenueRepo = {
 				.select({
 					year: sql<number>`extract(year from ${enrollment.createdAt})::int`,
 					month: sql<number>`extract(month from ${enrollment.createdAt})::int - 1`,
-					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase})::int, 0)`,
+					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase}), 0)::float8`,
 				})
 				.from(enrollment)
 				.where(
@@ -89,5 +90,40 @@ export const RevenueRepo = {
 			current: currentMap.get(`${m.year}-${m.month}`) ?? 0,
 			previous: prevMap.get(`${m.year - 1}-${m.month}`) ?? 0,
 		}));
+	},
+
+	/**
+	 * Top courses ranked by enrollment count, with actual revenue computed
+	 * from each enrollment's `priceAtPurchase` (not current course price).
+	 * This avoids overstating revenue when a course's price changes after
+	 * enrollments were taken at the old price.
+	 */
+	async getTopCoursesByEnrollment(
+		limit = 4,
+	): Promise<
+		Array<{
+			id: string;
+			title: string;
+			isFree: boolean;
+			enrollmentCount: number;
+			revenue: number;
+		}>
+	> {
+		const rows = await db
+			.select({
+				id: course.id,
+				title: course.title,
+				isFree: course.isFree,
+				enrollmentCount: sql<number>`count(${enrollment.id})::int`,
+				revenue: sql<number>`COALESCE(sum(case when ${enrollment.source} = 'paid' then ${enrollment.priceAtPurchase} else 0 end), 0)::float8`,
+			})
+			.from(course)
+			.innerJoin(enrollment, eq(enrollment.courseId, course.id))
+			.where(eq(course.status, "published"))
+			.groupBy(course.id, course.title, course.isFree)
+			.orderBy(desc(sql`count(${enrollment.id})`))
+			.limit(limit);
+
+		return rows;
 	},
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { formatTHB } from "@/lib/format";
-import { Eye } from "@phosphor-icons/react";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
 
 export interface SlipRow {
 	id: string;
@@ -78,14 +78,13 @@ export function SlipTable({
 						>
 							เวลา
 						</th>
-						<th className="px-3 py-2.5" style={{ width: 80 }} />
 					</tr>
 				</thead>
 				<tbody>
 					{isLoading && rows.length === 0 ? (
 						<tr>
 							<td
-								colSpan={6}
+								colSpan={5}
 								className="p-4 text-caption text-(--foreground-muted)"
 							>
 								กำลังโหลด…
@@ -94,7 +93,7 @@ export function SlipTable({
 					) : rows.length === 0 ? (
 						<tr>
 							<td
-								colSpan={6}
+								colSpan={5}
 								className="p-4 text-caption text-(--foreground-muted)"
 							>
 								— ไม่มีสลิปในคิวนี้ —
@@ -106,12 +105,8 @@ export function SlipTable({
 							return (
 								<tr
 									key={slip.id}
-									className="cursor-pointer border-b border-(--border) transition-colors"
-									style={{
-										background: isActive
-											? "color-mix(in srgb, var(--primary) 6%, transparent)"
-											: "transparent",
-									}}
+									aria-current={isActive ? "true" : undefined}
+									className="cursor-pointer border-b border-(--border) transition-colors hover:bg-(--surface-muted)/50 aria-current:bg-(--primary)/5"
 									onClick={() => onSelect(slip.id)}
 								>
 									<td className="px-3 py-2.5">
@@ -121,9 +116,10 @@ export function SlipTable({
 									</td>
 									<td className="px-3 py-2.5">
 										<div className="flex items-center gap-2.5">
-											<span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[11px] font-semibold text-white">
-												{(slip.studentName || "?").trim().charAt(0)}
-											</span>
+											<AvatarInitials
+												name={slip.studentName ?? slip.studentEmail ?? "?"}
+												size="sm"
+											/>
 											<div className="min-w-0">
 												<div className="truncate text-ui font-medium text-(--foreground)">
 													{slip.studentName ||
@@ -152,18 +148,6 @@ export function SlipTable({
 										<span className="text-caption text-(--foreground-muted)">
 											{new Date(slip.createdAt).toLocaleDateString("th-TH")}
 										</span>
-									</td>
-									<td className="px-3 py-2.5 text-right">
-										<button
-											type="button"
-											onClick={(e) => {
-												e.stopPropagation();
-												onSelect(slip.id);
-											}}
-											className="inline-flex h-8 items-center gap-1.5 rounded-[8px] px-2.5 text-uism text-(--foreground) transition-colors hover:bg-(--surface-muted)"
-										>
-											<Eye size={14} /> ดู
-										</button>
 									</td>
 								</tr>
 							);

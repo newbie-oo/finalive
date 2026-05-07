@@ -1,5 +1,16 @@
 import "server-only";
-import { count, eq } from "drizzle-orm";
+import {
+	and,
+	count,
+	desc,
+	eq,
+	ilike,
+	isNotNull,
+	isNull,
+	or,
+	sql,
+	type SQL,
+} from "drizzle-orm";
 import { db } from "@/db/client";
 import { certificate } from "@/db/schema/certificate";
 import { enrollment } from "@/db/schema/enrollment";
@@ -49,9 +60,93 @@ export async function listAllCertificates(): Promise<
 		.innerJoin(enrollment, eq(certificate.enrollmentId, enrollment.id))
 		.innerJoin(userTable, eq(enrollment.userId, userTable.id))
 		.innerJoin(courseTable, eq(enrollment.courseId, courseTable.id))
-		.orderBy(certificate.issuedAt);
+		.orderBy(desc(certificate.issuedAt));
 
 	return rows;
+}
+
+export type AdminCertificateStatus = "all" | "active" | "revoked";
+
+export interface AdminCertificateListFilters {
+	q?: string;
+	status?: AdminCertificateStatus;
+	page?: number;
+	perPage?: number;
+}
+
+export interface AdminCertificateListPage {
+	rows: Array<AdminCertificateListItem & { studentName: string }>;
+	total: number;
+	page: number;
+	perPage: number;
+	totalPages: number;
+}
+
+function buildCertFilter({
+	q,
+	status,
+}: AdminCertificateListFilters): SQL | undefined {
+	const conds: SQL[] = [];
+	if (q && q.trim().length > 0) {
+		const needle = `%${q.trim()}%`;
+		const orExpr = or(
+			ilike(certificate.certCode, needle),
+			ilike(userTable.name, needle),
+			ilike(courseTable.title, needle),
+		);
+		if (orExpr) conds.push(orExpr);
+	}
+	if (status === "active") conds.push(isNull(certificate.revokedAt));
+	else if (status === "revoked") conds.push(isNotNull(certificate.revokedAt));
+	if (conds.length === 0) return undefined;
+	if (conds.length === 1) return conds[0];
+	return and(...conds);
+}
+
+export async function listCertificatesPage(
+	filters: AdminCertificateListFilters,
+): Promise<AdminCertificateListPage> {
+	const page = Math.max(1, filters.page ?? 1);
+	const perPage = Math.min(100, Math.max(1, filters.perPage ?? 20));
+	const where = buildCertFilter(filters);
+
+	const baseSelect = db
+		.select({
+			id: certificate.id,
+			certCode: certificate.certCode,
+			studentName: userTable.name,
+			courseTitle: courseTable.title,
+			issuedAt: certificate.issuedAt,
+			revokedAt: certificate.revokedAt,
+		})
+		.from(certificate)
+		.innerJoin(enrollment, eq(certificate.enrollmentId, enrollment.id))
+		.innerJoin(userTable, eq(enrollment.userId, userTable.id))
+		.innerJoin(courseTable, eq(enrollment.courseId, courseTable.id));
+
+	const baseCount = db
+		.select({ n: sql<number>`count(*)::int` })
+		.from(certificate)
+		.innerJoin(enrollment, eq(certificate.enrollmentId, enrollment.id))
+		.innerJoin(userTable, eq(enrollment.userId, userTable.id))
+		.innerJoin(courseTable, eq(enrollment.courseId, courseTable.id));
+
+	const [rows, countRows] = await Promise.all([
+		(where ? baseSelect.where(where) : baseSelect)
+			.orderBy(desc(certificate.issuedAt))
+			.limit(perPage)
+			.offset((page - 1) * perPage),
+		where ? baseCount.where(where) : baseCount,
+	]);
+
+	const total = countRows[0]?.n ?? 0;
+	return {
+		rows: rows.map((r) => ({ ...r, studentName: r.studentName ?? "" })),
+		total,
+		page,
+		perPage,
+		totalPages: Math.max(1, Math.ceil(total / perPage)),
+	};
 }
 
 export async function revokeCertificate(

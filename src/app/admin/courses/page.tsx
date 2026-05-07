@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Plus } from "@phosphor-icons/react/dist/ssr";
+import { MagnifyingGlass, Plus } from "@phosphor-icons/react/dist/ssr";
 import { listAdminCourses } from "@/server/repos/admin-course";
 import { formatTHB } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusChip } from "@/components/ui/status-chip";
 
 export const dynamic = "force-dynamic";
@@ -71,13 +72,13 @@ export default async function AdminCoursesPage({
 				<label htmlFor="admin-courses-q" className="sr-only">
 					ค้นหาคอร์ส
 				</label>
-				<input
+				<Input
 					id="admin-courses-q"
 					type="search"
 					name="q"
 					defaultValue={q}
 					placeholder="ค้นหาด้วยชื่อหรือ slug"
-					className="h-10 w-full rounded-button border border-(--border) bg-(--surface) px-3 text-ui sm:w-72"
+					className="w-full sm:w-72"
 				/>
 				<label htmlFor="admin-courses-status" className="sr-only">
 					กรองสถานะ
@@ -86,7 +87,7 @@ export default async function AdminCoursesPage({
 					id="admin-courses-status"
 					name="status"
 					defaultValue={status}
-					className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui"
+					className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground)"
 				>
 					{STATUSES.map((s) => (
 						<option key={s.key} value={s.key}>
@@ -94,12 +95,10 @@ export default async function AdminCoursesPage({
 						</option>
 					))}
 				</select>
-				<button
-					type="submit"
-					className="inline-flex h-10 items-center rounded-button bg-(--accent) px-4 text-ui font-medium text-(--accent-fg)"
-				>
+				<Button type="submit" variant="primary">
+					<MagnifyingGlass size={16} weight="bold" />
 					ค้นหา
-				</button>
+				</Button>
 				{filtersActive && (
 					<Link
 						href="/admin/courses"
