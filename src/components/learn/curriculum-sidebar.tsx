@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
 import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
 import { useLessonAccess } from "@/hooks/use-lesson-access";
 import { useNotePreview } from "@/hooks/use-note-preview";
@@ -139,7 +140,9 @@ function StatusIcon({
 }
 
 function SidebarNotesCard({ lessonId }: { lessonId: string }) {
-	const preview = useNotePreview(lessonId);
+	const { data: session } = useSession();
+	const userId = session?.user?.id ?? "";
+	const preview = useNotePreview(userId, lessonId);
 
 	if (!preview) return null;
 

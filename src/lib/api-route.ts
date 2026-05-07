@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSessionThrow, requireRoleThrow } from "@/server/auth-session";
 import { ApiError, statusForCode } from "@/lib/api-error";
+import { thaiErrorMessage } from "@/lib/error-messages";
 import {
 	checkRateLimit,
 	getClientIP,
@@ -153,8 +154,12 @@ function handleApiError(e: unknown, rid: string): NextResponse {
 		);
 	}
 	console.error(`API error [${rid}]:`, e);
-	const message = e instanceof Error ? e.message : "internal_error";
-	return errorResponse("internal_error", message, 500, rid);
+	return errorResponse(
+		"internal_error",
+		thaiErrorMessage("internal_error"),
+		500,
+		rid,
+	);
 }
 
 /**

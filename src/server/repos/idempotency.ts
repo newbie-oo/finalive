@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { ZodType } from "zod";
 import { db } from "@/db/client";
 import { idempotencyRecord } from "@/db/schema/idempotency";
@@ -8,6 +8,9 @@ import { isUniqueViolation } from "@/lib/pg-error";
 const ENVELOPE_VERSION = 1;
 const POLL_MS = 100;
 const POLL_TIMEOUT_MS = 30_000;
+// Leases with no committed result older than this are considered abandoned
+// (the original holder crashed). The next caller breaks the lease and retries.
+const LEASE_STALE_AFTER_MS = 60_000;
 
 interface Envelope {
 	v: number;
@@ -24,7 +27,16 @@ export interface WithIdempotencyArgs<T> {
 export async function withIdempotency<T>(
 	args: WithIdempotencyArgs<T>,
 ): Promise<T> {
-	const acquired = await tryAcquire(args.scope, args.key);
+	let acquired = await tryAcquire(args.scope, args.key);
+
+	// If insert was blocked, the row may be stale (holder crashed before commit).
+	// Break-on-stale and retry once.
+	if (!acquired) {
+		const broke = await breakIfStale(args.scope, args.key);
+		if (broke) {
+			acquired = await tryAcquire(args.scope, args.key);
+		}
+	}
 
 	if (acquired) {
 		try {
@@ -55,6 +67,24 @@ export async function withIdempotency<T>(
 	}
 
 	return pollForResult(args.scope, args.key, args.schema);
+}
+
+// If a row exists with no committed result and is older than the stale
+// threshold, the original lease holder crashed. Delete it so the next
+// caller can retry. Returns true when a stale row was deleted.
+async function breakIfStale(scope: string, key: string): Promise<boolean> {
+	const deleted = await db
+		.delete(idempotencyRecord)
+		.where(
+			and(
+				eq(idempotencyRecord.scope, scope),
+				eq(idempotencyRecord.key, key),
+				sql`${idempotencyRecord.responseJson} ->> 'data' IS NULL`,
+				sql`${idempotencyRecord.createdAt} < NOW() - (${LEASE_STALE_AFTER_MS}::int * interval '1 millisecond')`,
+			),
+		)
+		.returning({ scope: idempotencyRecord.scope });
+	return deleted.length > 0;
 }
 
 async function tryAcquire(scope: string, key: string): Promise<boolean> {
@@ -93,7 +123,9 @@ async function pollForResult<T>(
 			.limit(1);
 		const row = rows[0];
 		if (!row) {
-			throw new Error("idempotency: lease holder vanished — retry");
+			// Lease was broken (holder crashed and another caller deleted the
+			// stale row). Surface a transient error so the caller can retry.
+			throw new Error("idempotency_lease_broken");
 		}
 		const env = parseEnvelope(row.responseJson);
 		if (env.data !== null && env.data !== undefined) {

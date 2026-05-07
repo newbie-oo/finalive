@@ -21,6 +21,10 @@ const courseDurationSubq = db
 			sql<number>`coalesce(sum(${lesson.durationSeconds}), 0)::int`.as(
 				"total_seconds",
 			),
+		totalMinutes:
+			sql<number>`coalesce(floor(sum(${lesson.durationSeconds}) / 60), 0)::int`.as(
+				"total_minutes",
+			),
 	})
 	.from(lesson)
 	.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
@@ -78,6 +82,18 @@ export async function listPublishedCourses(
 	if (params.priceMax !== undefined) {
 		conditions.push(sql`${course.price} <= ${params.priceMax}`);
 	}
+	const needsDurationFilter =
+		params.durationMin !== undefined || params.durationMax !== undefined;
+	if (params.durationMin !== undefined) {
+		conditions.push(
+			sql`coalesce(${courseDurationSubq.totalMinutes}, 0) >= ${params.durationMin}`,
+		);
+	}
+	if (params.durationMax !== undefined) {
+		conditions.push(
+			sql`coalesce(${courseDurationSubq.totalMinutes}, 0) <= ${params.durationMax}`,
+		);
+	}
 
 	const where = and(...conditions);
 
@@ -126,10 +142,19 @@ export async function listPublishedCourses(
 			.orderBy(orderBy)
 			.limit(params.per_page)
 			.offset((params.page - 1) * params.per_page),
-		db.select({ value: count() }).from(course).where(where),
+		needsDurationFilter
+			? db
+					.select({ value: count() })
+					.from(course)
+					.leftJoin(
+						courseDurationSubq,
+						eq(courseDurationSubq.courseId, course.id),
+					)
+					.where(where)
+			: db.select({ value: count() }).from(course).where(where),
 	]);
 
-	let mappedRows = rows.map((r) => ({
+	const mappedRows = rows.map((r) => ({
 		id: r.id,
 		slug: r.slug,
 		title: r.title,
@@ -142,19 +167,6 @@ export async function listPublishedCourses(
 		enrollmentCount: r.enrollmentCount ?? 0,
 		totalSeconds: r.totalSeconds ?? 0,
 	}));
-
-	// Client-side duration filter (TODO: move to SQL when duration is indexed)
-	const { durationMin, durationMax } = params;
-	if (durationMin !== undefined) {
-		mappedRows = mappedRows.filter(
-			(r) => Math.floor(r.totalSeconds / 60) >= durationMin,
-		);
-	}
-	if (durationMax !== undefined) {
-		mappedRows = mappedRows.filter(
-			(r) => Math.floor(r.totalSeconds / 60) <= durationMax,
-		);
-	}
 
 	const total = totalRows[0]?.value ?? 0;
 	return buildOffsetResponse(mappedRows, total, params);

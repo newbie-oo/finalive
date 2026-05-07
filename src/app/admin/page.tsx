@@ -226,7 +226,7 @@ export default async function AdminDashboardPage() {
 							จัดการคอร์ส
 						</div>
 						<div className="text-caption text-(--foreground-muted)">
-							{counts.coursesPublished} คอร์สเผยแพ่
+							{counts.coursesPublished} คอร์สเผยแพร่
 						</div>
 					</div>
 				</Link>
