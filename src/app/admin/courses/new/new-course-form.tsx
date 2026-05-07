@@ -208,13 +208,17 @@ export function NewCourseForm() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    if (coverMediaId) {
-      formData.append("coverMediaId", coverMediaId);
-    }
-    if (description) {
-      formData.append("description", description);
-    }
-    const res = await createCourseAction(formData);
+    const payload: Record<string, unknown> = {
+      slug: formData.get("slug"),
+      title: formData.get("title"),
+      summary: formData.get("summary"),
+      isFree,
+      price: isFree ? "0.00" : formValues.price,
+    };
+    if (coverMediaId) payload.coverMediaId = coverMediaId;
+    if (description) payload.description = description;
+
+    const res = await createCourseAction(payload);
 
     setLoading(false);
     if (res.ok) {
