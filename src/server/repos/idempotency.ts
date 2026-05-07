@@ -5,7 +5,6 @@ import { db } from "@/db/client";
 import { idempotencyRecord } from "@/db/schema/idempotency";
 import { isUniqueViolation } from "@/lib/pg-error";
 
-const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
 const ENVELOPE_VERSION = 1;
 const POLL_MS = 100;
 const POLL_TIMEOUT_MS = 30_000;
@@ -20,15 +19,12 @@ export interface WithIdempotencyArgs<T> {
 	key: string;
 	schema: ZodType<T>;
 	run: () => Promise<T>;
-	ttlMs?: number;
 }
 
 export async function withIdempotency<T>(
 	args: WithIdempotencyArgs<T>,
 ): Promise<T> {
-	const ttlMs = args.ttlMs ?? DEFAULT_TTL_MS;
-
-	const acquired = await tryAcquire(args.scope, args.key, ttlMs);
+	const acquired = await tryAcquire(args.scope, args.key);
 
 	if (acquired) {
 		try {
@@ -37,7 +33,6 @@ export async function withIdempotency<T>(
 				.update(idempotencyRecord)
 				.set({
 					responseJson: envelope(result),
-					expiresAt: new Date(Date.now() + ttlMs),
 				})
 				.where(
 					and(
@@ -62,11 +57,7 @@ export async function withIdempotency<T>(
 	return pollForResult(args.scope, args.key, args.schema);
 }
 
-async function tryAcquire(
-	scope: string,
-	key: string,
-	ttlMs: number,
-): Promise<boolean> {
+async function tryAcquire(scope: string, key: string): Promise<boolean> {
 	try {
 		const inserted = await db
 			.insert(idempotencyRecord)
@@ -74,7 +65,6 @@ async function tryAcquire(
 				scope,
 				key,
 				responseJson: { v: ENVELOPE_VERSION, data: null } satisfies Envelope,
-				expiresAt: new Date(Date.now() + ttlMs),
 			})
 			.onConflictDoNothing({
 				target: [idempotencyRecord.scope, idempotencyRecord.key],
