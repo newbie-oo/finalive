@@ -1,6 +1,6 @@
 import "server-only";
 import {
-	enqueueEmail,
+	sendEmail,
 	type EmailQueueWriter,
 } from "@/server/repos/email-queue";
 import { getEnv } from "@/lib/env";
@@ -18,15 +18,15 @@ export interface CourseCompletionNotifier {
 }
 
 export class EmailCourseCompletionNotifier implements CourseCompletionNotifier {
-	private enqueue: (
+	private send: (
 		toEmail: string,
 		payload: EmailPayload,
 		userId?: string | null,
 	) => Promise<string>;
 
 	constructor(writer: EmailQueueWriter) {
-		this.enqueue = (toEmail, payload, userId) =>
-			enqueueEmail(writer, toEmail, payload, userId);
+		this.send = (toEmail, payload, userId) =>
+			sendEmail(writer, toEmail, payload, userId);
 	}
 
 	async notify(params: {
@@ -39,7 +39,7 @@ export class EmailCourseCompletionNotifier implements CourseCompletionNotifier {
 	}): Promise<void> {
 		const env = getEnv();
 		const baseUrl = env.BETTER_AUTH_URL.replace(/\/$/, "");
-		await this.enqueue(
+		await this.send(
 			params.recipientEmail,
 			{
 				template: "course_completed",

@@ -1,7 +1,7 @@
 import "server-only";
 import { getEnv } from "@/lib/env";
 import {
-	enqueueEmail,
+	sendEmail,
 	type EmailQueueWriter,
 } from "@/server/repos/email-queue";
 import type { EmailPayload } from "@/server/email/templates";
@@ -48,15 +48,15 @@ export interface SlipNotifier {
 }
 
 export class EmailSlipNotifier implements SlipNotifier {
-	private enqueue: (
+	private send: (
 		toEmail: string,
 		payload: EmailPayload,
 		userId?: string | null,
 	) => Promise<string>;
 
 	constructor(writer: EmailQueueWriter) {
-		this.enqueue = (toEmail, payload, userId) =>
-			enqueueEmail(writer, toEmail, payload, userId);
+		this.send = (toEmail, payload, userId) =>
+			sendEmail(writer, toEmail, payload, userId);
 	}
 
 	async notifyStudentOfSlipReceipt(params: {
@@ -67,7 +67,7 @@ export class EmailSlipNotifier implements SlipNotifier {
 		amount: number;
 		userId: string;
 	}): Promise<void> {
-		await this.enqueue(
+		await this.send(
 			params.toEmail,
 			{
 				template: "slip_received",
@@ -89,7 +89,7 @@ export class EmailSlipNotifier implements SlipNotifier {
 		refCode: string;
 		amount: number;
 	}): Promise<void> {
-		await this.enqueue(params.adminEmail, {
+		await this.send(params.adminEmail, {
 			template: "admin_new_slip",
 			params: {
 				studentEmail: params.studentEmail,
@@ -111,7 +111,7 @@ export class EmailSlipNotifier implements SlipNotifier {
 		userId: string;
 	}): Promise<void> {
 		const baseUrl = getEnv().BETTER_AUTH_URL.replace(/\/$/, "");
-		await this.enqueue(
+		await this.send(
 			params.toEmail,
 			{
 				template: "slip_accepted",
@@ -140,7 +140,7 @@ export class EmailSlipNotifier implements SlipNotifier {
 		userId: string;
 	}): Promise<void> {
 		const baseUrl = getEnv().BETTER_AUTH_URL.replace(/\/$/, "");
-		await this.enqueue(
+		await this.send(
 			params.toEmail,
 			{
 				template: "slip_rejected",

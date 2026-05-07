@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { ZodType } from "zod";
 import { db } from "@/db/client";
 import { idempotencyRecord } from "@/db/schema/idempotency";
@@ -133,12 +133,4 @@ function parseEnvelope(raw: unknown): Envelope {
 
 function sleep(ms: number): Promise<void> {
 	return new Promise((r) => setTimeout(r, ms));
-}
-
-export async function cleanupExpiredIdempotency(): Promise<number> {
-	const rows = await db
-		.delete(idempotencyRecord)
-		.where(lt(idempotencyRecord.expiresAt, new Date()))
-		.returning({ scope: idempotencyRecord.scope });
-	return rows.length;
 }
