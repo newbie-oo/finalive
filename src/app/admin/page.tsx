@@ -175,7 +175,7 @@ function RevenueChart({
 			})}
 			{yLabels.map((l, i) => (
 				<text
-					key={l}
+					key={i}
 					x={padLeft - 8}
 					y={padTop + i * (chartH / (yLabels.length - 1)) + 4}
 					textAnchor="end"
@@ -262,7 +262,7 @@ function RevenueChart({
 			})()}
 			{labels.map((m, i) => (
 				<text
-					key={m}
+					key={i}
 					x={x(i)}
 					y={h - 4}
 					textAnchor="middle"
