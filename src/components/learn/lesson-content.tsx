@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { LearnTopbar } from "./learn-topbar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, X } from "@phosphor-icons/react";
+import { ArrowRight, BookOpen, X } from "@phosphor-icons/react";
 import { useLearnShell } from "./learn-shell-context";
 import { LessonPlayerLayout } from "./lesson-player-layout";
 import { useAutoplayCountdown } from "@/hooks/use-autoplay-countdown";
@@ -151,9 +151,9 @@ export function LessonContent({
 						) : (
 							<div
 								role="status"
-								className="mx-4 mt-4 flex items-center gap-2 rounded-md border border-border bg-muted px-4 py-3 text-uism text-muted-foreground lg:mx-8 lg:mt-6"
+								className="mx-4 mt-4 flex items-center gap-2 rounded-md border border-info/30 bg-info-bg px-4 py-3 text-uism text-foreground lg:mx-8 lg:mt-6"
 							>
-								<span aria-hidden="true">📖</span>
+								<BookOpen size={16} weight="fill" className="text-info" />
 								บทเรียนนี้ไม่มีวิดีโอ — อ่านเนื้อหาด้านล่าง
 							</div>
 						)

@@ -8,8 +8,14 @@ import { MarkdownView } from "@/lib/markdown";
 import { LessonClient } from "./lesson-client";
 import { NotesPanel } from "./notes-panel";
 import { formatDurationMinutes } from "@/lib/format";
-import { Check, ArrowLeft, ArrowRight } from "@phosphor-icons/react";
+import {
+	Check,
+	ArrowLeft,
+	ArrowRight,
+	ChatCircle,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
 	Tooltip,
 	TooltipContent,
@@ -60,7 +66,9 @@ export function LessonPlayerLayout({
 	playerSlot,
 }: LessonPlayerLayoutProps) {
 	const router = useRouter();
-	const [activeTab, setActiveTab] = useState<"content" | "notes">("content");
+	const [activeTab, setActiveTab] = useState<"content" | "notes" | "qna">(
+		"content",
+	);
 	const [localCompleted, setLocalCompleted] = useState(false);
 	const completed = localCompleted || isCompleted;
 
@@ -153,39 +161,39 @@ export function LessonPlayerLayout({
 
 			<div className="px-4 py-5 pb-8 lg:px-8 lg:py-8 lg:pb-12 max-w-[920px] mx-auto">
 				<div
-					className="flex gap-6 border-b border-border mb-6"
+					className="sticky top-14 z-30 -mx-4 mb-6 flex gap-6 border-b border-border bg-background/90 px-4 backdrop-blur lg:-mx-8 lg:px-8"
 					role="tablist"
 					aria-label="Lessons"
 				>
-					<button
-						role="tab"
-						aria-selected={activeTab === "content"}
-						aria-current={activeTab === "content" ? "page" : undefined}
+					<TabButton
+						active={activeTab === "content"}
 						onClick={() => setActiveTab("content")}
-						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${activeTab === "content"
-								? "border-primary text-primary"
-								: "border-transparent text-muted-foreground hover:text-foreground"
-							}`}
 					>
 						เนื้อหา
-					</button>
-					<button
-						role="tab"
-						aria-selected={activeTab === "notes"}
-						aria-current={activeTab === "notes" ? "page" : undefined}
+					</TabButton>
+					<TabButton
+						active={activeTab === "notes"}
 						onClick={() => setActiveTab("notes")}
-						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${activeTab === "notes"
-								? "border-primary text-primary"
-								: "border-transparent text-muted-foreground hover:text-foreground"
-							}`}
 					>
 						โน้ต
-					</button>
+					</TabButton>
+					<TabButton
+						active={activeTab === "qna"}
+						onClick={() => setActiveTab("qna")}
+					>
+						Q&amp;A
+					</TabButton>
 				</div>
 
-				{activeTab === "notes" ? (
-					<NotesPanel lessonId={lessonId} />
-				) : (
+				{activeTab === "notes" && <NotesPanel lessonId={lessonId} />}
+				{activeTab === "qna" && (
+					<EmptyState
+						icon={<ChatCircle size={28} weight="duotone" />}
+						title="ยังไม่มีคำถามในบทเรียนนี้"
+						description="ตั้งคำถามแรกได้ — ผู้สอนจะตอบกลับภายใน 24 ชม. (เร็วๆ นี้)"
+					/>
+				)}
+				{activeTab === "content" && (
 					<>
 						{lessonBodyMd && (
 							<article className="prose-style mb-8">
@@ -228,6 +236,30 @@ export function LessonPlayerLayout({
 				</div>
 			</div>
 		</>
+	);
+}
+
+interface TabButtonProps {
+	active: boolean;
+	onClick: () => void;
+	children: React.ReactNode;
+}
+
+function TabButton({ active, onClick, children }: TabButtonProps) {
+	return (
+		<button
+			role="tab"
+			aria-selected={active}
+			aria-current={active ? "page" : undefined}
+			onClick={onClick}
+			className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${
+				active
+					? "border-primary text-primary"
+					: "border-transparent text-muted-foreground hover:text-foreground"
+			}`}
+		>
+			{children}
+		</button>
 	);
 }
 

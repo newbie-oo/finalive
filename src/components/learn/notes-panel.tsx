@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
-import { NotePencil, CaretDown, CaretUp, Trash } from "@phosphor-icons/react";
+import {
+  NotePencil,
+  CaretDown,
+  CaretUp,
+  Trash,
+  CheckCircle,
+} from "@phosphor-icons/react";
 
 interface NotesPanelProps {
   lessonId: string;
@@ -94,8 +100,9 @@ export function NotesPanel({ lessonId }: NotesPanelProps) {
             aria-label="Lesson notes"
           />
           {saved && (
-            <span className="absolute bottom-3 right-3 text-caption text-success">
-              บันทึกแล้ว
+            <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 text-caption text-success">
+              <CheckCircle size={12} weight="fill" />
+              บันทึกแล้ว · เมื่อสักครู่
             </span>
           )}
         </div>
