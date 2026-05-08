@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, Hourglass } from "@phosphor-icons/react";
 import { Card } from "@/components/ui/card";
+import { queryKeys } from "@/lib/query-keys";
 
 interface SlipPendingPollProps {
   pendingId: string;
@@ -39,7 +40,7 @@ export function SlipPendingPoll({
   const redirectedRef = useRef(false);
 
   const query = useQuery<StatusResponse, Error & { code?: string }>({
-    queryKey: ["pending-status", pendingId],
+    queryKey: queryKeys.pendingStatus(pendingId),
     queryFn: () => fetchStatus(pendingId),
     refetchInterval: (q) => {
       // Stop polling once the row hits a terminal state — paid (redirect),
