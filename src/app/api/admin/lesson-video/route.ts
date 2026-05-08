@@ -1,11 +1,6 @@
 import { z } from "zod";
-import { apiRoute } from "@/lib/api-route";
+import { apiCourseRoute } from "@/lib/api-course-route";
 import { ApiError } from "@/lib/api-error";
-import {
-	getCourseOwnerId,
-	getCollaboratorRole,
-} from "@/server/repos/course-authz";
-import { canEditCoursePure } from "@/server/services/course-authz";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { rateLimitConfigs } from "@/lib/rate-limit";
@@ -37,27 +32,13 @@ const bodySchema = z.object({
 	bunnyVideoId: z.string().optional(),
 });
 
-export const POST = apiRoute({
+export const POST = apiCourseRoute({
 	auth: "required",
 	rateLimit: rateLimitConfigs.upload,
 	body: bodySchema,
+	getCourseId: ({ body }) => body.courseId,
 	handler: async ({ body, user }) => {
-		const { action, courseId, lessonId, fileName, bunnyVideoId } = body;
-
-		const [courseOwnerId, collaboratorRole] = await Promise.all([
-			getCourseOwnerId(courseId),
-			getCollaboratorRole(courseId, user!.id),
-		]);
-		if (
-			!canEditCoursePure({
-				userId: user!.id,
-				userRole: user!.role ?? "user",
-				courseOwnerId,
-				collaboratorRole,
-			})
-		) {
-			throw new ApiError("forbidden", "cannot edit this course");
-		}
+		const { action, lessonId, fileName, bunnyVideoId } = body;
 
 		const env = getEnv();
 		const apiKey = env.BUNNY_API_KEY;
@@ -73,7 +54,7 @@ export const POST = apiRoute({
 				const result = await service.createVideo({
 					lessonId,
 					fileName: fileName ?? "video.mp4",
-					userId: user!.id,
+					userId: user.id,
 				});
 				logger.info("lesson-video.created", {
 					videoId: result.bunnyVideoId,
@@ -95,19 +76,15 @@ export const POST = apiRoute({
 			}
 		}
 
-		if (action === "cancel") {
-			if (!bunnyVideoId) {
-				throw new ApiError("validation_failed", "missing bunnyVideoId");
-			}
-
-			const result = await service.cancelVideo({ lessonId, bunnyVideoId });
-			logger.info("lesson-video.cancelled", { bunnyVideoId, lessonId });
-			return {
-				ok: true,
-				restoredMediaId: result.restoredMediaId,
-			};
+		if (!bunnyVideoId) {
+			throw new ApiError("validation_failed", "missing bunnyVideoId");
 		}
 
-		throw new ApiError("validation_failed", "action must be create or cancel");
+		const result = await service.cancelVideo({ lessonId, bunnyVideoId });
+		logger.info("lesson-video.cancelled", { bunnyVideoId, lessonId });
+		return {
+			ok: true,
+			restoredMediaId: result.restoredMediaId,
+		};
 	},
 });

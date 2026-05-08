@@ -1,14 +1,9 @@
 import { z } from "zod";
-import { apiRoute } from "@/lib/api-route";
+import { apiCourseRoute } from "@/lib/api-course-route";
 import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { rateLimitConfigs } from "@/lib/rate-limit";
-import {
-	getCourseOwnerId,
-	getCollaboratorRole,
-} from "@/server/repos/course-authz";
-import { canEditCoursePure } from "@/server/services/course-authz";
 import { LessonVideoRepo } from "@/server/repos/lesson-video";
 
 export const runtime = "nodejs";
@@ -21,27 +16,13 @@ const body = z.object({
 	courseId: z.string().uuid(),
 });
 
-export const POST = apiRoute({
+export const POST = apiCourseRoute({
 	auth: "admin",
 	rateLimit: rateLimitConfigs.upload,
 	body,
+	getCourseId: ({ body }) => body.courseId,
 	handler: async ({ body, user }) => {
-		const { lessonId, courseId } = body;
-
-		const [courseOwnerId, collaboratorRole] = await Promise.all([
-			getCourseOwnerId(courseId),
-			getCollaboratorRole(courseId, user!.id),
-		]);
-		if (
-			!canEditCoursePure({
-				userId: user!.id,
-				userRole: user!.role ?? "user",
-				courseOwnerId,
-				collaboratorRole,
-			})
-		) {
-			throw new ApiError("forbidden", "no edit access for this course");
-		}
+		const { lessonId } = body;
 
 		const row = await LessonVideoRepo.getLessonVideoAsset(lessonId);
 
@@ -67,7 +48,10 @@ export const POST = apiRoute({
 		if (!res.ok) {
 			const text = await res.text().catch(() => "");
 			logger.error("reencode-video.bunny_failed", { status: res.status, text });
-			throw new ApiError("internal_error", `Bunny upstream failure: ${res.status}`);
+			throw new ApiError(
+				"internal_error",
+				`Bunny upstream failure: ${res.status}`,
+			);
 		}
 
 		await LessonVideoRepo.setAssetEncoding(row.assetId);
@@ -75,7 +59,7 @@ export const POST = apiRoute({
 		logger.info("reencode-video.requested", {
 			lessonId,
 			bunnyId: row.bunnyId,
-			requestedBy: user!.id,
+			requestedBy: user.id,
 		});
 
 		return { ok: true, bunnyVideoId: row.bunnyId };
