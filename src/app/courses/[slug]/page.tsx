@@ -22,6 +22,14 @@ import {
 	CourseReviewsSection,
 	type Review,
 } from "@/components/course/reviews-section";
+import {
+	getPublishedCourseBySlug,
+	getCourseCurriculum,
+} from "@/server/repos/course";
+import { EnrollmentRepo } from "@/server/repos/enrollment";
+import { getSession } from "@/server/auth-session";
+import { formatTHB } from "@/lib/format";
+import { coverImageUrl } from "@/lib/media-url";
 import { CourseTabs } from "./course-tabs";
 
 // TODO(reviews): replace once a `course_review` table + listReviews repo
@@ -71,14 +79,6 @@ const STUB_REVIEWS: ReadonlyArray<Review> = [
 		date: new Date("2024-12-04"),
 	},
 ];
-import {
-	getPublishedCourseBySlug,
-	getCourseCurriculum,
-} from "@/server/repos/course";
-import { EnrollmentRepo } from "@/server/repos/enrollment";
-import { getSession } from "@/server/auth-session";
-import { formatTHB } from "@/lib/format";
-import { coverImageUrl } from "@/lib/media-url";
 
 const CTA_FEATURES = [
 	"บทเรียนวิดีโอ HD",
@@ -120,17 +120,11 @@ export default async function CourseDetailPage({
 	const firstPreviewLesson = curriculum
 		.flatMap((m) => m.lessons)
 		.find((l) => l.isPreview || l.isFree);
-	const hasPreviewableLesson = firstPreviewLesson !== undefined;
 	const previewHref = firstPreviewLesson
 		? `/courses/${course.slug}/preview/${firstPreviewLesson.id}`
 		: null;
 	const isBestseller = course.enrollmentCount >= 100;
-	const durationHours =
-		totalDuration === 0
-			? null
-			: totalDuration >= 3600
-				? `${Math.ceil(totalDuration / 3600)} ชม.`
-				: `${Math.ceil(totalDuration / 60)} นาที`;
+	const durationHours = formatCourseDuration(totalDuration);
 	const lastUpdated = course.publishedAt
 		? course.publishedAt.toLocaleDateString("th-TH", {
 			year: "numeric",
@@ -328,7 +322,7 @@ export default async function CourseDetailPage({
 									{/* Hide redundant preview CTA: already-enrolled students go
 					    straight to /learn, and free courses make every lesson
 					    previewable so the link is noise. */}
-									{!isEnrolled && !course.isFree && hasPreviewableLesson && (
+									{!isEnrolled && !course.isFree && previewHref && (
 										<Button
 											asChild
 											variant="secondary"
@@ -378,4 +372,10 @@ export default async function CourseDetailPage({
 			/>
 		</PublicShell>
 	);
+}
+
+function formatCourseDuration(totalSeconds: number): string | null {
+	if (totalSeconds === 0) return null;
+	if (totalSeconds >= 3600) return `${Math.ceil(totalSeconds / 3600)} ชม.`;
+	return `${Math.ceil(totalSeconds / 60)} นาที`;
 }

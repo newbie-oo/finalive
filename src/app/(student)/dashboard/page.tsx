@@ -7,6 +7,7 @@ import {
 	Trophy,
 	ArrowRight,
 	CaretRight,
+	Info,
 } from "@phosphor-icons/react/dist/ssr";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -27,7 +28,6 @@ import {
 	getActivityIcon,
 	getActivityBadge,
 } from "@/components/dashboard/activity-icons";
-import { Info } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
 

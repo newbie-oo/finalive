@@ -106,54 +106,44 @@ export function CourseFilters({
 		router.replace(qs ? `/courses?${qs}` : "/courses", { scroll: false });
 	}, [debouncedQ, freeOnly, price, duration, sortBy, router]);
 
-	const handleClear = () => {
-		setQ("");
+	const resetFilters = () => {
 		setFreeOnly(false);
 		setPrice("");
 		setDuration("");
 		setSortBy("newest");
 	};
 
-	const activeQuickFilter = q.trim()
-		? null
-		: freeOnly || price === "free"
-			? "free"
-			: duration === "60-300"
-				? "duration"
-				: sortBy === "popular" && !price && !duration
-					? "popular"
-					: sortBy === "newest" && !price && !duration && !freeOnly
-						? "all"
-						: null;
+	const handleClear = () => {
+		setQ("");
+		resetFilters();
+	};
+
+	const activeQuickFilter = getActiveQuickFilter({
+		q,
+		freeOnly,
+		price,
+		duration,
+		sortBy,
+	});
 
 	const handleQuickFilter = (type: (typeof QUICK_FILTERS)[number]["type"]) => {
 		setQ("");
-		if (type === "all") {
-			setFreeOnly(false);
-			setPrice("");
-			setDuration("");
-			setSortBy("newest");
-		} else if (type === "free") {
-			setFreeOnly(false);
-			setPrice(price === "free" ? "" : "free");
-			setDuration("");
-			setSortBy("newest");
-		} else if (type === "duration") {
-			setFreeOnly(false);
-			setPrice("");
-			setDuration(duration === "60-300" ? "" : "60-300");
-			setSortBy("newest");
-		} else if (type === "popular") {
-			setFreeOnly(false);
-			setPrice("");
-			setDuration("");
-			setSortBy("popular");
-		} else if (type === "newest") {
-			setFreeOnly(false);
-			setPrice("");
-			setDuration("");
-			setSortBy("newest");
+		// Each quick filter behaves like "reset, then apply this single facet".
+		// "free" and "duration" toggle off when re-clicked.
+		if (type === "free") {
+			const next = price === "free" ? "" : "free";
+			resetFilters();
+			setPrice(next);
+			return;
 		}
+		if (type === "duration") {
+			const next = duration === "60-300" ? "" : "60-300";
+			resetFilters();
+			setDuration(next);
+			return;
+		}
+		resetFilters();
+		if (type === "popular") setSortBy("popular");
 	};
 
 	return (
@@ -321,6 +311,32 @@ export function CourseFilters({
 			</Sheet>
 		</div>
 	);
+}
+
+type QuickFilterType = (typeof QUICK_FILTERS)[number]["type"];
+
+interface QuickFilterState {
+	q: string;
+	freeOnly: boolean;
+	price: string;
+	duration: string;
+	sortBy: string;
+}
+
+/** Maps the current filter state back to the matching quick-filter chip, or
+ * null when no chip cleanly represents the state (e.g. a search query is
+ * active or multiple facets are combined). */
+function getActiveQuickFilter(
+	state: QuickFilterState,
+): QuickFilterType | null {
+	const { q, freeOnly, price, duration, sortBy } = state;
+	if (q.trim()) return null;
+	if (freeOnly || price === "free") return "free";
+	if (duration === "60-300") return "duration";
+	const noFacets = !price && !duration && !freeOnly;
+	if (sortBy === "popular" && !price && !duration) return "popular";
+	if (sortBy === "newest" && noFacets) return "all";
+	return null;
 }
 
 interface FilterPanelsProps {

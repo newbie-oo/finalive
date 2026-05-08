@@ -295,30 +295,37 @@ export function SlipDetailPanel({
 	);
 }
 
+const STATUS_CHIP_BASE =
+	"inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium";
+
 function SlipStatusChip({ status }: { status: string }) {
 	if (status === "accepted") {
 		return (
-			<span className="inline-flex items-center gap-1 rounded-full bg-success-bg px-2.5 py-0.5 text-[12px] font-medium text-success">
+			<span className={`${STATUS_CHIP_BASE} bg-success-bg text-success`}>
 				<CheckCircle size={11} weight="fill" /> อนุมัติแล้ว
 			</span>
 		);
 	}
 	if (status === "rejected") {
 		return (
-			<span className="inline-flex items-center gap-1 rounded-full bg-destructive-bg px-2.5 py-0.5 text-[12px] font-medium text-destructive">
+			<span
+				className={`${STATUS_CHIP_BASE} bg-destructive-bg text-destructive`}
+			>
 				<Prohibit size={11} weight="fill" /> ปฏิเสธแล้ว
 			</span>
 		);
 	}
 	if (status === "submitted") {
 		return (
-			<span className="inline-flex items-center gap-1 rounded-full bg-warning-bg px-2.5 py-0.5 text-[12px] font-medium text-warning-foreground">
+			<span
+				className={`${STATUS_CHIP_BASE} bg-warning-bg text-warning-foreground`}
+			>
 				<Clock size={11} weight="fill" /> รอตรวจ
 			</span>
 		);
 	}
 	return (
-		<span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[12px] font-medium text-muted-foreground">
+		<span className={`${STATUS_CHIP_BASE} bg-muted text-muted-foreground`}>
 			<Clock size={11} /> {status}
 		</span>
 	);
