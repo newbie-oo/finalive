@@ -3,6 +3,8 @@ import { apiRoute } from "@/lib/api-route";
 import { updateWatchedSeconds } from "@/server/repos/progress";
 import { container } from "@/server/container";
 import { rateLimitConfigs } from "@/lib/rate-limit";
+import { isAdmin } from "@/lib/auth-utils";
+import { assertCanWriteLessonProgress } from "@/server/services/lesson-progress-authz";
 
 const schema = z.object({
 	lessonId: z.string().uuid(),
@@ -19,11 +21,16 @@ export const POST = apiRoute({
 		// Admin previews must not record progress — otherwise an admin walking
 		// through a course would auto-complete and trigger a certificate flow
 		// they can never redeem.
-		if (user!.role === "admin") {
+		if (isAdmin(user)) {
 			return { ok: true, ignored: "admin_preview" };
 		}
 
 		const { lessonId, watchedSeconds, markComplete, durationSeconds } = body;
+		await assertCanWriteLessonProgress({
+			userId: user!.id,
+			userRole: user!.role,
+			lessonId,
+		});
 
 		if (markComplete) {
 			const service = container.courseCompletion();
