@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
 import { MobileCourseCta } from "@/components/course/mobile-course-cta";
+import { LearningOutcomesSection } from "@/components/course/learning-outcomes-section";
 import { CourseTabs } from "./course-tabs";
 import {
 	getPublishedCourseBySlug,
@@ -315,6 +316,11 @@ export default async function CourseDetailPage({
 					</div>
 				</div>
 			</section>
+
+			<LearningOutcomesSection
+				outcomes={curriculum.map((m) => m.title)}
+				eyebrow="หัวข้อในคอร์สนี้"
+			/>
 
 			<CourseTabs
 				curriculum={curriculum}
