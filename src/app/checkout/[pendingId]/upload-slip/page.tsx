@@ -24,7 +24,7 @@ export default async function UploadSlipPage({
 	const alreadySubmitted = isSubmitted(pending.status as PendingStatus);
 
 	return (
-		<CheckoutShell step={2}>
+		<CheckoutShell step={1}>
 			<div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
 				<div className="min-w-0 space-y-6">
 					<div>

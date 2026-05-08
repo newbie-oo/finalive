@@ -2,23 +2,32 @@ import Link from "next/link";
 import { Shield } from "@phosphor-icons/react/dist/ssr";
 import { Stepper } from "@/components/ui/stepper";
 
-const DEFAULT_STEPS = [
-  { label: "ข้อมูล" },
-  { label: "ชำระเงิน" },
+/**
+ * Canonical 4-step model used across every checkout route. Keep route-side
+ * `step` props in sync with this list:
+ *   0 → /checkout/[pendingId]                    (review order + pay info)
+ *   1 → /checkout/[pendingId]/upload-slip
+ *   2 → /checkout/[pendingId]/pending
+ *   3 → /checkout/[pendingId]/success
+ */
+export const CHECKOUT_STEPS = [
+  { label: "ตรวจคำสั่งซื้อ" },
+  { label: "อัปโหลดสลิป" },
+  { label: "รอตรวจสอบ" },
   { label: "เสร็จสิ้น" },
-];
+] as const;
 
 export function CheckoutShell({
   step,
   steps,
   children,
 }: {
-  /** Zero-based step index. 0=info, 1=payment, 2=done */
-  step: 0 | 1 | 2;
+  /** Zero-based step index into `steps` (defaults to CHECKOUT_STEPS). */
+  step: number;
   steps?: { label: string }[];
   children: React.ReactNode;
 }) {
-  const resolvedSteps = steps ?? DEFAULT_STEPS;
+  const resolvedSteps = steps ?? [...CHECKOUT_STEPS];
   return (
     <div className="flex min-h-full flex-col">
       <a

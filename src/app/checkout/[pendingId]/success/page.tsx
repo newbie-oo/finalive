@@ -25,7 +25,7 @@ export default async function CheckoutSuccessPage({
   if (!pending) notFound();
 
   return (
-    <CheckoutShell step={1}>
+    <CheckoutShell step={3}>
       <div className="mx-auto max-w-[560px] mt-8 space-y-6">
         <Card className="p-8 text-center space-y-4">
           <CheckCircle

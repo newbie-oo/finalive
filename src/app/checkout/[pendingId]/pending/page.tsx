@@ -17,12 +17,6 @@ import { formatTHB } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-const PENDING_STEPS = [
-  { label: "ข้อมูล" },
-  { label: "ชำระเงิน" },
-  { label: "รอตรวจสอบ" },
-];
-
 function fmtDateTime(d: Date) {
   const date = d.toLocaleDateString("th-TH", {
     day: "2-digit",
@@ -46,7 +40,7 @@ export default async function CheckoutPendingPage({
   if (!pending) notFound();
 
   return (
-    <CheckoutShell step={2} steps={PENDING_STEPS}>
+    <CheckoutShell step={2}>
       <style>{`
 				@keyframes fa-pulse-ring {
 					0% { transform: scale(0.8); opacity: 0.6; }

@@ -48,7 +48,7 @@ export default async function CheckoutPage({
     latestSlip && latestSlip.status === "rejected" ? latestSlip : null;
 
   return (
-    <CheckoutShell step={1}>
+    <CheckoutShell step={0}>
       <div className="mx-auto max-w-[560px]">
         <div className="mt-8 space-y-4">
             <Card className="p-6">
