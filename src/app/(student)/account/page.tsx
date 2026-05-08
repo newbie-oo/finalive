@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   CheckCircle,
@@ -103,22 +104,16 @@ function ProfileSection({
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileForm>({ values: { name } });
+  } = useForm<ProfileForm>({
+    resolver: zodResolver(profileSchema),
+    values: { name },
+  });
 
   async function onSubmit(data: ProfileForm) {
     setSaved(false);
     setServerError(null);
-    const parsed = profileSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as keyof ProfileForm;
-        setError(field, { message: issue.message });
-      }
-      return;
-    }
-    const result = await authClient.updateUser({ name: parsed.data.name });
+    const result = await authClient.updateUser({ name: data.name });
     if (result.error) {
       setServerError("ไม่สามารถบันทึกได้");
       return;
@@ -183,25 +178,18 @@ function ChangePasswordSection() {
   const {
     register,
     handleSubmit,
-    setError,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<PasswordForm>();
+  } = useForm<PasswordForm>({
+    resolver: zodResolver(passwordSchema),
+  });
 
   async function onSubmit(data: PasswordForm) {
     setSaved(false);
     setServerError(null);
-    const parsed = passwordSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as keyof PasswordForm;
-        setError(field, { message: issue.message });
-      }
-      return;
-    }
     const result = await authClient.changePassword({
-      currentPassword: parsed.data.currentPassword,
-      newPassword: parsed.data.newPassword,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
     });
     if (result.error) {
       setServerError("รหัสผ่านปัจจุบันไม่ถูกต้อง หรือไม่สามารถเปลี่ยนได้");
