@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { X } from "@phosphor-icons/react/dist/ssr";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
 interface ActiveFilterChipsProps {
 	q: string;
 	freeOnly: boolean;
@@ -38,6 +41,9 @@ const SORT_LABELS: Record<string, string> = {
  * as a link that removes only that filter while preserving the rest, plus
  * a clear-all link when there are 2+ active filters. Returns null when
  * nothing is active so callers can drop it in unconditionally.
+ *
+ * Visually matches the shared `<FilterChipBar />` primitive (Badge + Button)
+ * but uses anchor tags so the catalog stays server-renderable.
  */
 export function ActiveFilterChips(props: ActiveFilterChipsProps) {
 	const active = collectActiveFilters(props);
@@ -60,23 +66,20 @@ export function ActiveFilterChips(props: ActiveFilterChipsProps) {
 		<div className="mb-4 flex flex-wrap items-center gap-2">
 			<span className="text-uism text-muted-foreground">ตัวกรองที่ใช้:</span>
 			{active.map((filter) => (
-				<Link
-					key={filter.key}
-					href={hrefWithout(filter.key)}
-					className="inline-flex items-center gap-1.5 rounded-pill border border-border bg-muted px-3 py-1 text-uism text-foreground transition-colors hover:bg-surface-sunken focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-					aria-label={`ลบตัวกรอง: ${filter.label}`}
-				>
-					{filter.label}
-					<X size={12} weight="bold" aria-hidden />
-				</Link>
+				<Badge key={filter.key} variant="outline" asChild>
+					<Link
+						href={hrefWithout(filter.key)}
+						aria-label={`ลบตัวกรอง: ${filter.label}`}
+					>
+						{filter.label}
+						<X size={12} weight="bold" aria-hidden />
+					</Link>
+				</Badge>
 			))}
 			{active.length > 1 && (
-				<Link
-					href="/courses"
-					className="text-uism font-medium text-primary hover:underline"
-				>
-					ล้างทั้งหมด
-				</Link>
+				<Button variant="ghost" size="sm" asChild>
+					<Link href="/courses">ล้างทั้งหมด</Link>
+				</Button>
 			)}
 		</div>
 	);
