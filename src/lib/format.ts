@@ -12,9 +12,10 @@ export function formatDuration(
   seconds: number | null | undefined,
   fallback = "—",
 ): string {
-  if (seconds == null || seconds <= 0) return fallback;
-  const minutes = Math.floor(seconds / 60);
-  const remaining = seconds % 60;
+  if ((seconds ?? 0) <= 0) return fallback;
+  const safe = seconds as number;
+  const minutes = Math.floor(safe / 60);
+  const remaining = safe % 60;
   return `${minutes}:${remaining.toString().padStart(2, "0")}`;
 }
 
@@ -23,4 +24,26 @@ export function formatDurationMinutes(seconds: number | null): string {
   if (seconds === null || seconds <= 0) return "—";
   const minutes = Math.ceil(seconds / 60);
   return `${minutes} นาที`;
+}
+
+export interface FormattedDuration {
+  /** Numeric portion only — wrap with `<span className="num">` to apply
+   * tabular numerics. */
+  value: string;
+  /** Localised unit ("นาที" under one hour, "ชั่วโมง" otherwise). */
+  unit: "นาที" | "ชั่วโมง";
+}
+
+/**
+ * Splits a duration into a numeric value + Thai unit so callers can render
+ * them with separate styling (e.g. tabular num for the value, regular weight
+ * for the unit). Auto-selects unit: minutes under an hour, hours with one
+ * decimal otherwise. Negative inputs are clamped to zero.
+ */
+export function formatDurationAuto(totalSeconds: number): FormattedDuration {
+  const safeSeconds = Math.max(0, totalSeconds);
+  if (safeSeconds < 3600) {
+    return { value: String(Math.floor(safeSeconds / 60)), unit: "นาที" };
+  }
+  return { value: (safeSeconds / 3600).toFixed(1), unit: "ชั่วโมง" };
 }

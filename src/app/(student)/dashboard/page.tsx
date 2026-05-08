@@ -12,7 +12,9 @@ import { Progress } from "@/components/ui/progress";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
-import { formatActivityTime, MONTH_LABELS_TH } from "@/lib/format-time";
+import { formatDurationAuto } from "@/lib/format";
+import { formatActivityTime } from "@/lib/format-time";
+import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
 import {
 	getActivityIcon,
@@ -20,19 +22,6 @@ import {
 } from "@/components/dashboard/activity-icons";
 
 export const dynamic = "force-dynamic";
-
-function formatDuration(totalSeconds: number): string {
-	const hours = Math.floor(totalSeconds / 3600);
-	const mins = Math.floor((totalSeconds % 3600) / 60);
-	if (hours > 0) return `${hours}.${Math.round((mins / 60) * 10)}`;
-	return `${mins}`;
-}
-
-function formatDurationLabel(totalSeconds: number): string {
-	const hours = Math.floor(totalSeconds / 3600);
-	if (hours > 0) return `ชั่วโมง`;
-	return `นาที`;
-}
 
 export default async function DashboardPage() {
 	const session = await getSession();
@@ -42,6 +31,8 @@ export default async function DashboardPage() {
 
 	const data = await getStudentDashboard(session.user.id);
 	const inProgress = data.enrollments.filter((e) => !e.completedAt);
+	const continueCourse = inProgress[0];
+	const watchedDuration = formatDurationAuto(data.totalWatchedSeconds);
 
 	return (
 		<section className="space-y-8">
@@ -57,15 +48,15 @@ export default async function DashboardPage() {
 						<h1 className="mb-1.5 text-h1 font-bold text-foreground">
 							สวัสดี {session.user.name?.split(/\s+/)[0] ?? "นักเรียน"} 👋
 						</h1>
-						{inProgress[0] ? (
+						{continueCourse ? (
 							<p className="text-bodylg text-muted-foreground">
 								เรียนต่อจาก{" "}
 								<strong className="num font-bold text-foreground">
-									{inProgress[0].courseTitle}
+									{continueCourse.courseTitle}
 								</strong>{" "}
 								— ทำไปแล้ว{" "}
 								<strong className="num font-bold text-foreground">
-									{inProgress[0].doneLessons}/{inProgress[0].totalLessons}
+									{continueCourse.doneLessons}/{continueCourse.totalLessons}
 								</strong>{" "}
 								บทเรียน
 							</p>
@@ -75,22 +66,33 @@ export default async function DashboardPage() {
 							</p>
 						)}
 					</div>
-					<div className="flex gap-3">
-						<Link
-							href="/courses"
-							className="inline-flex h-10 items-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-						>
-							ดูคอร์สใหม่
-						</Link>
-						{inProgress[0] && (
+					{/* Single prominent CTA per the dashboard's primary intent. When the
+					    student has an in-progress lesson, "เรียนต่อ" wins and "ดูคอร์ส"
+					    drops to a quiet text link. With no progress, "ดูคอร์ส" is the
+					    only ask. Avoids competing equal-weight buttons. */}
+					{continueCourse ? (
+						<div className="flex flex-col items-end gap-1.5">
 							<Link
-								href={`/learn/${inProgress[0].courseSlug}`}
+								href={`/learn/${continueCourse.courseSlug}`}
 								className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
 							>
 								เรียนต่อ <ArrowRight size={16} />
 							</Link>
-						)}
-					</div>
+							<Link
+								href="/courses"
+								className="text-uism font-medium text-muted-foreground hover:text-foreground"
+							>
+								หรือดูคอร์สใหม่
+							</Link>
+						</div>
+					) : (
+						<Link
+							href="/courses"
+							className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+						>
+							ดูคอร์ส <ArrowRight size={16} />
+						</Link>
+					)}
 				</div>
 			</div>
 
@@ -104,8 +106,8 @@ export default async function DashboardPage() {
 					},
 					{
 						icon: Clock,
-						value: formatDuration(data.totalWatchedSeconds),
-						label: formatDurationLabel(data.totalWatchedSeconds) + "เรียนรวม",
+						value: watchedDuration.value,
+						label: `${watchedDuration.unit}เรียนรวม`,
 						color: "var(--success)",
 					},
 					{
@@ -214,69 +216,10 @@ export default async function DashboardPage() {
 			)}
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-				<div className="rounded-card border border-border bg-card p-6">
-					<div className="mb-1 flex items-baseline justify-between">
-						<h3 className="text-h3 font-bold text-foreground">
-							ความคืบหน้า 5 สัปดาห์
-						</h3>
-						<span className="text-uism font-semibold text-primary">
-							<span className="num">
-								{(data.weeklyWatchedSeconds / 3600).toFixed(1)}
-							</span>{" "}
-							ชม. สัปดาห์นี้
-						</span>
-					</div>
-					<p className="mb-6 text-caption text-muted-foreground">
-						แต่ละช่อง = 1 วัน · เข้มขึ้น = เรียนนานขึ้น
-					</p>
-					<div className="flex gap-4">
-						<div className="flex flex-col gap-1 pt-7">
-							{["", "อ.", "", "พฤ.", "", "ส.", ""].map((d, i) => (
-								<div
-									key={i}
-									className="h-3 text-[11px] text-muted-foreground"
-								>
-									{d}
-								</div>
-							))}
-						</div>
-						<div className="flex-1">
-							<div className="mb-2 flex justify-between px-1">
-								{MONTH_LABELS_TH.slice(0, 5).map((m) => (
-									<span
-										key={m}
-										className="text-[11px] text-muted-foreground"
-									>
-										{m}
-									</span>
-								))}
-							</div>
-							<div className="grid grid-flow-col grid-cols-[repeat(35,1fr)] grid-rows-7 gap-1">
-								{data.heatmap.map((lvl, i) => (
-									<div
-										key={i}
-										className="rounded-[3px]"
-										style={{
-											backgroundColor: `var(--heat-${lvl})`,
-											aspectRatio: "1",
-										}}
-									/>
-								))}
-							</div>
-						</div>
-					</div>
-					<div className="mt-4 flex items-center justify-end gap-2">
-						<span className="text-caption text-muted-foreground">น้อย</span>
-						{[0, 1, 2, 3, 4].map((l) => (
-							<div
-								key={l}
-								className="h-3 w-3 rounded-[3px]"
-								style={{ backgroundColor: `var(--heat-${l})` }}
-							/>
-						))}
-						<span className="text-caption text-muted-foreground">มาก</span>
-					</div>
-				</div>
+				<ActivityHeatmap
+					heatmap={data.heatmap}
+					weeklyWatchedSeconds={data.weeklyWatchedSeconds}
+				/>
 
 				<div className="rounded-card border border-border bg-card p-6">
 					<div className="mb-5 flex items-baseline justify-between">
