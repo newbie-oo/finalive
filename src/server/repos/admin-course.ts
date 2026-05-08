@@ -22,6 +22,10 @@ import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
 import { enrollmentCountSubq } from "./course-queries";
 import { getCurriculumTree, lessonSelectColumns } from "./curriculum-repo";
+import {
+	normalizeCoursePrice,
+	normalizeCoursePriceRequired,
+} from "@/server/services/course-price";
 
 export interface AdminCourseListItem {
 	id: string;
@@ -132,13 +136,10 @@ export async function createAdminCourse(input: {
 	isFree: boolean;
 	ownerUserId: string;
 }) {
-	// Bidirectional invariant: free courses always have price 0, AND price 0
-	// always means free. The latter prevents the legacy bug where admins
-	// entered ฿0 with isFree=false, sending students into the slip-upload flow
-	// for a free course.
-	const priceNumber = Number(input.price);
-	const isFree = input.isFree || priceNumber === 0;
-	const price = isFree ? "0.00" : input.price;
+	const { price, isFree } = normalizeCoursePriceRequired({
+		price: input.price,
+		isFree: input.isFree,
+	});
 	const [row] = await db
 		.insert(course)
 		.values({
@@ -170,18 +171,15 @@ export async function updateAdminCourse(
 		coverMediaId?: string | null;
 	},
 ) {
-	const updates: typeof input = { ...input };
-
-	// Bidirectional invariant on update:
-	// 1. isFree=true → force price=0
-	// 2. price=0 → force isFree=true (so admins setting price to 0 don't trap
-	//    students in the slip-upload flow for a "free" course).
-	if (updates.isFree === true) {
-		updates.price = "0.00";
-	} else if (updates.price !== undefined && Number(updates.price) === 0) {
-		updates.isFree = true;
-		updates.price = "0.00";
-	}
+	const normalised = normalizeCoursePrice({
+		price: input.price,
+		isFree: input.isFree,
+	});
+	const updates: typeof input = {
+		...input,
+		...(normalised.price !== undefined ? { price: normalised.price } : {}),
+		...(normalised.isFree !== undefined ? { isFree: normalised.isFree } : {}),
+	};
 
 	await db
 		.update(course)
