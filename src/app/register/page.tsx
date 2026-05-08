@@ -11,7 +11,6 @@ import {
 	EnvelopeSimple,
 	LockSimple,
 	Play,
-	WarningIcon,
 } from "@phosphor-icons/react";
 import { signUp } from "@/lib/auth-client";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
@@ -22,7 +21,7 @@ import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormAlert } from "@/components/forms/form-alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Stepper } from "@/components/ui/stepper";
 
@@ -248,12 +247,7 @@ export default function RegisterPage() {
 									)}
 								</div>
 
-								{serverError && (
-									<Alert variant="destructive">
-										<WarningIcon size={16} weight="fill" />
-										<AlertDescription>{serverError}</AlertDescription>
-									</Alert>
-								)}
+								<FormAlert message={serverError} variant="destructive" />
 
 								<Button
 									type="submit"

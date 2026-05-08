@@ -5,13 +5,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { EnvelopeSimple, WarningIcon } from "@phosphor-icons/react";
+import { EnvelopeSimple } from "@phosphor-icons/react";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AuthCard } from "@/components/layouts/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormAlert } from "@/components/forms/form-alert";
 
 const forgotSchema = z.object({
   email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -101,12 +101,7 @@ export default function ForgotPasswordPage() {
             {errors.email && <FieldError>{errors.email.message}</FieldError>}
           </div>
 
-          {serverError && (
-            <Alert variant="destructive">
-              <WarningIcon size={16} weight="fill" />
-              <AlertDescription>{serverError}</AlertDescription>
-            </Alert>
-          )}
+          <FormAlert message={serverError} variant="destructive" />
 
           <Button
             type="submit"

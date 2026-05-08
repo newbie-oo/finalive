@@ -12,7 +12,6 @@ import {
 	Video,
 	FileText,
 	Certificate,
-	WarningIcon,
 } from "@phosphor-icons/react";
 import { signIn } from "@/lib/auth-client";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
@@ -23,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError } from "@/components/ui/label";
 import { Logo } from "@/components/ui/logo";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormAlert } from "@/components/forms/form-alert";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
@@ -197,12 +196,7 @@ function LoginForm() {
 								/>
 							</div>
 
-							{serverError && (
-								<Alert variant="destructive">
-									<WarningIcon size={16} weight="fill" />
-									<AlertDescription>{serverError}</AlertDescription>
-								</Alert>
-							)}
+							<FormAlert message={serverError} variant="destructive" />
 
 							<Button
 								type="submit"

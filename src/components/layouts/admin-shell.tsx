@@ -14,7 +14,7 @@ import {
   List,
   type Icon,
 } from "@phosphor-icons/react";
-import { PublicShell } from "@/components/layouts/public-shell";
+import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AdminUserMenu } from "@/components/admin/admin-user-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,7 +115,16 @@ export function AdminShell({
   const closeDrawer = () => setDrawerOpen(false);
 
   return (
-    <PublicShell hideFooter unboundedMain>
+    <PublicShell
+      hideFooter
+      unboundedMain
+      initialUser={{
+        name: user.name,
+        email: user.email,
+        image: null,
+        role: user.role,
+      }}
+    >
       <div className="flex min-h-[calc(100dvh-4rem)]">
         <aside
           className={cn(
