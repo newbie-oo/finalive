@@ -87,7 +87,7 @@ function KpiCard({
 							"text-uism num font-semibold",
 							positive ? "text-success" : "text-destructive",
 						)}
-						aria-label={`${positive ? "เพิ่มขึ้น" : "ลดลง"} ${Math.abs(delta.value).toFixed(0)} เปอร์เซ็นต์${delta.label ? ` ${delta.label}` : ""}`}
+						aria-label={`${positive ? "Increased" : "Decreased"} by ${Math.abs(delta.value).toFixed(0)} percent${delta.label ? ` ${delta.label}` : ""}`}
 					>
 						{positive ? "↑" : "↓"} {Math.abs(delta.value).toFixed(0)}%
 						{delta.label ? (

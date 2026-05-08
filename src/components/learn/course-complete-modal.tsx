@@ -73,14 +73,14 @@ export function CourseCompleteModal({
 		>
 			<button
 				type="button"
-				aria-label="ปิด"
+				aria-label="Close"
 				className="absolute inset-0 bg-black/50 backdrop-blur-sm"
 				onClick={() => setOpen(false)}
 			/>
 			<div className="relative z-10 w-full max-w-md rounded-card border border-border bg-card p-6 shadow-xl">
 				<button
 					type="button"
-					aria-label="ปิด"
+					aria-label="Close"
 					onClick={() => setOpen(false)}
 					className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
 				>

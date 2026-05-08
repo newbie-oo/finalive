@@ -2,6 +2,7 @@ import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import {
 	getCourseOwnerId,
 	getCollaboratorRole,
@@ -21,6 +22,7 @@ const body = z.object({
 
 export const POST = apiRoute({
 	auth: "admin",
+	rateLimit: rateLimitConfigs.upload,
 	body,
 	handler: async ({ body, user }) => {
 		const { lessonId, courseId } = body;

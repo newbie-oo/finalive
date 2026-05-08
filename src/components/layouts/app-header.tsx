@@ -48,7 +48,7 @@ export function AppHeader({
 					</span>
 				</Link>
 
-				<nav className="hidden items-center gap-1 md:flex" aria-label="หลัก">
+				<nav className="hidden items-center gap-1 md:flex" aria-label="Main">
 					{navItems.map((n) => {
 						const isAdminLink = n.visibility === "admin";
 						return (
@@ -100,7 +100,7 @@ export function AppHeader({
 				{onMobileMenuToggle && (
 					<button
 						type="button"
-						aria-label={mobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
+						aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
 						aria-expanded={mobileMenuOpen}
 						onClick={onMobileMenuToggle}
 						className="inline-flex h-10 w-10 items-center justify-center rounded-nav text-foreground hover:bg-muted md:hidden"

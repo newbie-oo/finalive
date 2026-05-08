@@ -132,7 +132,7 @@ export function AdminShell({
             <button
               type="button"
               className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
-              aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
+              aria-label={collapsed ? "Expand menu" : "Collapse menu"}
               onClick={toggleCollapsed}
             >
               {collapsed ? <CaretRight size={16} /> : <CaretLeft size={16} />}
@@ -146,7 +146,7 @@ export function AdminShell({
 
           <nav
             className="flex flex-1 flex-col gap-0.5 py-3"
-            aria-label="แอดมิน"
+            aria-label="Admin"
           >
             {nav.map((n) => (
               <NavLink
@@ -174,7 +174,7 @@ export function AdminShell({
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label="เปิดเมนู"
+                  aria-label="Open menu"
                   className="relative md:hidden"
                 >
                   <List size={20} weight="bold" />
@@ -200,7 +200,7 @@ export function AdminShell({
 
                 <nav
                   className="flex flex-1 flex-col gap-0.5 overflow-y-auto py-3"
-                  aria-label="แอดมิน (มือถือ)"
+                  aria-label="Admin (mobile)"
                 >
                   {nav.map((n) => (
                     <NavLink

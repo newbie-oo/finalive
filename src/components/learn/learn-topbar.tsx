@@ -54,48 +54,48 @@ export function LearnTopbar({
   }, [pathname]);
 
   return (
-    <header className="relative flex h-14 shrink-0 items-center gap-3 border-b border-(--border) bg-(--background) px-4 lg:px-6">
+    <header className="relative flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
       {routeChanging && (
         <div className="absolute inset-x-0 top-0 z-50 h-0.5 overflow-hidden">
-          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] bg-(--primary)" />
+          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] bg-primary" />
         </div>
       )}
       <Link
         href={`/courses/${courseSlug}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
-        aria-label="กลับ"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
+        aria-label="Back"
       >
         <CaretLeft size={18} />
       </Link>
 
-      <div className="hidden items-center gap-1.5 text-ui font-bold text-(--foreground) lg:flex">
-        <span className="inline-block h-2.5 w-2.5 rounded-full bg-(--primary)" />
+      <div className="hidden items-center gap-1.5 text-ui font-bold text-foreground lg:flex">
+        <span className="inline-block h-2.5 w-2.5 rounded-full bg-primary" />
         Finalive
       </div>
-      <div className="hidden h-6 w-px bg-(--border) lg:block" />
+      <div className="hidden h-6 w-px bg-border lg:block" />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="truncate text-ui font-semibold text-(--foreground)">
+          <span className="truncate text-ui font-semibold text-foreground">
             {courseTitle}
           </span>
         </div>
-        <div className="hidden text-caption text-(--foreground-muted) lg:block">
+        <div className="hidden text-caption text-muted-foreground lg:block">
           {moduleTitle} · {lessonTitle}
         </div>
       </div>
 
       <div className="hidden items-center gap-3 lg:flex">
-        <span className="text-caption text-(--foreground-muted)">
+        <span className="text-caption text-muted-foreground">
           ความคืบหน้า
         </span>
-        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-(--surface-muted)">
+        <div className="h-1.5 w-28 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-(--primary) transition-[width] duration-500"
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <span className="num text-caption font-semibold text-(--primary)">
+        <span className="num text-caption font-semibold text-primary">
           {progressPct}%
         </span>
       </div>
@@ -103,8 +103,8 @@ export function LearnTopbar({
       <div className="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
-          aria-label="การแจ้งเตือน"
+          className="flex h-8 w-8 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
+          aria-label="Notifications"
         >
           <Bell size={18} />
         </button>
@@ -118,8 +118,8 @@ export function LearnTopbar({
         <button
           type="button"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="hidden h-8 w-8 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted) lg:inline-flex"
-          aria-label="สลับธีม"
+          className="hidden h-8 w-8 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted lg:inline-flex"
+          aria-label="Toggle theme"
         >
           {mounted ? (
             theme === "dark" ? (
@@ -135,12 +135,12 @@ export function LearnTopbar({
           type="button"
           onClick={onToggleSidebar}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-[8px] transition-colors",
+            "flex h-8 w-8 items-center justify-center rounded-nav transition-colors",
             sidebarOpen
-              ? "bg-(--surface-muted) text-(--primary)"
-              : "text-(--foreground) hover:bg-(--surface-muted)",
+              ? "bg-muted text-primary"
+              : "text-foreground hover:bg-muted",
           )}
-          aria-label={sidebarOpen ? "ปิดหลักสูตร" : "เปิดหลักสูตร"}
+          aria-label={sidebarOpen ? "Close curriculum" : "Open curriculum"}
         >
           {sidebarOpen ? <X size={18} /> : <List size={18} />}
         </button>

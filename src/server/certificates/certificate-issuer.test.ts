@@ -251,9 +251,10 @@ describe("CertificateIssuer", () => {
 		);
 
 		expect(result.ok).toBe(true);
-		expect(consoleError).toHaveBeenCalledWith(
-			"certificate: failed to enqueue course_completed email",
-			expect.any(Error),
+		// Logger writes a single JSON line to console.error containing our event name.
+		expect(consoleError).toHaveBeenCalledTimes(1);
+		expect(consoleError.mock.calls[0]?.[0]).toContain(
+			"certificate.notify_failed",
 		);
 
 		consoleError.mockRestore();

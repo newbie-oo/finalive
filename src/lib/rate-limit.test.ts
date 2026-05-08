@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   checkRateLimit,
   getClientIP,
   _resetRateLimitForTests,
+  _resetTrustProxyCacheForTests,
 } from "./rate-limit";
 
 function makeReq(headers: Record<string, string>): Request {
@@ -49,6 +50,33 @@ describe("getClientIP", () => {
 
   it("returns 'unknown' when no header is present", () => {
     expect(getClientIP(makeReq({}))).toBe("unknown");
+  });
+
+  describe("with TRUST_PROXY_HEADERS=false", () => {
+    let prev: string | undefined;
+    beforeEach(() => {
+      prev = process.env.TRUST_PROXY_HEADERS;
+      process.env.TRUST_PROXY_HEADERS = "false";
+      _resetTrustProxyCacheForTests();
+    });
+    afterEach(() => {
+      if (prev === undefined) delete process.env.TRUST_PROXY_HEADERS;
+      else process.env.TRUST_PROXY_HEADERS = prev;
+      _resetTrustProxyCacheForTests();
+    });
+
+    it("ignores all proxy headers and returns 'unknown'", () => {
+      expect(
+        getClientIP(
+          makeReq({
+            "x-vercel-forwarded-for": "203.0.113.1",
+            "cf-connecting-ip": "203.0.113.2",
+            "x-real-ip": "203.0.113.3",
+            "x-forwarded-for": "203.0.113.4",
+          }),
+        ),
+      ).toBe("unknown");
+    });
   });
 });
 

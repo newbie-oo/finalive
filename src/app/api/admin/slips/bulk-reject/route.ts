@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { bulkRejectSlips, REJECT_REASONS } from "@/server/actions/admin-slip";
 
 const body = z.object({
@@ -10,6 +11,7 @@ const body = z.object({
 
 export const POST = apiRoute({
 	auth: "admin",
+	rateLimit: rateLimitConfigs.checkout,
 	body,
 	handler: async ({ body }) => {
 		return bulkRejectSlips(body.slipIds, body.reason, body.note);

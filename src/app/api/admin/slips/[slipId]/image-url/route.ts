@@ -1,4 +1,5 @@
 import { apiRoute } from "@/lib/api-route";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { presignReadUrl } from "@/server/services/r2";
 import { SlipRepo } from "@/server/payments/slip-repo";
 import { ApiError } from "@/lib/api-error";
@@ -7,6 +8,7 @@ const SIGN_TTL_SECONDS = 600;
 
 export const GET = apiRoute({
 	auth: "admin",
+	rateLimit: rateLimitConfigs.api,
 	handler: async ({ req }) => {
 		const slipId = new URL(req.url).pathname.split("/").slice(-2)[0]!;
 		const media = await SlipRepo.getSlipImageMedia(slipId);

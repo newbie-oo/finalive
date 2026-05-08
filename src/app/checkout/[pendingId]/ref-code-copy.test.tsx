@@ -41,7 +41,7 @@ describe("RefCodeCopy", () => {
     const { toast } = await import("sonner");
     render(<RefCodeCopy refCode="REF123" />);
 
-    const btn = screen.getByRole("button", { name: /คัดลอกเลขอ้างอิง/ });
+    const btn = screen.getByRole("button", { name: /Copy reference code/ });
     await act(async () => {
       fireEvent.click(btn);
       await Promise.resolve();
@@ -54,7 +54,7 @@ describe("RefCodeCopy", () => {
   it("shows check icon briefly after click", async () => {
     render(<RefCodeCopy refCode="REF123" />);
 
-    const btn = screen.getByRole("button", { name: /คัดลอกเลขอ้างอิง/ });
+    const btn = screen.getByRole("button", { name: /Copy reference code/ });
     await act(async () => {
       fireEvent.click(btn);
       await Promise.resolve();
@@ -84,7 +84,7 @@ describe("RefCodeCopy", () => {
 
     render(<RefCodeCopy refCode="REF123" />);
 
-    const btn = screen.getByRole("button", { name: /คัดลอกเลขอ้างอิง/ });
+    const btn = screen.getByRole("button", { name: /Copy reference code/ });
     await act(async () => {
       fireEvent.click(btn);
       await Promise.resolve();

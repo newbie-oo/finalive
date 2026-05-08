@@ -160,7 +160,7 @@ export function InlineSlipUpload({ pendingId }: InlineSlipUploadProps) {
                 e.preventDefault();
                 handleFile(null);
               }}
-              aria-label="ลบไฟล์"
+              aria-label="Remove file"
               className="text-uism text-muted-foreground transition-colors hover:text-destructive"
             >
               ลบไฟล์

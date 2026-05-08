@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPendingEnrollment } from "@/server/actions/enrollment";
 import { ApiError, statusForCode } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 import {
   checkRateLimit,
   getClientIP,
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
         { status: statusForCode(e.code) },
       );
     }
-    console.error("checkout/start error:", e);
+    logger.error("checkout.start_failed", e);
     throw e;
   }
 }

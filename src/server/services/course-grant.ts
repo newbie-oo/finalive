@@ -1,5 +1,6 @@
 import "server-only";
 import { ApiError } from "@/lib/api-error";
+import { logger } from "@/lib/logger";
 
 export interface GrantNotification {
   to: string;
@@ -95,7 +96,10 @@ export class CourseGrantService {
           });
         }
       } catch (err) {
-        console.error("CourseGrantService: notification failed", err);
+        logger.error("course_grant.notify_failed", err, {
+          studentUserId: params.studentUserId,
+          courseId: params.courseId,
+        });
       }
     }
 

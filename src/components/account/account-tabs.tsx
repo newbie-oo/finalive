@@ -28,7 +28,7 @@ const TABS: Tab[] = [
 export function AccountTabs() {
   const pathname = usePathname() ?? "";
   return (
-    <nav aria-label="บัญชี" className="flex gap-1 overflow-x-auto lg:flex-col">
+    <nav aria-label="Account" className="flex gap-1 overflow-x-auto lg:flex-col">
       {TABS.map((t) => {
         const active = t.exact
           ? pathname === t.href

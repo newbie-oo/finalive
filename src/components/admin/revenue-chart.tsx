@@ -101,7 +101,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
       className="w-full"
       style={{ height: 220 }}
       role="img"
-      aria-label="กราฟรายได้รายเดือน"
+      aria-label="Monthly revenue chart"
       onMouseMove={onMouseMove}
       onMouseLeave={() => setHoverIdx(null)}
     >

@@ -27,7 +27,7 @@ export function RefCodeCopy({ refCode }: RefCodeCopyProps) {
       type="button"
       onClick={handleCopy}
       className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-border bg-surface-sunken px-3 py-1.5 text-ui transition-colors hover:bg-muted"
-      aria-label="คัดลอกเลขอ้างอิง"
+      aria-label="Copy reference code"
     >
       <span className="mono">{refCode}</span>
       {copied ? (

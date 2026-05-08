@@ -8,23 +8,23 @@ describe("PasswordInput", () => {
     const input = screen.getByDisplayValue("secret");
     expect(input).toHaveAttribute("type", "password");
 
-    const btn = screen.getByRole("button", { name: /แสดงรหัสผ่าน/ });
+    const btn = screen.getByRole("button", { name: /Show password/ });
     fireEvent.click(btn);
 
     expect(input).toHaveAttribute("type", "text");
     expect(
-      screen.getByRole("button", { name: /ซ่อนรหัสผ่าน/ }),
+      screen.getByRole("button", { name: /Hide password/ }),
     ).toBeInTheDocument();
   });
 
   it("shows no strength bars by default", () => {
     render(<PasswordInput value="weak" />);
-    expect(screen.queryByLabelText(/ความแข็งแกร่ง/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Password strength/)).not.toBeInTheDocument();
   });
 
   it("shows strength bars when showStrength is true", () => {
     render(<PasswordInput value="weak" showStrength />);
-    expect(screen.getByLabelText(/ความแข็งแกร่ง/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Password strength/)).toBeInTheDocument();
   });
 
   it("1 bar for ≥8 chars only", () => {

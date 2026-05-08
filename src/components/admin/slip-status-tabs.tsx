@@ -17,7 +17,7 @@ export function SlipStatusTabs({ status }: { status: SlipQueueStatus }) {
     <Tabs
       value={status}
       onValueChange={(v) => router.push(`/admin/slips?status=${v}`)}
-      aria-label="ตัวกรองสถานะสลิป"
+      aria-label="Slip status filter"
     >
       <TabsList>
         {STATUS_OPTIONS.map((opt) => (

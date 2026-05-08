@@ -37,7 +37,7 @@ export function AdminUserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="เมนูผู้ใช้"
+        aria-label="User menu"
         className={cn(
           "group/admin-user-menu flex w-full cursor-pointer items-center gap-2.5 rounded-nav px-2 py-2 text-left transition-colors hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
           collapsed && "justify-center px-0",

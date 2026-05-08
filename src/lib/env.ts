@@ -1,5 +1,19 @@
 import { z } from "zod";
 
+// Accepts a bare email ("user@example.com") or RFC 5322 mailbox with display
+// name ("Display Name <user@example.com>"). Nodemailer's `from` field supports
+// both, and `.env.example` documents the display-name form.
+const emailAddressOrMailbox = z
+	.string()
+	.refine(
+		(v) => {
+			const bare = /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/;
+			const mailbox = /^.+\s<[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>$/;
+			return bare.test(v) || mailbox.test(v);
+		},
+		{ message: "Invalid email" },
+	);
+
 const envSchema = z.object({
 	NODE_ENV: z
 		.enum(["development", "test", "production"])
@@ -13,8 +27,8 @@ const envSchema = z.object({
 	SMTP_PORT: z.coerce.number().int().positive(),
 	SMTP_USER: z.string().optional(),
 	SMTP_PASS: z.string().optional(),
-	EMAIL_FROM: z.string().email(),
-	ADMIN_NOTIFY_EMAIL: z.string().email().default("admin@finalive.dev"),
+	EMAIL_FROM: emailAddressOrMailbox,
+	ADMIN_NOTIFY_EMAIL: emailAddressOrMailbox.default("admin@finalive.dev"),
 	S3_ENDPOINT: z.string().url(),
 	S3_REGION: z.string(),
 	S3_ACCESS_KEY_ID: z.string(),
@@ -29,6 +43,16 @@ const envSchema = z.object({
 	BUNNY_STREAM_TOKEN_SECRET: z.string().optional(),
 	BUNNY_WEBHOOK_SECRET: z.string().optional(),
 	CRON_SECRET: z.string().optional(),
+	/**
+	 * Whether to trust upstream proxy headers (x-forwarded-for, x-real-ip,
+	 * x-vercel-forwarded-for, cf-connecting-ip) when resolving client IP.
+	 * Default is "true" to keep current behaviour; set to "false" in dev or
+	 * direct-exposure setups so attackers can't spoof IP via headers.
+	 */
+	TRUST_PROXY_HEADERS: z
+		.enum(["true", "false"])
+		.default("true")
+		.transform((v) => v === "true"),
 });
 
 export type Env = z.infer<typeof envSchema>;

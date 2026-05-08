@@ -1,5 +1,6 @@
 import "server-only";
 import type { ObjectStorage } from "./storage";
+import { logger } from "@/lib/logger";
 
 export interface CoverImageDeps {
   storage: ObjectStorage;
@@ -41,10 +42,9 @@ export class CoverImageService {
           await this.deps.storage.delete(`covers/${uuid}-640.webp`);
           await this.deps.storage.delete(`covers/${uuid}-1200.webp`);
         } catch (err) {
-          console.error(
-            "CoverImageService: failed to delete old cover files:",
-            err,
-          );
+          logger.error("cover_image.cleanup_failed", err, {
+            mediaAssetId: oldAsset.id,
+          });
         }
         await this.deps.deleteMediaAsset(oldAsset.id);
       }

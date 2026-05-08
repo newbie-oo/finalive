@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
 import { getEnv } from "@/lib/env";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { makeBunnyStatusService } from "@/server/services/bunny-status-service-factory";
 import { bunnyStatusName } from "@/server/services/bunny-video-status";
 
@@ -11,6 +12,7 @@ const query = z.object({ videoId: z.string().min(1) });
 
 export const GET = apiRoute({
 	auth: "admin",
+	rateLimit: rateLimitConfigs.api,
 	query,
 	handler: async ({ query }) => {
 		const env = getEnv();

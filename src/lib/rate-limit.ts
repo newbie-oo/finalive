@@ -8,7 +8,8 @@
 /**
  * Resolve the client IP from the request.
  *
- * Trust order matches what Vercel and most reverse proxies expose:
+ * Reads proxy headers only when `TRUST_PROXY_HEADERS` env is true (default).
+ * Trust order:
  *  1. `x-vercel-forwarded-for` (Vercel sets this and rewrites x-forwarded-for)
  *  2. `cf-connecting-ip` (Cloudflare)
  *  3. `x-real-ip` (NGINX-style — typically only set by trusted proxy)
@@ -17,9 +18,14 @@
  *     mistake: an attacker can prepend any value via XFF and fragment
  *     buckets to bypass per-IP limits.
  *
- * Falls back to "unknown" so callers always get a non-empty bucket key.
+ * When `TRUST_PROXY_HEADERS=false`, all headers are ignored and we return
+ * "unknown" — that's correct for direct-exposure setups where any XFF would
+ * be attacker-controlled. Falls back to "unknown" so callers always get a
+ * non-empty bucket key.
  */
 export function getClientIP(req: Request): string {
+  if (!shouldTrustProxy()) return "unknown";
+
   const direct =
     req.headers.get("x-vercel-forwarded-for") ??
     req.headers.get("cf-connecting-ip") ??
@@ -37,6 +43,21 @@ export function getClientIP(req: Request): string {
   }
 
   return "unknown";
+}
+
+let _trustProxyCache: boolean | null = null;
+function shouldTrustProxy(): boolean {
+  if (_trustProxyCache !== null) return _trustProxyCache;
+  // Read TRUST_PROXY_HEADERS lazily and cache. We do not import getEnv() to
+  // keep this module decoupled — a missing/invalid value defaults to trust.
+  const raw = process.env.TRUST_PROXY_HEADERS;
+  _trustProxyCache = raw !== "false";
+  return _trustProxyCache;
+}
+
+/** Test-only: reset the trust-proxy cache. */
+export function _resetTrustProxyCacheForTests(): void {
+  _trustProxyCache = null;
 }
 
 export interface RateLimitConfig {

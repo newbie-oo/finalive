@@ -106,7 +106,7 @@ export function PublicShell({
 					</SheetHeader>
 					<nav
 						className="flex flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
-						aria-label="เมนูมือถือ"
+						aria-label="Mobile menu"
 					>
 						{navItems.map((n) => (
 							<Link

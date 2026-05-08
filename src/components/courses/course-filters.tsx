@@ -188,7 +188,7 @@ export function CourseFilters({
 									type="button"
 									onClick={() => setQ("")}
 									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-foreground-subtle hover:bg-muted hover:text-foreground"
-									aria-label="ล้างการค้นหา"
+									aria-label="Clear search"
 								>
 									<X size={16} />
 								</button>
@@ -307,7 +307,7 @@ export function CourseFilters({
 									</h3>
 									<Select value={sortBy} onValueChange={setSortBy}>
 										<SelectTrigger
-											aria-label="เรียงลำดับ"
+											aria-label="Sort"
 											className="w-full"
 										>
 											<SelectValue />

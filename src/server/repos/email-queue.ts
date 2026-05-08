@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { emailMessage } from "@/db/schema/audit";
 import { dispatchEmail } from "@/server/email/dispatch";
 import type { EmailPayload } from "@/server/email/templates";
+import { logger } from "@/lib/logger";
 
 /** Runtime template names (kept for DB-layer compatibility). */
 export type EmailTemplate = EmailPayload["template"];
@@ -38,10 +39,11 @@ export async function sendEmail(
 		status = "failed";
 		sentAt = null;
 		lastError = err instanceof Error ? err.message : String(err);
-		console.error(
-			`sendEmail: ${payload.template} to ${toEmail} failed (will retry)`,
-			err,
-		);
+		logger.error("email.send_failed", err, {
+			template: payload.template,
+			toEmail,
+			userId: userId ?? undefined,
+		});
 	}
 
 	const [row] = await writer

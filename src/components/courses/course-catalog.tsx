@@ -60,7 +60,7 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 								? "bg-primary text-white"
 								: "text-muted-foreground hover:bg-muted hover:text-foreground"
 							}`}
-						aria-label="มุมมองตาราง"
+						aria-label="Grid view"
 						aria-pressed={viewMode === "grid"}
 					>
 						<SquaresFour size={16} />
@@ -72,7 +72,7 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 								? "bg-primary text-white"
 								: "text-muted-foreground hover:bg-muted hover:text-foreground"
 							}`}
-						aria-label="มุมมองรายการ"
+						aria-label="List view"
 						aria-pressed={viewMode === "list"}
 					>
 						<List size={16} />

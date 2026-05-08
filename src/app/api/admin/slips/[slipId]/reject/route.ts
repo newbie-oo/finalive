@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { rejectSlip, REJECT_REASONS } from "@/server/actions/admin-slip";
 
 const body = z.object({
@@ -9,6 +10,7 @@ const body = z.object({
 
 export const POST = apiRoute({
 	auth: "admin",
+	rateLimit: rateLimitConfigs.api,
 	body,
 	handler: async ({ req, body }) => {
 		const slipId = new URL(req.url).pathname.split("/").slice(-2)[0]!;

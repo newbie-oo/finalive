@@ -91,7 +91,7 @@ export function NotesPanel({ lessonId }: NotesPanelProps) {
             onChange={(e) => handleChange(e.target.value)}
             placeholder="จดโน้ตของคุณที่นี่..."
             className="min-h-[200px] w-full resize-y rounded-xl border border-border bg-card p-4 text-body text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20"
-            aria-label="โน้ตบทเรียน"
+            aria-label="Lesson notes"
           />
           {saved && (
             <span className="absolute bottom-3 right-3 text-caption text-success">

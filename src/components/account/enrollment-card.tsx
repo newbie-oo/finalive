@@ -90,7 +90,7 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
             <div
               className="h-full bg-primary"
               style={{ width: `${pct}%` }}
-              aria-label={`ความคืบหน้า ${pct}%`}
+              aria-label={`Progress ${pct}%`}
             />
           </div>
         )}

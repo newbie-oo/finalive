@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 
 const STATUS_VALUES = [
@@ -16,6 +17,7 @@ const querySchema = z.object({
 
 export const GET = apiRoute({
   auth: "admin",
+  rateLimit: rateLimitConfigs.api,
   query: querySchema,
   handler: async ({ query }) => listPendingSlips(query),
 });

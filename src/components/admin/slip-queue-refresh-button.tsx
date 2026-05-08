@@ -20,7 +20,7 @@ export function SlipQueueRefreshButton() {
         void qc.invalidateQueries({ queryKey: ["admin-slips"] });
         startTransition(() => router.refresh());
       }}
-      aria-label="รีเฟรชคิวตรวจสลิป"
+      aria-label="Refresh slip review queue"
       className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-uism text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60"
     >
       <ArrowClockwise

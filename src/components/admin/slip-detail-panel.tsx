@@ -72,7 +72,7 @@ export function SlipDetailPanel({
 							type="button"
 							onClick={onMovePrev}
 							className="flex h-7 w-7 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
-							aria-label="ก่อนหน้า"
+							aria-label="Previous"
 						>
 							<CaretUp size={14} />
 						</button>
@@ -82,7 +82,7 @@ export function SlipDetailPanel({
 							type="button"
 							onClick={onMoveNext}
 							className="flex h-7 w-7 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
-							aria-label="ถัดไป"
+							aria-label="Next"
 						>
 							<CaretDown size={14} />
 						</button>
@@ -92,7 +92,7 @@ export function SlipDetailPanel({
 							type="button"
 							onClick={onClose}
 							className="flex h-7 w-7 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
-							aria-label="ปิด"
+							aria-label="Close"
 						>
 							<X size={14} />
 						</button>

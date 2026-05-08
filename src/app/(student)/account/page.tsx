@@ -224,7 +224,7 @@ function ChangePasswordSection() {
               onClick={() => setShowCurrent((v) => !v)}
               className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
-              aria-label={showCurrent ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+              aria-label={showCurrent ? "Hide password" : "Show password"}
             >
               {showCurrent ? <EyeSlash size={18} /> : <Eye size={18} />}
             </button>
@@ -251,7 +251,7 @@ function ChangePasswordSection() {
               onClick={() => setShowNew((v) => !v)}
               className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
-              aria-label={showNew ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+              aria-label={showNew ? "Hide password" : "Show password"}
             >
               {showNew ? <EyeSlash size={18} /> : <Eye size={18} />}
             </button>

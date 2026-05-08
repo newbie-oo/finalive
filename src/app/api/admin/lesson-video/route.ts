@@ -8,6 +8,7 @@ import {
 import { canEditCoursePure } from "@/server/services/course-authz";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { rateLimitConfigs } from "@/lib/rate-limit";
 import { HttpBunnyStreamClient } from "@/server/services/bunny-stream";
 import { LessonVideoService } from "@/server/services/lesson-video";
 import { LessonVideoRepo } from "@/server/repos/lesson-video";
@@ -38,6 +39,7 @@ const bodySchema = z.object({
 
 export const POST = apiRoute({
 	auth: "required",
+	rateLimit: rateLimitConfigs.upload,
 	body: bodySchema,
 	handler: async ({ body, user }) => {
 		const { action, courseId, lessonId, fileName, bunnyVideoId } = body;

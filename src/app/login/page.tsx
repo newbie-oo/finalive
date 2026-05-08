@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
 	EnvelopeSimple,
@@ -62,26 +63,19 @@ function LoginForm() {
 	const {
 		register,
 		handleSubmit,
-		setError,
 		control,
 		formState: { errors, isSubmitting },
-	} = useForm<LoginForm>();
+	} = useForm<LoginForm>({
+		resolver: zodResolver(loginSchema),
+	});
 
 	async function onSubmit(data: LoginForm) {
 		setServerError(null);
-		const parsed = loginSchema.safeParse(data);
-		if (!parsed.success) {
-			for (const issue of parsed.error.issues) {
-				const field = issue.path[0] as keyof LoginForm;
-				setError(field, { message: issue.message });
-			}
-			return;
-		}
 
 		const result = await signIn.email({
-			email: parsed.data.email,
-			password: parsed.data.password,
-			rememberMe: parsed.data.rememberMe,
+			email: data.email,
+			password: data.password,
+			rememberMe: data.rememberMe,
 		});
 
 		if (result.error) {

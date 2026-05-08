@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
 	CheckCircle,
@@ -44,26 +45,19 @@ export default function RegisterPage() {
 	const {
 		register,
 		handleSubmit,
-		setError,
 		control,
 		formState: { errors, isSubmitting },
-	} = useForm<RegisterForm>();
+	} = useForm<RegisterForm>({
+		resolver: zodResolver(registerSchema),
+	});
 
 	async function onSubmit(data: RegisterForm) {
 		setServerError(null);
-		const parsed = registerSchema.safeParse(data);
-		if (!parsed.success) {
-			for (const issue of parsed.error.issues) {
-				const field = issue.path[0] as keyof RegisterForm;
-				setError(field, { message: issue.message });
-			}
-			return;
-		}
 
 		const result = await signUp.email({
-			email: parsed.data.email,
-			password: parsed.data.password,
-			name: parsed.data.name,
+			email: data.email,
+			password: data.password,
+			name: data.name,
 		});
 
 		if (result.error) {

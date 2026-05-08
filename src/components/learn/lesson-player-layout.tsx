@@ -131,7 +131,7 @@ export function LessonPlayerLayout({
 							variant="secondary"
 							size="md"
 							onClick={handleBookmark}
-							aria-label={bookmarked ? "ยกเลิกบุ๊กมาร์ก" : "บุ๊กมาร์ก"}
+							aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
 						>
 							<BookmarkSimple
 								size={16}
@@ -168,7 +168,7 @@ export function LessonPlayerLayout({
 				<div
 					className="flex gap-6 border-b border-border mb-6"
 					role="tablist"
-					aria-label="บทเรียน"
+					aria-label="Lessons"
 				>
 					<button
 						role="tab"

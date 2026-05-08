@@ -3,6 +3,7 @@ import type { CertificateRenderer } from "./certificate-renderer";
 import type { ObjectStorage } from "@/server/services/storage";
 import type { CourseCompletionNotifier } from "@/server/services/notifier";
 import type { CertificateData } from "./certificate-doc";
+import { logger } from "@/lib/logger";
 
 export type IssueCertificateResult =
 	| { ok: true; certCode: string; pdfUrl: string }
@@ -155,10 +156,7 @@ export class CertificateIssuer {
 				userId: requestingUserId,
 			});
 		} catch (err) {
-			console.error(
-				"certificate: failed to enqueue course_completed email",
-				err,
-			);
+			logger.error("certificate.notify_failed", err, { certCode });
 		}
 
 		return { ok: true, certCode, pdfUrl };

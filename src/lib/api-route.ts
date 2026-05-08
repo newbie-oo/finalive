@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSessionThrow, requireRoleThrow } from "@/server/auth-session";
 import { ApiError, statusForCode } from "@/lib/api-error";
 import { thaiErrorMessage } from "@/lib/error-messages";
+import { logger } from "@/lib/logger";
 import {
 	checkRateLimit,
 	getClientIP,
@@ -153,7 +154,7 @@ function handleApiError(e: unknown, rid: string): NextResponse {
 			rid,
 		);
 	}
-	console.error(`API error [${rid}]:`, e);
+	logger.error("api.unhandled_error", e, { requestId: rid });
 	return errorResponse(
 		"internal_error",
 		thaiErrorMessage("internal_error"),

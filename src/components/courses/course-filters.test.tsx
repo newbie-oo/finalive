@@ -79,7 +79,7 @@ describe("CourseFilters", () => {
       </CourseFilters>,
     );
 
-    const sortSelect = screen.getByLabelText("เรียงลำดับ");
+    const sortSelect = screen.getByLabelText("Sort");
     fireEvent.change(sortSelect, { target: { value: "price_asc" } });
 
     expect(sortSelect).toHaveValue("price_asc");
