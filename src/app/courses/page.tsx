@@ -114,7 +114,10 @@ export default async function CoursesPage({
 					duration={duration}
 					sort={sortBy}
 				/>
-				<Suspense fallback={<CourseCatalogSkeleton />}>
+				<Suspense
+					key={`${filterQs}|${base.page}|${base.per_page}`}
+					fallback={<CourseCatalogSkeleton />}
+				>
 					<CourseGrid params={params} searchParams={filterQs} />
 				</Suspense>
 			</CourseFilters>
