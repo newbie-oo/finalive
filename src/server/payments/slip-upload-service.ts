@@ -48,6 +48,9 @@ export interface SlipUploadServiceDeps {
 	storage: ObjectStorage;
 	notifier: SlipNotifier;
 	auditLogger: AuditLogger;
+	/** Resolves the admin notification email at call time so tests can stub
+	 * it without standing up the full env validator. */
+	adminNotifyEmail: () => string;
 }
 
 export class SlipUploadService {
@@ -152,7 +155,7 @@ export class SlipUploadService {
 		});
 
 		await this.deps.notifier.notifyAdminOfNewSlip({
-			adminEmail: process.env.ADMIN_NOTIFY_EMAIL ?? "admin@finalive.dev",
+			adminEmail: this.deps.adminNotifyEmail(),
 			studentEmail: user.email,
 			courseTitle: courseInfo.title,
 			refCode: pending.refCode,

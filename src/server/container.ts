@@ -85,6 +85,7 @@ export const container = {
 			storage: new R2ObjectStorage("private"),
 			notifier: makeEmailSlipNotifier(),
 			auditLogger: makeDbAuditLogger(),
+			adminNotifyEmail: () => getEnv().ADMIN_NOTIFY_EMAIL,
 		});
 	},
 

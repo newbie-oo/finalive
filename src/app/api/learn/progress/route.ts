@@ -11,8 +11,6 @@ const schema = z.object({
 	durationSeconds: z.number().int().min(0).optional(),
 });
 
-const COMPLETE_SENTINEL = 999_000;
-
 export const POST = apiRoute({
 	auth: "required",
 	rateLimit: rateLimitConfigs.api,
@@ -26,9 +24,8 @@ export const POST = apiRoute({
 		}
 
 		const { lessonId, watchedSeconds, markComplete, durationSeconds } = body;
-		const isComplete = markComplete || watchedSeconds >= COMPLETE_SENTINEL;
 
-		if (isComplete) {
+		if (markComplete) {
 			const service = container.courseCompletion();
 			const result = await service.handleLessonComplete({
 				userId: user!.id,

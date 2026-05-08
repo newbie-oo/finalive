@@ -54,7 +54,11 @@ export function useLessonProgress({
 		fetch("/api/learn/progress", {
 			method: "POST",
 			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ lessonId, watchedSeconds: 999_999 }),
+			body: JSON.stringify({
+				lessonId,
+				watchedSeconds: 0,
+				markComplete: true,
+			}),
 		})
 			.then(() => {
 				window.dispatchEvent(

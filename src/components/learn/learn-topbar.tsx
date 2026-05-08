@@ -30,6 +30,8 @@ export function LearnTopbar({
 }: LearnTopbarProps) {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const params = useParams();
+  const courseSlug = (params.courseSlug as string | undefined) ?? "";
   const prevPathname = useRef(pathname);
   const [routeChanging, setRouteChanging] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -59,7 +61,7 @@ export function LearnTopbar({
         </div>
       )}
       <Link
-        href={`/courses/${useParams().courseSlug as string}`}
+        href={`/courses/${courseSlug}`}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-(--foreground) transition-colors hover:bg-(--surface-muted)"
         aria-label="กลับ"
       >

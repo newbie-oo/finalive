@@ -1,4 +1,5 @@
 import { apiRoute } from "@/lib/api-route";
+import { ApiError } from "@/lib/api-error";
 import { getCheckoutPending } from "@/server/repos/checkout";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export const GET = apiRoute({
 		const pendingId = url.pathname.split("/").slice(-2)[0]!;
 		const pending = await getCheckoutPending(pendingId, user!.id);
 		if (!pending) {
-			return { error: "not_found" };
+			throw new ApiError("not_found", "pending enrollment not found");
 		}
 		return {
 			status: pending.status,

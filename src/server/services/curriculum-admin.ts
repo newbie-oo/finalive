@@ -1,18 +1,18 @@
 import "server-only";
 import type { CurriculumModule } from "@/server/repos/curriculum-repo";
+import {
+	isForeignKeyViolation,
+	isUniqueViolation,
+} from "@/lib/pg-error";
 
 function classifyDbError(
 	err: unknown,
 ): "not_found" | "invalid_input" | "unexpected" {
-	if (err instanceof Error) {
-		const msg = err.message.toLowerCase();
-		if (msg.includes("foreign key") || msg.includes("violates foreign")) {
-			return "not_found";
-		}
-		if (msg.includes("unique constraint") || msg.includes("violates unique")) {
-			return "invalid_input";
-		}
-	}
+	// Use SQLSTATE codes rather than substring-matching the message — message
+	// text varies by Postgres version and locale, and the strings rotated
+	// between PG versions in the past.
+	if (isForeignKeyViolation(err)) return "not_found";
+	if (isUniqueViolation(err)) return "invalid_input";
 	return "unexpected";
 }
 

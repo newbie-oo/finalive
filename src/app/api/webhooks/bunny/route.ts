@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRouteRaw } from "@/lib/api-route";
+import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
 import { verifyHmacSha256 } from "@/lib/webhook-signature";
 import { logger } from "@/lib/logger";
@@ -26,39 +27,39 @@ export const POST = apiRouteRaw({
 		// unsigned requests through whenever the env var was unset.
 		if (!webhookSecret) {
 			logger.error("bunny.webhook.missing_secret");
-			return { error: "webhook_not_configured" };
+			throw new ApiError("invalid_state", "webhook not configured");
 		}
 		const version = req.headers.get("x-bunnystream-signature-version");
 		const algorithm = req.headers.get("x-bunnystream-signature-algorithm");
 		const sig = req.headers.get("x-bunnystream-signature");
 		if (version !== "v1" || algorithm !== "hmac-sha256") {
-			return { error: "unsupported_signature_scheme" };
+			throw new ApiError("unauthorized", "unsupported signature scheme");
 		}
 		if (!verifyHmacSha256(rawBody, sig, webhookSecret)) {
-			return { error: "unauthorized" };
+			throw new ApiError("unauthorized", "invalid webhook signature");
 		}
 
 		let rawPayload: unknown;
 		try {
 			rawPayload = JSON.parse(rawBody);
 		} catch {
-			return { error: "invalid_json" };
+			throw new ApiError("validation_failed", "invalid json body");
 		}
 
 		const parsed = bunnyWebhookSchema.safeParse(rawPayload);
 		if (!parsed.success) {
-			return { error: "invalid_payload", details: parsed.error.flatten() };
+			throw new ApiError("validation_failed", "invalid payload");
 		}
 
 		const { VideoGuid: videoGuid, VideoLibraryId: receivedLibraryId } =
 			parsed.data;
 
 		if (!videoGuid || !receivedLibraryId) {
-			return { error: "missing_fields" };
+			throw new ApiError("validation_failed", "missing fields");
 		}
 
 		if (String(receivedLibraryId) !== String(libraryId)) {
-			return { error: "invalid_library" };
+			throw new ApiError("forbidden", "invalid library");
 		}
 
 		const status = parsed.data.Status ?? -1;

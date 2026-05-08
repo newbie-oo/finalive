@@ -55,6 +55,7 @@ function fakeDeps() {
 		auditLogger: {
 			log: vi.fn().mockResolvedValue(undefined),
 		},
+		adminNotifyEmail: () => "admin@test.local",
 	};
 }
 

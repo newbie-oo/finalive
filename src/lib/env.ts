@@ -13,7 +13,7 @@ const envSchema = z.object({
 	SMTP_PORT: z.coerce.number().int().positive(),
 	SMTP_USER: z.string().optional(),
 	SMTP_PASS: z.string().optional(),
-	EMAIL_FROM: z.string(),
+	EMAIL_FROM: z.string().email(),
 	ADMIN_NOTIFY_EMAIL: z.string().email().default("admin@finalive.dev"),
 	S3_ENDPOINT: z.string().url(),
 	S3_REGION: z.string(),

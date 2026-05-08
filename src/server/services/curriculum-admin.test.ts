@@ -4,6 +4,20 @@ import type { CurriculumModule } from "@/server/repos/curriculum-repo";
 
 vi.mock("server-only", () => ({}));
 
+// postgres-js attaches SQLSTATE in `code` and the constraint name in
+// `constraint_name` — mimic that shape so the SUT's structural error
+// classifier can identify the violation type.
+function pgError(
+	code: string,
+	message: string,
+	constraint?: string,
+): Error & { code: string; constraint_name?: string } {
+	return Object.assign(new Error(message), {
+		code,
+		constraint_name: constraint,
+	});
+}
+
 function makeCurriculum(
 	mods: CurriculumModule[],
 ): () => Promise<CurriculumModule[]> {
@@ -345,7 +359,7 @@ describe("CurriculumAdminService", () => {
 		it("returns not_found on foreign key violation", async () => {
 			const deps = fakeDeps();
 			deps.reorderAdminLessons.mockRejectedValue(
-				new Error("violates foreign key constraint"),
+				pgError("23503", "violates foreign key constraint"),
 			);
 			const svc = createCurriculumAdminService(deps);
 			const result = await svc.reorderLessons("m1", ["l2", "l1"]);
@@ -355,7 +369,7 @@ describe("CurriculumAdminService", () => {
 		it("returns invalid_input on unique constraint violation", async () => {
 			const deps = fakeDeps();
 			deps.reorderAdminLessons.mockRejectedValue(
-				new Error("violates unique constraint"),
+				pgError("23505", "violates unique constraint"),
 			);
 			const svc = createCurriculumAdminService(deps);
 			const result = await svc.reorderLessons("m1", ["l2", "l1"]);

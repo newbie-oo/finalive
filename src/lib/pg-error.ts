@@ -24,3 +24,13 @@ export function isUniqueViolation(e: unknown, constraint?: string): boolean {
   if (!pg || pg.code !== "23505") return false;
   return constraint ? pg.constraint_name === constraint : true;
 }
+
+/** SQLSTATE 23503 — foreign-key violation. */
+export function isForeignKeyViolation(e: unknown): boolean {
+  return asPgError(e)?.code === "23503";
+}
+
+/** SQLSTATE 23514 — check-constraint violation. */
+export function isCheckViolation(e: unknown): boolean {
+  return asPgError(e)?.code === "23514";
+}

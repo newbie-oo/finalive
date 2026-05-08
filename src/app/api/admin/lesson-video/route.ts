@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { NextResponse } from "next/server";
 import { apiRoute } from "@/lib/api-route";
+import { ApiError } from "@/lib/api-error";
 import {
 	getCourseOwnerId,
 	getCollaboratorRole,
@@ -54,16 +54,14 @@ export const POST = apiRoute({
 				collaboratorRole,
 			})
 		) {
-			return NextResponse.json({ code: "forbidden" }, { status: 403 });
+			throw new ApiError("forbidden", "cannot edit this course");
 		}
 
 		const env = getEnv();
 		const apiKey = env.BUNNY_API_KEY;
 		if (!apiKey) {
-			return NextResponse.json(
-				{ code: "bunny_not_configured", message: "Bunny credentials missing" },
-				{ status: 500 },
-			);
+			logger.error("lesson-video.bunny_not_configured");
+			throw new ApiError("invalid_state", "video provider not configured");
 		}
 
 		const service = makeService();
@@ -89,22 +87,15 @@ export const POST = apiRoute({
 					oldMediaId: result.oldMediaId,
 				};
 			} catch (err) {
-				const message =
-					err instanceof Error ? err.message : "Bunny create failed";
+				if (err instanceof ApiError) throw err;
 				logger.error("lesson-video.create_failed", err, { lessonId });
-				return NextResponse.json(
-					{ code: "bunny_error", message },
-					{ status: 502 },
-				);
+				throw new ApiError("internal_error", "video provider error");
 			}
 		}
 
 		if (action === "cancel") {
 			if (!bunnyVideoId) {
-				return NextResponse.json(
-					{ code: "validation_failed", message: "missing bunnyVideoId" },
-					{ status: 400 },
-				);
+				throw new ApiError("validation_failed", "missing bunnyVideoId");
 			}
 
 			const result = await service.cancelVideo({ lessonId, bunnyVideoId });
@@ -115,9 +106,6 @@ export const POST = apiRoute({
 			};
 		}
 
-		return NextResponse.json(
-			{ code: "validation_failed", message: "action must be create or cancel" },
-			{ status: 400 },
-		);
+		throw new ApiError("validation_failed", "action must be create or cancel");
 	},
 });
