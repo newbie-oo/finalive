@@ -8,8 +8,11 @@ export function formatTHB(value: number | string): string {
   return THB.format(Number.isFinite(n) ? n : 0);
 }
 
-export function formatDuration(seconds: number | null): string {
-  if (seconds === null || seconds <= 0) return "—";
+export function formatDuration(
+  seconds: number | null | undefined,
+  fallback = "—",
+): string {
+  if (seconds == null || seconds <= 0) return fallback;
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
   return `${minutes}:${remaining.toString().padStart(2, "0")}`;

@@ -27,4 +27,10 @@ describe("formatDuration", () => {
     expect(formatDuration(0)).toBe("—");
     expect(formatDuration(-5)).toBe("—");
   });
+
+  it("uses custom fallback when provided", () => {
+    expect(formatDuration(null, "")).toBe("");
+    expect(formatDuration(0, "")).toBe("");
+    expect(formatDuration(undefined as unknown as null, "—")).toBe("—");
+  });
 });

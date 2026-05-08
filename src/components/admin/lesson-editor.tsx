@@ -9,6 +9,7 @@ import { updateLessonAction } from "@/server/actions/admin-curriculum";
 import { VideoUploader } from "@/components/admin/video-uploader";
 import { TiptapEditor } from "@/components/admin/tiptap-editor";
 import { useUnsavedChangesWarning } from "@/lib/use-unsaved-changes";
+import { formatDuration } from "@/lib/format";
 import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
 
 interface LessonEditorProps {
@@ -122,10 +123,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
                   <div className="flex items-center gap-1 text-caption text-muted-foreground">
                     <Clock size={12} />
                     <span className="num">
-                      {Math.floor(lesson.durationSeconds / 60)}:
-                      {(lesson.durationSeconds % 60)
-                        .toString()
-                        .padStart(2, "0")}
+                      {formatDuration(lesson.durationSeconds)}
                     </span>
                   </div>
                 )}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { formatDuration } from "@/lib/format-duration";
+import { formatDuration } from "@/lib/format";
 import { MarkdownView } from "@/lib/markdown";
 import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
 

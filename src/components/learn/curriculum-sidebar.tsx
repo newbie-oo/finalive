@@ -14,6 +14,7 @@ import {
 } from "@phosphor-icons/react";
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/format";
 import { useSession } from "@/lib/auth-client";
 import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
 import { useLessonAccess } from "@/hooks/use-lesson-access";
@@ -49,12 +50,6 @@ interface CurriculumSidebarProps {
 	onClose?: () => void;
 }
 
-function fmtDuration(seconds: number | null): string {
-	if (seconds === null || seconds <= 0) return "";
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${m}:${s.toString().padStart(2, "0")}`;
-}
 
 function fmtHours(seconds: number): string {
 	return (seconds / 3600).toFixed(1);
@@ -257,7 +252,7 @@ export function CurriculumSidebar({
 												/>
 												{les.durationSeconds ? (
 													<span className="num text-caption text-foreground-subtle">
-														{fmtDuration(les.durationSeconds)}
+														{formatDuration(les.durationSeconds, "")}
 													</span>
 												) : null}
 											</>
