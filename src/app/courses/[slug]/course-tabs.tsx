@@ -9,7 +9,7 @@ import {
 	ChatCircle,
 	Clock,
 	ArrowRight,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { formatDuration, formatDurationMinutes } from "@/lib/format";
