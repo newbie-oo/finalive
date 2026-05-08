@@ -11,6 +11,10 @@ vi.mock("@/lib/pg-error", () => ({
 }));
 
 const { SlipReviewService } = await import("./slip-review-service");
+const {
+	SlipAlreadyReviewedError,
+	EnrollmentAlreadyActiveError,
+} = await import("./repo-errors");
 
 // --- helpers ------------------------------------------------------------------
 
@@ -124,32 +128,54 @@ describe("SlipReviewService", () => {
 			);
 		});
 
-		it("throws slip_already_reviewed when race condition", async () => {
+		it("translates SlipAlreadyReviewedError to ApiError(slip_already_reviewed)", async () => {
+			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runAcceptTx.mockRejectedValue(new SlipAlreadyReviewedError());
+
+			const svc = new SlipReviewService(deps);
+
+			await expect(svc.accept("slip-1", adminUserId)).rejects.toMatchObject({
+				code: "slip_already_reviewed",
+			});
+		});
+
+		it("translates EnrollmentAlreadyActiveError to ApiError(enrollment_already_active)", async () => {
 			const deps = fakeDeps();
 			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
 			deps.repo.runAcceptTx.mockRejectedValue(
-				new Error("slip was reviewed by another admin"),
+				new EnrollmentAlreadyActiveError(),
 			);
 
 			const svc = new SlipReviewService(deps);
 
-			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow(
-				"slip was reviewed by another admin",
-			);
+			await expect(svc.accept("slip-1", adminUserId)).rejects.toMatchObject({
+				code: "enrollment_already_active",
+			});
 		});
 
-		it("throws enrollment_already_active on unique violation", async () => {
+		it("falls back to ApiError(conflict) for unknown unique violations", async () => {
 			const deps = fakeDeps();
 			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
-			const err = new Error("unique_violation");
+			const err = new Error("some_future_constraint_violation");
 			deps.repo.runAcceptTx.mockRejectedValue(err);
 			mockIsUniqueViolation.mockReturnValue(true);
 
 			const svc = new SlipReviewService(deps);
 
-			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow(
-				"นักเรียนมีสิทธิ์เรียนคอร์สนี้อยู่แล้ว",
-			);
+			await expect(svc.accept("slip-1", adminUserId)).rejects.toMatchObject({
+				code: "conflict",
+			});
+		});
+
+		it("propagates unknown errors as-is", async () => {
+			const deps = fakeDeps();
+			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
+			deps.repo.runAcceptTx.mockRejectedValue(new Error("boom"));
+
+			const svc = new SlipReviewService(deps);
+
+			await expect(svc.accept("slip-1", adminUserId)).rejects.toThrow("boom");
 		});
 
 		it("falls back to email when student name is null", async () => {
@@ -210,18 +236,16 @@ describe("SlipReviewService", () => {
 			);
 		});
 
-		it("throws slip_already_reviewed when race condition", async () => {
+		it("translates SlipAlreadyReviewedError to ApiError(slip_already_reviewed)", async () => {
 			const deps = fakeDeps();
 			deps.repo.loadForReview.mockResolvedValue(makeReviewRow());
-			deps.repo.runRejectTx.mockRejectedValue(
-				new Error("slip was reviewed by another admin"),
-			);
+			deps.repo.runRejectTx.mockRejectedValue(new SlipAlreadyReviewedError());
 
 			const svc = new SlipReviewService(deps);
 
 			await expect(
 				svc.reject({ slipId: "slip-1", reason: "blurry" }, adminUserId),
-			).rejects.toThrow("slip was reviewed by another admin");
+			).rejects.toMatchObject({ code: "slip_already_reviewed" });
 		});
 
 		it("passes note through when provided", async () => {

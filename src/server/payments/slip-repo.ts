@@ -11,7 +11,11 @@ import { enrollment } from "@/db/schema/enrollment";
 import { user as userTable } from "@/db/schema/auth";
 import { mediaAsset } from "@/db/schema/media";
 import { isUniqueViolation } from "@/lib/pg-error";
-import { ApiError } from "@/lib/api-error";
+import {
+	EnrollmentAlreadyActiveError,
+	RepoIntegrityError,
+	SlipAlreadyReviewedError,
+} from "./repo-errors";
 import type { RejectReason } from "@/components/admin/slip-reject-options";
 
 export interface SlipReviewRow {
@@ -135,10 +139,7 @@ export const SlipRepo = {
 				.returning({ id: paymentSlip.id });
 
 			if (updated.length === 0) {
-				throw new ApiError(
-					"slip_already_reviewed",
-					"slip was reviewed by another admin",
-				);
+				throw new SlipAlreadyReviewedError();
 			}
 
 			await tx
@@ -161,14 +162,11 @@ export const SlipRepo = {
 					.returning({ id: enrollment.id });
 				const created = inserted[0];
 				if (!created)
-					throw new ApiError("internal_error", "enrollment insert failed");
+					throw new RepoIntegrityError("enrollment insert failed");
 				enrollmentId = created.id;
 			} catch (e) {
 				if (isUniqueViolation(e, "one_active_enrollment")) {
-					throw new ApiError(
-						"enrollment_already_active",
-						"นักเรียนมีสิทธิ์เรียนคอร์สนี้อยู่แล้ว",
-					);
+					throw new EnrollmentAlreadyActiveError();
 				}
 				throw e;
 			}
@@ -201,10 +199,7 @@ export const SlipRepo = {
 				.returning({ id: paymentSlip.id });
 
 			if (updated.length === 0) {
-				throw new ApiError(
-					"slip_already_reviewed",
-					"slip was reviewed by another admin",
-				);
+				throw new SlipAlreadyReviewedError();
 			}
 
 			await tx
@@ -235,7 +230,7 @@ export const SlipRepo = {
 				createdByUserId: input.userId,
 			})
 			.returning({ id: mediaAsset.id });
-		if (!media) throw new ApiError("internal_error", "media insert failed");
+		if (!media) throw new RepoIntegrityError("media insert failed");
 		return media.id;
 	},
 
@@ -282,7 +277,7 @@ export const SlipRepo = {
 					idempotencyKey: input.idempotencyKey,
 				})
 				.returning({ id: paymentSlip.id });
-			if (!slip) throw new ApiError("internal_error", "slip insert failed");
+			if (!slip) throw new RepoIntegrityError("slip insert failed");
 
 			await tx
 				.update(pendingEnrollment)

@@ -7,6 +7,10 @@ import {
 } from "@/components/admin/slip-reject-options";
 import type { SlipNotifier } from "@/server/services/slip-notifier";
 import type { AuditLogger } from "@/server/services/audit";
+import {
+	EnrollmentAlreadyActiveError,
+	SlipAlreadyReviewedError,
+} from "./repo-errors";
 import type { SlipRepoShape, SlipReviewRow } from "./slip-repo";
 
 export interface RejectSlipInput {
@@ -54,6 +58,14 @@ export class SlipReviewService {
 			);
 			enrollmentId = result.enrollmentId;
 		} catch (e) {
+			if (e instanceof SlipAlreadyReviewedError) {
+				throw new ApiError("slip_already_reviewed", e.message);
+			}
+			if (e instanceof EnrollmentAlreadyActiveError) {
+				throw new ApiError("enrollment_already_active", e.message);
+			}
+			// Unknown unique violation that escaped the constraint-name guard
+			// inside the repo (e.g. a future constraint we haven't named yet).
 			if (isUniqueViolation(e)) {
 				throw new ApiError("conflict", "นักเรียนมีสิทธิ์เรียนคอร์สนี้อยู่แล้ว");
 			}
@@ -94,13 +106,20 @@ export class SlipReviewService {
 		adminUserId: string,
 	): Promise<RejectSlipResult> {
 		const row = await this.loadSlipForReview(input.slipId);
-		await this.deps.repo.runRejectTx(
-			input.slipId,
-			row.pendingId,
-			input.reason,
-			input.note,
-			adminUserId,
-		);
+		try {
+			await this.deps.repo.runRejectTx(
+				input.slipId,
+				row.pendingId,
+				input.reason,
+				input.note,
+				adminUserId,
+			);
+		} catch (e) {
+			if (e instanceof SlipAlreadyReviewedError) {
+				throw new ApiError("slip_already_reviewed", e.message);
+			}
+			throw e;
+		}
 
 		await this.deps.notifier.notifyStudentOfSlipRejection({
 			toEmail: row.studentEmail,
