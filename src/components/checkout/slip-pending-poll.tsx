@@ -105,7 +105,7 @@ export function SlipPendingPoll({
           <p className="font-medium text-destructive-foreground">
             สลิปถูกปฏิเสธ
           </p>
-          <p className="text-body text-(--foreground-muted)">
+          <p className="text-body text-muted-foreground">
             กำลังพากลับไปหน้าอัปโหลดสลิปใหม่…
           </p>
         </div>
@@ -117,10 +117,10 @@ export function SlipPendingPoll({
     return (
       <Card className="border-destructive">
         <div className="space-y-2">
-          <p className="font-medium text-(--destructive-fg)">
+          <p className="font-medium text-destructive-foreground">
             รายการนี้หมดอายุ
           </p>
-          <p className="text-body text-(--foreground-muted)">
+          <p className="text-body text-muted-foreground">
             กรุณากลับไปหน้าคอร์สและเริ่มใหม่อีกครั้ง
           </p>
         </div>
@@ -152,7 +152,7 @@ export function SlipPendingPoll({
             ไม่ต้องรีเฟรชเอง
           </p>
           {lastUpdated && (
-            <p className="mt-2 inline-flex items-center gap-1.5 text-caption text-(--foreground-muted)">
+            <p className="mt-2 inline-flex items-center gap-1.5 text-caption text-muted-foreground">
               <span
                 aria-hidden="true"
                 className="inline-block h-1.5 w-1.5 rounded-full bg-success motion-safe:animate-pulse"

@@ -69,7 +69,7 @@ export function CourseCompleteModal({
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="course-complete-title"
-			className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+			className="fixed inset-0 z-100 flex items-center justify-center px-4"
 		>
 			<button
 				type="button"
