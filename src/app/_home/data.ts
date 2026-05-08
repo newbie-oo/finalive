@@ -1,27 +1,12 @@
 /**
- * Static content for the marketing home page. The home route renders only
- * from this module and does not touch the database. Edit and rebuild to ship.
+ * Static marketing copy for the home page. Kept separate from
+ * src/app/page.tsx so the page file stays focused on the data fetch +
+ * layout, and so designers can edit testimonials/badges without diff
+ * noise in the route file.
+ *
+ * Anything that has a real production source (course catalog, stats, etc.)
+ * lives in the database — never in this module.
  */
-
-export interface HomeStats {
-	readonly studentCount: number;
-	readonly courseCount: number;
-	readonly lessonCount: number;
-}
-
-export type HomePrice = number | "free";
-
-export interface FeaturedCourse {
-	readonly id: string;
-	readonly slug: string;
-	readonly title: string;
-	readonly summary: string;
-	readonly level: "เริ่มต้น" | "กลาง" | "สูง";
-	readonly lessonCount: number;
-	readonly durationMinutes: number;
-	readonly priceTHB: HomePrice;
-	readonly bestseller?: boolean;
-}
 
 export interface Testimonial {
 	readonly name: string;
@@ -29,47 +14,6 @@ export interface Testimonial {
 	readonly quote: string;
 	readonly rating: 1 | 2 | 3 | 4 | 5;
 }
-
-export const STATS: HomeStats = Object.freeze({
-	studentCount: 12500,
-	courseCount: 28,
-	lessonCount: 540,
-});
-
-export const FEATURED_COURSES: ReadonlyArray<FeaturedCourse> = Object.freeze([
-	Object.freeze<FeaturedCourse>({
-		id: "course-financial-statements",
-		slug: "financial-statements-101",
-		title: "อ่านงบการเงินจริง — ฉบับนักลงทุน",
-		summary:
-			"อ่านงบ 3 ชนิดจริงจากบริษัทไทย เข้าใจตัวเลขที่นักวิเคราะห์ใช้",
-		level: "เริ่มต้น",
-		lessonCount: 18,
-		durationMinutes: 240,
-		priceTHB: "free",
-	}),
-	Object.freeze<FeaturedCourse>({
-		id: "course-dcf-valuation",
-		slug: "dcf-valuation-pro",
-		title: "DCF Valuation แบบมืออาชีพ",
-		summary: "สร้างโมเดล DCF ใน Excel จากศูนย์ — พร้อมไฟล์ตัวอย่างจริง",
-		level: "กลาง",
-		lessonCount: 24,
-		durationMinutes: 360,
-		priceTHB: 1990,
-		bestseller: true,
-	}),
-	Object.freeze<FeaturedCourse>({
-		id: "course-portfolio-construction",
-		slug: "portfolio-construction",
-		title: "วางพอร์ตลงทุนตามเป้าหมาย",
-		summary: "เลือก ETF / กองทุนตาม risk profile + rebalance ทุกไตรมาส",
-		level: "กลาง",
-		lessonCount: 16,
-		durationMinutes: 200,
-		priceTHB: 1490,
-	}),
-]);
 
 export const TESTIMONIALS: ReadonlyArray<Testimonial> = Object.freeze([
 	Object.freeze<Testimonial>({
