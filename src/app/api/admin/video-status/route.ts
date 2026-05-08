@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
+import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
 import { rateLimitConfigs } from "@/lib/rate-limit";
 import { container } from "@/server/container";
@@ -20,7 +21,7 @@ export const GET = apiRoute({
 		const apiKey = env.BUNNY_API_KEY;
 
 		if (!libraryId || !apiKey) {
-			return { error: "Bunny not configured" };
+			throw new ApiError("internal_error", "Bunny stream is not configured");
 		}
 
 		const res = await fetch(
@@ -36,7 +37,10 @@ export const GET = apiRoute({
 
 		if (!res.ok) {
 			const text = await res.text().catch(() => "unknown");
-			return { error: `Bunny API error: ${res.status} ${text}` };
+			throw new ApiError(
+				"internal_error",
+				`Bunny upstream failure: ${res.status} ${text}`,
+			);
 		}
 
 		const data = (await res.json()) as {

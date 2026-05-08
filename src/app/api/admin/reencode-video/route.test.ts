@@ -106,20 +106,21 @@ describe("POST /api/admin/reencode-video", () => {
 		);
 	});
 
-	it("returns 'not_found' when no bunny_stream asset exists", async () => {
+	it("returns 404 when no bunny_stream asset exists", async () => {
 		getLessonVideoAsset.mockResolvedValue(null);
 
 		const res = await POST(
 			makeReq({ lessonId: LESSON_ID, courseId: COURSE_ID }),
 		);
 
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(404);
 		const body = await res.json();
 		expect(body.code).toBe("not_found");
+		expect(body.request_id).toBeDefined();
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
-	it("returns 'bunny_not_configured' when env missing", async () => {
+	it("returns 500 when Bunny env missing", async () => {
 		getLessonVideoAsset.mockResolvedValue({
 			assetId: "asset-1",
 			bunnyId: "bunny-1",
@@ -134,12 +135,13 @@ describe("POST /api/admin/reencode-video", () => {
 			makeReq({ lessonId: LESSON_ID, courseId: COURSE_ID }),
 		);
 
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(500);
 		const body = await res.json();
-		expect(body.code).toBe("bunny_not_configured");
+		expect(body.code).toBe("internal_error");
+		expect(body.message).toContain("Bunny");
 	});
 
-	it("returns 'bunny_error' when upstream call fails", async () => {
+	it("returns 500 when upstream call fails", async () => {
 		getLessonVideoAsset.mockResolvedValue({
 			assetId: "asset-1",
 			bunnyId: "bunny-1",
@@ -155,9 +157,9 @@ describe("POST /api/admin/reencode-video", () => {
 			makeReq({ lessonId: LESSON_ID, courseId: COURSE_ID }),
 		);
 
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(500);
 		const body = await res.json();
-		expect(body.code).toBe("bunny_error");
+		expect(body.code).toBe("internal_error");
 		expect(setAssetEncoding).not.toHaveBeenCalled();
 	});
 

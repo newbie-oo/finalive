@@ -102,7 +102,7 @@ describe("GET /api/admin/video-status", () => {
 		expect(syncBunnyStatus).not.toHaveBeenCalled();
 	});
 
-	it("returns Bunny-not-configured error when env missing", async () => {
+	it("returns 500 when Bunny env missing", async () => {
 		getEnv.mockReturnValue({
 			BUNNY_LIBRARY_ID: "",
 			BUNNY_API_KEY: "",
@@ -110,13 +110,14 @@ describe("GET /api/admin/video-status", () => {
 
 		const res = await GET(makeReq("videoId=video-1"));
 
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(500);
 		const body = await res.json();
-		expect(body.error).toBe("Bunny not configured");
+		expect(body.code).toBe("internal_error");
+		expect(body.message).toContain("Bunny");
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
 
-	it("propagates Bunny error responses", async () => {
+	it("returns 500 on Bunny upstream failures", async () => {
 		fetchMock.mockResolvedValue({
 			ok: false,
 			status: 502,
@@ -125,9 +126,10 @@ describe("GET /api/admin/video-status", () => {
 
 		const res = await GET(makeReq("videoId=video-1"));
 
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(500);
 		const body = await res.json();
-		expect(body.error).toContain("502");
+		expect(body.code).toBe("internal_error");
+		expect(body.message).toContain("502");
 	});
 
 	it("rejects missing videoId with 400", async () => {

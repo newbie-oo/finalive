@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
+import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { rateLimitConfigs } from "@/lib/rate-limit";
@@ -39,20 +40,20 @@ export const POST = apiRoute({
 				collaboratorRole,
 			})
 		) {
-			return { code: "forbidden" };
+			throw new ApiError("forbidden", "no edit access for this course");
 		}
 
 		const row = await LessonVideoRepo.getLessonVideoAsset(lessonId);
 
 		if (!row || row.storage !== "bunny_stream") {
-			return { code: "not_found" };
+			throw new ApiError("not_found", "no bunny_stream asset for lesson");
 		}
 
 		const env = getEnv();
 		const lib = env.BUNNY_LIBRARY_ID;
 		const apiKey = env.BUNNY_API_KEY;
 		if (!lib || !apiKey) {
-			return { code: "bunny_not_configured" };
+			throw new ApiError("internal_error", "Bunny stream is not configured");
 		}
 
 		const res = await fetch(
@@ -66,7 +67,7 @@ export const POST = apiRoute({
 		if (!res.ok) {
 			const text = await res.text().catch(() => "");
 			logger.error("reencode-video.bunny_failed", { status: res.status, text });
-			return { code: "bunny_error", message: `Bunny ${res.status}` };
+			throw new ApiError("internal_error", `Bunny upstream failure: ${res.status}`);
 		}
 
 		await LessonVideoRepo.setAssetEncoding(row.assetId);
