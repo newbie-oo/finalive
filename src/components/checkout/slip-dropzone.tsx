@@ -122,11 +122,8 @@ export function SlipDropzone({
 									{file.name}
 								</p>
 								<p className="text-uism text-muted-foreground">
-									{(file.size / 1024 / 1024).toFixed(1)} MB · อัปโหลดแล้ว
+									{(file.size / 1024 / 1024).toFixed(1)} MB · พร้อมส่งตรวจ
 								</p>
-								<div className="mt-1.5 h-1 overflow-hidden rounded-full bg-border">
-									<div className="h-full w-full bg-success" />
-								</div>
 							</div>
 							<CheckCircle
 								size={24}
@@ -134,7 +131,11 @@ export function SlipDropzone({
 								className="shrink-0 text-success"
 							/>
 						</div>
-						<span className="mt-4 text-sm font-medium text-primary hover:underline">
+						<p className="mt-3 max-w-sm text-uism text-muted-foreground">
+							ปกปิดเลขบัญชีหรือข้อมูลส่วนตัวก่อนส่งได้ตามต้องการ
+							ตราบที่ยังเห็นยอดและเลขอ้างอิง
+						</p>
+						<span className="mt-3 text-sm font-medium text-primary hover:underline">
 							เปลี่ยนไฟล์
 						</span>
 					</>

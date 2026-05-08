@@ -9,6 +9,7 @@ import {
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { requireSession } from "@/server/auth-session";
 import { getCheckoutPending } from "@/server/repos/checkout";
 
@@ -27,13 +28,14 @@ export default async function CheckoutSuccessPage({
   return (
     <CheckoutShell step={3}>
       <div className="mx-auto max-w-[560px] mt-8 space-y-6">
-        <Card className="p-8 text-center space-y-4">
+        <Card className="relative overflow-hidden p-8 text-center space-y-4">
+          <ConfettiBurst pieces={28} />
           <CheckCircle
             size={64}
             weight="fill"
-            className="mx-auto text-success"
+            className="relative mx-auto text-success"
           />
-          <h1 className="text-h2">ส่งสลิปสำเร็จ</h1>
+          <h1 className="relative text-h2">ส่งสลิปสำเร็จ</h1>
           <p className="text-body text-muted-foreground">
             เราได้รับสลิปการโอนของคุณแล้ว
           </p>
