@@ -17,7 +17,7 @@ export default async function AccountPage() {
 	if (!session) redirect("/login");
 
 	const hasCredential = await hasCredentialAccount(session.user.id);
-	const { name, email } = session.user;
+	const { name, email, emailVerified } = session.user;
 
 	return (
 		<section className="mx-auto max-w-3xl space-y-8">
@@ -34,6 +34,7 @@ export default async function AccountPage() {
 			<AccountPanels
 				initialName={name}
 				email={email}
+				emailVerified={emailVerified}
 				hasCredential={hasCredential}
 			/>
 		</section>

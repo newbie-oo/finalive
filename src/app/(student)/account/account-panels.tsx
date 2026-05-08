@@ -30,6 +30,8 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { EmailVerifyBanner } from "@/components/account/email-verify-banner";
+import { SessionsList } from "@/components/account/sessions-list";
 
 const profileSchema = z.object({
 	name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -45,6 +47,7 @@ type PasswordForm = z.infer<typeof passwordSchema>;
 interface AccountPanelsProps {
 	initialName: string;
 	email: string;
+	emailVerified: boolean;
 	hasCredential: boolean;
 }
 
@@ -56,6 +59,7 @@ interface AccountPanelsProps {
 export function AccountPanels({
 	initialName,
 	email,
+	emailVerified,
 	hasCredential,
 }: AccountPanelsProps) {
 	const router = useRouter();
@@ -67,6 +71,7 @@ export function AccountPanels({
 
 	return (
 		<>
+			{!emailVerified && <EmailVerifyBanner email={email} />}
 			<ProfileSection name={initialName} email={email} onSaved={refresh} />
 			{hasCredential && <ChangePasswordSection />}
 			<SessionSection onAllRevoked={replaceLogin} />
@@ -306,6 +311,7 @@ function SessionSection({ onAllRevoked }: { onAllRevoked: () => void }) {
 					หากคุณสงสัยว่าบัญชีถูกเข้าใช้งานจากอุปกรณ์อื่น
 					กดปุ่มด้านล่างเพื่อออกจากระบบทุกอุปกรณ์รวมถึงอุปกรณ์นี้
 				</p>
+				<SessionsList />
 				{error && (
 					<Alert variant="destructive">
 						<WarningIcon size={16} weight="fill" />
