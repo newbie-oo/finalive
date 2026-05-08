@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import RegisterPage from "./page";
 
@@ -57,5 +57,19 @@ describe("RegisterPage", () => {
     expect(barsAfter[1]).toHaveClass("bg-green-500");
     expect(barsAfter[2]).toHaveClass("bg-green-500");
     expect(barsAfter[3]).toHaveClass("bg-green-500");
+  });
+
+  it("does not display the misleading 'step 1 of 2' fake stepper", () => {
+    render(
+      <TooltipProvider>
+        <RegisterPage />
+      </TooltipProvider>,
+    );
+
+    // The form is single-step; the second 'step' is asynchronous email
+    // verification, not part of the form. The fake 50% progress was
+    // misleading — assert it's gone.
+    expect(screen.queryByText(/ขั้นตอนที่/)).toBeNull();
+    expect(screen.queryByText(/50%/)).toBeNull();
   });
 });

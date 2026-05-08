@@ -24,7 +24,6 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 
 const registerSchema = z.object({
 	name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -109,18 +108,6 @@ export default function RegisterPage() {
 								Finalive
 							</span>
 						</Link>
-
-						<div className="space-y-2">
-							<div className="flex items-center justify-between text-uism text-muted-foreground">
-								<span>
-									ขั้นตอนที่{" "}
-									<span className="font-semibold text-primary">1</span> จาก{" "}
-									<span className="font-semibold">2</span>
-								</span>
-								<span className="font-semibold text-primary">50%</span>
-							</div>
-							<Progress value={50} className="h-1" />
-						</div>
 
 						<div className="space-y-5">
 							<header className="space-y-1">

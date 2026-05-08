@@ -51,6 +51,8 @@ function VerifyEmailInner() {
       ? "ไม่สามารถยืนยันได้"
       : "กำลังยืนยัน";
 
+  const failed = state !== null && !state.ok;
+
   return (
     <AuthCard title={heading}>
       <div className="flex flex-col items-center gap-4 py-2 text-center">
@@ -64,7 +66,7 @@ function VerifyEmailInner() {
         {state?.ok && (
           <CheckCircle size={56} weight="fill" className="text-success" />
         )}
-        {state && !state.ok && (
+        {failed && (
           <XCircle size={56} weight="fill" className="text-destructive" />
         )}
         <p className="text-body text-muted-foreground">
@@ -74,6 +76,22 @@ function VerifyEmailInner() {
           <Button asChild variant="primary" size="lg" className="w-full">
             <Link href="/login">เข้าสู่ระบบ</Link>
           </Button>
+        )}
+        {failed && (
+          <div className="flex w-full flex-col gap-2.5">
+            <Button asChild variant="primary" size="lg" className="w-full">
+              <Link href="/login">ไปหน้าเข้าสู่ระบบ</Link>
+            </Button>
+            <p className="text-uism text-muted-foreground">
+              หากยังเข้าระบบไม่ได้{" "}
+              <a
+                href="mailto:support@finalive.co"
+                className="text-primary hover:underline"
+              >
+                ติดต่อทีมงาน
+              </a>
+            </p>
+          </div>
         )}
       </div>
       <form ref={formRef} action={dispatch} className="hidden">
