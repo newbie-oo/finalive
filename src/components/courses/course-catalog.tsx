@@ -112,15 +112,26 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 	);
 }
 
+/**
+ * Loading state for the catalog. Matches the loaded layout closely so
+ * the page doesn't reflow when data lands:
+ * - Same header row footprint (count text + view toggle)
+ * - 12 grid cards, mirroring the default per_page so we don't grow from
+ *   2 rows to 4 rows on hydration
+ * - Pagination block at the same vertical position
+ *
+ * The wrapping div pins a `min-h` so the surrounding flex layout (and
+ * its sticky filter rail) stays stable across the Suspense round-trip.
+ */
 export function CourseCatalogSkeleton() {
 	return (
-		<>
+		<div className="min-h-[60vh]">
 			<div className="mb-5 flex items-center justify-between">
 				<Skeleton className="h-4 w-44 rounded-md" />
 				<Skeleton className="h-9 w-[72px] rounded-button" />
 			</div>
 			<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-				{Array.from({ length: 6 }).map((_, i) => (
+				{Array.from({ length: 12 }).map((_, i) => (
 					<li key={i}>
 						<CourseCardSkeleton />
 					</li>
@@ -135,6 +146,6 @@ export function CourseCatalogSkeleton() {
 				</div>
 				<Skeleton className="h-9 w-20 rounded-button" />
 			</div>
-		</>
+		</div>
 	);
 }

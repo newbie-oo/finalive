@@ -184,6 +184,11 @@
     @apply font-sans antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Reserve scrollbar space so pages whose content height crosses the
+       viewport boundary don't horizontally shift content when the scrollbar
+       appears (notably the courses catalog, where the Suspense skeleton is
+       shorter than the loaded grid). */
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground;

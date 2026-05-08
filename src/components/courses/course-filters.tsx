@@ -223,9 +223,13 @@ export function CourseFilters({
 
 			<div className="mx-auto max-w-[1200px] px-6 py-8 md:py-10">
 				<div className="flex flex-col gap-8 md:flex-row md:items-start">
-					{/* Desktop sidebar — sticky filter rail at md+. */}
-					<aside className="hidden w-[240px] shrink-0 md:block">
-						<div className="space-y-6 md:sticky md:top-4 md:self-start">
+					{/* Desktop sidebar — sticky filter rail at md+. Sticky is on the
+					    aside itself (not on a wrapper div) so the flex parent's full
+					    height becomes the sticky container; otherwise the rail only
+					    has its own intrinsic height to "stick" inside, which is no
+					    sticky at all. */}
+					<aside className="hidden w-[240px] shrink-0 self-start md:sticky md:top-4 md:block">
+						<div className="space-y-6">
 							<FilterPanels
 								categories={CATEGORIES}
 								price={price}
