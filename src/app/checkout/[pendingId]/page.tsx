@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { Shield, Sparkle, WarningIcon } from "@phosphor-icons/react/dist/ssr";
 import { InlineSlipUpload } from "@/components/checkout/inline-slip-upload";
 import { CheckoutShell } from "@/components/layouts/checkout-shell";
-import { RefCodeCopy } from "./ref-code-copy";
+import { ReferenceCodeBlock } from "@/components/checkout/reference-code-block";
 import { Card } from "@/components/ui/card";
 import { requireSession } from "@/server/auth-session";
 import {
@@ -86,22 +86,10 @@ export default async function CheckoutPage({
               />
             </div>
 
-            <div className="rounded-card border border-primary/20 bg-primary/5 p-5">
-              <div className="mb-2">
-                <span className="text-uism text-muted-foreground">
-                  เลขอ้างอิง{" "}
-                  <span className="text-foreground-subtle">
-                    (โอนเงินแล้วระบุในสลิป)
-                  </span>
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="mono text-[28px] font-bold tracking-wide text-primary">
-                  {pending.refCode}
-                </span>
-                <RefCodeCopy refCode={pending.refCode} />
-              </div>
-            </div>
+            <ReferenceCodeBlock
+              value={pending.refCode}
+              helper="โอนเงินแล้วระบุเลขนี้ในหมายเหตุการโอน"
+            />
 
             {/* Rejection notice — shown when previous slip was rejected
                 and the user is back at awaiting_payment. */}
