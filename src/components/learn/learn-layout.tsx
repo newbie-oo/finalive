@@ -9,6 +9,7 @@ import type { SidebarModule } from "./curriculum-sidebar";
 
 interface LearnLayoutProps {
   courseSlug: string;
+  courseTitle?: string;
   modules: SidebarModule[];
   progress: Array<{ lessonId: string; status: string }>;
   passedQuizIds?: Record<string, boolean>;
@@ -21,6 +22,7 @@ interface LearnLayoutProps {
 
 export function LearnLayout({
   courseSlug,
+  courseTitle,
   modules,
   progress,
   passedQuizIds,
@@ -76,6 +78,7 @@ export function LearnLayout({
       {!isAdmin && (
         <CourseCompleteModal
           courseSlug={courseSlug}
+          courseTitle={courseTitle}
           totalLessons={totalLessons}
           doneLessons={doneLessons}
         />

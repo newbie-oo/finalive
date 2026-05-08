@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { submitQuizAction } from "@/server/actions/quiz";
 import type { QuizWithQuestions } from "@/server/repos/quiz";
 import { QuizQuestionScreen } from "./quiz-question-screen";
+import { QuizBriefing } from "./quiz-briefing";
 import {
 	QuizResultScreen,
 	type QuizResult,
@@ -14,10 +15,18 @@ interface QuizFormProps {
 	quiz: QuizWithQuestions;
 	courseSlug: string;
 	nextLessonId?: string | null;
+	/** Where 'กลับไปบทเรียน' on the briefing screen should navigate. */
+	lessonHref: string;
 }
 
-export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
+export function QuizForm({
+	quiz,
+	courseSlug,
+	nextLessonId,
+	lessonHref,
+}: QuizFormProps) {
 	const router = useRouter();
+	const [started, setStarted] = useState(false);
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [answers, setAnswers] = useState<Record<string, string>>({});
 	const [result, setResult] = useState<QuizResult | null>(null);
@@ -72,6 +81,18 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				nextLessonId={nextLessonId}
 				result={result}
 				onRetry={handleRetry}
+			/>
+		);
+	}
+
+	if (!started) {
+		return (
+			<QuizBriefing
+				title={quiz.title}
+				questionCount={total}
+				passScorePct={quiz.passScorePct}
+				lessonHref={lessonHref}
+				onStart={() => setStarted(true)}
 			/>
 		);
 	}

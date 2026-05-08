@@ -1,12 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { X } from "@phosphor-icons/react";
+import {
+	X,
+	Trophy,
+	ArrowRight,
+	LinkedinLogo,
+	BookOpen,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { CertificateClaim } from "./certificate-claim";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 
 interface CourseCompleteModalProps {
 	courseSlug: string;
+	/** Course title shown in the celebratory headline. */
+	courseTitle?: string;
 	/** Total lessons in the course. Modal only fires when reached. */
 	totalLessons: number;
 	doneLessons: number;
@@ -15,23 +24,23 @@ interface CourseCompleteModalProps {
 const STORAGE_PREFIX = "finalive:cert-shown:";
 
 function readShown(courseSlug: string): boolean {
-	if (typeof window === "undefined") return true; // SSR: never auto-open.
+	if (typeof window === "undefined") return true;
 	return !!window.localStorage.getItem(`${STORAGE_PREFIX}${courseSlug}`);
 }
 
 /**
- * One-shot celebratory dialog when the student first hits 100%. Derives
- * openness from a lazy-initialised localStorage read (so we never call
- * setState inside an effect to "decide" whether to open) plus a local
- * "dismissed" flag the user toggles via the close button or Escape.
+ * Full-screen celebration the first time a student crosses 100%.
+ * Replaces the previous small dialog — this is the peak moment of the
+ * product so it gets the full screen, confetti (motion-reduced safe),
+ * and three clear next-actions: download cert, share to LinkedIn, browse
+ * more courses. Persistence + Escape behaviour unchanged.
  */
 export function CourseCompleteModal({
 	courseSlug,
+	courseTitle,
 	totalLessons,
 	doneLessons,
 }: CourseCompleteModalProps) {
-	// Lazy initialiser reads localStorage once on mount; subsequent renders
-	// are pure props/state derivations. SSR-safe via the readShown guard.
 	const [dismissed, setDismissed] = useState<boolean>(() =>
 		readShown(courseSlug),
 	);
@@ -39,9 +48,6 @@ export function CourseCompleteModal({
 	const completed = totalLessons > 0 && doneLessons >= totalLessons;
 	const open = completed && !dismissed;
 
-	// Persist the shown flag the first time the modal becomes visible. Side
-	// effect, not state — safe to do in useEffect without violating the
-	// set-state-in-effect lint rule.
 	useEffect(() => {
 		if (!open) return;
 		if (typeof window === "undefined") return;
@@ -51,7 +57,6 @@ export function CourseCompleteModal({
 		);
 	}, [open, courseSlug]);
 
-	// Close on Escape for accessibility.
 	useEffect(() => {
 		if (!open) return;
 		const handler = (e: KeyboardEvent) => {
@@ -62,41 +67,67 @@ export function CourseCompleteModal({
 	}, [open]);
 
 	if (!open) return null;
-	const setOpen = (next: boolean) => setDismissed(!next);
+
+	const headline = courseTitle
+		? `คุณจบ ${courseTitle} แล้ว 🎓`
+		: "คุณจบคอร์สแล้ว 🎓";
+	const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+		`${typeof window === "undefined" ? "" : window.location.origin}/account/certificates`,
+	)}`;
 
 	return (
 		<div
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="course-complete-title"
-			className="fixed inset-0 z-100 flex items-center justify-center px-4"
+			className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-background"
 		>
+			<ConfettiBurst pieces={36} />
+
 			<button
 				type="button"
-				aria-label="Close"
-				className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-				onClick={() => setOpen(false)}
-			/>
-			<div className="relative z-10 w-full max-w-md rounded-card border border-border bg-card p-6 shadow-xl">
-				<button
-					type="button"
-					aria-label="Close"
-					onClick={() => setOpen(false)}
-					className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+				aria-label="ปิด"
+				onClick={() => setDismissed(true)}
+				className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+			>
+				<X size={18} weight="bold" />
+			</button>
+
+			<div className="relative mx-auto flex max-w-[640px] flex-col items-center gap-5 px-6 py-12 text-center">
+				<div className="flex h-28 w-28 items-center justify-center rounded-full bg-success/10 text-success">
+					<Trophy size={64} weight="fill" />
+				</div>
+				<h1
+					id="course-complete-title"
+					className="text-display font-bold text-foreground"
 				>
-					<X size={16} />
-				</button>
-				<CertificateClaim variant="modal" />
-				<div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
-					<Button
-						type="button"
-						variant="ghost"
-						size="md"
-						onClick={() => setOpen(false)}
-					>
-						ปิด
+					{headline}
+				</h1>
+				<p className="max-w-md text-bodylg text-muted-foreground">
+					ขอบคุณที่ตั้งใจเรียนตลอดคอร์ส — ใบประกาศของคุณพร้อมแล้ว
+				</p>
+
+				<div className="mt-3 flex w-full flex-col items-stretch gap-2 sm:max-w-md sm:flex-row sm:items-center sm:justify-center">
+					<Button asChild variant="accent" size="lg" className="flex-1">
+						<Link href="/account/certificates">
+							ดูใบประกาศ <ArrowRight size={16} weight="bold" />
+						</Link>
+					</Button>
+					<Button asChild variant="secondary" size="lg" className="flex-1">
+						<a
+							href={linkedInShareUrl}
+							target="_blank"
+							rel="noreferrer noopener"
+						>
+							<LinkedinLogo size={16} weight="bold" /> แชร์บน LinkedIn
+						</a>
 					</Button>
 				</div>
+				<Button asChild variant="ghost" size="md">
+					<Link href="/courses">
+						<BookOpen size={14} weight="bold" /> เริ่มคอร์สถัดไป
+					</Link>
+				</Button>
 			</div>
 		</div>
 	);

@@ -93,6 +93,7 @@ export default async function QuizPage({
           quiz={quizData}
           courseSlug={courseSlug}
           nextLessonId={nextLessonId}
+          lessonHref={`/learn/${courseSlug}/${quizData.lessonId}`}
         />
       </main>
     </>

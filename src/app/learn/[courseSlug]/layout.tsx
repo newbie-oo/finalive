@@ -41,6 +41,7 @@ export default async function CourseLearnLayout({
 		<LearnShellProvider>
 			<LearnLayout
 				courseSlug={courseSlug}
+				courseTitle={courseData.course.title}
 				modules={courseData.modules}
 				progress={courseData.progress}
 				passedQuizIds={passedQuizIds}

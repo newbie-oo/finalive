@@ -88,7 +88,15 @@ describe("QuizForm", () => {
 		const { submitQuizAction } = await import("@/server/actions/quiz");
 		vi.mocked(submitQuizAction).mockResolvedValue(mockResult);
 
-		render(<QuizForm quiz={mockQuiz} courseSlug="cs1" nextLessonId="l2" />);
+		render(
+			<QuizForm
+				quiz={mockQuiz}
+				courseSlug="cs1"
+				nextLessonId="l2"
+				lessonHref="/learn/cs1/l1"
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "เริ่มทำแบบทดสอบ" }));
 
 		// Answer q1
 		fireEvent.click(screen.getByText("4"));
@@ -113,7 +121,15 @@ describe("QuizForm", () => {
 		const { submitQuizAction } = await import("@/server/actions/quiz");
 		vi.mocked(submitQuizAction).mockResolvedValue(mockResult);
 
-		render(<QuizForm quiz={mockQuiz} courseSlug="cs1" nextLessonId="l2" />);
+		render(
+			<QuizForm
+				quiz={mockQuiz}
+				courseSlug="cs1"
+				nextLessonId="l2"
+				lessonHref="/learn/cs1/l1"
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "เริ่มทำแบบทดสอบ" }));
 
 		// Answer and submit
 		fireEvent.click(screen.getByText("4"));
@@ -133,7 +149,15 @@ describe("QuizForm", () => {
 		const { submitQuizAction } = await import("@/server/actions/quiz");
 		vi.mocked(submitQuizAction).mockResolvedValue(mockResult);
 
-		render(<QuizForm quiz={mockQuiz} courseSlug="cs1" nextLessonId="l2" />);
+		render(
+			<QuizForm
+				quiz={mockQuiz}
+				courseSlug="cs1"
+				nextLessonId="l2"
+				lessonHref="/learn/cs1/l1"
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "เริ่มทำแบบทดสอบ" }));
 
 		// Answer and submit
 		fireEvent.click(screen.getByText("4"));
@@ -157,7 +181,15 @@ describe("QuizForm", () => {
 		const { submitQuizAction } = await import("@/server/actions/quiz");
 		vi.mocked(submitQuizAction).mockResolvedValue(mockResult);
 
-		render(<QuizForm quiz={mockQuiz} courseSlug="cs1" nextLessonId={null} />);
+		render(
+			<QuizForm
+				quiz={mockQuiz}
+				courseSlug="cs1"
+				nextLessonId={null}
+				lessonHref="/learn/cs1/l1"
+			/>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "เริ่มทำแบบทดสอบ" }));
 
 		// Answer and submit
 		fireEvent.click(screen.getByText("4"));
