@@ -70,21 +70,21 @@ export default async function CheckoutPendingPage({
           />
           <div className="relative">
             <div className="relative mx-auto mb-5 inline-flex items-center justify-center">
-              <div className="fa-pulse-ring absolute h-24 w-24 rounded-full bg-(--warning)/15" />
-              <div className="fa-pulse-ring fa-pulse-ring-delay absolute h-24 w-24 rounded-full bg-(--warning)/15" />
-              <div className="relative z-[2] flex h-[72px] w-[72px] items-center justify-center rounded-full bg-(--warning) text-white shadow-[0_8px_24px_rgba(245,158,11,0.3)]">
+              <div className="fa-pulse-ring absolute h-24 w-24 rounded-full bg-warning/15" />
+              <div className="fa-pulse-ring fa-pulse-ring-delay absolute h-24 w-24 rounded-full bg-warning/15" />
+              <div className="relative z-[2] flex h-[72px] w-[72px] items-center justify-center rounded-full bg-warning text-white shadow-[0_8px_24px_rgba(245,158,11,0.3)]">
                 <Clock size={32} weight="fill" />
               </div>
             </div>
-            <div className="mb-2 text-uism font-semibold uppercase tracking-[0.08em] text-(--warning)">
+            <div className="mb-2 text-uism font-semibold uppercase tracking-[0.08em] text-warning">
               กำลังตรวจสอบ
             </div>
-            <h1 className="text-h2 mb-3 text-(--foreground)">
+            <h1 className="text-h2 mb-3 text-foreground">
               เราได้รับสลิปของคุณแล้ว
             </h1>
-            <p className="text-body text-(--foreground-muted) mx-auto max-w-[440px] text-pretty">
+            <p className="text-body text-muted-foreground mx-auto max-w-[440px] text-pretty">
               ทีมงานกำลังตรวจสอบการชำระเงิน — โดยปกติใช้เวม{" "}
-              <strong className="text-(--foreground)">1-2 ชั่วโมง</strong>{" "}
+              <strong className="text-foreground">1-2 ชั่วโมง</strong>{" "}
               เราจะส่งอีเมลแจ้งเมื่อเปิดสิทธิ์เรียบร้อย
             </p>
           </div>
@@ -92,27 +92,27 @@ export default async function CheckoutPendingPage({
 
         <Card className="mt-6 overflow-hidden p-0">
           <div className="grid grid-cols-3">
-            <div className="border-r border-(--border) px-6 py-5">
-              <div className="text-caption mb-1.5 text-(--foreground-muted)">
+            <div className="border-r border-border px-6 py-5">
+              <div className="text-caption mb-1.5 text-muted-foreground">
                 เลขอ้างอิง
               </div>
-              <div className="mono text-ui font-semibold tracking-[0.02em] text-(--foreground)">
+              <div className="mono text-ui font-semibold tracking-[0.02em] text-foreground">
                 {pending.refCode}
               </div>
             </div>
-            <div className="border-r border-(--border) px-6 py-5">
-              <div className="text-caption mb-1.5 text-(--foreground-muted)">
+            <div className="border-r border-border px-6 py-5">
+              <div className="text-caption mb-1.5 text-muted-foreground">
                 ยอดชำระ
               </div>
-              <div className="num text-[22px] font-bold text-(--primary)">
+              <div className="num text-[22px] font-bold text-primary">
                 {formatTHB(pending.amount)}
               </div>
             </div>
             <div className="px-6 py-5">
-              <div className="text-caption mb-1.5 text-(--foreground-muted)">
+              <div className="text-caption mb-1.5 text-muted-foreground">
                 ส่งสลิปเมื่อ
               </div>
-              <div className="num text-ui font-semibold text-(--foreground)">
+              <div className="num text-ui font-semibold text-foreground">
                 {fmtDateTime(pending.updatedAt)}
               </div>
             </div>
@@ -120,11 +120,11 @@ export default async function CheckoutPendingPage({
         </Card>
 
         <Card className="mt-6 p-7">
-          <div className="text-ui mb-6 font-semibold text-(--foreground)">
+          <div className="text-ui mb-6 font-semibold text-foreground">
             สถานะการตรวจสอบ
           </div>
           <div className="relative">
-            <div className="absolute bottom-3.5 left-3.5 top-3.5 w-0.5 bg-(--border)" />
+            <div className="absolute bottom-3.5 left-3.5 top-3.5 w-0.5 bg-border" />
             <TimelineItem
               state="done"
               title="ส่งสลิปเรียบร้อย"
@@ -156,16 +156,16 @@ export default async function CheckoutPendingPage({
           </div>
         </Card>
 
-        <div className="mt-6 flex items-center gap-3.5 rounded-[12px] border border-(--primary)/15 bg-(--primary)/5 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-(--surface) text-(--primary)">
+        <div className="mt-6 flex items-center gap-3.5 rounded-[12px] border border-primary/15 bg-primary/5 p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-button bg-card text-primary">
             <EnvelopeSimple size={18} weight="fill" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-ui font-semibold text-(--foreground)">
+            <div className="text-ui font-semibold text-foreground">
               ส่งการแจ้งเตือนไปยัง{" "}
               <span className="mono text-uism font-medium">{user.email}</span>
             </div>
-            <div className="text-uism text-(--foreground-muted)">
+            <div className="text-uism text-muted-foreground">
               เปลี่ยนอีเมลแจ้งเตือน หรือเพิ่มเบอร์มือถือ?
             </div>
           </div>
@@ -190,55 +190,55 @@ export default async function CheckoutPendingPage({
         </div>
 
         <Card className="mt-8 p-6">
-          <div className="text-ui mb-4 font-semibold text-(--foreground)">
+          <div className="text-ui mb-4 font-semibold text-foreground">
             คำถามที่พบบ่อย
           </div>
           <div className="flex flex-col gap-3">
-            <details className="border-b border-(--border) pb-3">
-              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-(--foreground)">
+            <details className="border-b border-border pb-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground">
                 ตรวจสอบสลิปนานแค่ไหน?
                 <CaretRight
                   size={16}
-                  className="text-(--foreground-subtle) shrink-0"
+                  className="text-foreground-subtle shrink-0"
                 />
               </summary>
-              <p className="text-uism text-(--foreground-muted) pt-2 text-pretty">
+              <p className="text-uism text-muted-foreground pt-2 text-pretty">
                 โดยปกติภายใน 1-2 ชั่วโมงในเวลาทำการ (9:00-22:00)
                 นอกเวลาดังกล่าวอาจช้ากว่าปกติ
               </p>
             </details>
-            <details className="border-b border-(--border) pb-3">
-              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-(--foreground)">
+            <details className="border-b border-border pb-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground">
                 ถ้าโอนผิดยอดทำอย่างไร?
                 <CaretRight
                   size={16}
-                  className="text-(--foreground-subtle) shrink-0"
+                  className="text-foreground-subtle shrink-0"
                 />
               </summary>
-              <p className="text-uism text-(--foreground-muted) pt-2 text-pretty">
+              <p className="text-uism text-muted-foreground pt-2 text-pretty">
                 ทีมงานจะติดต่อกลับทางอีเมลพร้อมรายละเอียดการแก้ไขภายใน 24 ชม.
               </p>
             </details>
             <details>
-              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-(--foreground)">
+              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground">
                 ขอใบเสร็จได้ไหม?
                 <CaretRight
                   size={16}
-                  className="text-(--foreground-subtle) shrink-0"
+                  className="text-foreground-subtle shrink-0"
                 />
               </summary>
-              <p className="text-uism text-(--foreground-muted) pt-2 text-pretty">
+              <p className="text-uism text-muted-foreground pt-2 text-pretty">
                 ได้ — ใบเสร็จและใบกำกับภาษีจะส่งทางอีเมลพร้อมการเปิดสิทธิ์เรียน
               </p>
             </details>
           </div>
         </Card>
 
-        <p className="mt-6 text-center text-caption text-(--foreground-subtle)">
+        <p className="mt-6 text-center text-caption text-foreground-subtle">
           มีปัญหา? ติดต่อเราที่{" "}
           <a
             href="mailto:support@finalive.co"
-            className="font-medium text-(--primary)"
+            className="font-medium text-primary"
           >
             support@finalive.co
           </a>{" "}
@@ -265,13 +265,12 @@ function TimelineItem({
   return (
     <div className={`relative flex gap-4 ${isLast ? "" : "pb-6"}`}>
       <div
-        className={`relative z-[2] flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-          state === "done"
-            ? "bg-(--success) text-white"
+        className={`relative z-[2] flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${state === "done"
+            ? "bg-success text-white"
             : state === "active"
-              ? "bg-(--warning) text-white shadow-[0_0_0_4px_rgba(245,158,11,0.18)]"
-              : "border-2 border-(--border) bg-(--surface)"
-        }`}
+              ? "bg-warning text-white shadow-[0_0_0_4px_rgba(245,158,11,0.18)]"
+              : "border-2 border-border bg-card"
+          }`}
       >
         {state === "done" && <Check weight="bold" className="h-3.5 w-3.5" />}
         {state === "active" && (
@@ -281,26 +280,24 @@ function TimelineItem({
       <div className="flex-1 pt-0.5">
         <div className="mb-0.5 flex items-baseline justify-between gap-3">
           <div
-            className={`text-ui font-semibold ${
-              state === "future"
-                ? "text-(--foreground-subtle)"
-                : "text-(--foreground)"
-            }`}
+            className={`text-ui font-semibold ${state === "future"
+                ? "text-foreground-subtle"
+                : "text-foreground"
+              }`}
           >
             {title}
           </div>
           {time && (
-            <div className="text-caption num shrink-0 text-(--foreground-muted)">
+            <div className="text-caption num shrink-0 text-muted-foreground">
               {time}
             </div>
           )}
         </div>
         <div
-          className={`text-uism ${
-            state === "future"
-              ? "text-(--foreground-subtle)"
-              : "text-(--foreground-muted)"
-          }`}
+          className={`text-uism ${state === "future"
+              ? "text-foreground-subtle"
+              : "text-muted-foreground"
+            }`}
         >
           {desc}
         </div>

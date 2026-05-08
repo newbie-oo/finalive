@@ -76,9 +76,9 @@ export default async function CourseDetailPage({
 				: `${Math.ceil(totalDuration / 60)} นาที`;
 	const lastUpdated = course.publishedAt
 		? course.publishedAt.toLocaleDateString("th-TH", {
-				year: "numeric",
-				month: "short",
-			})
+			year: "numeric",
+			month: "short",
+		})
 		: null;
 
 	const featurePills = [
@@ -90,24 +90,24 @@ export default async function CourseDetailPage({
 
 	return (
 		<PublicShell>
-			<section className="bg-(--surface-muted)">
+			<section className="bg-muted">
 				<div className="mx-auto max-w-[1200px] px-6 py-6 md:py-8">
 					<nav
 						aria-label="breadcrumb"
-						className="mb-6 flex items-center gap-2 text-uism text-(--foreground-muted)"
+						className="mb-6 flex items-center gap-2 text-uism text-muted-foreground"
 					>
-						<Link href="/courses" className="hover:text-(--foreground)">
+						<Link href="/courses" className="hover:text-foreground">
 							คอร์สทั้งหมด
 						</Link>
 						<CaretRight size={14} />
-						<span className="truncate text-(--foreground)">{course.title}</span>
+						<span className="truncate text-foreground">{course.title}</span>
 					</nav>
 
 					<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
 						<div>
 							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
 								{coverImageUrl(course.coverStorageKey) ? (
-									<div className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)">
+									<div className="relative aspect-video w-full overflow-hidden bg-muted">
 										<Image
 											src={coverImageUrl(course.coverStorageKey)!}
 											alt={course.title}
@@ -131,7 +131,7 @@ export default async function CourseDetailPage({
 
 							<div className="mb-4 flex flex-wrap items-center gap-2">
 								{isBestseller && (
-									<span className="inline-flex h-[22px] items-center gap-1 rounded-full px-2.5 text-[12px] font-medium leading-none whitespace-nowrap bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-(--accent)">
+									<span className="inline-flex h-[22px] items-center gap-1 rounded-full px-2.5 text-[12px] font-medium leading-none whitespace-nowrap bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-accent">
 										BESTSELLER
 									</span>
 								)}
@@ -148,49 +148,49 @@ export default async function CourseDetailPage({
 								)}
 							</div>
 
-							<h1 className="text-h1 break-words text-(--foreground)">
+							<h1 className="text-h1 wrap-break-word text-foreground">
 								{course.title}
 							</h1>
 
-							<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-uism text-(--foreground-muted)">
+							<div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-uism text-muted-foreground">
 								<span className="inline-flex items-center gap-1.5">
 									<Users size={16} />
-									<span className="num font-semibold text-(--foreground)">
+									<span className="num font-semibold text-foreground">
 										{course.enrollmentCount.toLocaleString("th-TH")}
 									</span>{" "}
 									ผู้เรียน
 								</span>
 								{lastUpdated && (
 									<>
-										<span className="text-(--foreground-subtle)">·</span>
+										<span className="text-foreground-subtle">·</span>
 										<span>อัปเดตล่าสุด {lastUpdated}</span>
 									</>
 								)}
-								<span className="text-(--foreground-subtle)">·</span>
+								<span className="text-foreground-subtle">·</span>
 								<span>ภาษาไทย</span>
 							</div>
 
 							<a
 								href="#instructor"
-								className="mt-5 inline-flex items-center gap-3 rounded-[14px] border border-transparent p-1 transition-colors hover:border-(--border) hover:bg-(--surface-muted)"
+								className="mt-5 inline-flex items-center gap-3 rounded-card border border-transparent p-1 transition-colors hover:border-border hover:bg-muted"
 							>
 								<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-ui font-semibold text-white">
 									อา
 								</div>
 								<div>
-									<div className="text-uism text-(--foreground-muted)">
+									<div className="text-uism text-muted-foreground">
 										ผู้สอน
 									</div>
-									<div className="text-ui font-semibold text-(--foreground)">
+									<div className="text-ui font-semibold text-foreground">
 										อ.อาร์ม{" "}
-										<span className="text-uism font-medium text-(--foreground-muted)">
+										<span className="text-uism font-medium text-muted-foreground">
 											· CFA Charterholder
 										</span>
 									</div>
 								</div>
 							</a>
 
-							<p className="mt-5 text-bodylg text-(--foreground-muted)">
+							<p className="mt-5 text-bodylg text-muted-foreground">
 								{course.summary}
 							</p>
 
@@ -198,9 +198,9 @@ export default async function CourseDetailPage({
 								{featurePills.map(({ icon: Icon, label }, i) => (
 									<span
 										key={i}
-										className="inline-flex items-center gap-1.5 rounded-full border border-(--border) bg-(--surface) px-3.5 py-2 text-[13px] text-(--foreground)"
+										className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-[13px] text-foreground"
 									>
-										<Icon size={16} className="text-(--primary)" />
+										<Icon size={16} className="text-primary" />
 										{label}
 									</span>
 								))}
@@ -211,13 +211,13 @@ export default async function CourseDetailPage({
 							<Card className="shadow-(--shadow-md)">
 								<div className="mb-5">
 									{course.isFree ? (
-										<div className="text-h2 font-semibold text-(--success)">
+										<div className="text-h2 font-semibold text-success">
 											ฟรี
 										</div>
 									) : (
 										<div className="flex items-baseline gap-3">
 											<span
-												className="num text-display font-bold text-(--primary)"
+												className="num text-display font-bold text-primary"
 												style={{ fontSize: 32, lineHeight: 1 }}
 											>
 												{price}
@@ -226,18 +226,18 @@ export default async function CourseDetailPage({
 									)}
 								</div>
 
-								<div className="mb-5 h-px bg-(--border)" />
+								<div className="mb-5 h-px bg-border" />
 
 								<ul className="mb-6 space-y-3">
 									{CTA_FEATURES.map((label) => (
 										<li
 											key={label}
-											className="flex items-start gap-2.5 text-body text-(--foreground)"
+											className="flex items-start gap-2.5 text-body text-foreground"
 										>
 											<Check
 												size={18}
 												weight="bold"
-												className="mt-0.5 shrink-0 text-(--success)"
+												className="mt-0.5 shrink-0 text-success"
 											/>
 											<span>{label}</span>
 										</li>
@@ -302,9 +302,9 @@ export default async function CourseDetailPage({
 									)}
 								</div>
 
-								<div className="mt-5 border-t border-(--border) pt-4 text-center">
-									<span className="text-caption text-(--foreground-muted)">
-										<span className="num font-semibold text-(--foreground)">
+								<div className="mt-5 border-t border-border pt-4 text-center">
+									<span className="text-caption text-muted-foreground">
+										<span className="num font-semibold text-foreground">
 											{course.enrollmentCount.toLocaleString("th-TH")}
 										</span>{" "}
 										นักเรียนลงทะเบียนแล้ว

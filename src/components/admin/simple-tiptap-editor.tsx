@@ -50,7 +50,7 @@ export function SimpleTiptapEditor({
       type="button"
       onClick={onClick}
       title={title}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded border text-sm transition-colors ${
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-sm border text-sm transition-colors ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-background text-foreground hover:bg-muted"
@@ -61,7 +61,7 @@ export function SimpleTiptapEditor({
   );
 
   return (
-    <div className="rounded border border-border bg-background">
+    <div className="rounded-sm border border-border bg-background">
       <div className="flex flex-wrap items-center gap-1 border-b border-border px-2 py-1.5">
         {btn(
           editor.isActive("bold"),
@@ -91,7 +91,7 @@ export function SimpleTiptapEditor({
       </div>
       <EditorContent
         editor={editor}
-        className="prose prose-sm max-w-none px-3 py-2 dark:prose-invert [&_.ProseMirror]:min-h-[160px] [&_.ProseMirror]:outline-none [&_.ProseMirror_p]:my-1.5"
+        className="prose prose-sm max-w-none px-3 py-2 dark:prose-invert [&_.ProseMirror]:min-h-[160px] [&_.ProseMirror]:outline-hidden [&_.ProseMirror_p]:my-1.5"
       />
     </div>
   );

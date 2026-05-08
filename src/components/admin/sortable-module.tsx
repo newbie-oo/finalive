@@ -80,7 +80,7 @@ export function SortableModule({
 
 	return (
 		<div ref={setNodeRef} style={style} {...attributes}>
-			<div className="group/mod flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm font-medium hover:bg-muted">
+			<div className="group/mod flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium hover:bg-muted">
 				<span
 					{...listeners}
 					className="cursor-grab text-muted-foreground active:cursor-grabbing"
@@ -104,7 +104,7 @@ export function SortableModule({
 								setDraftTitle(mod.title);
 							}
 						}}
-						className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm font-medium"
+						className="flex-1 rounded-sm border border-border bg-background px-2 py-1 text-sm font-medium"
 					/>
 				) : (
 					<button
@@ -126,7 +126,7 @@ export function SortableModule({
 								e.stopPropagation();
 								setEditing(true);
 							}}
-							className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
+							className="rounded-sm px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
 							title="เปลี่ยนชื่อโมดูล"
 						>
 							✎
@@ -143,7 +143,7 @@ export function SortableModule({
 									onDelete(mod.id);
 								}
 							}}
-							className="rounded px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10"
+							className="rounded-sm px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10"
 							title="ลบโมดูล"
 						>
 							✕
@@ -178,7 +178,7 @@ export function SortableModule({
 							<input
 								name="title"
 								placeholder="ชื่อบทเรียน"
-								className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
+								className="flex-1 rounded-sm border border-border bg-background px-2 py-1 text-sm"
 								required
 								autoFocus
 							/>

@@ -140,21 +140,21 @@ export default function Home() {
 			<section className="mx-auto max-w-[1200px] px-6 py-16 md:py-24">
 				<div className="grid items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-16">
 					<div>
-						<span className="mb-6 inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--surface-muted) px-3 py-1.5 text-uism text-(--foreground-muted)">
+						<span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-uism text-muted-foreground">
 							<span
-								className="h-2 w-2 rounded-full bg-(--primary)"
+								className="h-2 w-2 rounded-full bg-primary"
 								aria-hidden
 							/>
 							คอร์สยอดนิยม: DCF Valuation ขั้นสูง — เปิดลงทะเบียนแล้ว
 						</span>
-						<h1 className="text-display text-(--foreground)">
+						<h1 className="text-display text-foreground">
 							เรียนวิเคราะห์การเงิน
 							<br />
-							กับ <span className="text-(--primary)">creator ไทย</span>
+							กับ <span className="text-primary">creator ไทย</span>
 							<br />
 							เรียนจบ ได้ใบประกาศ
 						</h1>
-						<p className="mt-5 max-w-xl text-bodylg text-(--foreground-muted)">
+						<p className="mt-5 max-w-xl text-bodylg text-muted-foreground">
 							คอร์สสำหรับคนทำงานสายการเงิน นักวิเคราะห์ และผู้สนใจลงทุน
 							เรียนผ่านวิดีโอที่อธิบายทีละขั้น พร้อมไฟล์ Excel ตัวอย่างจริง
 							และสอบรับใบประกาศที่ตรวจสอบได้ออนไลน์
@@ -162,13 +162,13 @@ export default function Home() {
 						<div className="mt-8 flex flex-wrap gap-3">
 							<Link
 								href="/courses"
-								className="inline-flex h-12 items-center gap-2 rounded-full bg-(--accent) px-8 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+								className="inline-flex h-12 items-center gap-2 rounded-full bg-accent px-8 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
 							>
 								ดูคอร์สทั้งหมด <ArrowRight size={16} weight="bold" />
 							</Link>
 							<Link
 								href="/register"
-								className="inline-flex h-12 items-center rounded-full border border-(--border) bg-(--surface-muted) px-8 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-sunken)"
+								className="inline-flex h-12 items-center rounded-full border border-border bg-muted px-8 text-ui font-medium text-foreground transition-colors hover:bg-surface-sunken"
 							>
 								ลงทะเบียนฟรี
 							</Link>
@@ -177,12 +177,12 @@ export default function Home() {
 						<div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
 							<TrustStat value="12,500+" label="นักเรียนที่ลงทะเบียน" />
 							<span
-								className="hidden h-8 w-px bg-(--border) sm:block"
+								className="hidden h-8 w-px bg-border sm:block"
 								aria-hidden
 							/>
 							<TrustStat value="41" label="คอร์สเปิดสอน" />
 							<span
-								className="hidden h-8 w-px bg-(--border) sm:block"
+								className="hidden h-8 w-px bg-border sm:block"
 								aria-hidden
 							/>
 							<TrustStat value="180+" label="บทเรียน" />
@@ -193,11 +193,11 @@ export default function Home() {
 				</div>
 			</section>
 
-			<section className="border-y border-(--border) bg-(--surface) py-8">
+			<section className="border-y border-border bg-card py-8">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="flex flex-col items-center gap-5 md:flex-row md:justify-center">
 						<span
-							className="text-uism text-(--foreground-subtle)"
+							className="text-uism text-foreground-subtle"
 							style={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
 						>
 							เรียนรู้กับนักลงทุนและทีมงานจาก
@@ -206,7 +206,7 @@ export default function Home() {
 							{LOGOS.map((logo) => (
 								<span
 									key={logo}
-									className="text-uism font-semibold text-(--foreground-muted)"
+									className="text-uism font-semibold text-muted-foreground"
 									style={{
 										textTransform: "uppercase",
 										letterSpacing: "0.06em",
@@ -220,7 +220,7 @@ export default function Home() {
 				</div>
 			</section>
 
-			<section className="bg-(--surface-muted) py-16 md:py-24">
+			<section className="bg-muted py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-8 flex flex-wrap items-end justify-between gap-3">
 						<div>
@@ -229,7 +229,7 @@ export default function Home() {
 						</div>
 						<Link
 							href="/courses"
-							className="inline-flex items-center gap-1.5 text-ui font-medium text-(--primary) hover:underline"
+							className="inline-flex items-center gap-1.5 text-ui font-medium text-primary hover:underline"
 						>
 							ดูทั้งหมด <ArrowRight size={14} weight="bold" />
 						</Link>
@@ -275,7 +275,7 @@ export default function Home() {
 					<div className="mb-12 text-center">
 						<Eyebrow>หมวดหมู่</Eyebrow>
 						<h2 className="mt-2 text-h2">ค้นหาตามหมวดหมู่</h2>
-						<p className="mt-2 text-body text-(--foreground-muted)">
+						<p className="mt-2 text-body text-muted-foreground">
 							เลือกเรียนตามความสนใจ — จากพื้นฐานสู่ระดับมืออาชีพ
 						</p>
 					</div>
@@ -286,26 +286,26 @@ export default function Home() {
 								<Link
 									key={cat.label}
 									href={`/courses?category=${encodeURIComponent(cat.label)}`}
-									className="group flex items-center gap-4 rounded-card border border-(--border) bg-(--surface) p-5 transition-colors hover:border-(--primary)"
+									className="group flex items-center gap-4 rounded-card border border-border bg-card p-5 transition-colors hover:border-primary"
 								>
 									<div
-										className="inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-card"
+										className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-card"
 										style={{ backgroundColor: cat.bg, color: cat.color }}
 									>
 										<Ic size={24} weight="bold" />
 									</div>
 									<div className="min-w-0 flex-1">
-										<div className="text-ui font-semibold text-(--foreground)">
+										<div className="text-ui font-semibold text-foreground">
 											{cat.label}
 										</div>
-										<div className="text-caption text-(--foreground-muted)">
+										<div className="text-caption text-muted-foreground">
 											{cat.count} คอร์ส
 										</div>
 									</div>
 									<CaretRight
 										size={16}
 										weight="bold"
-										className="flex-shrink-0 text-(--foreground-subtle) transition-colors group-hover:text-(--primary)"
+										className="shrink-0 text-foreground-subtle transition-colors group-hover:text-primary"
 									/>
 								</Link>
 							);
@@ -314,7 +314,7 @@ export default function Home() {
 				</div>
 			</section>
 
-			<section id="about" className="bg-(--surface-muted) py-16 md:py-24">
+			<section id="about" className="bg-muted py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>วิธีใช้งาน</Eyebrow>
@@ -326,14 +326,14 @@ export default function Home() {
 							return (
 								<article
 									key={s.n}
-									className="rounded-card border border-(--border) bg-(--surface) p-6"
+									className="rounded-card border border-border bg-card p-6"
 								>
 									<div className="mb-5 flex items-center justify-between">
-										<div className="inline-flex h-14 w-14 items-center justify-center rounded-card border border-(--border) bg-(--surface-muted) text-(--primary)">
+										<div className="inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
 											<Ic size={28} weight="bold" />
 										</div>
 										<span
-											className="num text-(--foreground-subtle)"
+											className="num text-foreground-subtle"
 											style={{
 												fontSize: 32,
 												fontWeight: 700,
@@ -344,7 +344,7 @@ export default function Home() {
 										</span>
 									</div>
 									<h3 className="text-h3">{s.title}</h3>
-									<p className="mt-2 text-body text-(--foreground-muted)">
+									<p className="mt-2 text-body text-muted-foreground">
 										{s.body}
 									</p>
 								</article>
@@ -364,13 +364,13 @@ export default function Home() {
 						{FEATURES.map((f) => (
 							<article
 								key={f.title}
-								className="rounded-card border border-(--border) bg-(--surface) p-6"
+								className="rounded-card border border-border bg-card p-6"
 							>
-								<div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-card border border-(--border) bg-(--surface-muted) text-(--primary)">
+								<div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
 									<f.icon size={28} weight="bold" />
 								</div>
 								<h3 className="text-h3">{f.title}</h3>
-								<p className="mt-2 text-body text-(--foreground-muted)">
+								<p className="mt-2 text-body text-muted-foreground">
 									{f.body}
 								</p>
 							</article>
@@ -379,7 +379,7 @@ export default function Home() {
 				</div>
 			</section>
 
-			<section className="bg-(--surface-muted) py-16 md:py-24">
+			<section className="bg-muted py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>รีวิวจากนักเรียน</Eyebrow>
@@ -389,24 +389,24 @@ export default function Home() {
 						{TESTIMONIALS.map((t) => (
 							<article
 								key={t.initials}
-								className="relative rounded-card border border-(--border) bg-(--surface) p-6"
+								className="relative rounded-card border border-border bg-card p-6"
 							>
 								<Quotes
 									size={32}
 									weight="bold"
-									className="mb-4 text-(--primary)/20"
+									className="mb-4 text-primary/20"
 									aria-hidden
 								/>
-								<p className="text-body text-(--foreground)">“{t.quote}”</p>
+								<p className="text-body text-foreground">“{t.quote}”</p>
 								<div className="mt-6 flex items-center gap-3">
 									<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-sm font-semibold text-white">
 										{t.initials}
 									</div>
 									<div>
-										<div className="text-ui font-semibold text-(--foreground)">
+										<div className="text-ui font-semibold text-foreground">
 											{t.name}
 										</div>
-										<div className="text-caption text-(--foreground-muted)">
+										<div className="text-caption text-muted-foreground">
 											{t.role}
 										</div>
 									</div>
@@ -420,7 +420,7 @@ export default function Home() {
 			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-						<div className="relative overflow-hidden rounded-card border border-(--border) bg-linear-to-br from-[#312E81] to-[#1E1B4B] p-8 md:p-10">
+						<div className="relative overflow-hidden rounded-card border border-border bg-linear-to-br from-[#312E81] to-[#1E1B4B] p-8 md:p-10">
 							<svg
 								aria-hidden
 								className="absolute inset-0 h-full w-full opacity-20"
@@ -457,13 +457,13 @@ export default function Home() {
 								].map((badge) => (
 									<span
 										key={badge}
-										className="inline-flex items-center rounded-full border border-(--border) bg-(--surface-muted) px-3 py-1 text-uism text-(--foreground-muted)"
+										className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-uism text-muted-foreground"
 									>
 										{badge}
 									</span>
 								))}
 							</div>
-							<p className="mt-5 text-body text-(--foreground-muted)">
+							<p className="mt-5 text-body text-muted-foreground">
 								อาจารย์อาร์มมีประสบการณ์กว่า 15 ปีในวงการการเงินและการลงทุน
 								เคยดำรงตำแหน่ง VP Investment ในบริษัทจัดการกองทุนชั้นนำ และถือใบอนุญาต
 								CFA Charterholder
@@ -473,39 +473,39 @@ export default function Home() {
 							<div className="mt-6 flex flex-wrap gap-6">
 								<div>
 									<div
-										className="num text-(--foreground)"
+										className="num text-foreground"
 										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
 									>
 										15
 									</div>
-									<div className="mt-1 text-caption text-(--foreground-muted)">
+									<div className="mt-1 text-caption text-muted-foreground">
 										คอร์ส
 									</div>
 								</div>
 								<div>
 									<div
-										className="num text-(--foreground)"
+										className="num text-foreground"
 										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
 									>
 										50,000+
 									</div>
-									<div className="mt-1 text-caption text-(--foreground-muted)">
+									<div className="mt-1 text-caption text-muted-foreground">
 										นักเรียน
 									</div>
 								</div>
 								<div>
 									<div
-										className="num flex items-center gap-1 text-(--foreground)"
+										className="num flex items-center gap-1 text-foreground"
 										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
 									>
 										4.9
 										<Star
 											size={18}
 											weight="fill"
-											className="text-(--warning)"
+											className="text-warning"
 										/>
 									</div>
-									<div className="mt-1 text-caption text-(--foreground-muted)">
+									<div className="mt-1 text-caption text-muted-foreground">
 										คะแนนเฉลี่ย
 									</div>
 								</div>
@@ -513,7 +513,7 @@ export default function Home() {
 							<div className="mt-8">
 								<Link
 									href="/instructor"
-									className="inline-flex h-12 items-center gap-2 rounded-full bg-(--primary) px-8 text-ui font-medium text-(--primary-fg) transition-colors hover:bg-(--primary-hover)"
+									className="inline-flex h-12 items-center gap-2 rounded-full bg-primary px-8 text-ui font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
 								>
 									เรียนรู้เพิ่มเติม <ArrowRight size={16} weight="bold" />
 								</Link>
@@ -523,7 +523,7 @@ export default function Home() {
 				</div>
 			</section>
 
-			<section className="bg-(--primary) py-14 md:py-20">
+			<section className="bg-primary py-14 md:py-20">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-center md:gap-8">
 						<div>
@@ -537,7 +537,7 @@ export default function Home() {
 						<div className="flex flex-wrap gap-3">
 							<Link
 								href="/register"
-								className="inline-flex h-12 items-center gap-2 rounded-full bg-(--accent) px-8 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+								className="inline-flex h-12 items-center gap-2 rounded-full bg-accent px-8 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
 							>
 								ลงทะเบียนฟรี <ArrowRight size={16} weight="bold" />
 							</Link>
@@ -573,18 +573,18 @@ function StaticCourseCard({
 	tagTone?: "success" | "warning" | "primary";
 }) {
 	const tagStyles = {
-		success: "bg-(--success-bg) text-(--success)",
-		warning: "bg-(--warning-bg) text-(--warning)",
-		primary: "bg-(--primary)/10 text-(--primary)",
+		success: "bg-success-bg text-success",
+		warning: "bg-warning-bg text-warning",
+		primary: "bg-primary/10 text-primary",
 	};
 
 	return (
 		<Link
 			href={`/courses/${slug}`}
-			className="group flex h-full flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+			className="group flex h-full flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 		>
 			<div
-				className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)"
+				className="relative aspect-video w-full overflow-hidden bg-muted"
 				aria-hidden
 			>
 				<div className="relative flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
@@ -612,26 +612,26 @@ function StaticCourseCard({
 				)}
 			</div>
 			<div className="flex flex-1 flex-col gap-2 p-5">
-				<h3 className="line-clamp-2 text-h4 text-(--foreground) group-hover:text-(--primary)">
+				<h3 className="line-clamp-2 text-h4 text-foreground group-hover:text-primary">
 					{title}
 				</h3>
-				<p className="line-clamp-2 text-body text-(--foreground-muted)">
+				<p className="line-clamp-2 text-body text-muted-foreground">
 					{summary}
 				</p>
 				<div className="mt-auto flex items-center justify-between pt-2">
-					<span className="num text-h4 font-semibold text-(--foreground)">
+					<span className="num text-h4 font-semibold text-foreground">
 						{price === "ฟรี" ? (
-							<span className="text-(--success)">ฟรี</span>
+							<span className="text-success">ฟรี</span>
 						) : (
 							<>
 								{price}
-								<span className="ml-1 text-caption text-(--foreground-muted)">
+								<span className="ml-1 text-caption text-muted-foreground">
 									บาท
 								</span>
 							</>
 						)}
 					</span>
-					<span className="inline-flex items-center gap-1 text-uism text-(--foreground-muted)">
+					<span className="inline-flex items-center gap-1 text-uism text-muted-foreground">
 						<Users size={14} />
 						<span className="num">{students}</span> ผู้เรียน
 					</span>
@@ -644,7 +644,7 @@ function StaticCourseCard({
 function Eyebrow({ children }: { children: React.ReactNode }) {
 	return (
 		<div
-			className="text-uism font-semibold text-(--primary)"
+			className="text-uism font-semibold text-primary"
 			style={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
 		>
 			{children}
@@ -664,17 +664,17 @@ function TrustStat({
 	return (
 		<div>
 			<div
-				className="num text-(--foreground)"
+				className="num text-foreground"
 				style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
 			>
 				{value}
 				{suffix && (
-					<span className="ml-1 text-ui font-medium text-(--foreground-muted)">
+					<span className="ml-1 text-ui font-medium text-muted-foreground">
 						{suffix}
 					</span>
 				)}
 			</div>
-			<div className="mt-1 text-caption text-(--foreground-muted)">{label}</div>
+			<div className="mt-1 text-caption text-muted-foreground">{label}</div>
 		</div>
 	);
 }
@@ -685,7 +685,7 @@ function HeroVisual() {
 			className="relative ml-auto hidden w-full max-w-[540px] select-none grid-cols-2 gap-5 md:grid"
 			style={{ pointerEvents: "none" }}
 		>
-			<div className="col-span-2 overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-lg)">
+			<div className="col-span-2 overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-lg)">
 				<div className="relative aspect-video bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
 					<div
 						aria-hidden
@@ -717,27 +717,27 @@ function HeroVisual() {
 					</div>
 				</div>
 				<div className="flex items-center justify-between p-4">
-					<div className="text-caption text-(--foreground-muted)">
+					<div className="text-caption text-muted-foreground">
 						<span className="num">30</span> บทเรียน ·{" "}
 						<span className="num">15</span> ชม.
 					</div>
 					<span className="flex items-baseline gap-1">
-						<span className="num text-h4 font-bold text-(--foreground)">
+						<span className="num text-h4 font-bold text-foreground">
 							3,990
 						</span>
-						<span className="text-caption text-(--foreground-muted)">บาท</span>
+						<span className="text-caption text-muted-foreground">บาท</span>
 					</span>
 				</div>
 			</div>
 
-			<div className="rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-md)">
+			<div className="rounded-card border border-border bg-card p-4 shadow-(--shadow-md)">
 				<div className="mb-3.5 flex items-center gap-2.5">
-					<div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-(--primary)/10 text-(--primary)">
+					<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
 						<BookOpen size={16} weight="bold" />
 					</div>
 					<div className="min-w-0">
 						<div className="text-uism font-semibold">คอร์สทั้งหมด</div>
-						<div className="truncate text-caption text-(--foreground-muted)">
+						<div className="truncate text-caption text-muted-foreground">
 							41 คอร์ส พร้อมเนื้อหา
 						</div>
 					</div>
@@ -754,25 +754,25 @@ function HeroVisual() {
 					)}
 				</div>
 				<div className="mt-2.5 flex items-center justify-between">
-					<span className="text-caption text-(--foreground-muted)">
+					<span className="text-caption text-muted-foreground">
 						6 หมวดหมู่
 					</span>
-					<span className="num text-caption font-semibold text-(--primary)">
+					<span className="num text-caption font-semibold text-primary">
 						180+ บทเรียน
 					</span>
 				</div>
 			</div>
 
-			<div className="flex flex-col rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-md)">
-				<div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-(--success-bg) text-(--success)">
+			<div className="flex flex-col rounded-card border border-border bg-card p-4 shadow-(--shadow-md)">
+				<div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-success-bg text-success">
 					<Certificate size={18} weight="bold" />
 				</div>
 				<div className="text-uism font-semibold">ใบประกาศ</div>
-				<div className="text-caption text-(--foreground-muted)">
+				<div className="text-caption text-muted-foreground">
 					ตรวจสอบออนไลน์ได้
 				</div>
 				<div className="flex-1" />
-				<div className="mt-3 flex items-center gap-1.5 text-(--foreground-muted)">
+				<div className="mt-3 flex items-center gap-1.5 text-muted-foreground">
 					<ShieldCheck size={13} />
 					<span className="text-caption">SHA-256 verify</span>
 				</div>

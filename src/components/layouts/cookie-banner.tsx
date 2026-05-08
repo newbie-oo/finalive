@@ -51,13 +51,13 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-labelledby="cookie-banner-title"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-(--border) bg-(--surface) shadow-lg"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card shadow-lg"
     >
       <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between">
-        <div className="text-uism text-(--foreground-muted)">
+        <div className="text-uism text-muted-foreground">
           <p
             id="cookie-banner-title"
-            className="font-medium text-(--foreground)"
+            className="font-medium text-foreground"
           >
             เราใช้คุกกี้เพื่อให้บริการพื้นฐาน
           </p>
@@ -68,24 +68,24 @@ export function CookieBanner() {
             อ่านรายละเอียดที่{" "}
             <Link
               href="/legal/privacy"
-              className="text-(--primary) hover:underline"
+              className="text-primary hover:underline"
             >
               นโยบายความเป็นส่วนตัว
             </Link>
           </p>
         </div>
-        <div className="flex flex-shrink-0 gap-2">
+        <div className="flex shrink-0 gap-2">
           <button
             type="button"
             onClick={() => persist("essential")}
-            className="inline-flex h-10 items-center rounded-button border border-(--border) bg-(--surface-muted) px-4 text-uism font-medium text-(--foreground) hover:bg-(--surface-sunken)"
+            className="inline-flex h-10 items-center rounded-button border border-border bg-muted px-4 text-uism font-medium text-foreground hover:bg-surface-sunken"
           >
             จำเป็นเท่านั้น
           </button>
           <button
             type="button"
             onClick={() => persist("accepted")}
-            className="inline-flex h-10 items-center rounded-button bg-(--accent) px-4 text-uism font-medium text-(--accent-fg) hover:bg-(--accent-hover)"
+            className="inline-flex h-10 items-center rounded-button bg-accent px-4 text-uism font-medium text-accent-foreground hover:bg-accent-hover"
           >
             ยอมรับทั้งหมด
           </button>

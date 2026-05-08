@@ -52,7 +52,7 @@ export default async function AdminCoursesPage({
 			<header className="flex items-center justify-between">
 				<div>
 					<h1 className="text-h1">คอร์สทั้งหมด</h1>
-					<p className="mt-1 text-body text-(--foreground-muted)">
+					<p className="mt-1 text-body text-muted-foreground">
 						จัดการเนื้อหาและการเผยแพร่
 					</p>
 				</div>
@@ -87,7 +87,7 @@ export default async function AdminCoursesPage({
 					id="admin-courses-status"
 					name="status"
 					defaultValue={status}
-					className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground)"
+					className="h-10 rounded-button border border-border bg-card px-3 text-ui text-foreground"
 				>
 					{STATUSES.map((s) => (
 						<option key={s.key} value={s.key}>
@@ -102,7 +102,7 @@ export default async function AdminCoursesPage({
 				{filtersActive && (
 					<Link
 						href="/admin/courses"
-						className="text-uism text-(--foreground-muted) hover:underline"
+						className="text-uism text-muted-foreground hover:underline"
 					>
 						ล้างตัวกรอง
 					</Link>
@@ -110,27 +110,27 @@ export default async function AdminCoursesPage({
 			</form>
 
 			{courses.length === 0 ? (
-				<p className="text-body text-(--foreground-muted)">
+				<p className="text-body text-muted-foreground">
 					{filtersActive ? "ไม่พบคอร์สที่ตรงกับเงื่อนไข" : "ยังไม่มีคอร์ส"}
 				</p>
 			) : (
-				<div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
+				<div className="overflow-x-auto rounded-card border border-border bg-card">
 					<table className="min-w-[640px] w-full text-ui">
 						<thead>
-							<tr className="border-b border-(--border) bg-(--surface-muted) text-left">
-								<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+							<tr className="border-b border-border bg-muted text-left">
+								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 									ชื่อ
 								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 									URL
 								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 									สถานะ
 								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 									ราคา
 								</th>
-								<th className="px-5 py-3 text-right text-uism font-semibold text-(--foreground-muted)">
+								<th className="px-5 py-3 text-right text-uism font-semibold text-muted-foreground">
 									ผู้เรียน
 								</th>
 								<th className="px-5 py-3" aria-label="actions" />
@@ -140,12 +140,12 @@ export default async function AdminCoursesPage({
 							{courses.map((c) => (
 								<tr
 									key={c.id}
-									className="border-b border-(--border) last:border-b-0"
+									className="border-b border-border last:border-b-0"
 								>
-									<td className="px-5 py-4 font-medium text-(--foreground)">
+									<td className="px-5 py-4 font-medium text-foreground">
 										{c.title}
 									</td>
-									<td className="mono px-5 py-4 text-uism text-(--foreground-muted)">
+									<td className="mono px-5 py-4 text-uism text-muted-foreground">
 										{c.slug}
 									</td>
 									<td className="px-5 py-4">
@@ -153,16 +153,16 @@ export default async function AdminCoursesPage({
 											{STATUS_LABEL[c.status] ?? c.status}
 										</StatusChip>
 									</td>
-									<td className="num px-5 py-4 text-(--foreground)">
+									<td className="num px-5 py-4 text-foreground">
 										{c.isFree ? "ฟรี" : formatTHB(c.price)}
 									</td>
-									<td className="num px-5 py-4 text-right text-(--foreground)">
+									<td className="num px-5 py-4 text-right text-foreground">
 										{c.enrollmentCount.toLocaleString("th-TH")}
 									</td>
 									<td className="px-5 py-4 text-right">
 										<Link
 											href={`/admin/courses/${c.id}`}
-											className="text-uism font-medium text-(--primary) hover:underline"
+											className="text-uism font-medium text-primary hover:underline"
 										>
 											แก้ไข →
 										</Link>

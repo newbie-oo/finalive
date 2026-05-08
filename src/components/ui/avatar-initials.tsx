@@ -46,7 +46,7 @@ export function AvatarInitials({
       <span
         className={cn(
           avatarVariants({ size, className }),
-          "overflow-hidden bg-(--surface-muted)",
+          "overflow-hidden bg-muted",
         )}
         {...props}
       >
@@ -59,7 +59,7 @@ export function AvatarInitials({
     <span
       className={cn(
         avatarVariants({ size, className }),
-        "bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]",
+        "bg-linear-to-br from-[#6366F1] to-[#8B5CF6]",
       )}
       aria-label={name}
       {...props}

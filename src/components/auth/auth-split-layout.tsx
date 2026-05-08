@@ -15,7 +15,7 @@ export function AuthSplitLayout({
 }: AuthSplitLayoutProps) {
 	return (
 		<div className={cn("flex min-h-full", className)}>
-			<div className="flex w-full flex-col items-center justify-center bg-(--surface) px-6 py-12 md:w-1/2 lg:w-[45%]">
+			<div className="flex w-full flex-col items-center justify-center bg-card px-6 py-12 md:w-1/2 lg:w-[45%]">
 				{left}
 			</div>
 			{right && (

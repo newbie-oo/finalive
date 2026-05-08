@@ -60,7 +60,7 @@ export default async function AdminCurriculumPage({
 			<header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 				<div>
 					<h1 className="text-h1">จัดการเนื้อหา</h1>
-					<p className="mt-1 text-body text-(--foreground-muted)">
+					<p className="mt-1 text-body text-muted-foreground">
 						{course.title}
 					</p>
 				</div>

@@ -25,7 +25,7 @@ export default async function PreviewLessonPage({
 			<section className="mx-auto max-w-[960px] px-6 py-8">
 				<Link
 					href={`/courses/${lesson.courseSlug}`}
-					className="inline-flex items-center gap-1 text-uism text-(--foreground-muted) hover:text-(--foreground)"
+					className="inline-flex items-center gap-1 text-uism text-muted-foreground hover:text-foreground"
 				>
 					<CaretLeft size={14} /> {lesson.courseTitle}
 				</Link>
@@ -34,7 +34,7 @@ export default async function PreviewLessonPage({
 					<StatusChip tone="info">ตัวอย่างฟรี</StatusChip>
 				</div>
 
-				<div className="mt-6 overflow-hidden rounded-card border border-(--border)">
+				<div className="mt-6 overflow-hidden rounded-card border border-border">
 					{lesson.bunnyVideoId ? (
 						<VidstackPlayer
 							src={buildHlsUrl({ videoId: lesson.bunnyVideoId })}
@@ -43,7 +43,7 @@ export default async function PreviewLessonPage({
 					) : (
 						<div
 							role="status"
-							className="flex aspect-video w-full items-center justify-center bg-(--surface-muted) text-body text-(--foreground-muted)"
+							className="flex aspect-video w-full items-center justify-center bg-muted text-body text-muted-foreground"
 						>
 							ตัวอย่างนี้ยังไม่มีวิดีโอ — กรุณาอ่านเนื้อหาด้านล่าง
 						</div>
@@ -56,10 +56,10 @@ export default async function PreviewLessonPage({
 					</div>
 				)}
 
-				<div className="mt-10 hidden items-center justify-between gap-4 rounded-card border border-(--border) bg-(--surface-muted) p-5 sm:flex">
+				<div className="mt-10 hidden items-center justify-between gap-4 rounded-card border border-border bg-muted p-5 sm:flex">
 					<div className="flex items-center gap-3">
-						<LockSimple size={20} weight="bold" className="text-(--primary)" />
-						<p className="text-body text-(--foreground)">
+						<LockSimple size={20} weight="bold" className="text-primary" />
+						<p className="text-body text-foreground">
 							บทเรียนถัดไปถูกล็อก — ลงทะเบียนเพื่อปลดล็อกคอร์สเต็ม
 						</p>
 					</div>
@@ -69,14 +69,14 @@ export default async function PreviewLessonPage({
 				</div>
 			</section>
 
-			<div className="fixed inset-x-0 bottom-0 z-50 border-t border-(--border) bg-(--surface) p-4 sm:hidden">
+			<div className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card p-4 sm:hidden">
 				<div className="mx-auto flex max-w-[960px] items-center gap-3">
 					<LockSimple
 						size={18}
 						weight="bold"
-						className="shrink-0 text-(--primary)"
+						className="shrink-0 text-primary"
 					/>
-					<p className="min-w-0 flex-1 truncate text-uism text-(--foreground)">
+					<p className="min-w-0 flex-1 truncate text-uism text-foreground">
 						ลงทะเบียนเพื่อปลดล็อกคอร์สเต็ม
 					</p>
 					<Button asChild variant="accent" size="md" className="shrink-0">

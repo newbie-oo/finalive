@@ -60,32 +60,31 @@ function LessonRow({
 	const playable = lesson.isPreview || lesson.isFree;
 
 	const row = (
-		<div className="flex items-center gap-3.5 border-t border-(--border) px-5 py-3.5">
+		<div className="flex items-center gap-3.5 border-t border-border px-5 py-3.5">
 			{playable ? (
-				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 					<Play size={16} weight="fill" />
 				</div>
 			) : (
-				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--surface-muted) text-(--foreground-subtle)">
+				<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground-subtle">
 					<LockSimple size={16} />
 				</div>
 			)}
-			<span className="num text-uism w-7 shrink-0 text-(--foreground-subtle)">
+			<span className="num text-uism w-7 shrink-0 text-foreground-subtle">
 				{lessonNumber}
 			</span>
 			<span
-				className={`text-ui flex-1 ${
-					playable ? "text-(--foreground)" : "text-(--foreground-muted)"
-				}`}
+				className={`text-ui flex-1 ${playable ? "text-foreground" : "text-muted-foreground"
+					}`}
 			>
 				{lesson.title}
 			</span>
 			{lesson.isPreview && (
-				<span className="shrink-0 rounded-full bg-(--primary)/10 px-2.5 py-0.5 text-[11px] font-medium text-(--primary)">
+				<span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
 					Preview
 				</span>
 			)}
-			<span className="num text-uism shrink-0 text-(--foreground-subtle)">
+			<span className="num text-uism shrink-0 text-foreground-subtle">
 				{formatDurationMinutes(lesson.durationSeconds)}
 			</span>
 		</div>
@@ -95,7 +94,7 @@ function LessonRow({
 		return (
 			<Link
 				href={`/courses/${courseSlug}/preview/${lesson.id}`}
-				className="block transition-colors hover:bg-(--surface-muted)"
+				className="block transition-colors hover:bg-muted"
 			>
 				{row}
 			</Link>
@@ -106,20 +105,20 @@ function LessonRow({
 
 function LearningOutcomes({ outcomes }: { outcomes: string[] }) {
 	return (
-		<div className="mb-8 rounded-card border border-(--primary)/15 bg-(--surface-muted) p-6">
-			<h3 className="text-h3 mb-4 font-semibold text-(--foreground)">
+		<div className="mb-8 rounded-card border border-primary/15 bg-muted p-6">
+			<h3 className="text-h3 mb-4 font-semibold text-foreground">
 				สิ่งที่คุณจะได้เรียนรู้
 			</h3>
 			<div className="grid gap-3 sm:grid-cols-2">
 				{outcomes.map((outcome) => (
 					<div
 						key={outcome}
-						className="flex items-start gap-3 text-body text-(--foreground)"
+						className="flex items-start gap-3 text-body text-foreground"
 					>
 						<Check
 							size={18}
 							weight="bold"
-							className="mt-0.5 shrink-0 text-(--primary)"
+							className="mt-0.5 shrink-0 text-primary"
 						/>
 						<span>{outcome}</span>
 					</div>
@@ -143,15 +142,15 @@ function CurriculumTab({
 	return (
 		<div>
 			<div className="mb-4 flex items-end justify-between">
-				<h3 className="text-h2 font-semibold text-(--foreground)">เนื้อหาคอร์ส</h3>
-				<span className="text-uism text-(--foreground-muted)">
+				<h3 className="text-h2 font-semibold text-foreground">เนื้อหาคอร์ส</h3>
+				<span className="text-uism text-muted-foreground">
 					<span className="num">{curriculum.length}</span> โมดูล ·{" "}
 					<span className="num">{totalLessons}</span> บทเรียน ·{" "}
 					<span className="num">{formatDuration(totalDuration)}</span>
 				</span>
 			</div>
 			{curriculum.length === 0 ? (
-				<p className="text-body text-(--foreground-muted)">ยังไม่มีเนื้อหา</p>
+				<p className="text-body text-muted-foreground">ยังไม่มีเนื้อหา</p>
 			) : (
 				<Accordion>
 					{curriculum.map((m, idx) => (
@@ -163,7 +162,7 @@ function CurriculumTab({
 									<span>
 										{m.sortOrder}. {m.title}
 									</span>
-									<span className="text-uism text-(--foreground-muted)">
+									<span className="text-uism text-muted-foreground">
 										<span className="num">{m.lessons.length}</span> บทเรียน
 									</span>
 								</span>
@@ -193,16 +192,16 @@ function InstructorTab() {
 					อา
 				</div>
 				<div>
-					<h3 className="text-h3 font-semibold text-(--foreground)">
+					<h3 className="text-h3 font-semibold text-foreground">
 						Arm Riley Quant
 					</h3>
-					<p className="text-body text-(--foreground-muted)">
+					<p className="text-body text-muted-foreground">
 						นักวิเคราะห์การลงทุน · CFA Charterholder
 					</p>
 				</div>
 			</div>
 
-			<p className="text-body text-(--foreground)">
+			<p className="text-body text-foreground">
 				อาร์มมีประสบการณ์วิเคราะห์การลงทุนกว่า 10 ปี ในตลาดหุ้นไทยและต่างประเทศ
 				พร้อมความเชี่ยวชาญในการวางแผนการเงินระยะยาวและการบริหารความเสี่ยง
 				ผ่านการสอนมาแล้วกว่า 5,000 นักเรียนทั่วประเทศ
@@ -213,7 +212,7 @@ function InstructorTab() {
 					href="https://www.youtube.com/@ArmRileyQuant"
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-flex items-center gap-2 rounded-[10px] bg-(--destructive) px-4 py-2.5 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C]"
+					className="inline-flex items-center gap-2 rounded-button bg-destructive px-4 py-2.5 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C]"
 				>
 					<YoutubeLogo size={18} weight="fill" />
 					ติดตามบน YouTube
@@ -221,13 +220,13 @@ function InstructorTab() {
 			</div>
 
 			<div className="grid grid-cols-2 gap-4">
-				<div className="rounded-card border border-(--border) bg-(--surface-muted) p-4 text-center">
-					<div className="num text-h2 font-bold text-(--primary)">12</div>
-					<div className="text-uism text-(--foreground-muted)">คอร์ส</div>
+				<div className="rounded-card border border-border bg-muted p-4 text-center">
+					<div className="num text-h2 font-bold text-primary">12</div>
+					<div className="text-uism text-muted-foreground">คอร์ส</div>
 				</div>
-				<div className="rounded-card border border-(--border) bg-(--surface-muted) p-4 text-center">
-					<div className="num text-h2 font-bold text-(--primary)">5,000+</div>
-					<div className="text-uism text-(--foreground-muted)">นักเรียน</div>
+				<div className="rounded-card border border-border bg-muted p-4 text-center">
+					<div className="num text-h2 font-bold text-primary">5,000+</div>
+					<div className="text-uism text-muted-foreground">นักเรียน</div>
 				</div>
 			</div>
 		</div>
@@ -239,7 +238,7 @@ function FaqTab() {
 		<Accordion>
 			{FAQS.map((faq) => (
 				<AccordionItem key={faq.q} header={faq.q}>
-					<p className="px-4 py-3 text-body text-(--foreground-muted)">
+					<p className="px-4 py-3 text-body text-muted-foreground">
 						{faq.a}
 					</p>
 				</AccordionItem>
@@ -250,8 +249,8 @@ function FaqTab() {
 
 function InstructorCard() {
 	return (
-		<div className="mb-6 rounded-card border border-(--border) bg-(--surface) p-6">
-			<div className="mb-3 text-uism uppercase tracking-wider text-(--foreground-muted)">
+		<div className="mb-6 rounded-card border border-border bg-card p-6">
+			<div className="mb-3 text-uism uppercase tracking-wider text-muted-foreground">
 				ผู้สอน
 			</div>
 			<div className="mb-4 flex items-center gap-3.5">
@@ -259,15 +258,15 @@ function InstructorCard() {
 					อา
 				</div>
 				<div>
-					<div className="text-h4 font-semibold text-(--foreground)">
+					<div className="text-h4 font-semibold text-foreground">
 						อาร์ม ริลีย์
 					</div>
-					<div className="text-caption text-(--foreground-muted)">
+					<div className="text-caption text-muted-foreground">
 						CFA · อดีต VP Investment
 					</div>
 				</div>
 			</div>
-			<p className="mb-4 text-uism text-pretty text-(--foreground-muted)">
+			<p className="mb-4 text-uism text-pretty text-muted-foreground">
 				อาจารย์อาร์มเคยทำงานด้านการลงทุนกับกองทุนใหญ่ในไทยและสิงคโปร์ ปัจจุบันเป็น
 				independent analyst
 			</p>
@@ -298,21 +297,21 @@ function CourseContentsCard({
 	];
 
 	return (
-		<div className="rounded-card border border-(--border) bg-(--surface) p-6">
-			<div className="mb-4 text-ui font-semibold text-(--foreground)">
+		<div className="rounded-card border border-border bg-card p-6">
+			<div className="mb-4 text-ui font-semibold text-foreground">
 				คอร์สนี้ประกอบด้วย
 			</div>
 			<div className="flex flex-col gap-3">
 				{items.map(({ icon: Icon, label, sub }, i) => (
 					<div key={i} className="flex items-center gap-3">
-						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--surface-muted) text-(--primary)">
+						<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-primary">
 							<Icon size={18} />
 						</div>
 						<div>
-							<div className="text-ui font-medium text-(--foreground)">
+							<div className="text-ui font-medium text-foreground">
 								{label}
 							</div>
-							<div className="text-caption text-(--foreground-muted)">
+							<div className="text-caption text-muted-foreground">
 								{sub}
 							</div>
 						</div>
@@ -372,23 +371,22 @@ export function CourseTabs({
 			<div className="mx-auto max-w-[1200px] px-6">
 				<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
 					<div>
-						<div className="mb-8 flex gap-1 border-b border-(--border)">
+						<div className="mb-8 flex gap-1 border-b border-border">
 							{TABS.map((tab) => (
 								<button
 									key={tab.id}
 									type="button"
 									onClick={() => setActiveTab(tab.id)}
-									className={`relative px-3 pb-3 pt-1 text-ui font-medium transition-colors ${
-										activeTab === tab.id
-											? "text-(--foreground)"
-											: "text-(--foreground-muted) hover:text-(--foreground)"
-									}`}
+									className={`relative px-3 pb-3 pt-1 text-ui font-medium transition-colors ${activeTab === tab.id
+											? "text-foreground"
+											: "text-muted-foreground hover:text-foreground"
+										}`}
 									aria-selected={activeTab === tab.id}
 									role="tab"
 								>
 									{tab.label}
 									{activeTab === tab.id && (
-										<span className="absolute inset-x-0 -bottom-px h-0.5 bg-(--primary)" />
+										<span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
 									)}
 								</button>
 							))}

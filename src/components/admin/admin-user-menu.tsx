@@ -39,7 +39,7 @@ export function AdminUserMenu({
       <DropdownMenuTrigger
         aria-label="เมนูผู้ใช้"
         className={cn(
-          "group/admin-user-menu flex w-full cursor-pointer items-center gap-2.5 rounded-nav px-2 py-2 text-left transition-colors hover:bg-(--surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)",
+          "group/admin-user-menu flex w-full cursor-pointer items-center gap-2.5 rounded-nav px-2 py-2 text-left transition-colors hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
           collapsed && "justify-center px-0",
         )}
       >
@@ -47,17 +47,17 @@ export function AdminUserMenu({
         {!collapsed && (
           <>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-uism font-semibold text-(--foreground)">
+              <div className="truncate text-uism font-semibold text-foreground">
                 {name}
               </div>
-              <div className="truncate text-caption text-(--foreground-muted)">
+              <div className="truncate text-caption text-muted-foreground">
                 {email}
               </div>
             </div>
             <CaretUp
               size={14}
               weight="bold"
-              className="shrink-0 text-(--foreground-subtle) transition-transform group-data-[state=open]/admin-user-menu:rotate-180"
+              className="shrink-0 text-foreground-subtle transition-transform group-data-[state=open]/admin-user-menu:rotate-180"
             />
           </>
         )}
@@ -70,10 +70,10 @@ export function AdminUserMenu({
         className="w-56"
       >
         <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="truncate text-uism font-semibold text-(--foreground)">
+          <span className="truncate text-uism font-semibold text-foreground">
             {name}
           </span>
-          <span className="truncate text-caption text-(--foreground-muted)">
+          <span className="truncate text-caption text-muted-foreground">
             {email}
           </span>
         </DropdownMenuLabel>

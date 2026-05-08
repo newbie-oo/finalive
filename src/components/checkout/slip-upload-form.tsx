@@ -95,18 +95,18 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        className={`relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--primary) ${
+        className={`relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary ${
           dragOver
-            ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_10%,transparent)]"
+            ? "border-primary bg-[color-mix(in_srgb,var(--primary)_10%,transparent)]"
             : file
-              ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_5%,transparent)]"
-              : "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_5%,transparent)] hover:bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
+              ? "border-primary bg-[color-mix(in_srgb,var(--primary)_5%,transparent)]"
+              : "border-primary bg-[color-mix(in_srgb,var(--primary)_5%,transparent)] hover:bg-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
         }`}
       >
         {file ? (
           <>
-            <div className="flex w-full max-w-sm items-center gap-4 rounded-xl border border-(--border) bg-(--background) p-3.5 text-left">
-              <div className="flex h-[72px] w-14 shrink-0 items-center justify-center rounded-lg border border-(--border) bg-gradient-to-br from-orange-50 to-orange-200">
+            <div className="flex w-full max-w-sm items-center gap-4 rounded-xl border border-border bg-background p-3.5 text-left">
+              <div className="flex h-[72px] w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-linear-to-br from-orange-50 to-orange-200">
                 {preview ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -119,32 +119,32 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-(--foreground)">
+                <p className="truncate text-sm font-medium text-foreground">
                   {file.name}
                 </p>
-                <p className="text-uism text-(--foreground-muted)">
+                <p className="text-uism text-muted-foreground">
                   {(file.size / 1024 / 1024).toFixed(1)} MB · อัปโหลดแล้ว
                 </p>
-                <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-(--border)">
-                  <div className="h-full w-full bg-(--success)" />
+                <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-border">
+                  <div className="h-full w-full bg-success" />
                 </div>
               </div>
               <CheckCircle
                 size={24}
                 weight="fill"
-                className="shrink-0 text-(--success)"
+                className="shrink-0 text-success"
               />
             </div>
-            <span className="mt-4 text-sm font-medium text-(--primary) hover:underline">
+            <span className="mt-4 text-sm font-medium text-primary hover:underline">
               เปลี่ยนไฟล์
             </span>
           </>
         ) : (
           <div className="space-y-1.5">
-            <p className="text-h4 text-(--foreground)">
+            <p className="text-h4 text-foreground">
               ลากไฟล์มาวาง หรือคลิกเลือก
             </p>
-            <p className="text-uism text-(--foreground-muted)">
+            <p className="text-uism text-muted-foreground">
               PNG / JPG / PDF / HEIC ขนาดไม่เกิน 5 MB
             </p>
           </div>
@@ -169,7 +169,7 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
               handleFile(null);
             }}
             aria-label="ลบไฟล์"
-            className="text-uism text-(--foreground-muted) transition-colors hover:text-(--destructive)"
+            className="text-uism text-muted-foreground transition-colors hover:text-destructive"
           >
             ลบไฟล์
           </button>

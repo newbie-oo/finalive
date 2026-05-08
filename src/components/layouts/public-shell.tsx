@@ -14,25 +14,25 @@ const FOOTER_COLS: Array<{
 	heading: string;
 	links: Array<{ label: string; href: string }>;
 }> = [
-	{
-		heading: "ผลิตภัณฑ์",
-		links: [
-			{ label: "คอร์สทั้งหมด", href: "/courses" },
-			{ label: "ใบประกาศ", href: "/account/certificates" },
-		],
-	},
-	{
-		heading: "เกี่ยวกับ",
-		links: [{ label: "ผู้สอน", href: "/instructor" }],
-	},
-	{
-		heading: "กฎหมาย",
-		links: [
-			{ label: "ข้อตกลงการใช้งาน", href: "/legal/terms" },
-			{ label: "นโยบายความเป็นส่วนตัว", href: "/legal/privacy" },
-		],
-	},
-];
+		{
+			heading: "ผลิตภัณฑ์",
+			links: [
+				{ label: "คอร์สทั้งหมด", href: "/courses" },
+				{ label: "ใบประกาศ", href: "/account/certificates" },
+			],
+		},
+		{
+			heading: "เกี่ยวกับ",
+			links: [{ label: "ผู้สอน", href: "/instructor" }],
+		},
+		{
+			heading: "กฎหมาย",
+			links: [
+				{ label: "ข้อตกลงการใช้งาน", href: "/legal/terms" },
+				{ label: "นโยบายความเป็นส่วนตัว", href: "/legal/privacy" },
+			],
+		},
+	];
 
 interface PublicShellProps {
 	children: React.ReactNode;
@@ -57,7 +57,7 @@ export function PublicShell({
 		<div className="flex min-h-full flex-col">
 			<a
 				href="#main"
-				className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-(--primary) focus:px-3 focus:py-2 focus:text-(--primary-fg)"
+				className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
 			>
 				ข้ามไปยังเนื้อหา
 			</a>
@@ -66,11 +66,11 @@ export function PublicShell({
 				user={
 					session?.user
 						? {
-								name: session.user.name,
-								email: session.user.email,
-								image: (session.user as { image?: string | null }).image,
-								role,
-							}
+							name: session.user.name,
+							email: session.user.email,
+							image: (session.user as { image?: string | null }).image,
+							role,
+						}
 						: null
 				}
 				rightSlot={
@@ -79,7 +79,7 @@ export function PublicShell({
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label="YouTube"
-						className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
+						className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
 					>
 						<YoutubeLogo size={18} weight="fill" />
 					</a>
@@ -89,7 +89,7 @@ export function PublicShell({
 			/>
 
 			{drawerOpen && (
-				<div className="sticky top-16 z-40 border-t border-(--border) bg-(--surface) md:hidden">
+				<div className="sticky top-16 z-40 border-t border-border bg-card md:hidden">
 					<nav
 						className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4"
 						aria-label="เมนูมือถือ"
@@ -98,17 +98,17 @@ export function PublicShell({
 							<Link
 								key={n.href}
 								href={n.href}
-								className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+								className="rounded-nav px-3 py-2 text-ui text-foreground hover:bg-muted"
 								onClick={() => setDrawerOpen(false)}
 							>
 								{n.label}
 							</Link>
 						))}
-						<div className="my-2 h-px bg-(--border)" />
+						<div className="my-2 h-px bg-border" />
 						{session?.user ? (
 							<Link
 								href="/account"
-								className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+								className="rounded-nav px-3 py-2 text-ui text-foreground hover:bg-muted"
 								onClick={() => setDrawerOpen(false)}
 							>
 								บัญชีของฉัน
@@ -144,7 +144,7 @@ export function PublicShell({
 			</main>
 
 			{hideFooter ? null : (
-				<footer className="border-t border-(--border) bg-(--surface-muted) py-12">
+				<footer className="border-t border-border bg-muted py-12">
 					<div className="mx-auto max-w-[1200px] px-6">
 						<div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-12">
 							<div>
@@ -152,7 +152,7 @@ export function PublicShell({
 									<Logo size={22} variant="mark" />
 									<span className="text-[18px] font-semibold">Finalive</span>
 								</div>
-								<p className="max-w-xs text-body text-(--foreground-muted)">
+								<p className="max-w-xs text-body text-muted-foreground">
 									คอร์สวิเคราะห์การเงินและการลงทุน สำหรับคนทำงานสายการเงิน
 								</p>
 								<div className="mt-4 flex gap-2">
@@ -161,7 +161,7 @@ export function PublicShell({
 										target="_blank"
 										rel="noopener noreferrer"
 										aria-label="YouTube"
-										className="inline-flex h-8 w-8 items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)"
+										className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
 									>
 										<YoutubeLogo size={16} weight="fill" />
 									</a>
@@ -169,7 +169,7 @@ export function PublicShell({
 							</div>
 							{FOOTER_COLS.map((c) => (
 								<div key={c.heading}>
-									<div className="mb-3.5 text-uism uppercase text-(--foreground-subtle)">
+									<div className="mb-3.5 text-uism uppercase text-foreground-subtle">
 										{c.heading}
 									</div>
 									<ul className="flex flex-col gap-2.5">
@@ -177,7 +177,7 @@ export function PublicShell({
 											<li key={l.label}>
 												<Link
 													href={l.href}
-													className="text-body text-(--foreground-muted) hover:text-(--foreground)"
+													className="text-body text-muted-foreground hover:text-foreground"
 												>
 													{l.label}
 												</Link>
@@ -187,8 +187,8 @@ export function PublicShell({
 								</div>
 							))}
 						</div>
-						<div className="mt-10 flex flex-col justify-between gap-3 border-t border-(--border) pt-6 md:flex-row">
-							<div className="text-caption text-(--foreground-subtle)">
+						<div className="mt-10 flex flex-col justify-between gap-3 border-t border-border pt-6 md:flex-row">
+							<div className="text-caption text-foreground-subtle">
 								© {new Date().getFullYear()} Finalive · สงวนลิขสิทธิ์
 							</div>
 						</div>

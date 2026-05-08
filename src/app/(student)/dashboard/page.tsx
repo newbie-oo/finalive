@@ -8,6 +8,7 @@ import {
 	ArrowRight,
 	CaretRight,
 } from "@phosphor-icons/react/dist/ssr";
+import { Progress } from "@/components/ui/progress";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
 	return (
 		<section className="space-y-8">
 			<div
-				className="relative overflow-hidden rounded-card border border-(--border) p-6 md:p-8"
+				className="relative overflow-hidden rounded-card border border-border p-6 md:p-8"
 				style={{
 					background:
 						"linear-gradient(120deg, rgba(79,70,229,0.08) 0%, rgba(249,115,22,0.06) 100%)",
@@ -53,23 +54,23 @@ export default async function DashboardPage() {
 			>
 				<div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
 					<div>
-						<h1 className="mb-1.5 text-h1 font-bold text-(--foreground)">
+						<h1 className="mb-1.5 text-h1 font-bold text-foreground">
 							สวัสดี {session.user.name?.split(/\s+/)[0] ?? "นักเรียน"} 👋
 						</h1>
 						{inProgress[0] ? (
-							<p className="text-bodylg text-(--foreground-muted)">
+							<p className="text-bodylg text-muted-foreground">
 								เรียนต่อจาก{" "}
-								<strong className="num font-bold text-(--foreground)">
+								<strong className="num font-bold text-foreground">
 									{inProgress[0].courseTitle}
 								</strong>{" "}
 								— ทำไปแล้ว{" "}
-								<strong className="num font-bold text-(--foreground)">
+								<strong className="num font-bold text-foreground">
 									{inProgress[0].doneLessons}/{inProgress[0].totalLessons}
 								</strong>{" "}
 								บทเรียน
 							</p>
 						) : (
-							<p className="text-bodylg text-(--foreground-muted)">
+							<p className="text-bodylg text-muted-foreground">
 								เริ่มเรียนคอร์สใหม่ได้เลย
 							</p>
 						)}
@@ -77,14 +78,14 @@ export default async function DashboardPage() {
 					<div className="flex gap-3">
 						<Link
 							href="/courses"
-							className="inline-flex h-10 items-center gap-2 rounded-button border border-(--border) bg-(--surface) px-4 text-sm font-medium text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+							className="inline-flex h-10 items-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
 						>
 							ดูคอร์สใหม่
 						</Link>
 						{inProgress[0] && (
 							<Link
 								href={`/learn/${inProgress[0].courseSlug}`}
-								className="inline-flex h-10 items-center gap-2 rounded-button bg-(--primary) px-4 text-sm font-medium text-white transition-colors hover:bg-(--primary-700)"
+								className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
 							>
 								เรียนต่อ <ArrowRight size={16} />
 							</Link>
@@ -122,7 +123,7 @@ export default async function DashboardPage() {
 				].map((s) => (
 					<div
 						key={s.label}
-						className="rounded-card border border-(--border) bg-(--surface) p-5"
+						className="rounded-card border border-border bg-card p-5"
 					>
 						<div className="flex items-center gap-3.5">
 							<div
@@ -132,10 +133,10 @@ export default async function DashboardPage() {
 								<s.icon size={20} weight="bold" />
 							</div>
 							<div>
-								<div className="num text-h2 font-bold leading-none text-(--foreground)">
+								<div className="num text-h2 font-bold leading-none text-foreground">
 									{s.value}
 								</div>
-								<div className="mt-1 text-caption text-(--foreground-muted)">
+								<div className="mt-1 text-caption text-muted-foreground">
 									{s.label}
 								</div>
 							</div>
@@ -147,12 +148,12 @@ export default async function DashboardPage() {
 			{inProgress.length > 0 && (
 				<div>
 					<div className="mb-5 flex items-baseline justify-between">
-						<h2 className="text-h2 font-bold text-(--foreground)">
+						<h2 className="text-h2 font-bold text-foreground">
 							เรียนต่อจากจุดที่ค้างไว้
 						</h2>
 						<Link
 							href="/account/enrollments"
-							className="inline-flex items-center gap-1 text-sm font-semibold text-(--primary) hover:underline"
+							className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
 						>
 							คอร์สของฉันทั้งหมด <CaretRight size={14} />
 						</Link>
@@ -166,9 +167,9 @@ export default async function DashboardPage() {
 							return (
 								<div
 									key={e.enrollmentId}
-									className="flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface)"
+									className="flex flex-col overflow-hidden rounded-card border border-border bg-card"
 								>
-									<div className="relative aspect-[16/7] w-full overflow-hidden bg-(--surface-muted)">
+									<div className="relative aspect-16/7 w-full overflow-hidden bg-muted">
 										{e.coverStorageKey ? (
 											<img
 												src={coverImageUrl(e.coverStorageKey) ?? ""}
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
 												className="h-full w-full object-cover"
 											/>
 										) : (
-											<div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#312E81] to-[#1E1B4B] text-white">
+											<div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B] text-white">
 												<span className="text-h2">
 													{e.courseTitle.trim().charAt(0).toUpperCase()}
 												</span>
@@ -184,26 +185,21 @@ export default async function DashboardPage() {
 										)}
 									</div>
 									<div className="flex flex-1 flex-col p-5">
-										<h3 className="line-clamp-1 text-h4 font-semibold text-(--foreground)">
+										<h3 className="line-clamp-1 text-h4 font-semibold text-foreground">
 											{e.courseTitle}
 										</h3>
-										<p className="mt-1 text-caption text-(--foreground-muted)">
+										<p className="mt-1 text-caption text-muted-foreground">
 											{e.doneLessons}/{e.totalLessons} บทเรียน
 										</p>
 										<div className="mt-4 space-y-2">
-											<div className="h-1.5 w-full overflow-hidden rounded-full bg-(--surface-muted)">
-												<div
-													className="h-full rounded-full bg-(--primary) transition-all"
-													style={{ width: `${pct}%` }}
-												/>
-											</div>
+											<Progress value={pct} className="h-1.5" />
 											<div className="flex items-center justify-between">
-												<span className="text-uism font-semibold text-(--primary)">
+												<span className="text-uism font-semibold text-primary">
 													{pct}%
 												</span>
 												<Link
 													href={`/learn/${e.courseSlug}`}
-													className="inline-flex items-center gap-1 text-sm font-medium text-(--primary) hover:underline"
+													className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
 												>
 													เรียนต่อ <ArrowRight size={14} />
 												</Link>
@@ -218,19 +214,19 @@ export default async function DashboardPage() {
 			)}
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-				<div className="rounded-card border border-(--border) bg-(--surface) p-6">
+				<div className="rounded-card border border-border bg-card p-6">
 					<div className="mb-1 flex items-baseline justify-between">
-						<h3 className="text-h3 font-bold text-(--foreground)">
+						<h3 className="text-h3 font-bold text-foreground">
 							ความคืบหน้า 5 สัปดาห์
 						</h3>
-						<span className="text-uism font-semibold text-(--primary)">
+						<span className="text-uism font-semibold text-primary">
 							<span className="num">
 								{(data.weeklyWatchedSeconds / 3600).toFixed(1)}
 							</span>{" "}
 							ชม. สัปดาห์นี้
 						</span>
 					</div>
-					<p className="mb-6 text-caption text-(--foreground-muted)">
+					<p className="mb-6 text-caption text-muted-foreground">
 						แต่ละช่อง = 1 วัน · เข้มขึ้น = เรียนนานขึ้น
 					</p>
 					<div className="flex gap-4">
@@ -238,7 +234,7 @@ export default async function DashboardPage() {
 							{["", "อ.", "", "พฤ.", "", "ส.", ""].map((d, i) => (
 								<div
 									key={i}
-									className="h-3 text-[11px] text-(--foreground-muted)"
+									className="h-3 text-[11px] text-muted-foreground"
 								>
 									{d}
 								</div>
@@ -249,60 +245,43 @@ export default async function DashboardPage() {
 								{["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค."].map((m) => (
 									<span
 										key={m}
-										className="text-[11px] text-(--foreground-muted)"
+										className="text-[11px] text-muted-foreground"
 									>
 										{m}
 									</span>
 								))}
 							</div>
 							<div className="grid grid-flow-col grid-cols-[repeat(35,1fr)] grid-rows-7 gap-1">
-								{data.heatmap.map((lvl, i) => {
-									const colors = [
-										"#E5E7EB",
-										"#C7D2FE",
-										"#818CF8",
-										"#4F46E5",
-										"#3730A3",
-									];
-									return (
-										<div
-											key={i}
-											className="rounded-[3px]"
-											style={{
-												backgroundColor: colors[lvl],
-												aspectRatio: "1",
-											}}
-										/>
-									);
-								})}
+								{data.heatmap.map((lvl, i) => (
+									<div
+										key={i}
+										className="rounded-[3px]"
+										style={{
+											backgroundColor: `var(--heat-${lvl})`,
+											aspectRatio: "1",
+										}}
+									/>
+								))}
 							</div>
 						</div>
 					</div>
 					<div className="mt-4 flex items-center justify-end gap-2">
-						<span className="text-caption text-(--foreground-muted)">น้อย</span>
+						<span className="text-caption text-muted-foreground">น้อย</span>
 						{[0, 1, 2, 3, 4].map((l) => (
 							<div
 								key={l}
 								className="h-3 w-3 rounded-[3px]"
-								style={{
-									backgroundColor: [
-										"#E5E7EB",
-										"#C7D2FE",
-										"#818CF8",
-										"#4F46E5",
-										"#3730A3",
-									][l],
-								}}
+								style={{ backgroundColor: `var(--heat-${l})` }}
 							/>
 						))}
-						<span className="text-caption text-(--foreground-muted)">มาก</span>
+						<span className="text-caption text-muted-foreground">มาก</span>
 					</div>
 				</div>
 
-				<div className="rounded-card border border-(--border) bg-(--surface) p-6">
+				<div className="rounded-card border border-border bg-card p-6">
 					<div className="mb-5 flex items-baseline justify-between">
-						<h3 className="text-h3 font-bold text-(--foreground)">ความสำเร็จ</h3>
-						<span className="text-uism font-semibold text-(--primary)">
+						<h3 className="text-h3 font-bold text-foreground">ความสำเร็จ</h3>
+						<span className="text-uism font-semibold text-primary">
 							ดูทั้งหมด →
 						</span>
 					</div>
@@ -316,10 +295,10 @@ export default async function DashboardPage() {
 									<AchievementIcon icon={a.icon} />
 								</div>
 								<div>
-									<div className="text-ui font-semibold text-(--foreground)">
+									<div className="text-ui font-semibold text-foreground">
 										{a.title}
 									</div>
-									<div className="text-caption text-(--foreground-muted)">
+									<div className="text-caption text-muted-foreground">
 										{a.desc}
 									</div>
 								</div>
@@ -331,29 +310,28 @@ export default async function DashboardPage() {
 
 			{data.recentActivity.length > 0 && (
 				<div>
-					<h2 className="mb-5 text-h2 font-bold text-(--foreground)">
+					<h2 className="mb-5 text-h2 font-bold text-foreground">
 						กิจกรรมล่าสุด
 					</h2>
-					<div className="rounded-card border border-(--border) bg-(--surface)">
+					<div className="rounded-card border border-border bg-card">
 						{data.recentActivity.map((a, i, arr) => (
 							<div
 								key={i}
-								className={`flex items-center gap-4 px-5 py-4 ${
-									i < arr.length - 1 ? "border-b border-(--border)" : ""
-								}`}
+								className={`flex items-center gap-4 px-5 py-4 ${i < arr.length - 1 ? "border-b border-border" : ""
+									}`}
 							>
-								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--surface-muted)">
+								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
 									{getActivityIcon(a.type)}
 								</div>
-								<span className="min-w-0 flex-1 truncate text-ui font-semibold text-(--foreground)">
+								<span className="min-w-0 flex-1 truncate text-ui font-semibold text-foreground">
 									{a.title}
 								</span>
 								{a.meta && (
-									<span className="hidden rounded-full bg-(--primary)/10 px-2.5 py-0.5 text-xs font-medium text-(--primary) sm:inline-block">
+									<span className="hidden rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary sm:inline-block">
 										{getActivityBadge(a.type)}
 									</span>
 								)}
-								<span className="shrink-0 text-uism text-(--foreground-muted)">
+								<span className="shrink-0 text-uism text-muted-foreground">
 									{formatActivityTime(a.at)}
 								</span>
 							</div>

@@ -56,21 +56,21 @@ export function LessonClient({
     <div className="space-y-4">
       {quizId && (
         <div
-          className="rounded-[14px] border border-(--accent)/20 p-6 md:p-7"
+          className="rounded-card border border-accent/20 p-6 md:p-7"
           style={{
             background:
               "linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--surface)) 0%, var(--surface) 60%)",
           }}
         >
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-(--accent)/15 text-(--accent)">
+            <div className="flex h-10 w-10 items-center justify-center rounded-button bg-accent/15 text-accent">
               <Question size={22} />
             </div>
             <div>
-              <div className="text-h4 font-semibold text-(--foreground)">
+              <div className="text-h4 font-semibold text-foreground">
                 เช็คความเข้าใจ
               </div>
-              <div className="text-caption text-(--foreground-muted)">
+              <div className="text-caption text-muted-foreground">
                 พร้อมทำแบบทดสอบแล้ว
               </div>
             </div>

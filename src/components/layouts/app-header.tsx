@@ -32,7 +32,7 @@ export function AppHeader({
 }: AppHeaderProps) {
 	return (
 		<header
-			className="sticky top-0 z-50 h-16 border-b border-(--border) backdrop-blur-md"
+			className="sticky top-0 z-50 h-16 border-b border-border backdrop-blur-md"
 			style={{
 				background: "color-mix(in srgb, var(--background) 80%, transparent)",
 			}}
@@ -40,7 +40,7 @@ export function AppHeader({
 			<div className="mx-auto flex h-full max-w-[1200px] items-center justify-between gap-6 px-6">
 				<Link
 					href="/"
-					className="flex items-center gap-2.5 text-(--foreground)"
+					className="flex items-center gap-2.5 text-foreground"
 				>
 					<Logo size={24} variant="mark" />
 					<span className="text-[18px] font-semibold tracking-tight">
@@ -57,8 +57,8 @@ export function AppHeader({
 								href={n.href}
 								className={
 									isAdminLink
-										? "rounded-nav border border-(--primary)/30 bg-(--primary)/10 px-3 py-1.5 text-ui font-semibold text-(--primary) transition-colors hover:bg-(--primary)/15"
-										: "rounded-nav px-3.5 py-2 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
+										? "rounded-nav border border-primary/30 bg-primary/10 px-3 py-1.5 text-ui font-semibold text-primary transition-colors hover:bg-primary/15"
+										: "rounded-nav px-3.5 py-2 text-ui text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 								}
 							>
 								{n.label}
@@ -80,9 +80,9 @@ export function AppHeader({
 								...(user.role === "admin"
 									? [{ href: "/admin", label: "แผงควบคุม" }]
 									: [
-											{ href: "/account/enrollments", label: "คอร์สของฉัน" },
-											{ href: "/account/certificates", label: "ใบประกาศ" },
-										]),
+										{ href: "/account/enrollments", label: "คอร์สของฉัน" },
+										{ href: "/account/certificates", label: "ใบประกาศ" },
+									]),
 							]}
 						/>
 					) : (
@@ -103,7 +103,7 @@ export function AppHeader({
 						aria-label={mobileMenuOpen ? "ปิดเมนู" : "เปิดเมนู"}
 						aria-expanded={mobileMenuOpen}
 						onClick={onMobileMenuToggle}
-						className="inline-flex h-10 w-10 items-center justify-center rounded-nav text-(--foreground) hover:bg-(--surface-muted) md:hidden"
+						className="inline-flex h-10 w-10 items-center justify-center rounded-nav text-foreground hover:bg-muted md:hidden"
 					>
 						{mobileMenuOpen ? <X size={20} /> : <List size={20} />}
 					</button>

@@ -21,7 +21,7 @@ export function SlipQueueRefreshButton() {
         startTransition(() => router.refresh());
       }}
       aria-label="รีเฟรชคิวตรวจสลิป"
-      className="inline-flex items-center gap-1.5 rounded-md border border-(--border) px-3 py-1.5 text-uism text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground) disabled:opacity-60"
+      className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-uism text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60"
     >
       <ArrowClockwise
         size={14}

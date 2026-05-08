@@ -59,13 +59,13 @@ export function PaginationNav({
       {page > 1 ? (
         <Link
           href={pageUrl(basePath, page - 1, perPage, searchParams)}
-          className="inline-flex h-9 items-center gap-1 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
+          className="inline-flex h-9 items-center gap-1 rounded-button border border-border bg-card px-3 text-ui text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <CaretLeft size={14} />
           ก่อนหน้า
         </Link>
       ) : (
-        <span className="inline-flex h-9 items-center gap-1 rounded-button border border-(--border) bg-(--surface-muted) px-3 text-ui text-(--foreground-subtle)">
+        <span className="inline-flex h-9 items-center gap-1 rounded-button border border-border bg-muted px-3 text-ui text-foreground-subtle">
           <CaretLeft size={14} />
           ก่อนหน้า
         </span>
@@ -76,7 +76,7 @@ export function PaginationNav({
           it === "ellipsis" ? (
             <span
               key={`e-${idx}`}
-              className="flex h-9 w-9 items-center justify-center text-(--foreground-subtle)"
+              className="flex h-9 w-9 items-center justify-center text-foreground-subtle"
             >
               …
             </span>
@@ -88,8 +88,8 @@ export function PaginationNav({
               className={cn(
                 "flex h-9 w-9 items-center justify-center rounded-button text-ui font-medium transition-colors",
                 it === page
-                  ? "bg-(--primary) text-white"
-                  : "text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)",
+                  ? "bg-primary text-white"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
               {it}
@@ -101,13 +101,13 @@ export function PaginationNav({
       {page < totalPages ? (
         <Link
           href={pageUrl(basePath, page + 1, perPage, searchParams)}
-          className="inline-flex h-9 items-center gap-1 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground-muted) transition-colors hover:bg-(--surface-muted) hover:text-(--foreground)"
+          className="inline-flex h-9 items-center gap-1 rounded-button border border-border bg-card px-3 text-ui text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           ถัดไป
           <CaretRight size={14} />
         </Link>
       ) : (
-        <span className="inline-flex h-9 items-center gap-1 rounded-button border border-(--border) bg-(--surface-muted) px-3 text-ui text-(--foreground-subtle)">
+        <span className="inline-flex h-9 items-center gap-1 rounded-button border border-border bg-muted px-3 text-ui text-foreground-subtle">
           ถัดไป
           <CaretRight size={14} />
         </span>

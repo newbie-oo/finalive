@@ -33,11 +33,11 @@ export function MobileCurriculumDrawer({
       }}
     >
       <div
-        className="flex max-h-[78%] flex-col rounded-t-2xl bg-(--surface) shadow-lg"
+        className="flex max-h-[78%] flex-col rounded-t-2xl bg-card shadow-lg"
         style={{ boxShadow: "0 -12px 40px rgba(0,0,0,0.2)" }}
       >
         <div className="flex justify-center pt-3 pb-0">
-          <div className="h-1 w-8 rounded-full bg-(--border-strong)" />
+          <div className="h-1 w-8 rounded-full bg-border-strong" />
         </div>
         <div className="flex-1 overflow-hidden">
           <CurriculumSidebar

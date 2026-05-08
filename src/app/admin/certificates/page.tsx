@@ -58,7 +58,7 @@ export default async function AdminCertificatesPage({
 		<section className="space-y-6">
 			<header>
 				<h1 className="text-h1">ใบรับรองทั้งหมด</h1>
-				<p className="mt-1 text-body text-(--foreground-muted)">
+				<p className="mt-1 text-body text-muted-foreground">
 					{total.toLocaleString("th-TH")} ใบ
 				</p>
 			</header>
@@ -87,7 +87,7 @@ export default async function AdminCertificatesPage({
 					id="admin-certs-status"
 					name="status"
 					defaultValue={status}
-					className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground)"
+					className="h-10 rounded-button border border-border bg-card px-3 text-ui text-foreground"
 				>
 					{STATUS_OPTIONS.map((s) => (
 						<option key={s.key} value={s.key}>
@@ -102,7 +102,7 @@ export default async function AdminCertificatesPage({
 				{filtersActive && (
 					<Link
 						href="/admin/certificates"
-						className="text-uism text-(--foreground-muted) hover:underline"
+						className="text-uism text-muted-foreground hover:underline"
 					>
 						ล้างตัวกรอง
 					</Link>
@@ -111,7 +111,7 @@ export default async function AdminCertificatesPage({
 
 			{rows.length === 0 ? (
 				filtersActive ? (
-					<p className="text-body text-(--foreground-muted)">
+					<p className="text-body text-muted-foreground">
 						ไม่พบใบรับรองที่ตรงกับเงื่อนไข
 					</p>
 				) : (
@@ -123,23 +123,23 @@ export default async function AdminCertificatesPage({
 				)
 			) : (
 				<>
-					<div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
+					<div className="overflow-x-auto rounded-card border border-border bg-card">
 						<table className="min-w-[640px] w-full text-ui">
 							<thead>
-								<tr className="border-b border-(--border) bg-(--surface-muted) text-left">
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+								<tr className="border-b border-border bg-muted text-left">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										เลขที่
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										ผู้สำเร็จการศึกษา
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										คอร์ส
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										วันที่ออก
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										สถานะ
 									</th>
 									<th className="px-5 py-3" aria-label="actions" />
@@ -149,18 +149,18 @@ export default async function AdminCertificatesPage({
 								{rows.map((cert) => (
 									<tr
 										key={cert.id}
-										className="border-b border-(--border) last:border-b-0"
+										className="border-b border-border last:border-b-0"
 									>
-										<td className="mono px-5 py-3 text-uism text-(--foreground)">
+										<td className="mono px-5 py-3 text-uism text-foreground">
 											{cert.certCode}
 										</td>
-										<td className="px-5 py-3 text-(--foreground)">
+										<td className="px-5 py-3 text-foreground">
 											{cert.studentName}
 										</td>
-										<td className="px-5 py-3 text-(--foreground-muted)">
+										<td className="px-5 py-3 text-muted-foreground">
 											{cert.courseTitle}
 										</td>
-										<td className="num px-5 py-3 text-uism text-(--foreground-muted)">
+										<td className="num px-5 py-3 text-uism text-muted-foreground">
 											{cert.issuedAt.toLocaleDateString("th-TH")}
 										</td>
 										<td className="px-5 py-3">
@@ -174,7 +174,7 @@ export default async function AdminCertificatesPage({
 											<div className="flex items-center justify-end gap-3">
 												<Link
 													href={`/verify/${cert.certCode}`}
-													className="text-uism font-medium text-(--primary) hover:underline"
+													className="text-uism font-medium text-primary hover:underline"
 												>
 													ตรวจสอบ
 												</Link>

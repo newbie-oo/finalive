@@ -88,18 +88,18 @@ export function VidstackPlayer({
 
 	if (hasFatalError) {
 		return (
-			<div className="flex w-full flex-col items-center justify-center gap-3 rounded border border-(--border) bg-(--surface-muted) px-6 py-12 text-center">
+			<div className="flex w-full flex-col items-center justify-center gap-3 rounded-sm border border-border bg-muted px-6 py-12 text-center">
 				<WarningCircle
 					size={40}
 					weight="duotone"
-					className="text-(--foreground-muted)"
+					className="text-muted-foreground"
 				/>
-				<h3 className="text-h3 text-(--foreground)">วิดีโอนี้ยังไม่พร้อมใช้งาน</h3>
-				<p className="max-w-md text-body text-(--foreground-muted)">
+				<h3 className="text-h3 text-foreground">วิดีโอนี้ยังไม่พร้อมใช้งาน</h3>
+				<p className="max-w-md text-body text-muted-foreground">
 					เราไม่สามารถโหลดวิดีโอนี้ได้ในตอนนี้ กรุณาลองใหม่อีกครั้ง หรือแจ้งทีมงานที่{" "}
 					<a
 						href="mailto:hello@finalive.dev"
-						className="text-(--primary) hover:underline"
+						className="text-primary hover:underline"
 					>
 						hello@finalive.dev
 					</a>{" "}
@@ -120,7 +120,7 @@ export function VidstackPlayer({
 				playsInline
 				aspectRatio="16/9"
 				currentTime={currentTime}
-				className="w-full overflow-hidden rounded border border-border bg-black"
+				className="w-full overflow-hidden rounded-sm border border-border bg-black"
 				keyShortcuts={{
 					togglePaused: "k Space",
 					toggleMuted: "m",
@@ -141,8 +141,8 @@ export function VidstackPlayer({
 			</MediaPlayer>
 
 			{showCompleteOverlay && (
-				<div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded bg-black/80 backdrop-blur-sm">
-					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--success)">
+				<div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-sm bg-black/80 backdrop-blur-sm">
+					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-success">
 						<CheckCircle size={32} weight="fill" className="text-white" />
 					</div>
 					<h3 className="mt-4 text-h3 text-white">จบบทเรียนแล้ว!</h3>
@@ -153,14 +153,14 @@ export function VidstackPlayer({
 						{quizId && courseSlug ? (
 							<Link
 								href={`/learn/${courseSlug}/quiz/${quizId}`}
-								className="inline-flex h-11 items-center gap-2 rounded-button bg-(--accent) px-5 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+								className="inline-flex h-11 items-center gap-2 rounded-button bg-accent px-5 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
 							>
 								<Exam size={16} weight="bold" /> ทำแบบทดสอบ
 							</Link>
 						) : nextLessonId && courseSlug ? (
 							<Link
 								href={`/learn/${courseSlug}/${nextLessonId}`}
-								className="inline-flex h-11 items-center gap-2 rounded-button bg-(--accent) px-5 text-ui font-medium text-(--accent-fg) transition-colors hover:bg-(--accent-hover)"
+								className="inline-flex h-11 items-center gap-2 rounded-button bg-accent px-5 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
 							>
 								บทถัดไป <ArrowRight size={16} weight="bold" />
 							</Link>

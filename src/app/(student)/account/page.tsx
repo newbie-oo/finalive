@@ -7,7 +7,7 @@ import { z } from "zod";
 import {
   CheckCircle,
   SignOut,
-  Warning,
+  WarningIcon,
   Eye,
   EyeSlash,
 } from "@phosphor-icons/react";
@@ -19,6 +19,18 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const profileSchema = z.object({
   name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -46,7 +58,7 @@ export default function AccountPage() {
         <AvatarInitials name={session?.user?.name ?? "?"} size="xl" />
         <div>
           <h1 className="text-h1">บัญชีของฉัน</h1>
-          <p className="mt-1 text-bodylg text-(--foreground-muted)">
+          <p className="mt-1 text-bodylg text-muted-foreground">
             ภาพรวมและการตั้งค่าบัญชีของคุณ
           </p>
         </div>
@@ -134,20 +146,19 @@ function ProfileSection({
         </div>
         <div>
           <Label>อีเมล</Label>
-          <p className="text-body text-(--foreground)">{email}</p>
+          <p className="text-body text-foreground">{email}</p>
         </div>
         {saved && (
-          <p className="inline-flex items-center gap-2 rounded-md bg-success-bg px-3 py-2 text-uism text-success-foreground">
-            <CheckCircle size={16} weight="fill" /> บันทึกสำเร็จ
-          </p>
+          <Alert variant="success">
+            <CheckCircle size={16} weight="fill" />
+            <AlertDescription>บันทึกสำเร็จ</AlertDescription>
+          </Alert>
         )}
         {serverError && (
-          <p
-            role="alert"
-            className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-          >
-            {serverError}
-          </p>
+          <Alert variant="destructive">
+            <WarningIcon size={16} weight="fill" />
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
         )}
         <div className="pt-1">
           <Button
@@ -204,7 +215,7 @@ function ChangePasswordSection() {
     <Card>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <h2 className="text-h3">เปลี่ยนรหัสผ่าน</h2>
-        <p className="text-body text-(--foreground-muted)">
+        <p className="text-body text-muted-foreground">
           ถ้าคุณเข้าสู่ระบบด้วย Google เท่านั้น สามารถข้ามส่วนนี้ได้
         </p>
         <div>
@@ -223,7 +234,7 @@ function ChangePasswordSection() {
             <button
               type="button"
               onClick={() => setShowCurrent((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
               aria-label={showCurrent ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
             >
@@ -250,7 +261,7 @@ function ChangePasswordSection() {
             <button
               type="button"
               onClick={() => setShowNew((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) hover:text-(--foreground) transition-colors"
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
               aria-label={showNew ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
             >
@@ -264,17 +275,16 @@ function ChangePasswordSection() {
           )}
         </div>
         {saved && (
-          <p className="inline-flex items-center gap-2 rounded-md bg-success-bg px-3 py-2 text-uism text-success-foreground">
-            <CheckCircle size={16} weight="fill" /> เปลี่ยนรหัสผ่านสำเร็จ
-          </p>
+          <Alert variant="success">
+            <CheckCircle size={16} weight="fill" />
+            <AlertDescription>เปลี่ยนรหัสผ่านสำเร็จ</AlertDescription>
+          </Alert>
         )}
         {serverError && (
-          <p
-            role="alert"
-            className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-          >
-            {serverError}
-          </p>
+          <Alert variant="destructive">
+            <WarningIcon size={16} weight="fill" />
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
         )}
         <Button
           type="submit"
@@ -290,17 +300,11 @@ function ChangePasswordSection() {
 }
 
 function SessionSection({ onAllRevoked }: { onAllRevoked: () => void }) {
+  const [open, setOpen] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleRevoke() {
-    if (
-      !confirm(
-        "ออกจากระบบทุกอุปกรณ์? เซสชันบนอุปกรณ์ทั้งหมดจะถูกตัด รวมถึงอุปกรณ์นี้",
-      )
-    ) {
-      return;
-    }
     setRevoking(true);
     setError(null);
     try {
@@ -325,28 +329,43 @@ function SessionSection({ onAllRevoked }: { onAllRevoked: () => void }) {
     <Card>
       <div className="space-y-3">
         <h2 className="text-h3">เซสชัน</h2>
-        <p className="text-body text-(--foreground-muted)">
+        <p className="text-body text-muted-foreground">
           หากคุณสงสัยว่าบัญชีถูกเข้าใช้งานจากอุปกรณ์อื่น
           กดปุ่มด้านล่างเพื่อออกจากระบบทุกอุปกรณ์รวมถึงอุปกรณ์นี้
         </p>
         {error && (
-          <p
-            role="alert"
-            className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-          >
-            {error}
-          </p>
+          <Alert variant="destructive">
+            <WarningIcon size={16} weight="fill" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="md"
-          disabled={revoking}
-          onClick={handleRevoke}
-        >
-          <SignOut size={16} className="mr-1" />
-          {revoking ? "กำลังออกจากระบบ..." : "ออกจากระบบทุกอุปกรณ์"}
-        </Button>
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogTrigger asChild>
+            <Button type="button" variant="ghost" size="md" disabled={revoking}>
+              <SignOut size={16} className="mr-1" />
+              {revoking ? "กำลังออกจากระบบ..." : "ออกจากระบบทุกอุปกรณ์"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>ออกจากระบบทุกอุปกรณ์?</AlertDialogTitle>
+              <AlertDialogDescription>
+                เซสชันบนอุปกรณ์ทั้งหมดจะถูกตัด รวมถึงอุปกรณ์นี้
+                คุณจะต้องเข้าสู่ระบบใหม่
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+              <AlertDialogAction
+                variant="primary"
+                onClick={handleRevoke}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                ออกจากระบบ
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Card>
   );
@@ -358,6 +377,12 @@ function DangerZoneSection({ onDeleted }: { onDeleted: () => void }) {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function reset() {
+    setConfirmText("");
+    setPassword("");
+    setError(null);
+  }
 
   async function handleDelete() {
     if (confirmText !== "DELETE") {
@@ -384,96 +409,99 @@ function DangerZoneSection({ onDeleted }: { onDeleted: () => void }) {
   }
 
   return (
-    <Card className="border-(--destructive)/30">
+    <Card className="border-destructive/30">
       <div className="space-y-3">
-        <h2 className="text-h3 inline-flex items-center gap-2 text-(--destructive-fg)">
-          <Warning size={18} weight="fill" /> เขตอันตราย
+        <h2 className="text-h3 inline-flex items-center gap-2 text-destructive-foreground">
+          <WarningIcon size={18} weight="fill" /> เขตอันตราย
         </h2>
-        <p className="text-body text-(--foreground-muted)">
+        <p className="text-body text-muted-foreground">
           ลบบัญชีถาวร — เนื้อหาที่เรียน ความคืบหน้า และคำถามจะถูกลบ
           ใบประกาศที่ออกแล้วยังคงตรวจสอบได้ ไม่สามารถกู้คืนได้หลังจากกดยืนยัน
         </p>
-        {!open ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="md"
-            className="text-(--destructive-fg) hover:bg-(--destructive-bg)"
-            onClick={() => setOpen(true)}
-          >
-            ลบบัญชีถาวร
-          </Button>
-        ) : (
-          <div className="space-y-4 rounded-md border border-(--destructive)/30 bg-(--destructive-bg)/40 p-4">
-            <p className="text-body">
-              พิมพ์{" "}
-              <code className="rounded bg-(--surface-muted) px-1.5 py-0.5 font-mono text-uism">
-                DELETE
-              </code>{" "}
-              เพื่อยืนยัน และกรอกรหัสผ่านปัจจุบัน (เฉพาะบัญชีที่ตั้งรหัสผ่านไว้)
-            </p>
-            <div>
-              <Label htmlFor="confirm" required>
-                คำยืนยัน
-              </Label>
-              <Input
-                id="confirm"
-                type="text"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="DELETE"
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <Label htmlFor="delete-password">รหัสผ่านปัจจุบัน</Label>
-              <Input
-                id="delete-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-              <FieldHelper>
-                เว้นว่างหากเข้าสู่ระบบด้วย Google เท่านั้น
-              </FieldHelper>
-            </div>
-            {error && (
-              <p
-                role="alert"
-                className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-              >
-                {error}
+        <AlertDialog
+          open={open}
+          onOpenChange={(o) => {
+            setOpen(o);
+            if (!o) reset();
+          }}
+        >
+          <AlertDialogTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="md"
+              className="text-destructive-foreground hover:bg-destructive-bg"
+            >
+              ลบบัญชีถาวร
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-destructive-foreground">
+                ยืนยันลบบัญชีถาวร?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                การดำเนินการนี้ไม่สามารถย้อนกลับได้ —
+                ข้อมูลทั้งหมดจะถูกลบทันทีหลังจากยืนยัน
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4">
+              <p className="text-body text-foreground">
+                พิมพ์{" "}
+                <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-uism">
+                  DELETE
+                </code>{" "}
+                เพื่อยืนยัน และกรอกรหัสผ่านปัจจุบัน (เฉพาะบัญชีที่ตั้งรหัสผ่านไว้)
               </p>
-            )}
-            <div className="flex gap-3">
-              <Button
-                type="button"
+              <div>
+                <Label htmlFor="confirm" required>
+                  คำยืนยัน
+                </Label>
+                <Input
+                  id="confirm"
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <Label htmlFor="delete-password">รหัสผ่านปัจจุบัน</Label>
+                <Input
+                  id="delete-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+                <FieldHelper>
+                  เว้นว่างหากเข้าสู่ระบบด้วย Google เท่านั้น
+                </FieldHelper>
+              </div>
+              {error && (
+                <Alert variant="destructive">
+                  <WarningIcon size={16} weight="fill" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={submitting}>ยกเลิก</AlertDialogCancel>
+              <AlertDialogAction
                 variant="primary"
-                size="md"
                 disabled={submitting || confirmText !== "DELETE"}
-                onClick={handleDelete}
-                className="bg-(--destructive) hover:bg-(--destructive)/90"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete();
+                }}
+                className="bg-destructive hover:bg-destructive/90"
               >
                 {submitting ? "กำลังลบ..." : "ยืนยันลบบัญชี"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="md"
-                disabled={submitting}
-                onClick={() => {
-                  setOpen(false);
-                  setConfirmText("");
-                  setPassword("");
-                  setError(null);
-                }}
-              >
-                ยกเลิก
-              </Button>
-            </div>
-          </div>
-        )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Card>
   );

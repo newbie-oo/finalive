@@ -61,7 +61,7 @@ export function PublishButton({ courseId, currentStatus }: PublishButtonProps) {
             <h3 id="publish-error-title" className="text-h3">
               ไม่สามารถเผยแพร่ได้
             </h3>
-            <p className="mt-1 text-body text-(--foreground-muted)">
+            <p className="mt-1 text-body text-muted-foreground">
               กรุณาแก้ไขข้อผิดพลาดต่อไปนี้ก่อนเผยแพร่
             </p>
             <ul className="mt-3 list-inside list-disc text-body text-destructive">

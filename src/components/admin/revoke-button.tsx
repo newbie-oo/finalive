@@ -44,12 +44,12 @@ export function RevokeButton({ certId }: RevokeButtonProps) {
 				value={reason}
 				onChange={(e) => setReason(e.target.value)}
 				placeholder="เหตุผล"
-				className="rounded border px-2 py-1 text-xs"
+				className="rounded-sm border px-2 py-1 text-xs"
 			/>
 			<button
 				onClick={handleRevoke}
 				disabled={loading}
-				className="rounded bg-destructive px-2 py-1 text-xs text-destructive-foreground disabled:opacity-50"
+				className="rounded-sm bg-destructive px-2 py-1 text-xs text-destructive-foreground disabled:opacity-50"
 			>
 				{loading ? "..." : "ยืนยัน"}
 			</button>

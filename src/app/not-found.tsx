@@ -12,7 +12,7 @@ export default function NotFound() {
       />
       <div>
         <h1 className="text-h1">404</h1>
-        <p className="mt-2 text-bodylg text-(--foreground-muted)">
+        <p className="mt-2 text-bodylg text-muted-foreground">
           ไม่พบหน้าที่คุณต้องการ
         </p>
       </div>

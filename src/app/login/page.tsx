@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
 	EnvelopeSimple,
@@ -11,6 +11,7 @@ import {
 	Video,
 	FileText,
 	Certificate,
+	WarningIcon,
 } from "@phosphor-icons/react";
 import { signIn } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
@@ -21,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError } from "@/components/ui/label";
 import { Logo } from "@/components/ui/logo";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
 	email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -60,6 +63,7 @@ function LoginForm() {
 		register,
 		handleSubmit,
 		setError,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<LoginForm>();
 
@@ -105,7 +109,7 @@ function LoginForm() {
 				<div className="w-full max-w-[400px] space-y-6">
 					<Link
 						href="/"
-						className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"
+						className="mx-auto flex items-center justify-center gap-2.5 text-foreground"
 					>
 						<Logo size={24} variant="mark" />
 						<span className="text-[18px] font-semibold tracking-tight">
@@ -116,7 +120,7 @@ function LoginForm() {
 					<div className="space-y-5">
 						<header className="space-y-1">
 							<h1 className="text-h2">เข้าสู่ระบบ</h1>
-							<p className="text-body text-(--foreground-muted)">
+							<p className="text-body text-muted-foreground">
 								ยินดีต้อนรับกลับมา
 							</p>
 						</header>
@@ -124,9 +128,9 @@ function LoginForm() {
 						<GoogleSignInButton mode="login" />
 
 						<div className="flex items-center gap-3">
-							<div className="h-px flex-1 bg-(--border)" />
-							<span className="text-uism text-(--foreground-muted)">หรือ</span>
-							<div className="h-px flex-1 bg-(--border)" />
+							<div className="h-px flex-1 bg-border" />
+							<span className="text-uism text-muted-foreground">หรือ</span>
+							<div className="h-px flex-1 bg-border" />
 						</div>
 
 						<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -136,7 +140,7 @@ function LoginForm() {
 								</Label>
 								<div className="relative">
 									<EnvelopeSimple
-										className="absolute left-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
+										className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 										size={18}
 									/>
 									<Input
@@ -160,7 +164,7 @@ function LoginForm() {
 									</Label>
 									<Link
 										href="/forgot-password"
-										className="mb-1.5 text-uism text-(--primary) hover:underline"
+										className="mb-1.5 text-uism text-primary hover:underline"
 									>
 										ลืมรหัสผ่าน?
 									</Link>
@@ -178,24 +182,32 @@ function LoginForm() {
 							</div>
 
 							<div className="flex items-center justify-between">
-								<label className="flex items-center gap-2 text-uism">
-									<input
-										id="rememberMe"
-										type="checkbox"
-										className="h-4 w-4 accent-(--primary)"
-										{...register("rememberMe")}
-									/>
-									<span className="text-(--foreground-muted)">จดจำฉันไว้</span>
-								</label>
+								<Controller
+									control={control}
+									name="rememberMe"
+									render={({ field }) => (
+										<label
+											htmlFor="rememberMe"
+											className="flex cursor-pointer items-center gap-2 text-uism"
+										>
+											<Checkbox
+												id="rememberMe"
+												checked={!!field.value}
+												onCheckedChange={(checked) =>
+													field.onChange(checked === true)
+												}
+											/>
+											<span className="text-muted-foreground">จดจำฉันไว้</span>
+										</label>
+									)}
+								/>
 							</div>
 
 							{serverError && (
-								<p
-									role="alert"
-									className="rounded-md bg-(--destructive-bg) px-3 py-2 text-uism text-(--destructive-fg)"
-								>
-									{serverError}
-								</p>
+								<Alert variant="destructive">
+									<WarningIcon size={16} weight="fill" />
+									<AlertDescription>{serverError}</AlertDescription>
+								</Alert>
 							)}
 
 							<Button
@@ -210,11 +222,11 @@ function LoginForm() {
 						</form>
 					</div>
 
-					<div className="text-center text-body text-(--foreground-muted)">
+					<div className="text-center text-body text-muted-foreground">
 						ยังไม่มีบัญชี?{" "}
 						<Link
 							href="/register"
-							className="font-medium text-(--primary) hover:underline"
+							className="font-medium text-primary hover:underline"
 						>
 							สมัครสมาชิก
 						</Link>
@@ -238,7 +250,7 @@ function LoginForm() {
 
 					<div className="relative z-10 space-y-4">
 						<div className="flex items-start gap-3.5">
-							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-button bg-white/15">
 								<Video size={18} />
 							</div>
 							<div>
@@ -251,7 +263,7 @@ function LoginForm() {
 							</div>
 						</div>
 						<div className="flex items-start gap-3.5">
-							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-button bg-white/15">
 								<FileText size={18} />
 							</div>
 							<div>
@@ -264,7 +276,7 @@ function LoginForm() {
 							</div>
 						</div>
 						<div className="flex items-start gap-3.5">
-							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.15]">
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-button bg-white/15">
 								<Certificate size={18} />
 							</div>
 							<div>
@@ -306,10 +318,10 @@ export default function LoginPage() {
 					<AuthSplitLayout
 						left={
 							<div className="w-full max-w-[400px] space-y-6">
-								<div className="mx-auto h-8 w-48 animate-pulse rounded-md bg-(--surface-muted)" />
-								<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
-								<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
-								<div className="h-12 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+								<div className="mx-auto h-8 w-48 animate-pulse rounded-md bg-muted" />
+								<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+								<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+								<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
 							</div>
 						}
 					/>

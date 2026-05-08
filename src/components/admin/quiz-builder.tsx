@@ -223,7 +223,7 @@ export function QuizBuilder({
           onChange={(e) =>
             setPassScorePct(Math.min(100, Math.max(1, Number(e.target.value))))
           }
-          className="h-9 w-20 rounded border border-border bg-background px-2 text-sm"
+          className="h-9 w-20 rounded-sm border border-border bg-background px-2 text-sm"
         />
       </div>
 
@@ -232,7 +232,7 @@ export function QuizBuilder({
       )}
 
       {questions.map((q, qi) => (
-        <div key={q.id} className="rounded border border-border p-4 space-y-3">
+        <div key={q.id} className="rounded-sm border border-border p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">คำถามที่ {qi + 1}</span>
             <Button
@@ -250,7 +250,7 @@ export function QuizBuilder({
             onChange={(e) => updateQuestion(qi, e.target.value)}
             placeholder="คำถาม..."
             rows={2}
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm"
           />
 
           <div className="space-y-2">
@@ -268,7 +268,7 @@ export function QuizBuilder({
                   value={c.body}
                   onChange={(e) => updateChoiceBody(qi, ci, e.target.value)}
                   placeholder={`ตัวเลือก ${ci + 1}`}
-                  className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
+                  className="flex-1 rounded-sm border border-border bg-background px-2 py-1 text-sm"
                 />
                 {q.choices.length > 2 && (
                   <Button

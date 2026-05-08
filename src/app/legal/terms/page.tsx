@@ -9,11 +9,11 @@ export default function TermsPage() {
     <PublicShell>
       <article className="mx-auto max-w-[720px] px-6 py-12 md:py-16">
         <h1 className="text-h1">ข้อกำหนดการใช้งาน</h1>
-        <p className="mt-2 text-uism text-(--foreground-muted)">
+        <p className="mt-2 text-uism text-muted-foreground">
           อัปเดตล่าสุด: 28 เมษายน 2026
         </p>
 
-        <section className="mt-8 space-y-6 text-bodylg text-(--foreground) [&_h2]:text-h3 [&_h2]:mt-8 [&_p]:text-(--foreground-muted)">
+        <section className="mt-8 space-y-6 text-bodylg text-foreground [&_h2]:text-h3 [&_h2]:mt-8 [&_p]:text-muted-foreground">
           <h2 className="text-lg font-medium">1. บริการ</h2>
           <p>
             Finalive เป็นแพลตฟอร์มการเรียนรู้แบบวิดีโอ

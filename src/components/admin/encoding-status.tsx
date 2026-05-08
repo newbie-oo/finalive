@@ -127,7 +127,7 @@ export function EncodingStatus({ videoId, onReady }: EncodingStatusProps) {
         {STATUS_LABEL[status]}
       </span>
       {!isReady && status !== "error" && status !== "upload_failed" && (
-        <span className="text-caption text-(--foreground-muted)">
+        <span className="text-caption text-muted-foreground">
           (รีเฟรชอัตโนมัติ)
         </span>
       )}

@@ -78,7 +78,7 @@ function CoverUpload({
   return (
     <div className="space-y-2">
       <div
-        className="relative flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded border border-dashed border-border bg-muted"
+        className="relative flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-sm border border-dashed border-border bg-muted"
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
@@ -159,15 +159,15 @@ function PreviewCard({
         )}
       </div>
       <div className="space-y-3 p-4">
-        <h3 className="text-h4 line-clamp-2 text-(--foreground)">
+        <h3 className="text-h4 line-clamp-2 text-foreground">
           {title || "ชื่อคอร์ส"}
         </h3>
-        <p className="text-uism text-(--foreground-muted) line-clamp-2">
+        <p className="text-uism text-muted-foreground line-clamp-2">
           {summary || "คำอธิบายสั้น"}
         </p>
-        <div className="text-h3 font-bold text-(--foreground)">
+        <div className="text-h3 font-bold text-foreground">
           {isFree || Number(price) === 0 ? (
-            <span className="text-(--success)">ฟรี</span>
+            <span className="text-success">ฟรี</span>
           ) : (
             <span className="num">฿{price}</span>
           )}
@@ -356,7 +356,7 @@ export function NewCourseForm() {
                 value="true"
                 checked={isFree}
                 onChange={(e) => setIsFree(e.target.checked)}
-                className="h-4 w-4 accent-(--primary)"
+                className="h-4 w-4 accent-primary"
               />
               คอร์สฟรี
             </label>

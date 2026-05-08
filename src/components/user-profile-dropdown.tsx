@@ -48,7 +48,7 @@ export function UserProfileDropdown({ name, email, image, links = [] }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex items-center gap-2 rounded-full focus:outline-hidden focus:ring-2 focus:ring-primary"
         aria-haspopup="true"
         aria-expanded={open}
       >

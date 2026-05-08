@@ -21,13 +21,13 @@ export function MobileCourseCta({
   return (
     <div
       data-testid="mobile-course-cta"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-(--border) bg-(--background)/95 px-4 py-3 backdrop-blur-md md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-md md:hidden"
     >
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-uism text-(--foreground-muted)">ราคา</div>
+          <div className="text-uism text-muted-foreground">ราคา</div>
           <div
-            className={`num text-h4 font-bold ${isFree ? "text-(--success)" : "text-(--foreground)"}`}
+            className={`num text-h4 font-bold ${isFree ? "text-success" : "text-foreground"}`}
           >
             {price}
           </div>

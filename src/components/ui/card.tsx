@@ -18,10 +18,10 @@ export function Card({
     <div
       data-slot="card"
       className={cn(
-        "rounded-[14px] border border-(--border) bg-(--surface)",
+        "rounded-card border border-border bg-card",
         !noPadding && "p-6",
         interactive &&
-          "transition-[box-shadow] duration-200 ease-out shadow-(--shadow-sm) hover:shadow-(--shadow-md)",
+        "transition-shadow duration-200 ease-out shadow-(--shadow-sm) hover:shadow-(--shadow-md)",
         className,
       )}
       {...props}
@@ -51,7 +51,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-uism text-(--foreground-muted)", className)}
+      className={cn("text-uism text-muted-foreground", className)}
       {...props}
     />
   );

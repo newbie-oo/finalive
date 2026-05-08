@@ -9,22 +9,22 @@ export function getActivityIcon(type: string) {
 	switch (type) {
 		case "lesson_complete":
 			return (
-				<CheckCircle size={18} weight="fill" className="text-(--primary)" />
+				<CheckCircle size={18} weight="fill" className="text-primary" />
 			);
 		case "quiz_pass":
 			return (
-				<CheckCircle size={18} weight="fill" className="text-(--success)" />
+				<CheckCircle size={18} weight="fill" className="text-success" />
 			);
 		case "quiz_fail":
 			return (
-				<XCircle size={18} weight="fill" className="text-(--destructive)" />
+				<XCircle size={18} weight="fill" className="text-destructive" />
 			);
 		case "course_complete":
 			return (
-				<Certificate size={18} weight="fill" className="text-(--accent)" />
+				<Certificate size={18} weight="fill" className="text-accent" />
 			);
 		default:
-			return <Play size={18} weight="fill" className="text-(--primary)" />;
+			return <Play size={18} weight="fill" className="text-primary" />;
 	}
 }
 

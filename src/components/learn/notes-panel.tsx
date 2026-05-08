@@ -70,7 +70,7 @@ export function NotesPanel({ lessonId }: NotesPanelProps) {
       <button
         type="button"
         onClick={() => setMobileOpen((v) => !v)}
-        className="flex w-full items-center justify-between rounded-lg border border-(--border) bg-(--surface-muted) px-4 py-3 text-ui font-medium lg:hidden"
+        className="flex w-full items-center justify-between rounded-lg border border-border bg-muted px-4 py-3 text-ui font-medium lg:hidden"
         aria-expanded={mobileOpen}
         aria-controls="notes-textarea"
       >
@@ -90,18 +90,18 @@ export function NotesPanel({ lessonId }: NotesPanelProps) {
             value={note}
             onChange={(e) => handleChange(e.target.value)}
             placeholder="จดโน้ตของคุณที่นี่..."
-            className="min-h-[200px] w-full resize-y rounded-xl border border-(--border) bg-(--surface) p-4 text-body text-(--foreground) placeholder:text-(--foreground-muted) focus:border-(--primary) focus:outline-none focus:ring-2 focus:ring-(--primary)/20"
+            className="min-h-[200px] w-full resize-y rounded-xl border border-border bg-card p-4 text-body text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden focus:ring-2 focus:ring-primary/20"
             aria-label="โน้ตบทเรียน"
           />
           {saved && (
-            <span className="absolute bottom-3 right-3 text-caption text-(--success)">
+            <span className="absolute bottom-3 right-3 text-caption text-success">
               บันทึกแล้ว
             </span>
           )}
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-caption text-(--foreground-muted)">
+          <span className="text-caption text-muted-foreground">
             {note.length} ตัวอักษร
           </span>
           <Button

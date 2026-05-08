@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ORDER = ["light", "dark"] as const;
 type ThemeKey = (typeof ORDER)[number];
@@ -30,24 +35,30 @@ export function ThemeToggle() {
       ? (theme as ThemeKey)
       : "light";
   const Icon = ICONS[current];
+  const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length] ?? "light";
 
   function cycle() {
-    const idx = ORDER.indexOf(current);
-    const next = ORDER[(idx + 1) % ORDER.length];
     if (next) setTheme(next);
   }
 
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      className="h-11 w-11"
-      aria-label={`Theme: ${LABELS[current]} (click to change)`}
-      onClick={cycle}
-      data-testid="theme-toggle"
-    >
-      <Icon className="h-5 w-5" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11 cursor-pointer"
+          aria-label={`Theme: ${LABELS[current]} (click to change)`}
+          onClick={cycle}
+          data-testid="theme-toggle"
+        >
+          <Icon className="h-5 w-5" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        เปลี่ยนเป็น {LABELS[next]} mode
+      </TooltipContent>
+    </Tooltip>
   );
 }

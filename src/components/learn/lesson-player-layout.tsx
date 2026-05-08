@@ -90,16 +90,16 @@ export function LessonPlayerLayout({
 		<>
 			{playerSlot}
 
-			<div className="flex items-center gap-3 border-b border-(--border) px-4 py-3 lg:hidden">
-				<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--surface-muted)">
+			<div className="flex items-center gap-3 border-b border-border px-4 py-3 lg:hidden">
+				<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
 					<div
-						className="h-full rounded-full bg-(--primary)"
+						className="h-full rounded-full bg-primary"
 						style={{
 							width: `${totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0}%`,
 						}}
 					/>
 				</div>
-				<span className="num text-caption font-semibold text-(--primary)">
+				<span className="num text-caption font-semibold text-primary">
 					{totalLessons > 0
 						? Math.round((doneLessons / totalLessons) * 100)
 						: 0}
@@ -110,13 +110,13 @@ export function LessonPlayerLayout({
 			<div className="px-4 pt-5 lg:px-8 lg:pt-8 max-w-[920px] mx-auto">
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 					<div className="min-w-0 flex-1">
-						<div className="mb-1 text-uism font-semibold text-(--primary)">
+						<div className="mb-1 text-uism font-semibold text-primary">
 							{moduleTitle}
 						</div>
 						<h1 className="text-h2 mb-1" style={{ margin: 0 }}>
 							{lessonTitle}
 						</h1>
-						<div className="flex flex-wrap items-center gap-3 text-(--foreground-muted)">
+						<div className="flex flex-wrap items-center gap-3 text-muted-foreground">
 							<span className="text-caption flex items-center gap-1">
 								<span className="num">
 									{formatDurationMinutes(durationSeconds)}
@@ -166,7 +166,7 @@ export function LessonPlayerLayout({
 
 			<div className="px-4 py-5 pb-8 lg:px-8 lg:py-8 lg:pb-12 max-w-[920px] mx-auto">
 				<div
-					className="flex gap-6 border-b border-(--border) mb-6"
+					className="flex gap-6 border-b border-border mb-6"
 					role="tablist"
 					aria-label="บทเรียน"
 				>
@@ -175,11 +175,10 @@ export function LessonPlayerLayout({
 						aria-selected={activeTab === "content"}
 						aria-current={activeTab === "content" ? "page" : undefined}
 						onClick={() => setActiveTab("content")}
-						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${
-							activeTab === "content"
-								? "border-(--primary) text-(--primary)"
-								: "border-transparent text-(--foreground-muted) hover:text-(--foreground)"
-						}`}
+						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${activeTab === "content"
+								? "border-primary text-primary"
+								: "border-transparent text-muted-foreground hover:text-foreground"
+							}`}
 					>
 						เนื้อหา
 					</button>
@@ -188,11 +187,10 @@ export function LessonPlayerLayout({
 						aria-selected={activeTab === "notes"}
 						aria-current={activeTab === "notes" ? "page" : undefined}
 						onClick={() => setActiveTab("notes")}
-						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${
-							activeTab === "notes"
-								? "border-(--primary) text-(--primary)"
-								: "border-transparent text-(--foreground-muted) hover:text-(--foreground)"
-						}`}
+						className={`border-b-2 px-0 py-3 text-ui font-medium transition-colors ${activeTab === "notes"
+								? "border-primary text-primary"
+								: "border-transparent text-muted-foreground hover:text-foreground"
+							}`}
 					>
 						โน้ต
 					</button>
@@ -220,7 +218,7 @@ export function LessonPlayerLayout({
 					</>
 				)}
 
-				<div className="mt-8 flex items-center justify-between border-t border-(--border) pt-6">
+				<div className="mt-8 flex items-center justify-between border-t border-border pt-6">
 					{prevLessonId ? (
 						<Button variant="secondary" size="md" asChild>
 							<Link href={`/learn/${courseSlug}/${prevLessonId}`}>

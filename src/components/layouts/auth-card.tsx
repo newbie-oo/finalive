@@ -13,9 +13,9 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
     <section className="mx-auto flex w-full max-w-[440px] flex-col gap-6 px-6 py-10 md:py-16">
       <Link
         href="/"
-        className="mx-auto flex items-center gap-2 text-(--foreground)"
+        className="mx-auto flex items-center gap-2 text-foreground"
       >
-        <span className="h-2.5 w-2.5 rounded-full bg-(--primary)" aria-hidden />
+        <span className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden />
         <span className="text-[18px] font-semibold tracking-tight">
           Finalive
         </span>
@@ -24,13 +24,13 @@ export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
         <header className="space-y-1">
           <h1 className="text-h2">{title}</h1>
           {subtitle && (
-            <p className="text-body text-(--foreground-muted)">{subtitle}</p>
+            <p className="text-body text-muted-foreground">{subtitle}</p>
           )}
         </header>
         {children}
       </Card>
       {footer && (
-        <div className="text-center text-body text-(--foreground-muted)">
+        <div className="text-center text-body text-muted-foreground">
           {footer}
         </div>
       )}

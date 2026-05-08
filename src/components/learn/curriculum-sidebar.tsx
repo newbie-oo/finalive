@@ -89,7 +89,7 @@ function CircularProgress({ pct, size = 64 }: { pct: number; size?: number }) {
 				/>
 			</svg>
 			<div className="absolute inset-0 flex items-center justify-center">
-				<span className="num text-uism font-bold text-(--foreground)">
+				<span className="num text-uism font-bold text-foreground">
 					{pct}%
 				</span>
 			</div>
@@ -108,34 +108,34 @@ function StatusIcon({
 }) {
 	if (locked) {
 		return (
-			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-(--border-strong)">
+			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-border-strong">
 				<LockSimple size={12} className="text-foreground-subtle" />
 			</div>
 		);
 	}
 	if (status === "completed") {
 		return (
-			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-(--success) text-white">
+			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-success text-white">
 				<Check size={14} weight="bold" />
 			</div>
 		);
 	}
 	if (status === "in_progress") {
 		return (
-			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-(--primary) text-white">
+			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-primary text-white">
 				<Play size={10} weight="fill" />
 			</div>
 		);
 	}
 	if (isQuiz) {
 		return (
-			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-(--border-strong) bg-(--surface)">
+			<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-border-strong bg-card">
 				<Question size={12} className="text-foreground-subtle" />
 			</div>
 		);
 	}
 	return (
-		<div className="h-[22px] w-[22px] rounded-full border border-(--border-strong) bg-(--surface)" />
+		<div className="h-[22px] w-[22px] rounded-full border border-border-strong bg-card" />
 	);
 }
 
@@ -147,14 +147,14 @@ function SidebarNotesCard({ lessonId }: { lessonId: string }) {
 	if (!preview) return null;
 
 	return (
-		<div className="mt-4 rounded-xl border border-(--primary)/20 bg-[color-mix(in_srgb,var(--primary)_6%,transparent)] p-4">
+		<div className="mt-4 rounded-xl border border-primary/20 bg-[color-mix(in_srgb,var(--primary)_6%,transparent)] p-4">
 			<div className="mb-2 flex items-center gap-2">
-				<NotePencil size={16} className="text-(--primary)" />
-				<span className="text-uism font-semibold text-(--foreground)">
+				<NotePencil size={16} className="text-primary" />
+				<span className="text-uism font-semibold text-foreground">
 					โน้ตของฉัน
 				</span>
 			</div>
-			<p className="text-caption leading-relaxed text-(--foreground-muted)">
+			<p className="text-caption leading-relaxed text-muted-foreground">
 				{preview}
 			</p>
 		</div>
@@ -184,16 +184,16 @@ export function CurriculumSidebar({
 	});
 
 	return (
-		<nav className="flex h-full flex-col bg-(--surface)">
-			<div className="border-b border-(--border) px-5 py-4">
+		<nav className="flex h-full flex-col bg-card">
+			<div className="border-b border-border px-5 py-4">
 				<div className="flex items-center gap-4">
 					<CircularProgress pct={progressPct} size={64} />
 					<div>
-						<div className="text-ui font-semibold text-(--foreground)">
+						<div className="text-ui font-semibold text-foreground">
 							<span className="num">{doneCount}</span> /{" "}
 							<span className="num">{lessonCount}</span> บทเรียน
 						</div>
-						<div className="text-caption text-(--foreground-muted)">
+						<div className="text-caption text-muted-foreground">
 							เหลือ <span className="num">{fmtHours(remainingSeconds)}</span> ชม.
 						</div>
 					</div>
@@ -212,7 +212,7 @@ export function CurriculumSidebar({
 							<div
 								className={cn(
 									"flex items-center gap-2 px-2 py-2 text-uism font-semibold",
-									modLocked ? "text-foreground-subtle" : "text-(--foreground)",
+									modLocked ? "text-foreground-subtle" : "text-foreground",
 								)}
 							>
 								{modLocked ? <CaretRight size={16} /> : <CaretDown size={16} />}
@@ -234,12 +234,12 @@ export function CurriculumSidebar({
 										const stat = progressMap.get(les.id) ?? "not_started";
 
 										const baseClass =
-											"flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2.5 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
+											"flex w-full items-center gap-2.5 rounded-nav px-2.5 py-2.5 text-left text-uism transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 										const stateClass = isActive
-											? "bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] font-semibold text-(--primary) border-l-[3px] border-(--primary)"
+											? "bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] font-semibold text-primary border-l-[3px] border-primary"
 											: locked
 												? "cursor-not-allowed text-foreground-subtle"
-												: "text-(--foreground) hover:bg-(--surface-muted)";
+												: "text-foreground hover:bg-muted";
 
 										const inner = (
 											<>
@@ -294,8 +294,8 @@ export function CurriculumSidebar({
 														<Link
 															href={`/learn/${courseSlug}/quiz/${les.quizId}`}
 															className={cn(
-																"flex w-full items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-left text-uism transition-colors",
-																"text-(--foreground) hover:bg-(--surface-muted)",
+																"flex w-full items-center gap-2.5 rounded-nav px-2.5 py-2 text-left text-uism transition-colors",
+																"text-foreground hover:bg-muted",
 															)}
 															onClick={onClose}
 															prefetch
@@ -309,7 +309,7 @@ export function CurriculumSidebar({
 															<span className="flex-1 truncate">
 																แบบทดสอบ
 																{passedQuizIds?.get(les.quizId) === false ? (
-																	<span className="ml-2 text-caption text-(--destructive-fg)">
+																	<span className="ml-2 text-caption text-destructive-foreground">
 																		ลองอีกครั้ง
 																	</span>
 																) : null}
@@ -334,7 +334,7 @@ export function CurriculumSidebar({
 
 function CheckCircleIcon() {
 	return (
-		<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-(--success) text-white">
+		<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-success text-white">
 			<Check size={14} weight="bold" />
 		</div>
 	);
@@ -342,7 +342,7 @@ function CheckCircleIcon() {
 
 function QuizIcon() {
 	return (
-		<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-(--border-strong) bg-(--surface)">
+		<div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-border-strong bg-card">
 			<Question size={12} className="text-foreground-subtle" />
 		</div>
 	);

@@ -150,7 +150,7 @@ export function LessonContent({
 						) : (
 							<div
 								role="status"
-								className="mx-4 mt-4 flex items-center gap-2 rounded-md border border-(--border) bg-(--surface-muted) px-4 py-3 text-uism text-(--foreground-muted) lg:mx-8 lg:mt-6"
+								className="mx-4 mt-4 flex items-center gap-2 rounded-md border border-border bg-muted px-4 py-3 text-uism text-muted-foreground lg:mx-8 lg:mt-6"
 							>
 								<span aria-hidden="true">📖</span>
 								บทเรียนนี้ไม่มีวิดีโอ — อ่านเนื้อหาด้านล่าง

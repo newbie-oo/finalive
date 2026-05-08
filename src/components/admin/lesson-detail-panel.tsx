@@ -68,7 +68,7 @@ export function LessonDetailPanel({
 					<h4 className="mb-1 text-sm font-medium text-muted-foreground">
 						ตัวอย่างเนื้อหา
 					</h4>
-					<div className="max-h-96 overflow-auto rounded border border-border bg-(--surface) p-3 text-sm">
+					<div className="max-h-96 overflow-auto rounded-sm border border-border bg-card p-3 text-sm">
 						<MarkdownView text={lesson.bodyMd} />
 					</div>
 				</div>

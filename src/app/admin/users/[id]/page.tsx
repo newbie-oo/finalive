@@ -20,7 +20,7 @@ export default async function AdminUserDetailPage({
 
 	const session = await getSession();
 	if (!session?.user?.id || session.user.role !== "admin") {
-		return <p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>;
+		return <p className="text-body text-muted-foreground">ไม่มีสิทธิ์เข้าถึง</p>;
 	}
 
 	const userRow = await UserRepo.getById(id);
@@ -37,9 +37,9 @@ export default async function AdminUserDetailPage({
 					<AvatarInitials name={userRow.name ?? ""} size="lg" />
 					<div>
 						<h1 className="text-h1">{userRow.name ?? ""}</h1>
-						<p className="mt-1 text-body text-(--foreground-muted)">
+						<p className="mt-1 text-body text-muted-foreground">
 							{userRow.email} ·{" "}
-							<span className="text-(--foreground)">
+							<span className="text-foreground">
 								{(userRow.role ?? "") === "admin" ? "ผู้ดูแล" : "นักเรียน"}
 							</span>
 						</p>
@@ -47,7 +47,7 @@ export default async function AdminUserDetailPage({
 				</div>
 				<Link
 					href="/admin/users"
-					className="text-uism font-medium text-(--primary) hover:underline"
+					className="text-uism font-medium text-primary hover:underline"
 				>
 					← กลับไปรายชื่อ
 				</Link>
@@ -55,8 +55,8 @@ export default async function AdminUserDetailPage({
 
 			<Card className="flex items-center justify-between gap-4">
 				<div>
-					<p className="text-uism text-(--foreground-muted)">สมัครเมื่อ</p>
-					<p className="num text-body font-medium text-(--foreground)">
+					<p className="text-uism text-muted-foreground">สมัครเมื่อ</p>
+					<p className="num text-body font-medium text-foreground">
 						{userRow.createdAt?.toLocaleDateString("th-TH")}
 					</p>
 				</div>
@@ -66,7 +66,7 @@ export default async function AdminUserDetailPage({
 			<div className="space-y-3">
 				<h2 className="text-h3">การลงทะเบียน</h2>
 				{enrollments.length === 0 ? (
-					<p className="text-body text-(--foreground-muted)">
+					<p className="text-body text-muted-foreground">
 						ยังไม่มีการลงทะเบียน
 					</p>
 				) : (
@@ -74,12 +74,12 @@ export default async function AdminUserDetailPage({
 						{enrollments.map((e) => (
 							<li
 								key={e.id}
-								className="rounded-card border border-(--border) bg-(--surface) p-4 text-ui"
+								className="rounded-card border border-border bg-card p-4 text-ui"
 							>
-								<div className="font-medium text-(--foreground)">
+								<div className="font-medium text-foreground">
 									{e.courseTitle}
 								</div>
-								<div className="text-uism text-(--foreground-muted)">
+								<div className="text-uism text-muted-foreground">
 									{e.source} · {e.status} ·{" "}
 									{e.createdAt?.toLocaleDateString("th-TH")}
 								</div>
@@ -92,18 +92,18 @@ export default async function AdminUserDetailPage({
 			<div className="space-y-3">
 				<h2 className="text-h3">ประวัติการให้สิทธิ์</h2>
 				{grants.length === 0 ? (
-					<p className="text-body text-(--foreground-muted)">ยังไม่มีประวัติ</p>
+					<p className="text-body text-muted-foreground">ยังไม่มีประวัติ</p>
 				) : (
 					<ul className="space-y-2">
 						{grants.map((g) => (
 							<li
 								key={g.id}
-								className="rounded-card border border-(--border) bg-(--surface) p-4 text-ui"
+								className="rounded-card border border-border bg-card p-4 text-ui"
 							>
-								<div className="font-medium text-(--foreground)">
+								<div className="font-medium text-foreground">
 									{g.courseTitle}
 								</div>
-								<div className="text-uism text-(--foreground-muted)">
+								<div className="text-uism text-muted-foreground">
 									{g.reason}
 									{g.note ? ` · ${g.note}` : ""} ·{" "}
 									{g.grantedAt?.toLocaleDateString("th-TH")}

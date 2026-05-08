@@ -28,18 +28,18 @@ export function AccordionItem({
   }, [open, children]);
 
   return (
-    <div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
+    <div className="overflow-hidden rounded-card border border-border bg-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full cursor-pointer items-center justify-between bg-(--surface-muted) px-4 py-3 text-ui font-medium"
+        className="flex w-full cursor-pointer items-center justify-between bg-muted px-4 py-3 text-ui font-medium"
         aria-expanded={open}
       >
         {header}
         <CaretDown
           size={16}
           className={cn(
-            "text-(--foreground-muted) transition-transform duration-300 ease-out",
+            "text-muted-foreground transition-transform duration-300 ease-out",
             open && "rotate-180",
           )}
           aria-hidden

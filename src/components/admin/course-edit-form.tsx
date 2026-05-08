@@ -122,7 +122,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           required
           pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
           title="ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น เช่น my-course-101"
-          className={`mt-1 w-full rounded border px-3 py-2 text-sm font-mono ${
+          className={`mt-1 w-full rounded-sm border px-3 py-2 text-sm font-mono ${
             errors.slug ? "border-destructive" : ""
           }`}
         />
@@ -152,7 +152,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
             if (errors.title) setErrors((p) => ({ ...p, title: undefined }));
           }}
           required
-          className={`mt-1 w-full rounded border px-3 py-2 text-sm ${
+          className={`mt-1 w-full rounded-sm border px-3 py-2 text-sm ${
             errors.title ? "border-destructive" : ""
           }`}
         />
@@ -175,7 +175,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           }}
           required
           rows={3}
-          className={`mt-1 w-full rounded border px-3 py-2 text-sm ${
+          className={`mt-1 w-full rounded-sm border px-3 py-2 text-sm ${
             errors.summary ? "border-destructive" : ""
           }`}
         />
@@ -209,7 +209,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           required={!isFree}
           readOnly={isFree}
           aria-disabled={isFree}
-          className={`mt-1 w-full rounded border px-3 py-2 text-sm ${
+          className={`mt-1 w-full rounded-sm border px-3 py-2 text-sm ${
             isFree ? "bg-muted text-muted-foreground cursor-not-allowed" : ""
           } ${errors.price ? "border-destructive" : ""}`}
         />
@@ -239,7 +239,7 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
           name="status"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-sm border px-3 py-2 text-sm"
         >
           <option value="draft">ร่าง</option>
           <option value="published">เผยแพร่</option>
@@ -255,13 +255,13 @@ export function CourseEditForm({ course, coverUrl }: CourseEditFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+          className="rounded-sm bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
         >
           {loading ? "กำลังบันทึก..." : "บันทึก"}
         </button>
         <Link
           href="/admin/courses"
-          className="rounded border px-4 py-2 text-sm"
+          className="rounded-sm border px-4 py-2 text-sm"
         >
           กลับ
         </Link>

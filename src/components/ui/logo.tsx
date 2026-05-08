@@ -21,7 +21,7 @@ export function Logo({ size = 32, variant = "mark", className }: LogoProps) {
 		return (
 			<div
 				className={cn(
-					"inline-flex flex-shrink-0 items-center justify-center overflow-hidden rounded-card bg-linear-to-br from-[#4F46E5] to-[#7C3AED]",
+					"inline-flex shrink-0 items-center justify-center overflow-hidden rounded-card bg-linear-to-br from-[#4F46E5] to-[#7C3AED]",
 					className,
 				)}
 				style={{ width: size, height: size }}
@@ -44,7 +44,7 @@ export function Logo({ size = 32, variant = "mark", className }: LogoProps) {
 			alt=""
 			width={size}
 			height={size}
-			className={cn("flex-shrink-0 object-contain", className)}
+			className={cn("shrink-0 object-contain", className)}
 			aria-hidden="true"
 		/>
 	);

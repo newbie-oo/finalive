@@ -21,7 +21,7 @@ export function LessonQuizInlineAction({
 		return (
 			<Link
 				href={`/admin/courses/${courseId}/quizzes/${lesson.quizId}`}
-				className="rounded bg-success/20 px-1.5 py-0.5 text-[10px] text-success hover:bg-success/30"
+				className="rounded-sm bg-success/20 px-1.5 py-0.5 text-[10px] text-success hover:bg-success/30"
 				title="แก้ไขแบบทดสอบ"
 			>
 				ข้อสอบ →
@@ -65,7 +65,7 @@ export function LessonQuizInlineAction({
 					}
 				});
 			}}
-			className="rounded border border-dashed border-muted-foreground/40 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
+			className="rounded-sm border border-dashed border-muted-foreground/40 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50"
 			title="สร้างแบบทดสอบให้บทเรียนนี้"
 		>
 			{creating ? "กำลังสร้าง…" : "+ ข้อสอบ"}

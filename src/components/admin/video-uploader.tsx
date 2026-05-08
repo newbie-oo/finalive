@@ -254,7 +254,7 @@ export function VideoUploader({
 
       {(phase === "uploading" || phase === "processing") && (
         <div
-          className="h-2 w-full overflow-hidden rounded bg-muted"
+          className="h-2 w-full overflow-hidden rounded-sm bg-muted"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
@@ -280,7 +280,7 @@ export function VideoUploader({
       {errorMsg && (
         <div
           role="alert"
-          className="rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-sm border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {errorMsg}
         </div>

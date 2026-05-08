@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { EnvelopeSimple } from "@phosphor-icons/react";
+import { EnvelopeSimple, WarningIcon } from "@phosphor-icons/react";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { AuthCard } from "@/components/layouts/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const forgotSchema = z.object({
   email: z.string().email("กรุณากรอกอีเมลที่ถูกต้อง"),
@@ -63,9 +64,9 @@ export default function ForgotPasswordPage() {
             <EnvelopeSimple
               size={56}
               weight="duotone"
-              className="text-(--primary)"
+              className="text-primary"
             />
-            <p className="text-body text-(--foreground-muted)">
+            <p className="text-body text-muted-foreground">
               หากอีเมลนี้มีบัญชีในระบบ คุณจะได้รับลิงก์สำหรับรีเซ็ตรหัสผ่าน
             </p>
             <Button asChild variant="primary" size="lg" className="w-full">
@@ -85,7 +86,7 @@ export default function ForgotPasswordPage() {
         footer={
           <Link
             href="/login"
-            className="font-medium text-(--primary) hover:underline"
+            className="font-medium text-primary hover:underline"
           >
             กลับไปเข้าสู่ระบบ
           </Link>
@@ -107,12 +108,10 @@ export default function ForgotPasswordPage() {
           </div>
 
           {serverError && (
-            <p
-              role="alert"
-              className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-            >
-              {serverError}
-            </p>
+            <Alert variant="destructive">
+              <WarningIcon size={16} weight="fill" />
+              <AlertDescription>{serverError}</AlertDescription>
+            </Alert>
           )}
 
           <Button

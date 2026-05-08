@@ -37,7 +37,7 @@ export default async function VerifyCertificatePage({
               className="mx-auto text-destructive"
             />
             <h1 className="text-h1">ไม่พบใบรับรอง</h1>
-            <p className="text-body text-(--foreground-muted)">
+            <p className="text-body text-muted-foreground">
               รหัส <span className="mono">{certCode}</span> ไม่มีในระบบ
             </p>
           </Card>
@@ -66,7 +66,7 @@ export default async function VerifyCertificatePage({
             </h1>
           </header>
 
-          <dl className="divide-y divide-(--border) rounded-card border border-(--border) bg-(--surface-muted)">
+          <dl className="divide-y divide-border rounded-card border border-border bg-muted">
             {[
               { k: "ชื่อผู้สำเร็จการศึกษา", v: cert.studentName },
               { k: "คอร์ส", v: cert.courseTitle },
@@ -87,8 +87,8 @@ export default async function VerifyCertificatePage({
                 key={row.k}
                 className="flex items-center justify-between gap-3 px-5 py-3"
               >
-                <dt className="text-uism text-(--foreground-muted)">{row.k}</dt>
-                <dd className="text-ui font-medium text-(--foreground)">
+                <dt className="text-uism text-muted-foreground">{row.k}</dt>
+                <dd className="text-ui font-medium text-foreground">
                   {row.v}
                 </dd>
               </div>
@@ -110,7 +110,7 @@ export default async function VerifyCertificatePage({
             </div>
           )}
 
-          <p className="text-center text-caption text-(--foreground-subtle)">
+          <p className="text-center text-caption text-foreground-subtle">
             ตรวจสอบโดย Finalive Learning Platform ·{" "}
             {new Date().toLocaleDateString("th-TH", dateFmt)}
           </p>

@@ -69,7 +69,7 @@ describe("RefCodeCopy", () => {
     });
 
     expect(
-      btn.querySelector("[class*='text-(--foreground-subtle)']"),
+      btn.querySelector("[class*='text-foreground-subtle']"),
     ).toBeInTheDocument();
   });
 

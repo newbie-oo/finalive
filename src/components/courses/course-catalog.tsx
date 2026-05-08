@@ -40,27 +40,26 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 	return (
 		<>
 			<div className="mb-5 flex items-center justify-between">
-				<span className="text-uism text-(--foreground-muted)">
+				<span className="text-uism text-muted-foreground">
 					แสดง{" "}
-					<span className="num font-medium text-(--foreground)">
+					<span className="num font-medium text-foreground">
 						{start}-{end}
 					</span>{" "}
 					จาก{" "}
-					<span className="num font-medium text-(--foreground)">
+					<span className="num font-medium text-foreground">
 						{pagination.total_count}
 					</span>{" "}
 					คอร์ส
 				</span>
 
-				<div className="inline-flex rounded-button border border-(--border) bg-(--surface) p-0.5">
+				<div className="inline-flex rounded-button border border-border bg-card p-0.5">
 					<button
 						type="button"
 						onClick={() => setViewMode("grid")}
-						className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-							viewMode === "grid"
-								? "bg-(--primary) text-white"
-								: "text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
-						}`}
+						className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors ${viewMode === "grid"
+								? "bg-primary text-white"
+								: "text-muted-foreground hover:bg-muted hover:text-foreground"
+							}`}
 						aria-label="มุมมองตาราง"
 						aria-pressed={viewMode === "grid"}
 					>
@@ -69,11 +68,10 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 					<button
 						type="button"
 						onClick={() => setViewMode("list")}
-						className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors ${
-							viewMode === "list"
-								? "bg-(--primary) text-white"
-								: "text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
-						}`}
+						className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors ${viewMode === "list"
+								? "bg-primary text-white"
+								: "text-muted-foreground hover:bg-muted hover:text-foreground"
+							}`}
 						aria-label="มุมมองรายการ"
 						aria-pressed={viewMode === "list"}
 					>
@@ -117,9 +115,9 @@ export function CourseCatalogSkeleton() {
 	return (
 		<>
 			<div className="mb-5 flex items-center justify-between">
-				<div className="h-4 w-52 animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="inline-flex h-9 w-[72px] rounded-button border border-(--border) bg-(--surface) p-0.5">
-					<div className="h-8 w-8 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="h-4 w-52 animate-pulse rounded-md bg-muted" />
+				<div className="inline-flex h-9 w-[72px] rounded-button border border-border bg-card p-0.5">
+					<div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
 					<div className="h-8 w-8 rounded-md" />
 				</div>
 			</div>
@@ -131,16 +129,16 @@ export function CourseCatalogSkeleton() {
 				))}
 			</ul>
 			<div className="mt-10 flex items-center justify-center gap-2">
-				<div className="h-9 w-20 animate-pulse rounded-button bg-(--surface-muted)" />
+				<div className="h-9 w-20 animate-pulse rounded-button bg-muted" />
 				<div className="flex items-center gap-1.5">
 					{Array.from({ length: 5 }).map((_, i) => (
 						<div
 							key={i}
-							className="h-9 w-9 animate-pulse rounded-button bg-(--surface-muted)"
+							className="h-9 w-9 animate-pulse rounded-button bg-muted"
 						/>
 					))}
 				</div>
-				<div className="h-9 w-20 animate-pulse rounded-button bg-(--surface-muted)" />
+				<div className="h-9 w-20 animate-pulse rounded-button bg-muted" />
 			</div>
 		</>
 	);

@@ -7,10 +7,10 @@ export default function ForbiddenPage() {
   return (
     <PublicShell>
       <section className="mx-auto flex max-w-md flex-col items-center gap-6 px-6 py-24 text-center">
-        <Lock size={64} weight="light" className="text-(--foreground-subtle)" />
+        <Lock size={64} weight="light" className="text-foreground-subtle" />
         <div>
           <h1 className="text-h1">403</h1>
-          <p className="mt-2 text-bodylg text-(--foreground-muted)">
+          <p className="mt-2 text-bodylg text-muted-foreground">
             บัญชีนี้ไม่มีสิทธิ์เข้าหน้าที่ขอ
           </p>
         </div>

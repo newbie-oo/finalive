@@ -86,7 +86,7 @@ export function CoverImageUpload({
 
   return (
     <div
-      className="relative flex h-40 w-full cursor-pointer items-center justify-center rounded border border-dashed border-border bg-muted"
+      className="relative flex h-40 w-full cursor-pointer items-center justify-center rounded-sm border border-dashed border-border bg-muted"
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
     >
@@ -96,9 +96,9 @@ export function CoverImageUpload({
           <img
             src={preview}
             alt="Cover preview"
-            className="h-full w-full rounded object-cover"
+            className="h-full w-full rounded-sm object-cover"
           />
-          <div className="absolute inset-0 flex items-center justify-center rounded bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center rounded-sm bg-black/40 opacity-0 transition-opacity hover:opacity-100">
             <label className="cursor-pointer text-sm text-white">
               <input
                 type="file"

@@ -69,7 +69,7 @@ function ScoreCircle({
 			</svg>
 			<div className="absolute inset-0 flex flex-col items-center justify-center">
 				<div
-					className="num font-bold text-(--foreground)"
+					className="num font-bold text-foreground"
 					style={{
 						fontSize: size * 0.32,
 						lineHeight: 1,
@@ -78,13 +78,13 @@ function ScoreCircle({
 				>
 					{score}
 					<span
-						className="font-medium text-(--foreground-muted)"
+						className="font-medium text-muted-foreground"
 						style={{ fontSize: size * 0.13 }}
 					>
 						%
 					</span>
 				</div>
-				<div className="text-caption text-(--foreground-muted) mt-1">
+				<div className="text-caption text-muted-foreground mt-1">
 					ผ่าน <span className="num">70%</span>
 				</div>
 			</div>
@@ -109,7 +109,7 @@ function ResultRow({
 }) {
 	return (
 		<div
-			className="flex gap-3 items-start rounded-[10px] border border-(--border) bg-(--surface) p-3.5"
+			className="flex gap-3 items-start rounded-button border border-border bg-card p-3.5"
 			style={{
 				borderLeftWidth: "4px",
 				borderLeftColor: ok ? "var(--success)" : "var(--destructive)",
@@ -125,26 +125,26 @@ function ResultRow({
 				{ok ? <Check size={14} weight="bold" /> : <X size={14} weight="bold" />}
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="text-ui font-medium text-(--foreground)">
-					<span className="num mr-1.5 text-(--foreground-muted)">{n}.</span>
+				<div className="text-ui font-medium text-foreground">
+					<span className="num mr-1.5 text-muted-foreground">{n}.</span>
 					{q}
 				</div>
 				{!ok && selectedAnswer && (
-					<div className="mt-1.5 text-caption text-(--destructive)">
+					<div className="mt-1.5 text-caption text-destructive">
 						คุณเลือก: {selectedAnswer}
 					</div>
 				)}
 				{!ok && correctAnswer && (
-					<div className="mt-1 text-caption text-(--success)">
+					<div className="mt-1 text-caption text-success">
 						คำตอบที่ถูกต้อง: {correctAnswer}
 					</div>
 				)}
 				{exp && (
-					<div className="mt-2 flex gap-2 rounded-lg bg-(--info-bg) p-3 text-[13px] leading-relaxed text-(--foreground)">
+					<div className="mt-2 flex gap-2 rounded-lg bg-info-bg p-3 text-[13px] leading-relaxed text-foreground">
 						<Sparkle
 							size={14}
 							weight="bold"
-							className="mt-0.5 shrink-0 text-(--info)"
+							className="mt-0.5 shrink-0 text-info"
 						/>
 						<span>{exp}</span>
 					</div>
@@ -213,7 +213,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 			<div className="space-y-6">
 				<QuizCelebration passed={result.passed} />
 
-				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center md:p-9">
+				<div className="rounded-card border border-border bg-card p-6 text-center md:p-9">
 					<ScoreCircle
 						score={result.scorePct}
 						passed={result.passed}
@@ -230,9 +230,9 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 					<h2 className="text-h2 mt-2 mb-1.5">
 						{result.passed ? "ทำได้ดีมาก!" : "ลองทำใหม่อีกครั้ง"}
 					</h2>
-					<p className="text-body text-(--foreground-muted)">
+					<p className="text-body text-muted-foreground">
 						ตอบถูก{" "}
-						<span className="num font-semibold text-(--foreground)">
+						<span className="num font-semibold text-foreground">
 							{result.correctCount}
 						</span>{" "}
 						จาก <span className="num">{result.totalQuestions}</span> ข้อ
@@ -240,7 +240,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				</div>
 
 				<div>
-					<div className="text-uism font-medium uppercase tracking-widest text-(--foreground-subtle) mb-3">
+					<div className="text-uism font-medium uppercase tracking-widest text-foreground-subtle mb-3">
 						สรุปผลแต่ละข้อ
 					</div>
 					<div className="flex flex-col gap-2.5">
@@ -276,11 +276,11 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 					</div>
 				</div>
 
-				<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center">
+				<div className="rounded-card border border-border bg-card p-6 text-center">
 					<h3 className="text-h3 mb-1">
 						{result.passed ? "พร้อมไปต่อแล้ว!" : "อย่าลืมทบทวนเนื้อหา"}
 					</h3>
-					<p className="text-body text-(--foreground-muted) mb-5">
+					<p className="text-body text-muted-foreground mb-5">
 						{result.passed
 							? "คุณผ่านแบบทดสอบแล้ว ไปบทถัดไปกันเลย"
 							: "ทบทวนเนื้อหาและลองทำแบบทดสอบอีกครั้ง"}
@@ -310,7 +310,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 								asChild
 								variant="outline"
 								size="lg"
-								className="border-(--primary) text-(--primary) hover:bg-(--primary)/5"
+								className="border-primary text-primary hover:bg-primary/5"
 							>
 								<a
 									href={`/verify/${courseSlug}`}
@@ -351,27 +351,27 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 		<div className="space-y-6">
 			<div>
 				<div className="mb-2 flex justify-between">
-					<span className="text-uism font-semibold text-(--foreground-muted)">
-						ข้อ <span className="num text-(--primary)">{currentIndex + 1}</span>{" "}
+					<span className="text-uism font-semibold text-muted-foreground">
+						ข้อ <span className="num text-primary">{currentIndex + 1}</span>{" "}
 						จาก <span className="num">{total}</span>
 					</span>
-					<span className="num text-uism text-(--foreground-muted)">
+					<span className="num text-uism text-muted-foreground">
 						{progressPct}%
 					</span>
 				</div>
-				<div className="h-2 overflow-hidden rounded-full bg-(--surface-muted)">
+				<div className="h-2 overflow-hidden rounded-full bg-muted">
 					<div
-						className="h-full rounded-full bg-(--primary) transition-[width] duration-300"
+						className="h-full rounded-full bg-primary transition-[width] duration-300"
 						style={{ width: `${progressPct}%` }}
 					/>
 				</div>
 			</div>
 
-			<div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 md:p-7">
-				<div className="text-uism font-medium uppercase tracking-widest text-(--foreground-subtle) mb-3">
+			<div className="rounded-card border border-border bg-card p-6 md:p-7">
+				<div className="text-uism font-medium uppercase tracking-widest text-foreground-subtle mb-3">
 					คำถามที่ <span className="num">{currentIndex + 1}</span>
 				</div>
-				<h2 className="text-[18px] font-medium leading-relaxed text-(--foreground) mb-6">
+				<h2 className="text-[18px] font-medium leading-relaxed text-foreground mb-6">
 					{currentQ.promptMd}
 				</h2>
 				<div className="flex flex-col gap-2.5">
@@ -380,7 +380,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 						return (
 							<label
 								key={c.id}
-								className="flex cursor-pointer items-center gap-3.5 rounded-[10px] border p-4 transition-colors"
+								className="flex cursor-pointer items-center gap-3.5 rounded-button border p-4 transition-colors"
 								style={{
 									borderColor: isSelected ? "var(--primary)" : "var(--border)",
 									borderWidth: isSelected ? "2px" : "1px",
@@ -417,7 +417,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 								>
 									{String.fromCharCode(65 + i)}
 								</div>
-								<span className="text-bodylg num font-medium text-(--foreground)">
+								<span className="text-bodylg num font-medium text-foreground">
 									{c.body}
 								</span>
 							</label>
@@ -430,7 +430,7 @@ export function QuizForm({ quiz, courseSlug, nextLessonId }: QuizFormProps) {
 				<button
 					type="button"
 					onClick={handleSkip}
-					className="inline-flex h-10 items-center justify-center gap-2 rounded-[10px] px-4 text-ui font-medium text-(--foreground) transition-colors hover:bg-(--surface-muted) w-full sm:w-auto"
+					className="inline-flex h-10 items-center justify-center gap-2 rounded-button px-4 text-ui font-medium text-foreground transition-colors hover:bg-muted w-full sm:w-auto"
 				>
 					ข้ามข้อนี้
 				</button>

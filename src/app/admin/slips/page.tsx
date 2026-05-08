@@ -1,15 +1,8 @@
-import Link from "next/link";
 import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 import type { SearchParams } from "@/lib/pagination";
 import { SlipQueue } from "@/components/admin/slip-queue";
 import { SlipQueueRefreshButton } from "@/components/admin/slip-queue-refresh-button";
-
-const STATUS_OPTIONS: Array<{ value: SlipQueueStatus; label: string }> = [
-  { value: "submitted", label: "รอตรวจ" },
-  { value: "accepted", label: "อนุมัติแล้ว" },
-  { value: "rejected", label: "ปฏิเสธ" },
-  { value: "all", label: "ทั้งหมด" },
-];
+import { SlipStatusTabs } from "@/components/admin/slip-status-tabs";
 
 function pickStatus(raw: string | string[] | undefined): SlipQueueStatus {
   if (raw === "accepted" || raw === "rejected" || raw === "all") return raw;
@@ -37,17 +30,17 @@ export default async function AdminSlipsPage({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-h1">คิวตรวจสลิป</h1>
-          <p className="mt-1 text-body text-(--foreground-muted)">
+          <p className="mt-1 text-body text-muted-foreground">
             ใช้คีย์ลัด:{" "}
-            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+            <kbd className="mono rounded-sm border border-border px-1 text-uism">
               A
             </kbd>{" "}
             ยอมรับ ·{" "}
-            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+            <kbd className="mono rounded-sm border border-border px-1 text-uism">
               R
             </kbd>{" "}
             ปฏิเสธ ·{" "}
-            <kbd className="mono rounded border border-(--border) px-1 text-uism">
+            <kbd className="mono rounded-sm border border-border px-1 text-uism">
               S
             </kbd>{" "}
             ข้าม
@@ -55,28 +48,7 @@ export default async function AdminSlipsPage({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SlipQueueRefreshButton />
-          <nav
-            className="flex flex-wrap gap-2 text-uism"
-            aria-label="ตัวกรองสถานะสลิป"
-          >
-            {STATUS_OPTIONS.map((opt) => {
-            const active = opt.value === status;
-            return (
-              <Link
-                key={opt.value}
-                href={`/admin/slips?status=${opt.value}`}
-                aria-current={active ? "page" : undefined}
-                className={`rounded-md border px-3 py-1.5 transition-colors ${
-                  active
-                    ? "border-(--primary) bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] font-semibold text-(--primary)"
-                    : "border-(--border) text-(--foreground-muted) hover:bg-(--surface-muted) hover:text-(--foreground)"
-                }`}
-              >
-                  {opt.label}
-                </Link>
-              );
-            })}
-          </nav>
+          <SlipStatusTabs status={status} />
         </div>
       </header>
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
 	CheckCircle,
@@ -10,6 +10,7 @@ import {
 	EnvelopeSimple,
 	LockSimple,
 	Play,
+	WarningIcon,
 } from "@phosphor-icons/react";
 import { signUp } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
@@ -20,6 +21,9 @@ import { Logo } from "@/components/ui/logo";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 
 const registerSchema = z.object({
 	name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -41,6 +45,7 @@ export default function RegisterPage() {
 		register,
 		handleSubmit,
 		setError,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<RegisterForm>();
 
@@ -80,10 +85,10 @@ export default function RegisterPage() {
 							className="mx-auto mb-4 text-success"
 						/>
 						<h1 className="text-h2 mb-2">สมัครสมาชิกสำเร็จ</h1>
-						<p className="text-body text-(--foreground-muted)">
+						<p className="text-body text-muted-foreground">
 							ตรวจสอบอีเมลเพื่อยืนยันบัญชี
 						</p>
-						<p className="mb-6 mt-2 text-body text-(--foreground-muted)">
+						<p className="mb-6 mt-2 text-body text-muted-foreground">
 							เราส่งลิงก์ยืนยันไปยังอีเมลของคุณแล้ว
 						</p>
 						<Button asChild variant="primary" size="lg" className="w-full">
@@ -103,7 +108,7 @@ export default function RegisterPage() {
 					<div className="w-full max-w-[400px] space-y-6">
 						<Link
 							href="/"
-							className="mx-auto flex items-center justify-center gap-2.5 text-(--foreground)"
+							className="mx-auto flex items-center justify-center gap-2.5 text-foreground"
 						>
 							<Logo size={24} variant="mark" />
 							<span className="text-[18px] font-semibold tracking-tight">
@@ -112,39 +117,37 @@ export default function RegisterPage() {
 						</Link>
 
 						<div className="space-y-2">
-							<div className="flex items-center justify-between text-uism text-(--foreground-muted)">
+							<div className="flex items-center justify-between text-uism text-muted-foreground">
 								<span>
 									ขั้นตอนที่{" "}
-									<span className="font-semibold text-(--primary)">1</span> จาก{" "}
+									<span className="font-semibold text-primary">1</span> จาก{" "}
 									<span className="font-semibold">2</span>
 								</span>
-								<span className="font-semibold text-(--primary)">50%</span>
+								<span className="font-semibold text-primary">50%</span>
 							</div>
-							<div className="h-1 w-full overflow-hidden rounded-sm bg-(--surface-muted)">
-								<div className="h-full w-1/2 rounded-sm bg-(--primary)" />
-							</div>
+							<Progress value={50} className="h-1" />
 						</div>
 
 						<div className="space-y-5">
 							<header className="space-y-1">
 								<h1 className="text-h2">สมัครสมาชิก</h1>
-								<p className="text-body text-(--foreground-muted)">
+								<p className="text-body text-muted-foreground">
 									เริ่มเรียนฟรีวันนี้ ไม่ต้องใช้บัตรเครดิต
 								</p>
 							</header>
 
 							<Suspense
 								fallback={
-									<div className="h-10 w-full animate-pulse rounded-md bg-(--surface-muted)" />
+									<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
 								}
 							>
 								<GoogleSignInButton mode="register" />
 							</Suspense>
 
 							<div className="flex items-center gap-3">
-								<div className="h-px flex-1 bg-(--border)" />
-								<span className="text-uism text-(--foreground-muted)">หรือ</span>
-								<div className="h-px flex-1 bg-(--border)" />
+								<div className="h-px flex-1 bg-border" />
+								<span className="text-uism text-muted-foreground">หรือ</span>
+								<div className="h-px flex-1 bg-border" />
 							</div>
 
 							<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -170,7 +173,7 @@ export default function RegisterPage() {
 									</Label>
 									<div className="relative">
 										<EnvelopeSimple
-											className="absolute left-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
+											className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 											size={18}
 										/>
 										<Input
@@ -207,45 +210,54 @@ export default function RegisterPage() {
 								</div>
 
 								<div>
-									<label className="flex items-start gap-2 text-uism">
-										<input
-											id="acceptTerms"
-											type="checkbox"
-											className="mt-0.5 h-4 w-4 accent-(--primary)"
-											aria-invalid={!!errors.acceptTerms}
-											{...register("acceptTerms")}
-										/>
-										<span className="text-(--foreground-muted)">
-											ฉันยอมรับ{" "}
-											<Link
-												href="/legal/terms"
-												target="_blank"
-												className="text-(--primary) hover:underline"
+									<Controller
+										control={control}
+										name="acceptTerms"
+										render={({ field }) => (
+											<label
+												htmlFor="acceptTerms"
+												className="flex cursor-pointer items-start gap-2 text-uism"
 											>
-												ข้อตกลงการใช้งาน
-											</Link>{" "}
-											และ{" "}
-											<Link
-												href="/legal/privacy"
-												target="_blank"
-												className="text-(--primary) hover:underline"
-											>
-												นโยบายความเป็นส่วนตัว
-											</Link>
-										</span>
-									</label>
+												<Checkbox
+													id="acceptTerms"
+													className="mt-0.5"
+													checked={!!field.value}
+													onCheckedChange={(checked) =>
+														field.onChange(checked === true)
+													}
+													aria-invalid={!!errors.acceptTerms}
+												/>
+												<span className="text-muted-foreground">
+													ฉันยอมรับ{" "}
+													<Link
+														href="/legal/terms"
+														target="_blank"
+														className="text-primary hover:underline"
+													>
+														ข้อตกลงการใช้งาน
+													</Link>{" "}
+													และ{" "}
+													<Link
+														href="/legal/privacy"
+														target="_blank"
+														className="text-primary hover:underline"
+													>
+														นโยบายความเป็นส่วนตัว
+													</Link>
+												</span>
+											</label>
+										)}
+									/>
 									{errors.acceptTerms && (
 										<FieldError>{errors.acceptTerms.message}</FieldError>
 									)}
 								</div>
 
 								{serverError && (
-									<p
-										role="alert"
-										className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-									>
-										{serverError}
-									</p>
+									<Alert variant="destructive">
+										<WarningIcon size={16} weight="fill" />
+										<AlertDescription>{serverError}</AlertDescription>
+									</Alert>
 								)}
 
 								<Button
@@ -260,11 +272,11 @@ export default function RegisterPage() {
 							</form>
 						</div>
 
-						<div className="text-center text-body text-(--foreground-muted)">
+						<div className="text-center text-body text-muted-foreground">
 							มีบัญชีอยู่แล้ว?{" "}
 							<Link
 								href="/login"
-								className="font-medium text-(--primary) hover:underline"
+								className="font-medium text-primary hover:underline"
 							>
 								เข้าสู่ระบบ
 							</Link>
@@ -285,7 +297,7 @@ export default function RegisterPage() {
 									["ถามผู้สอนได้ผ่าน Q&A", "ตอบกลับภายใน 24 ชั่วโมง"],
 								].map(([title, sub], i) => (
 									<div key={i} className="flex items-start gap-3.5">
-										<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.15]">
+										<div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/15">
 											<Check size={16} className="text-white" weight="bold" />
 										</div>
 										<div>

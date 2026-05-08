@@ -45,7 +45,7 @@ export function SlipMobileDrawer({
 			}}
 		>
 			<div
-				className="flex h-full w-full max-w-[540px] flex-col bg-(--surface) shadow-lg"
+				className="flex h-full w-full max-w-[540px] flex-col bg-card shadow-lg"
 				style={{ borderLeft: "1px solid var(--border)" }}
 				onClick={(e) => e.stopPropagation()}
 			>

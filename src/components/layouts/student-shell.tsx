@@ -21,7 +21,7 @@ export function StudentShell({
     <div className="flex min-h-full flex-col">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-(--primary) focus:px-3 focus:py-2 focus:text-(--primary-fg)"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
       >
         ข้ามไปยังเนื้อหา
       </a>
@@ -33,7 +33,7 @@ export function StudentShell({
       />
 
       {drawerOpen && (
-        <div className="sticky top-16 z-40 border-t border-(--border) bg-(--surface) md:hidden">
+        <div className="sticky top-16 z-40 border-t border-border bg-card md:hidden">
           <nav
             className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4"
             aria-label="เมนูมือถือ"
@@ -42,16 +42,16 @@ export function StudentShell({
               <Link
                 key={n.href}
                 href={n.href}
-                className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+                className="rounded-nav px-3 py-2 text-ui text-foreground hover:bg-muted"
                 onClick={() => setDrawerOpen(false)}
               >
                 {n.label}
               </Link>
             ))}
-            <div className="my-2 h-px bg-(--border)" />
+            <div className="my-2 h-px bg-border" />
             <Link
               href="/account"
-              className="rounded-nav px-3 py-2 text-ui text-(--foreground) hover:bg-(--surface-muted)"
+              className="rounded-nav px-3 py-2 text-ui text-foreground hover:bg-muted"
               onClick={() => setDrawerOpen(false)}
             >
               บัญชีของฉัน

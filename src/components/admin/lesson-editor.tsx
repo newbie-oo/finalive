@@ -72,7 +72,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
               setTitle(e.target.value);
               setIsDirty(true);
             }}
-            className="w-full rounded border border-border bg-background px-3 py-2 text-sm"
+            className="w-full rounded-sm border border-border bg-background px-3 py-2 text-sm"
           />
         </div>
 
@@ -104,22 +104,22 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
         <div>
           <label className="mb-1 block text-sm font-medium">วิดีโอ</label>
           {lesson.bunnyVideoId ? (
-            <div className="mb-3 rounded-[10px] border border-(--border) bg-(--surface-muted) p-3">
+            <div className="mb-3 rounded-button border border-border bg-muted p-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <Play size={18} weight="fill" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-ui font-medium text-(--foreground)">
+                  <div className="text-ui font-medium text-foreground">
                     มีวิดีโอแล้ว
                   </div>
-                  <div className="text-caption text-(--foreground-muted)">
+                  <div className="text-caption text-muted-foreground">
                     Bunny ID:{" "}
                     <span className="mono">{lesson.bunnyVideoId}</span>
                   </div>
                 </div>
                 {lesson.durationSeconds && (
-                  <div className="flex items-center gap-1 text-caption text-(--foreground-muted)">
+                  <div className="flex items-center gap-1 text-caption text-muted-foreground">
                     <Clock size={12} />
                     <span className="num">
                       {Math.floor(lesson.durationSeconds / 60)}:
@@ -164,7 +164,7 @@ export function LessonEditor({ courseId, lesson }: LessonEditorProps) {
             type="button"
             onClick={handleSave}
             disabled={saving || !isDirty}
-            className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-sm bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
           >
             <FloppyDisk size={16} />
             {saving ? "กำลังบันทึก…" : "บันทึก"}
@@ -222,7 +222,7 @@ function ReencodeButton({
           setBusy(false);
         }
       }}
-      className="rounded border border-(--border) px-2 py-1 text-caption text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground) disabled:opacity-50"
+      className="rounded-sm border border-border px-2 py-1 text-caption text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-50"
       title="สั่งให้ Bunny เข้ารหัสวิดีโอใหม่"
     >
       {busy ? "กำลังส่ง…" : "เข้ารหัสใหม่"}

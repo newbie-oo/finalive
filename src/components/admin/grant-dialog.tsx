@@ -65,7 +65,7 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded border border-border bg-background p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-sm border border-border bg-background p-6 shadow-lg">
             <h3 className="text-lg font-medium">ให้สิทธิ์คอร์ส</h3>
 
             <div className="mt-4 space-y-3">
@@ -74,7 +74,7 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
                 <select
                   value={courseId}
                   onChange={(e) => setCourseId(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
+                  className="w-full rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
                 >
                   <option value="">เลือกคอร์ส</option>
                   {courses.map((c) => (
@@ -90,7 +90,7 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
+                  className="w-full rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
                 >
                   <option value="">เลือกเหตุผล</option>
                   {REASONS.map((r) => (
@@ -109,7 +109,7 @@ export function GrantDialog({ studentUserId, courses }: GrantDialogProps) {
                   type="text"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm"
+                  className="w-full rounded-sm border border-border bg-background px-2 py-1.5 text-sm"
                   placeholder="หมายเหตุ"
                 />
               </div>

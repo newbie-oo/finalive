@@ -40,12 +40,12 @@ function InfoRow({
 }) {
 	return (
 		<div className="flex items-center gap-3">
-			<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-(--primary)/10 text-(--primary)">
+			<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
 				<Icon size={16} />
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="text-caption text-(--foreground-muted)">{label}</div>
-				<div className="truncate text-uism font-semibold text-(--foreground)">
+				<div className="text-caption text-muted-foreground">{label}</div>
+				<div className="truncate text-uism font-semibold text-foreground">
 					{value}
 				</div>
 			</div>
@@ -68,7 +68,7 @@ export default async function InstructorPage() {
 
 	return (
 		<PublicShell>
-			<section className="relative overflow-hidden bg-gradient-to-br from-[#4F46E5] via-[#5B4AE3] to-[#7C6BED] text-white">
+			<section className="relative overflow-hidden bg-linear-to-br from-[#4F46E5] via-[#5B4AE3] to-[#7C6BED] text-white">
 				<div
 					className="pointer-events-none absolute inset-0 opacity-[0.08]"
 					style={{
@@ -93,7 +93,7 @@ export default async function InstructorPage() {
 								<AvatarInitials
 									name="อาร์ม ริลีย์"
 									size="xl"
-									className="!h-36 !w-36 !text-4xl !bg-gradient-to-br !from-[#F97316] !to-[#EA580C]"
+									className="!h-36 !w-36 !text-4xl !bg-linear-to-br !from-[#F97316] !to-[#EA580C]"
 								/>
 							</div>
 							<div className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-[#4F46E5] bg-[#10B981]">
@@ -155,7 +155,7 @@ export default async function InstructorPage() {
 								href="https://www.youtube.com/@armrileyquant"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="inline-flex h-11 items-center justify-center gap-2 rounded-button border border-white/30 bg-white/[0.15] px-5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
+								className="inline-flex h-11 items-center justify-center gap-2 rounded-button border border-white/30 bg-white/15 px-5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/25"
 							>
 								<ArrowUpRight size={14} weight="bold" />
 								YouTube
@@ -168,11 +168,11 @@ export default async function InstructorPage() {
 			<section className="mx-auto max-w-[1200px] px-6 pb-20 pt-12">
 				<div className="flex flex-col gap-8 lg:flex-row lg:items-start">
 					<div className="min-w-0 flex-1 space-y-8">
-						<div className="rounded-card border border-(--border) bg-(--surface) p-6 md:p-8">
-							<h2 className="text-h3 font-bold text-(--foreground)">
+						<div className="rounded-card border border-border bg-card p-6 md:p-8">
+							<h2 className="text-h3 font-bold text-foreground">
 								ประวัติผู้สอน
 							</h2>
-							<div className="mt-4 space-y-4 text-body leading-relaxed text-(--foreground-muted)">
+							<div className="mt-4 space-y-4 text-body leading-relaxed text-muted-foreground">
 								<p>
 									อาร์มเริ่มต้นอาชีพในสายการลงทุนตั้งแต่ปี{" "}
 									<span className="num font-medium">2013</span> ในฐานะ Equity
@@ -186,9 +186,9 @@ export default async function InstructorPage() {
 								</p>
 							</div>
 
-							<hr className="my-7 border-(--border)" />
+							<hr className="my-7 border-border" />
 
-							<h3 className="text-h4 font-bold text-(--foreground)">
+							<h3 className="text-h4 font-bold text-foreground">
 								คุณวุฒิและประสบการณ์
 							</h3>
 							<div className="mt-4 space-y-3.5">
@@ -213,10 +213,10 @@ export default async function InstructorPage() {
 											style={{ backgroundColor: color }}
 										/>
 										<div>
-											<div className="text-ui font-semibold text-(--foreground)">
+											<div className="text-ui font-semibold text-foreground">
 												{title}
 											</div>
-											<div className="text-caption text-(--foreground-muted)">
+											<div className="text-caption text-muted-foreground">
 												{subtitle}
 											</div>
 										</div>
@@ -225,8 +225,8 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						<div className="rounded-card border border-(--border) bg-(--surface) p-6 md:p-8">
-							<h2 className="text-h3 font-bold text-(--foreground)">
+						<div className="rounded-card border border-border bg-card p-6 md:p-8">
+							<h2 className="text-h3 font-bold text-foreground">
 								เชี่ยวชาญด้าน
 							</h2>
 							<div className="mt-4 flex flex-wrap gap-2">
@@ -244,7 +244,7 @@ export default async function InstructorPage() {
 								].map((tag) => (
 									<span
 										key={tag}
-										className="rounded-full bg-(--primary)/[0.08] px-3.5 py-2 text-sm font-medium text-(--primary)"
+										className="rounded-full bg-primary/[0.08] px-3.5 py-2 text-sm font-medium text-primary"
 									>
 										{tag}
 									</span>
@@ -254,19 +254,19 @@ export default async function InstructorPage() {
 
 						<div>
 							<div className="mb-5 flex items-baseline justify-between">
-								<h2 className="text-h2 font-bold text-(--foreground)">
+								<h2 className="text-h2 font-bold text-foreground">
 									คอร์สทั้งหมด
 								</h2>
 								<Link
 									href="/courses"
-									className="inline-flex items-center gap-1 text-sm font-semibold text-(--primary) hover:underline"
+									className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
 								>
 									ดูทั้งหมด
 									<CaretRight size={14} />
 								</Link>
 							</div>
 							{courses.data.length === 0 ? (
-								<p className="text-body text-(--foreground-muted)">ยังไม่มีคอร์ส</p>
+								<p className="text-body text-muted-foreground">ยังไม่มีคอร์ส</p>
 							) : (
 								<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 									{courses.data.map((c) => (
@@ -285,8 +285,8 @@ export default async function InstructorPage() {
 					</div>
 
 					<aside className="shrink-0 space-y-4 lg:w-80 lg:sticky lg:top-6">
-						<div className="rounded-card border border-(--border) bg-(--surface) p-5">
-							<div className="mb-4 text-ui font-semibold text-(--foreground)">
+						<div className="rounded-card border border-border bg-card p-5">
+							<div className="mb-4 text-ui font-semibold text-foreground">
 								ข้อมูลผู้สอน
 							</div>
 							<div className="space-y-3.5">
@@ -310,24 +310,24 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						<div className="overflow-hidden rounded-card border border-(--border) bg-(--surface)">
-							<div className="relative flex h-24 items-end bg-gradient-to-br from-[#2E1065] to-[#4F46E5] p-4">
+						<div className="overflow-hidden rounded-card border border-border bg-card">
+							<div className="relative flex h-24 items-end bg-linear-to-br from-[#2E1065] to-[#4F46E5] p-4">
 								<span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
 									บทความล่าสุด
 								</span>
 							</div>
 							<div className="p-4">
-								<div className="text-ui font-semibold leading-snug text-(--foreground)">
+								<div className="text-ui font-semibold leading-snug text-foreground">
 									วิเคราะห์หุ้น banking ไทย Q4/2025
 								</div>
-								<div className="mt-1.5 text-caption text-(--foreground-muted)">
+								<div className="mt-1.5 text-caption text-muted-foreground">
 									เผยแพร่ ม.ค. 2026 · อ่าน 8 นาที
 								</div>
 								<a
 									href="https://www.youtube.com/@armrileyquant"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-(--primary) hover:underline"
+									className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
 								>
 									อ่านบนเว็บผู้สอน
 									<ArrowUpRight size={12} />
@@ -335,8 +335,8 @@ export default async function InstructorPage() {
 							</div>
 						</div>
 
-						<div className="rounded-card border border-(--border) bg-(--surface) p-5">
-							<div className="mb-4 text-ui font-semibold text-(--foreground)">
+						<div className="rounded-card border border-border bg-card p-5">
+							<div className="mb-4 text-ui font-semibold text-foreground">
 								ติดตามผู้สอน
 							</div>
 							<div className="space-y-2">
@@ -350,11 +350,11 @@ export default async function InstructorPage() {
 									<a
 										key={name}
 										href="#"
-										className="flex items-center justify-between rounded-lg border border-(--border) bg-(--surface) p-3 text-(--foreground) transition-colors hover:bg-(--surface-muted)"
+										className="flex items-center justify-between rounded-lg border border-border bg-card p-3 text-foreground transition-colors hover:bg-muted"
 									>
 										<div>
 											<div className="text-uism font-semibold">{name}</div>
-											<div className="text-caption text-(--foreground-muted)">
+											<div className="text-caption text-muted-foreground">
 												{handle}
 											</div>
 										</div>

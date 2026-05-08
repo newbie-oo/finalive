@@ -31,31 +31,31 @@ export default async function CheckoutSuccessPage({
           <CheckCircle
             size={64}
             weight="fill"
-            className="mx-auto text-(--success)"
+            className="mx-auto text-success"
           />
           <h1 className="text-h2">ส่งสลิปสำเร็จ</h1>
-          <p className="text-body text-(--foreground-muted)">
+          <p className="text-body text-muted-foreground">
             เราได้รับสลิปการโอนของคุณแล้ว
           </p>
-          <div className="inline-flex items-center gap-2 rounded-full bg-(--warning-bg) px-4 py-2 text-uism text-(--warning)">
+          <div className="inline-flex items-center gap-2 rounded-full bg-warning-bg px-4 py-2 text-uism text-warning">
             <Clock size={16} />
             รอตรวจสอบ 1-2 ชั่วโมง
           </div>
         </Card>
 
-        <div className="rounded-card border border-(--border) bg-(--surface-muted) p-5 space-y-3">
+        <div className="rounded-card border border-border bg-muted p-5 space-y-3">
           <h2 className="text-h4">ขั้นตอนต่อไป</h2>
-          <ol className="space-y-2 text-body text-(--foreground-muted)">
+          <ol className="space-y-2 text-body text-muted-foreground">
             <li className="flex gap-2">
-              <span className="num text-(--primary) font-bold">1.</span>
+              <span className="num text-primary font-bold">1.</span>
               ทีมงานตรวจสอบสลิปภายใน 1-2 ชม.
             </li>
             <li className="flex gap-2">
-              <span className="num text-(--primary) font-bold">2.</span>
+              <span className="num text-primary font-bold">2.</span>
               คุณจะได้รับอีเมลแจ้งผลอนุมัติ
             </li>
             <li className="flex gap-2">
-              <span className="num text-(--primary) font-bold">3.</span>
+              <span className="num text-primary font-bold">3.</span>
               เข้าเรียนได้ทันทีผ่าน &quot;คอร์สของฉัน&quot;
             </li>
           </ol>
@@ -74,7 +74,7 @@ export default async function CheckoutSuccessPage({
           </Button>
         </div>
 
-        <p className="text-center text-caption text-(--foreground-subtle)">
+        <p className="text-center text-caption text-foreground-subtle">
           เลขอ้างอิน:{" "}
           <span className="mono font-semibold">{pending.refCode}</span>
         </p>

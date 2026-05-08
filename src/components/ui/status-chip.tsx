@@ -8,13 +8,13 @@ const chipVariants = cva(
     variants: {
       tone: {
         primary:
-          "bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-(--primary)",
-        success: "bg-(--success-bg) text-(--success-fg)",
-        warning: "bg-(--warning-bg) text-(--warning-fg)",
-        destructive: "bg-(--destructive-bg) text-(--destructive-fg)",
-        info: "bg-[color-mix(in_srgb,var(--info)_14%,transparent)] text-(--info)",
-        review: "bg-(--review-bg) text-(--review-fg)",
-        neutral: "bg-(--surface-muted) text-(--foreground-muted)",
+          "bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] text-primary",
+        success: "bg-success-bg text-success-foreground",
+        warning: "bg-warning-bg text-warning-foreground",
+        destructive: "bg-destructive-bg text-destructive-foreground",
+        info: "bg-[color-mix(in_srgb,var(--info)_14%,transparent)] text-info",
+        review: "bg-review-bg text-review-foreground",
+        neutral: "bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {

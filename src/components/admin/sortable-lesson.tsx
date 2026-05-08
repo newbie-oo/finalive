@@ -104,7 +104,7 @@ export function SortableLesson({
 			tabIndex={0}
 			onClick={onSelect}
 			onKeyDown={handleKeyDown}
-			className={`flex w-full items-center justify-between rounded px-2 py-1 text-sm ${
+			className={`flex w-full items-center justify-between rounded-sm px-2 py-1 text-sm ${
 				isSelected ? "bg-primary/10 text-primary" : "hover:bg-muted"
 			}`}
 		>
@@ -132,7 +132,7 @@ export function SortableLesson({
 							}
 						}}
 						onClick={(e) => e.stopPropagation()}
-						className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
+						className="flex-1 rounded-sm border border-border bg-background px-2 py-1 text-sm"
 					/>
 				) : (
 					<span className="truncate">{lesson.title}</span>
@@ -145,7 +145,7 @@ export function SortableLesson({
 				<button
 					onClick={() => toggleField("isPreview")}
 					disabled={pending}
-					className={`rounded px-1.5 py-0.5 text-[10px] ${
+					className={`rounded-sm px-1.5 py-0.5 text-[10px] ${
 						isPreview
 							? "bg-primary text-primary-foreground"
 							: "bg-muted text-muted-foreground"
@@ -157,7 +157,7 @@ export function SortableLesson({
 				<button
 					onClick={() => toggleField("isFree")}
 					disabled={pending}
-					className={`rounded px-1.5 py-0.5 text-[10px] ${
+					className={`rounded-sm px-1.5 py-0.5 text-[10px] ${
 						isFree
 							? "bg-primary text-primary-foreground"
 							: "bg-muted text-muted-foreground"
@@ -173,7 +173,7 @@ export function SortableLesson({
 						e.stopPropagation();
 						setEditing(true);
 					}}
-					className="rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
+					className="rounded-sm px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
 					title="เปลี่ยนชื่อบทเรียน"
 				>
 					✎
@@ -190,7 +190,7 @@ export function SortableLesson({
 						e.stopPropagation();
 						if (confirm(`ลบบทเรียน "${lesson.title}"?`)) onDelete(lesson.id);
 					}}
-					className="rounded px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10"
+					className="rounded-sm px-1.5 py-0.5 text-[10px] text-destructive hover:bg-destructive/10"
 					title="ลบบทเรียน"
 				>
 					✕

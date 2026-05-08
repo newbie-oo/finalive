@@ -9,11 +9,11 @@ export default function PrivacyPage() {
     <PublicShell>
       <article className="mx-auto max-w-[720px] px-6 py-12 md:py-16">
         <h1 className="text-h1">นโยบายความเป็นส่วนตัว</h1>
-        <p className="mt-2 text-uism text-(--foreground-muted)">
+        <p className="mt-2 text-uism text-muted-foreground">
           อัปเดตล่าสุด: 28 เมษายน 2026
         </p>
 
-        <section className="mt-8 space-y-6 text-bodylg text-(--foreground) [&_h2]:text-h3 [&_h2]:mt-8 [&_p]:text-(--foreground-muted)">
+        <section className="mt-8 space-y-6 text-bodylg text-foreground [&_h2]:text-h3 [&_h2]:mt-8 [&_p]:text-muted-foreground">
           <h2 className="text-lg font-medium">1. ข้อมูลที่เราเก็บรวบรวม</h2>
           <p>
             เราเก็บรวบรวมข้อมูลที่จำเป็นสำหรับการให้บริการ ได้แก่ ชื่อ อีเมล

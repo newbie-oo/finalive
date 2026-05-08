@@ -42,8 +42,8 @@ export function AccountTabs() {
             className={cn(
               "inline-flex h-10 shrink-0 items-center gap-2.5 rounded-nav px-3 text-ui transition-colors",
               active
-                ? "bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] font-semibold text-(--primary)"
-                : "text-(--foreground) hover:bg-(--surface-muted)",
+                ? "bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] font-semibold text-primary"
+                : "text-foreground hover:bg-muted",
             )}
           >
             <Ic size={18} weight={active ? "bold" : "regular"} />

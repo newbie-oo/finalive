@@ -58,7 +58,7 @@ function VerifyEmailInner() {
           <CircleNotch
             size={48}
             weight="bold"
-            className="animate-spin text-(--primary)"
+            className="animate-spin text-primary"
           />
         )}
         {state?.ok && (
@@ -67,7 +67,7 @@ function VerifyEmailInner() {
         {state && !state.ok && (
           <XCircle size={56} weight="fill" className="text-destructive" />
         )}
-        <p className="text-body text-(--foreground-muted)">
+        <p className="text-body text-muted-foreground">
           {state?.message ?? "กำลังยืนยันอีเมล..."}
         </p>
         {state?.ok && (

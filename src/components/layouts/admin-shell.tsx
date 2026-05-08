@@ -119,26 +119,26 @@ export function AdminShell({
       <div className="flex min-h-[calc(100dvh-4rem)]">
         <aside
           className={cn(
-            "sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-(--border) bg-(--surface-muted) transition-[width] duration-200 md:flex",
+            "sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-border bg-muted transition-[width] duration-200 md:flex",
             collapsed ? "w-16" : "w-60",
           )}
         >
           <div
             className={cn(
-              "flex h-12 items-center border-b border-(--border)",
+              "flex h-12 items-center border-b border-border",
               collapsed ? "justify-center" : "px-4",
             )}
           >
             <button
               type="button"
-              className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-(--foreground-muted) hover:bg-(--surface) hover:text-(--foreground)"
+              className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-card hover:text-foreground"
               aria-label={collapsed ? "ขยายเมนู" : "ย่อเมนู"}
               onClick={toggleCollapsed}
             >
               {collapsed ? <CaretRight size={16} /> : <CaretLeft size={16} />}
             </button>
             {!collapsed && (
-              <span className="ml-2 text-uism font-semibold uppercase tracking-wide text-(--foreground-subtle)">
+              <span className="ml-2 text-uism font-semibold uppercase tracking-wide text-foreground-subtle">
                 Admin
               </span>
             )}
@@ -158,7 +158,7 @@ export function AdminShell({
             ))}
           </nav>
 
-          <div className="border-t border-(--border) p-3">
+          <div className="border-t border-border p-3">
             <AdminUserMenu
               name={user.name}
               email={user.email}
@@ -168,7 +168,7 @@ export function AdminShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center gap-3 border-b border-(--border) px-4 py-3 md:px-8">
+          <div className="flex items-center gap-3 border-b border-border px-4 py-3 md:px-8">
             <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -180,7 +180,7 @@ export function AdminShell({
                   <List size={20} weight="bold" />
                   {pendingSlipCount && pendingSlipCount > 0 ? (
                     <span
-                      className="tabular-nums absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-(--accent) px-1 text-[10px] font-semibold text-(--accent-fg)"
+                      className="tabular-nums absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-foreground"
                       aria-hidden
                     >
                       {pendingSlipCount}
@@ -190,10 +190,10 @@ export function AdminShell({
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="flex w-72 max-w-[85vw] flex-col gap-0 bg-(--surface) p-0"
+                className="flex w-72 max-w-[85vw] flex-col gap-0 bg-card p-0"
               >
-                <SheetHeader className="h-12 flex-row items-center justify-between border-b border-(--border) px-4 py-0">
-                  <SheetTitle className="text-uism font-semibold uppercase tracking-wide text-(--foreground-subtle)">
+                <SheetHeader className="h-12 flex-row items-center justify-between border-b border-border px-4 py-0">
+                  <SheetTitle className="text-uism font-semibold uppercase tracking-wide text-foreground-subtle">
                     Admin
                   </SheetTitle>
                 </SheetHeader>
@@ -213,13 +213,13 @@ export function AdminShell({
                   ))}
                 </nav>
 
-                <div className="border-t border-(--border) p-3">
+                <div className="border-t border-border p-3">
                   <AdminUserMenu name={user.name} email={user.email} />
                 </div>
               </SheetContent>
             </Sheet>
 
-            <h1 className="text-ui font-medium text-(--foreground-muted) md:text-sm">
+            <h1 className="text-ui font-medium text-muted-foreground md:text-sm">
               {activeLabel}
             </h1>
           </div>
@@ -252,26 +252,26 @@ function NavLink({
         "relative mx-2 flex h-10 items-center gap-3 rounded-nav text-ui transition-colors",
         collapsed ? "justify-center" : "px-3",
         active
-          ? "bg-(--primary)/10 font-semibold text-(--primary)"
-          : "text-(--foreground) hover:bg-(--surface)",
+          ? "bg-primary/10 font-semibold text-primary"
+          : "text-foreground hover:bg-card",
       )}
     >
       {/* Active indicator: 3px border-left in primary, per handoff §Admin Shell. */}
       {active && !collapsed && (
         <span
-          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-(--primary)"
+          className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-primary"
           aria-hidden
         />
       )}
       <Ic size={20} weight={active ? "bold" : "regular"} />
       {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
       {item.badge !== undefined && !collapsed && (
-        <span className="tabular-nums inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-(--accent) px-1.5 text-[11px] font-semibold text-(--accent-fg)">
+        <span className="tabular-nums inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-semibold text-accent-foreground">
           {item.badge}
         </span>
       )}
       {item.badge !== undefined && collapsed && (
-        <span className="tabular-nums absolute right-1 top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-(--accent) px-1 text-[10px] font-semibold text-(--accent-fg)">
+        <span className="tabular-nums absolute right-1 top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-foreground">
           {item.badge}
         </span>
       )}

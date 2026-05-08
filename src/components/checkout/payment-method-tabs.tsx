@@ -21,7 +21,7 @@ export function PaymentMethodTabs({
 
   if (!hasBank && !hasQr) {
     return (
-      <div className="rounded-card border border-dashed border-(--border) bg-(--surface-muted) p-6 text-center text-body text-(--foreground-muted)">
+      <div className="rounded-card border border-dashed border-border bg-muted p-6 text-center text-body text-muted-foreground">
         กรุณาติดต่อ admin สำหรับข้อมูลการชำระเงิน
       </div>
     );
@@ -29,7 +29,7 @@ export function PaymentMethodTabs({
 
   if (!hasBank || !hasQr) {
     return (
-      <div className="rounded-card bg-(--surface-muted) p-5">
+      <div className="rounded-card bg-muted p-5">
         {hasBank ? (
           <BankContent text={bankText!} />
         ) : (
@@ -57,7 +57,7 @@ export function PaymentMethodTabs({
           sub="สแกน QR"
         />
       </div>
-      <div className="rounded-card bg-(--surface-muted) p-5">
+      <div className="rounded-card bg-muted p-5">
         {activeTab === "bank" ? (
           <BankContent text={bankText!} />
         ) : (
@@ -88,14 +88,14 @@ function TabButton({
       className={`flex cursor-pointer items-center gap-3 rounded-[12px] border p-3.5 text-left font-[inherit] transition-colors ${
         active
           ? "border-primary/60 bg-primary/5"
-          : "border-(--border) bg-(--surface)"
+          : "border-border bg-card"
       }`}
     >
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
           active
             ? "bg-primary text-primary-foreground"
-            : "bg-(--surface-muted) text-(--foreground-muted)"
+            : "bg-muted text-muted-foreground"
         }`}
       >
         {icon}
@@ -103,12 +103,12 @@ function TabButton({
       <div className="min-w-0">
         <div
           className={`text-sm font-semibold ${
-            active ? "text-primary" : "text-(--foreground)"
+            active ? "text-primary" : "text-foreground"
           }`}
         >
           {label}
         </div>
-        <div className="text-uism text-(--foreground-subtle)">{sub}</div>
+        <div className="text-uism text-foreground-subtle">{sub}</div>
       </div>
     </button>
   );
@@ -122,16 +122,16 @@ function BankContent({ text }: { text: string }) {
           <Bank size={20} />
         </div>
         <div>
-          <div className="text-ui font-semibold text-(--foreground)">
+          <div className="text-ui font-semibold text-foreground">
             ข้อมูลบัญชี
           </div>
-          <div className="text-uism text-(--foreground-muted)">
+          <div className="text-uism text-muted-foreground">
             โอนผ่านธนาคาร
           </div>
         </div>
       </div>
-      <div className="rounded-input border border-(--border) bg-(--surface) px-4 py-3">
-        <p className="whitespace-pre-wrap text-body text-(--foreground)">
+      <div className="rounded-input border border-border bg-card px-4 py-3">
+        <p className="whitespace-pre-wrap text-body text-foreground">
           {text}
         </p>
       </div>
@@ -148,9 +148,9 @@ function QrContent({ url }: { url: string }) {
         width={224}
         height={224}
         alt="PromptPay QR สำหรับโอนค่าคอร์ส"
-        className="h-56 w-56 rounded-card border border-(--border) bg-white object-contain p-2"
+        className="h-56 w-56 rounded-card border border-border bg-white object-contain p-2"
       />
-      <p className="text-uism text-(--foreground-muted)">
+      <p className="text-uism text-muted-foreground">
         สแกน QR เพื่อชำระเงิน
       </p>
     </div>

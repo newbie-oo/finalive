@@ -27,7 +27,7 @@ export default async function AccountCertificatesPage() {
     <section>
       <header className="mb-8">
         <h1 className="text-h1">ใบรับรองของฉัน</h1>
-        <p className="mt-2 text-bodylg text-(--foreground-muted)">
+        <p className="mt-2 text-bodylg text-muted-foreground">
           ใบประกาศที่ออกให้คุณเมื่อเรียนจบคอร์ส
         </p>
       </header>
@@ -52,17 +52,17 @@ export default async function AccountCertificatesPage() {
                   <CertIcon
                     size={28}
                     weight="duotone"
-                    className="text-(--primary)"
+                    className="text-primary"
                   />
                   <StatusChip tone={cert.revokedAt ? "destructive" : "success"}>
                     {cert.revokedAt ? "ถูกเพิกถอน" : "ใช้งานได้"}
                   </StatusChip>
                 </div>
                 <h3 className="text-h4">{cert.courseTitle}</h3>
-                <p className="text-uism text-(--foreground-muted)">
+                <p className="text-uism text-muted-foreground">
                   ออกเมื่อ {cert.issuedAt.toLocaleDateString("th-TH")}
                 </p>
-                <p className="mono text-uism text-(--foreground-subtle)">
+                <p className="mono text-uism text-foreground-subtle">
                   {cert.certCode}
                 </p>
                 {cert.revokedAt && (

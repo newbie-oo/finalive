@@ -33,7 +33,7 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
 
   if (query.isLoading) {
     return (
-      <div className="rounded border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-sm border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
         กำลังโหลดภาพ slip…
       </div>
     );
@@ -41,7 +41,7 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
 
   if (query.isError || !query.data) {
     return (
-      <div className="rounded border border-dashed border-border p-8 text-center text-sm text-destructive">
+      <div className="rounded-sm border border-dashed border-border p-8 text-center text-sm text-destructive">
         โหลดภาพ slip ไม่สำเร็จ
       </div>
     );
@@ -52,13 +52,13 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
       <button
         type="button"
         onClick={() => setLightboxOpen(true)}
-        className="group relative block w-full cursor-zoom-in rounded border border-border bg-muted/40 p-2"
+        className="group relative block w-full cursor-zoom-in rounded-sm border border-border bg-muted/40 p-2"
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- presigned R2 URL changes per fetch; not a candidate for next/image optimization */}
         <img
           src={query.data.url}
           alt="ภาพ slip"
-          className="mx-auto max-h-[50vh] w-auto rounded"
+          className="mx-auto max-h-[50vh] w-auto rounded-sm"
         />
         <div className="absolute inset-0 m-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
           <MagnifyingGlassPlus size={20} />
@@ -81,7 +81,7 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
           <img
             src={query.data.url}
             alt="ภาพ slip (ขยาย)"
-            className="max-h-[90vh] max-w-full rounded shadow-2xl"
+            className="max-h-[90vh] max-w-full rounded-sm shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

@@ -59,7 +59,7 @@ export default async function EnrollmentsPage() {
 		<section>
 			<header className="mb-8">
 				<h1 className="text-h1">คอร์สของฉัน</h1>
-				<p className="mt-2 text-bodylg text-(--foreground-muted)">
+				<p className="mt-2 text-bodylg text-muted-foreground">
 					รายการคอร์สที่กำลังลงทะเบียน รอตรวจสลิป และที่เรียนได้แล้ว
 				</p>
 			</header>
@@ -108,7 +108,7 @@ export default async function EnrollmentsPage() {
 											<Card className="flex h-full flex-col gap-3 overflow-hidden p-0">
 												<Link
 													href={`/checkout/${p.pendingId}`}
-													className="relative block aspect-video w-full overflow-hidden bg-(--surface-muted)"
+													className="relative block aspect-video w-full overflow-hidden bg-muted"
 													aria-label={p.courseTitle}
 												>
 													{p.coverStorageKey ? (
@@ -138,7 +138,7 @@ export default async function EnrollmentsPage() {
 													<h3 className="line-clamp-2 text-h4">
 														{p.courseTitle}
 													</h3>
-													<p className="text-uism text-(--foreground-muted)">
+													<p className="text-uism text-muted-foreground">
 														<span className="num">{formatTHB(p.amount)}</span> ·{" "}
 														<span className="mono text-caption">
 															{p.refCode}

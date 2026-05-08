@@ -20,10 +20,10 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 	return (
 		<Link
 			href={`/courses/${course.slug}`}
-			className="group flex h-full flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)"
+			className="group flex h-full flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 		>
 			<div
-				className="relative aspect-video w-full overflow-hidden bg-(--surface-muted)"
+				className="relative aspect-video w-full overflow-hidden bg-muted"
 				aria-hidden
 			>
 				{imageUrl ? (
@@ -45,17 +45,17 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 				)}
 			</div>
 			<div className="flex flex-1 flex-col gap-2 p-5">
-				<h3 className="line-clamp-2 text-h4 text-(--foreground) group-hover:text-(--primary)">
+				<h3 className="line-clamp-2 text-h4 text-foreground group-hover:text-primary">
 					{course.title}
 				</h3>
-				<p className="line-clamp-2 text-body text-(--foreground-muted)">
+				<p className="line-clamp-2 text-body text-muted-foreground">
 					{course.summary}
 				</p>
 				<div className="mt-auto flex items-center justify-between pt-2">
-					<span className="num text-h4 font-semibold text-(--foreground)">
+					<span className="num text-h4 font-semibold text-foreground">
 						{price}
 					</span>
-					<span className="inline-flex items-center gap-1 text-uism text-(--foreground-muted)">
+					<span className="inline-flex items-center gap-1 text-uism text-muted-foreground">
 						<Users size={14} />
 						<span className="num">
 							{course.enrollmentCount.toLocaleString("th-TH")}
@@ -100,10 +100,10 @@ export function CourseListItem({ course }: { course: CourseCardData }) {
 	return (
 		<Link
 			href={`/courses/${course.slug}`}
-			className="group flex flex-col gap-4 overflow-hidden rounded-card border border-(--border) bg-(--surface) p-4 shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) sm:flex-row sm:gap-5"
+			className="group flex flex-col gap-4 overflow-hidden rounded-card border border-border bg-card p-4 shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:flex-row sm:gap-5"
 		>
 			<div
-				className="relative aspect-video h-40 w-full shrink-0 overflow-hidden rounded-lg bg-(--surface-muted) sm:h-28 sm:w-44"
+				className="relative aspect-video h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-28 sm:w-44"
 				aria-hidden
 			>
 				{imageUrl ? (
@@ -126,18 +126,18 @@ export function CourseListItem({ course }: { course: CourseCardData }) {
 			</div>
 			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
 				<div>
-					<h3 className="line-clamp-1 text-h4 text-(--foreground) group-hover:text-(--primary)">
+					<h3 className="line-clamp-1 text-h4 text-foreground group-hover:text-primary">
 						{course.title}
 					</h3>
-					<p className="mt-1 line-clamp-2 text-body text-(--foreground-muted)">
+					<p className="mt-1 line-clamp-2 text-body text-muted-foreground">
 						{course.summary}
 					</p>
 				</div>
 				<div className="flex items-center justify-between pt-2">
-					<span className="num text-h4 font-semibold text-(--foreground)">
+					<span className="num text-h4 font-semibold text-foreground">
 						{price}
 					</span>
-					<span className="inline-flex items-center gap-1 text-uism text-(--foreground-muted)">
+					<span className="inline-flex items-center gap-1 text-uism text-muted-foreground">
 						<Users size={14} />
 						<span className="num">
 							{course.enrollmentCount.toLocaleString("th-TH")}
@@ -152,16 +152,16 @@ export function CourseListItem({ course }: { course: CourseCardData }) {
 
 export function CourseListItemSkeleton() {
 	return (
-		<div className="flex gap-5 overflow-hidden rounded-card border border-(--border) bg-(--surface) p-4">
+		<div className="flex gap-5 overflow-hidden rounded-card border border-border bg-card p-4">
 			<div
-				className="aspect-video h-28 w-44 shrink-0 animate-pulse rounded-lg bg-(--surface-muted)"
+				className="aspect-video h-28 w-44 shrink-0 animate-pulse rounded-lg bg-muted"
 				aria-hidden
 			/>
 			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-				<div className="h-5 w-2/3 animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="h-4 w-full animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="h-4 w-1/2 animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="mt-2 h-5 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="h-5 w-2/3 animate-pulse rounded-md bg-muted" />
+				<div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+				<div className="h-4 w-1/2 animate-pulse rounded-md bg-muted" />
+				<div className="mt-2 h-5 w-24 animate-pulse rounded-md bg-muted" />
 			</div>
 		</div>
 	);
@@ -169,18 +169,18 @@ export function CourseListItemSkeleton() {
 
 export function CourseCardSkeleton() {
 	return (
-		<div className="flex flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm)">
+		<div className="flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm)">
 			<div
-				className="aspect-video w-full animate-pulse bg-(--surface-muted)"
+				className="aspect-video w-full animate-pulse bg-muted"
 				aria-hidden
 			/>
 			<div className="flex flex-1 flex-col gap-2 p-5">
-				<div className="h-5 w-3/4 animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="h-4 w-full animate-pulse rounded-md bg-(--surface-muted)" />
-				<div className="h-4 w-2/3 animate-pulse rounded-md bg-(--surface-muted)" />
+				<div className="h-5 w-3/4 animate-pulse rounded-md bg-muted" />
+				<div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+				<div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
 				<div className="mt-auto flex items-center justify-between pt-2">
-					<div className="h-5 w-16 animate-pulse rounded-md bg-(--surface-muted)" />
-					<div className="h-4 w-24 animate-pulse rounded-md bg-(--surface-muted)" />
+					<div className="h-5 w-16 animate-pulse rounded-md bg-muted" />
+					<div className="h-4 w-24 animate-pulse rounded-md bg-muted" />
 				</div>
 			</div>
 		</div>

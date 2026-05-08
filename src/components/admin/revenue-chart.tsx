@@ -27,7 +27,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-[220px] items-center justify-center text-caption text-(--foreground-muted)">
+      <div className="flex h-[220px] items-center justify-center text-caption text-muted-foreground">
         ยังไม่มีข้อมูลรายได้
       </div>
     );

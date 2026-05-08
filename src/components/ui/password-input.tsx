@@ -25,8 +25,8 @@ function calculateStrength(value: string): {
 
 	const styles = [
 		{
-			bar: "bg-(--foreground-subtle)",
-			text: "text-(--foreground-subtle)",
+			bar: "bg-foreground-subtle",
+			text: "text-foreground-subtle",
 			label: "อ่อนแอ",
 		},
 		{ bar: "bg-red-500", text: "text-red-500", label: "อ่อน" },
@@ -72,7 +72,7 @@ export const PasswordInput = React.forwardRef<
 		<div className={cn("space-y-2", className)}>
 			<div className="relative">
 				{icon && (
-					<div className="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-(--foreground-muted)">
+					<div className="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground">
 						{icon}
 					</div>
 				)}
@@ -88,7 +88,7 @@ export const PasswordInput = React.forwardRef<
 				<button
 					type="button"
 					onClick={() => setShowPassword((v) => !v)}
-					className="absolute inset-y-0 right-0 flex items-center px-3 text-(--foreground-muted) transition-colors hover:text-(--foreground)"
+					className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
 					tabIndex={-1}
 					aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
 				>
@@ -106,7 +106,7 @@ export const PasswordInput = React.forwardRef<
 								key={i}
 								className={cn(
 									"h-1 flex-1 rounded-full transition-colors duration-200",
-									i < score ? barColor : "bg-(--border)",
+									i < score ? barColor : "bg-border",
 								)}
 							/>
 						))}

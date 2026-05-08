@@ -350,7 +350,7 @@ export function CurriculumTree({
 						<input
 							name="title"
 							placeholder="ชื่อโมดูล"
-							className="flex-1 rounded border border-border bg-background px-2 py-1 text-sm"
+							className="flex-1 rounded-sm border border-border bg-background px-2 py-1 text-sm"
 							required
 							autoFocus
 						/>

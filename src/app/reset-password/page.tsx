@@ -5,13 +5,14 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, WarningIcon } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { AuthCard } from "@/components/layouts/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const resetSchema = z.object({
   password: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"),
@@ -107,12 +108,10 @@ function ResetForm() {
         </div>
 
         {serverError && (
-          <p
-            role="alert"
-            className="rounded-md bg-destructive-bg px-3 py-2 text-uism text-destructive-foreground"
-          >
-            {serverError}
-          </p>
+          <Alert variant="destructive">
+            <WarningIcon size={16} weight="fill" />
+            <AlertDescription>{serverError}</AlertDescription>
+          </Alert>
         )}
 
         <Button

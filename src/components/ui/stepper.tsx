@@ -31,10 +31,10 @@ export function Stepper({ steps, current, className, ...props }: StepperProps) {
                 aria-current={isCurrent ? "step" : undefined}
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums",
-                  isPast && "bg-(--primary) text-white",
+                  isPast && "bg-primary text-white",
                   isCurrent &&
-                    "bg-(--primary) text-(--primary-fg) ring-4 ring-(--primary)/15",
-                  isFuture && "bg-(--surface-muted) text-(--foreground-muted)",
+                  "bg-primary text-primary-foreground ring-4 ring-primary/15",
+                  isFuture && "bg-muted text-muted-foreground",
                 )}
               >
                 {isPast ? (
@@ -47,10 +47,10 @@ export function Stepper({ steps, current, className, ...props }: StepperProps) {
                 className={cn(
                   "text-uism",
                   isCurrent
-                    ? "font-semibold text-(--foreground)"
+                    ? "font-semibold text-foreground"
                     : isFuture
-                      ? "text-(--foreground-muted)"
-                      : "text-(--foreground)",
+                      ? "text-muted-foreground"
+                      : "text-foreground",
                 )}
               >
                 {step.label}
@@ -61,7 +61,7 @@ export function Stepper({ steps, current, className, ...props }: StepperProps) {
                 aria-hidden
                 className={cn(
                   "mx-4 mb-6 h-0.5 w-20",
-                  idx < current ? "bg-(--primary)" : "bg-(--border)",
+                  idx < current ? "bg-primary" : "bg-border",
                 )}
               />
             )}

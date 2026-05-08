@@ -47,7 +47,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 
 			<aside className="hidden min-w-0 lg:block lg:sticky lg:top-20">
 				{active ? (
-					<div className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-[14px] border border-(--border) bg-(--surface) shadow-sm">
+					<div className="flex max-h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-card border border-border bg-card shadow-xs">
 						<SlipDetailPanel
 							slip={active}
 							busy={busy}

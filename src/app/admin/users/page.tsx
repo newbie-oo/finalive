@@ -32,7 +32,7 @@ export default async function AdminUsersPage({
 	const session = await getSession();
 	if (!session?.user?.id || session.user.role !== "admin") {
 		return (
-			<p className="text-body text-(--foreground-muted)">ไม่มีสิทธิ์เข้าถึง</p>
+			<p className="text-body text-muted-foreground">ไม่มีสิทธิ์เข้าถึง</p>
 		);
 	}
 
@@ -59,7 +59,7 @@ export default async function AdminUsersPage({
 		<section className="space-y-6">
 			<header>
 				<h1 className="text-h1">ผู้ใช้ทั้งหมด</h1>
-				<p className="mt-1 text-body text-(--foreground-muted)">
+				<p className="mt-1 text-body text-muted-foreground">
 					{total.toLocaleString("th-TH")} คน
 				</p>
 			</header>
@@ -88,7 +88,7 @@ export default async function AdminUsersPage({
 					id="admin-users-role"
 					name="role"
 					defaultValue={role}
-					className="h-10 rounded-button border border-(--border) bg-(--surface) px-3 text-ui text-(--foreground)"
+					className="h-10 rounded-button border border-border bg-card px-3 text-ui text-foreground"
 				>
 					{ROLE_OPTIONS.map((r) => (
 						<option key={r.key} value={r.key}>
@@ -103,7 +103,7 @@ export default async function AdminUsersPage({
 				{filtersActive && (
 					<Link
 						href="/admin/users"
-						className="text-uism text-(--foreground-muted) hover:underline"
+						className="text-uism text-muted-foreground hover:underline"
 					>
 						ล้างตัวกรอง
 					</Link>
@@ -111,25 +111,25 @@ export default async function AdminUsersPage({
 			</form>
 
 			{rows.length === 0 ? (
-				<p className="text-body text-(--foreground-muted)">
+				<p className="text-body text-muted-foreground">
 					{filtersActive ? "ไม่พบผู้ใช้ที่ตรงกับเงื่อนไข" : "ยังไม่มีผู้ใช้"}
 				</p>
 			) : (
 				<>
-					<div className="overflow-x-auto rounded-card border border-(--border) bg-(--surface)">
+					<div className="overflow-x-auto rounded-card border border-border bg-card">
 						<table className="min-w-[640px] w-full text-ui">
 							<thead>
-								<tr className="border-b border-(--border) bg-(--surface-muted) text-left">
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+								<tr className="border-b border-border bg-muted text-left">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										ชื่อ
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										อีเมล
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										บทบาท
 									</th>
-									<th className="px-5 py-3 text-uism font-semibold text-(--foreground-muted)">
+									<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
 										สมัครเมื่อ
 									</th>
 								</tr>
@@ -138,18 +138,18 @@ export default async function AdminUsersPage({
 								{rows.map((u) => (
 									<tr
 										key={u.id}
-										className="border-b border-(--border) last:border-b-0"
+										className="border-b border-border last:border-b-0"
 									>
 										<td className="px-5 py-3">
 											<Link
 												href={`/admin/users/${u.id}`}
-												className="inline-flex items-center gap-3 font-medium text-(--foreground) hover:text-(--primary)"
+												className="inline-flex items-center gap-3 font-medium text-foreground hover:text-primary"
 											>
 												<AvatarInitials name={u.name ?? ""} size="sm" />
 												{u.name}
 											</Link>
 										</td>
-										<td className="px-5 py-3 text-(--foreground-muted)">
+										<td className="px-5 py-3 text-muted-foreground">
 											{u.email}
 										</td>
 										<td className="px-5 py-3">
@@ -161,7 +161,7 @@ export default async function AdminUsersPage({
 													: (u.role ?? "นักเรียน")}
 											</StatusChip>
 										</td>
-										<td className="num px-5 py-3 text-uism text-(--foreground-muted)">
+										<td className="num px-5 py-3 text-uism text-muted-foreground">
 											{u.createdAt?.toLocaleDateString("th-TH")}
 										</td>
 									</tr>

@@ -17,14 +17,14 @@ export function QuizCelebration({ passed }: QuizCelebrationProps) {
 
   if (!passed) {
     return (
-      <div className="rounded-[14px] border border-(--border) bg-(--surface) p-6 text-center">
+      <div className="rounded-card border border-border bg-card p-6 text-center">
         <ArrowCounterClockwise
           size={48}
           weight="duotone"
-          className="mx-auto mb-3 text-(--destructive)"
+          className="mx-auto mb-3 text-destructive"
         />
         <h3 className="text-h3">สู้ๆ อีกนิด!</h3>
-        <p className="mt-1 text-body text-(--foreground-muted)">
+        <p className="mt-1 text-body text-muted-foreground">
           ทบทวนเนื้อหาและลองใหม่อีกครั้ง
         </p>
       </div>
@@ -33,15 +33,15 @@ export function QuizCelebration({ passed }: QuizCelebrationProps) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-[14px] border border-(--success)/30 bg-(--success-bg) p-6 text-center transition-all duration-700 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+      className={`relative overflow-hidden rounded-card border border-success/30 bg-success-bg p-6 text-center transition-all duration-700 ${show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
     >
       <Trophy
         size={48}
         weight="fill"
-        className="mx-auto mb-3 text-(--success)"
+        className="mx-auto mb-3 text-success"
       />
-      <h3 className="text-h3 text-(--success)">ยินดีด้วย!</h3>
-      <p className="mt-1 text-body text-(--foreground-muted)">
+      <h3 className="text-h3 text-success">ยินดีด้วย!</h3>
+      <p className="mt-1 text-body text-muted-foreground">
         คุณผ่านแบบทดสอบแล้ว 🎉
       </p>
     </div>

@@ -147,11 +147,11 @@ export function CourseFilters({
 
 	return (
 		<div className="flex flex-col">
-			<div className="bg-(--surface-muted)">
+			<div className="bg-muted">
 				<div className="mx-auto max-w-[1200px] px-6 py-10 md:py-14">
 					<div className="mx-auto max-w-2xl text-center">
 						<h1 className="text-h1">คอร์สทั้งหมด</h1>
-						<p className="mt-2 text-bodylg text-(--foreground-muted)">
+						<p className="mt-2 text-bodylg text-muted-foreground">
 							ค้นหาคอร์สที่เหมาะกับเป้าหมายของคุณ
 						</p>
 					</div>
@@ -163,7 +163,7 @@ export function CourseFilters({
 						<div className="relative">
 							<MagnifyingGlass
 								size={20}
-								className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-(--foreground-subtle)"
+								className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-foreground-subtle"
 							/>
 							<input
 								id="q"
@@ -172,13 +172,13 @@ export function CourseFilters({
 								value={q}
 								onChange={(e) => setQ(e.target.value)}
 								placeholder="ค้นหาคอร์ส (ชื่อหรือคำอธิบาย)"
-								className="h-14 w-full rounded-full border border-(--border) bg-(--surface) py-3 pl-14 pr-5 text-body shadow-(--shadow-sm-token) outline-none transition-[border-color,box-shadow] focus:border-(--primary) focus:shadow-[0_0_0_3px_rgba(79,70,229,0.12)]"
+								className="h-14 w-full rounded-full border border-border bg-card py-3 pl-14 pr-5 text-body shadow-(--shadow-sm-token) outline-hidden transition-[border-color,box-shadow] focus:border-primary focus:shadow-[0_0_0_3px_rgba(79,70,229,0.12)]"
 							/>
 							{q && (
 								<button
 									type="button"
 									onClick={() => setQ("")}
-									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-(--foreground-subtle) hover:bg-(--surface-muted) hover:text-(--foreground)"
+									className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-foreground-subtle hover:bg-muted hover:text-foreground"
 									aria-label="ล้างการค้นหา"
 								>
 									<X size={16} />
@@ -195,11 +195,10 @@ export function CourseFilters({
 									key={chip.type}
 									type="button"
 									onClick={() => handleQuickFilter(chip.type)}
-									className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-ui font-medium transition-colors ${
-										active
-											? "bg-(--primary) text-white"
-											: "border border-(--border) bg-(--surface) text-(--foreground-muted) hover:border-(--border-strong) hover:text-(--foreground)"
-									}`}
+									className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-ui font-medium transition-colors ${active
+											? "bg-primary text-white"
+											: "border border-border bg-card text-muted-foreground hover:border-border-strong hover:text-foreground"
+										}`}
 									aria-pressed={active}
 								>
 									{active && <Check size={14} weight="bold" />}
@@ -211,7 +210,7 @@ export function CourseFilters({
 							<button
 								type="button"
 								onClick={handleClear}
-								className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-ui text-(--foreground-subtle) transition-colors hover:bg-(--surface) hover:text-(--foreground)"
+								className="inline-flex h-9 items-center gap-1 rounded-full px-3 text-ui text-foreground-subtle transition-colors hover:bg-card hover:text-foreground"
 							>
 								<X size={14} />
 								ล้างตัวกรอง
@@ -228,13 +227,13 @@ export function CourseFilters({
 							<button
 								type="button"
 								onClick={() => setMobileOpen((v) => !v)}
-								className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-button border border-(--border) bg-(--surface) py-2.5 text-ui md:hidden"
+								className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-button border border-border bg-card py-2.5 text-ui md:hidden"
 								aria-expanded={mobileOpen}
 							>
 								<Faders size={16} />
 								ตัวกรอง
 								{hasFilters && (
-									<span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-(--primary) text-[10px] font-bold text-white">
+									<span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
 										!
 									</span>
 								)}
@@ -243,20 +242,20 @@ export function CourseFilters({
 							<div
 								className={`space-y-6 ${mobileOpen ? "block" : "hidden md:block"}`}
 							>
-								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
-									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+								<div className="rounded-card border border-border bg-card p-4">
+									<h3 className="mb-3 text-uism font-semibold text-foreground">
 										หมวดหมู่
 									</h3>
 									<ul className="space-y-2.5">
 										{CATEGORIES.map((cat) => (
 											<li key={cat.label}>
-												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
+												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-muted-foreground transition-colors hover:text-foreground">
 													<input
 														type="checkbox"
-														className="h-4 w-4 rounded border-(--border) accent-(--primary)"
+														className="h-4 w-4 rounded-sm border-border accent-primary"
 													/>
 													<span className="flex-1">{cat.label}</span>
-													<span className="num text-caption text-(--foreground-subtle)">
+													<span className="num text-caption text-foreground-subtle">
 														({cat.count})
 													</span>
 												</label>
@@ -265,14 +264,14 @@ export function CourseFilters({
 									</ul>
 								</div>
 
-								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
-									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+								<div className="rounded-card border border-border bg-card p-4">
+									<h3 className="mb-3 text-uism font-semibold text-foreground">
 										ราคา
 									</h3>
 									<ul className="space-y-2.5">
 										{PRICE_OPTIONS.map((o) => (
 											<li key={o.value}>
-												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-(--foreground-muted) transition-colors hover:text-(--foreground)">
+												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-muted-foreground transition-colors hover:text-foreground">
 													<input
 														type="radio"
 														name="price"
@@ -285,7 +284,7 @@ export function CourseFilters({
 															if (o.value === "free") setFreeOnly(true);
 															else setFreeOnly(false);
 														}}
-														className="h-4 w-4 accent-(--primary)"
+														className="h-4 w-4 accent-primary"
 													/>
 													<span>{o.label}</span>
 												</label>
@@ -294,15 +293,15 @@ export function CourseFilters({
 									</ul>
 								</div>
 
-								<div className="rounded-card border border-(--border) bg-(--surface) p-4">
-									<h3 className="mb-3 text-uism font-semibold text-(--foreground)">
+								<div className="rounded-card border border-border bg-card p-4">
+									<h3 className="mb-3 text-uism font-semibold text-foreground">
 										เรียงลำดับ
 									</h3>
 									<div className="relative">
 										<select
 											value={sortBy}
 											onChange={(e) => setSortBy(e.target.value)}
-											className="h-10 w-full appearance-none rounded-button border border-(--border) bg-(--surface) px-3 pr-8 text-ui outline-none focus:border-(--primary)"
+											className="h-10 w-full appearance-none rounded-button border border-border bg-card px-3 pr-8 text-ui outline-hidden focus:border-primary"
 											aria-label="เรียงลำดับ"
 										>
 											{SORT_OPTIONS.map((o) => (
@@ -313,7 +312,7 @@ export function CourseFilters({
 										</select>
 										<CaretDown
 											size={14}
-											className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-(--foreground-muted)"
+											className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
 										/>
 									</div>
 								</div>

@@ -44,9 +44,9 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
   const pct =
     props.totalLessons > 0
       ? Math.min(
-          100,
-          Math.round((props.doneLessons / props.totalLessons) * 100),
-        )
+        100,
+        Math.round((props.doneLessons / props.totalLessons) * 100),
+      )
       : props.completedAt
         ? 100
         : 0;
@@ -59,10 +59,10 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
         : "เริ่มเรียน";
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-card border border-(--border) bg-(--surface) shadow-(--shadow-sm) transition-shadow hover:shadow-(--shadow-md)">
+    <article className="flex h-full flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm) transition-shadow hover:shadow-(--shadow-md)">
       <Link
         href={`/learn/${props.courseSlug}`}
-        className="relative block aspect-video w-full overflow-hidden bg-(--surface-muted)"
+        className="relative block aspect-video w-full overflow-hidden bg-muted"
         aria-label={props.courseTitle}
       >
         {props.coverUrl ? (
@@ -88,7 +88,7 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
         {pct > 0 && (
           <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/30">
             <div
-              className="h-full bg-(--primary)"
+              className="h-full bg-primary"
               style={{ width: `${pct}%` }}
               aria-label={`ความคืบหน้า ${pct}%`}
             />
@@ -96,16 +96,16 @@ export function EnrollmentCard(props: EnrollmentCardProps) {
         )}
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <h3 className="line-clamp-2 text-h4 text-(--foreground)">
+        <h3 className="line-clamp-2 text-h4 text-foreground">
           {props.courseTitle}
         </h3>
-        <div className="text-uism text-(--foreground-muted)">
+        <div className="text-uism text-muted-foreground">
           <span className="num">{props.doneLessons}</span> /{" "}
           <span className="num">{props.totalLessons}</span> บทเรียน
           {pct > 0 && (
             <>
               {" · "}
-              <span className="num font-medium text-(--foreground)">
+              <span className="num font-medium text-foreground">
                 {pct}%
               </span>
             </>

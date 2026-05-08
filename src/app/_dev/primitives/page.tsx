@@ -23,7 +23,7 @@ export default function PrimitivesPage() {
     <main className="mx-auto max-w-5xl space-y-12 px-6 py-12">
       <header className="space-y-2">
         <h1 className="text-h1">Finalive primitives</h1>
-        <p className="text-bodylg text-(--foreground-muted)">
+        <p className="text-bodylg text-muted-foreground">
           Visual reference for tokens, buttons, cards, inputs, chips, avatars,
           stepper.
         </p>
@@ -67,7 +67,7 @@ export default function PrimitivesPage() {
               <CardTitle>Standard card</CardTitle>
               <CardDescription>radius 14, padding 24, border</CardDescription>
             </CardHeader>
-            <CardContent className="text-body text-(--foreground-muted)">
+            <CardContent className="text-body text-muted-foreground">
               Use for forms, content, dashboards.
             </CardContent>
             <CardFooter>

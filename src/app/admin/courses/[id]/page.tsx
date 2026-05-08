@@ -31,7 +31,7 @@ export default async function AdminCourseEditPage({
 		<section className="mx-auto max-w-3xl space-y-8">
 			<header>
 				<h1 className="text-h1">แก้ไขคอร์ส</h1>
-				<p className="mt-1 text-bodylg text-(--foreground-muted)">
+				<p className="mt-1 text-bodylg text-muted-foreground">
 					{course.title}
 				</p>
 			</header>
@@ -43,36 +43,36 @@ export default async function AdminCourseEditPage({
 					<h2 className="text-h3">เนื้อหาในคอร์ส</h2>
 					<Link
 						href={`/admin/courses/${id}/curriculum`}
-						className="text-uism font-medium text-(--primary) hover:underline"
+						className="text-uism font-medium text-primary hover:underline"
 					>
 						จัดการเนื้อหา →
 					</Link>
 				</div>
 				{curriculum.length === 0 ? (
-					<p className="text-body text-(--foreground-muted)">ยังไม่มีโมดูล</p>
+					<p className="text-body text-muted-foreground">ยังไม่มีโมดูล</p>
 				) : (
 					<div className="space-y-3">
 						{curriculum.map((mod) => (
 							<div
 								key={mod.id}
-								className="rounded-card border border-(--border) bg-(--surface) p-5"
+								className="rounded-card border border-border bg-card p-5"
 							>
 								<h3 className="text-h4">{mod.title}</h3>
 								{mod.lessons.length === 0 ? (
-									<p className="mt-2 text-uism text-(--foreground-muted)">
+									<p className="mt-2 text-uism text-muted-foreground">
 										ยังไม่มีบทเรียน
 									</p>
 								) : (
-									<ul className="mt-3 divide-y divide-(--border)">
+									<ul className="mt-3 divide-y divide-border">
 										{mod.lessons.map((ls) => (
 											<li
 												key={ls.id}
 												className="flex items-center justify-between gap-3 py-2 text-body"
 											>
-												<span className="text-(--foreground)">{ls.title}</span>
+												<span className="text-foreground">{ls.title}</span>
 												<Link
 													href={`/admin/courses/${id}/lessons/${ls.id}`}
-													className="text-uism font-medium text-(--primary) hover:underline"
+													className="text-uism font-medium text-primary hover:underline"
 												>
 													แก้ไข →
 												</Link>
