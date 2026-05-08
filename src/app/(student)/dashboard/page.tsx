@@ -7,15 +7,9 @@ import {
 	Trophy,
 	ArrowRight,
 	CaretRight,
-	Info,
 } from "@phosphor-icons/react/dist/ssr";
 import { Progress } from "@/components/ui/progress";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
@@ -25,6 +19,7 @@ import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
 import { WelcomeHero } from "@/components/dashboard/welcome-hero";
 import { UpNextList } from "@/components/dashboard/up-next-list";
+import { StatCardTooltip } from "@/components/dashboard/stat-card-tooltip";
 import {
 	getActivityIcon,
 	getActivityBadge,
@@ -222,7 +217,7 @@ export default async function DashboardPage() {
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
 				<ActivityHeatmap
 					heatmap={data.heatmap}
-					weeklyWatchedSeconds={data.weeklyWatchedSeconds}
+					startDate={data.heatmapStart}
 				/>
 
 				<div className="rounded-card border border-border bg-card p-6">
@@ -316,18 +311,7 @@ function StatCard({ icon: Icon, value, label, color, tooltip }: StatCardProps) {
 					<div className="mt-1 flex items-center gap-1 text-caption text-muted-foreground">
 						<span>{label}</span>
 						{tooltip && (
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<button
-										type="button"
-										aria-label={`คำอธิบาย: ${label}`}
-										className="inline-flex items-center text-foreground-subtle transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-									>
-										<Info size={12} aria-hidden />
-									</button>
-								</TooltipTrigger>
-								<TooltipContent side="top">{tooltip}</TooltipContent>
-							</Tooltip>
+							<StatCardTooltip label={label} tooltip={tooltip} />
 						)}
 					</div>
 				</div>

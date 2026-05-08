@@ -31,7 +31,6 @@ export async function getStudentDashboard(userId: string) {
 	const [
 		enrollmentsRaw,
 		totalWatchedSeconds,
-		weeklyWatchedSeconds,
 		certCount,
 		streakDates,
 		heatMapByDate,
@@ -40,7 +39,6 @@ export async function getStudentDashboard(userId: string) {
 	] = await Promise.all([
 		StudentEnrollmentRepo.listWithProgress(userId),
 		WatchTimeRepo.getTotal(userId),
-		WatchTimeRepo.getWeekly(userId),
 		countCertificatesByUserId(userId),
 		StreakRepo.getDates(userId),
 		HeatmapRepo.getData(userId, 35),
@@ -84,11 +82,11 @@ export async function getStudentDashboard(userId: string) {
 	return {
 		enrollments,
 		totalWatchedSeconds,
-		weeklyWatchedSeconds,
 		certCount,
 		completedCourses,
 		streak,
 		heatmap,
+		heatmapStart: heatStart,
 		recentActivity,
 		achievements,
 		upNext,
