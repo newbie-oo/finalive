@@ -4,6 +4,7 @@ import { SlipQueue } from "@/components/admin/slip-queue";
 import { SlipQueueRefreshButton } from "@/components/admin/slip-queue-refresh-button";
 import { SlipShortcutsHelp } from "@/components/admin/slip-shortcuts-help";
 import { SlipStatusTabs } from "@/components/admin/slip-status-tabs";
+import { Kbd } from "@/components/ui/kbd";
 
 function pickStatus(raw: string | string[] | undefined): SlipQueueStatus {
   if (raw === "accepted" || raw === "rejected" || raw === "all") return raw;
@@ -32,11 +33,7 @@ export default async function AdminSlipsPage({
         <div>
           <h1 className="text-h1">คิวตรวจสลิป</h1>
           <p className="mt-1 text-body text-muted-foreground">
-            กด{" "}
-            <kbd className="mono rounded-sm border border-border px-1 text-uism">
-              ?
-            </kbd>{" "}
-            เพื่อดูคีย์ลัดทั้งหมด
+            กด <Kbd>?</Kbd> เพื่อดูคีย์ลัดทั้งหมด
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

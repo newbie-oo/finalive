@@ -10,6 +10,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { KbdShortcut } from "@/components/ui/kbd";
 
 interface Shortcut {
 	keys: ReadonlyArray<string>;
@@ -56,16 +57,7 @@ export function SlipShortcutsHelp() {
 							<span className="text-body text-foreground">
 								{shortcut.label}
 							</span>
-							<span className="flex items-center gap-1">
-								{shortcut.keys.map((k, i) => (
-									<kbd
-										key={i}
-										className="mono inline-flex h-6 min-w-[24px] items-center justify-center rounded border border-border bg-muted px-1.5 text-uism text-foreground"
-									>
-										{k}
-									</kbd>
-								))}
-							</span>
+							<KbdShortcut keys={shortcut.keys} />
 						</li>
 					))}
 				</ul>

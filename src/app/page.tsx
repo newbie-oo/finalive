@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { PriceTag } from "@/components/ui/price-tag";
 import { TestimonialsSection } from "./_home/testimonials-section";
 import {
 	STATS,
@@ -371,10 +372,6 @@ interface StaticCourseCardProps {
 }
 
 function StaticCourseCard({ course }: StaticCourseCardProps) {
-	const priceLabel =
-		course.priceTHB === "free"
-			? "ฟรี"
-			: `฿${course.priceTHB.toLocaleString("en-US")}`;
 	const durationLabel =
 		course.durationMinutes >= 60
 			? `${(course.durationMinutes / 60).toFixed(1)} ชม.`
@@ -420,9 +417,7 @@ function StaticCourseCard({ course }: StaticCourseCardProps) {
 						<Play size={14} weight="fill" aria-hidden />
 						<span className="num">{durationLabel}</span>
 					</span>
-					<span className="num text-h4 font-semibold text-primary">
-						{priceLabel}
-					</span>
+					<PriceTag price={course.priceTHB} size="sm" />
 				</div>
 			</CardContent>
 		</Card>
