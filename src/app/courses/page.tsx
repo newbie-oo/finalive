@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { CourseFilters } from "@/components/courses/course-filters";
+import { ActiveFilterChips } from "@/components/courses/active-filter-chips";
 import {
 	CourseCatalog,
 	CourseCatalogSkeleton,
@@ -106,6 +107,13 @@ export default async function CoursesPage({
 				initialDuration={duration}
 				initialSort={sortBy}
 			>
+				<ActiveFilterChips
+					q={q}
+					freeOnly={freeOnly}
+					price={price}
+					duration={duration}
+					sort={sortBy}
+				/>
 				<Suspense fallback={<CourseCatalogSkeleton />}>
 					<CourseGrid params={params} searchParams={filterQs} />
 				</Suspense>
