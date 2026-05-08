@@ -4,8 +4,10 @@ import {
 	createImageUploadService,
 	runImageUpload,
 } from "@/server/services/image-upload-factory";
-import { rateLimitConfigs } from "@/lib/rate-limit";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+
+// Rate limiting is handled by the Vercel Firewall rule for /api/upload/*
+// (60/min/IP, Challenge action) — see README.md "Rate limiting".
 
 function makeService(imageUuid: string) {
 	return createImageUploadService({
@@ -41,7 +43,6 @@ function makeService(imageUuid: string) {
 
 export const POST = apiRouteRaw({
 	auth: "required",
-	rateLimit: rateLimitConfigs.upload,
 	handler: async ({ req, user }) => {
 		const imageUuid = crypto.randomUUID();
 		return runImageUpload(req, user!, {
