@@ -15,7 +15,7 @@ import {
 	WarningIcon,
 } from "@phosphor-icons/react";
 import { signIn } from "@/lib/auth-client";
-import { PublicShell } from "@/components/layouts/public-shell";
+import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { Button } from "@/components/ui/button";

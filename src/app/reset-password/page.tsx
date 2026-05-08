@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle, WarningIcon } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
-import { PublicShell } from "@/components/layouts/public-shell";
+import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AuthCard } from "@/components/layouts/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

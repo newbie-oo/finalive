@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { EnvelopeSimple, WarningIcon } from "@phosphor-icons/react";
-import { PublicShell } from "@/components/layouts/public-shell";
+import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AuthCard } from "@/components/layouts/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

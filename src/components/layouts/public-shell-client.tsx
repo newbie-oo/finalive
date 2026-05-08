@@ -49,8 +49,10 @@ export interface PublicShellUser {
 interface PublicShellClientProps {
 	children: React.ReactNode;
 	/** Resolved server-side so the header doesn't flash login/signup buttons
-	 * before the client useSession hook settles on first paint. */
-	initialUser: PublicShellUser | null;
+	 * before the client useSession hook settles on first paint. Defaults
+	 * to null for client-only callers (auth pages) where the user is by
+	 * definition logged-out. */
+	initialUser?: PublicShellUser | null;
 	/** When true, suppress the public footer — used by admin/full-bleed shells. */
 	hideFooter?: boolean;
 	/** When true, drop the global max-w container around the main slot so admin
@@ -60,7 +62,7 @@ interface PublicShellClientProps {
 
 export function PublicShellClient({
 	children,
-	initialUser,
+	initialUser = null,
 	hideFooter,
 	unboundedMain,
 }: PublicShellClientProps) {
