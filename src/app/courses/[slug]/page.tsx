@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +17,7 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
 import { MobileCourseCta } from "@/components/course/mobile-course-cta";
 import { LearningOutcomesSection } from "@/components/course/learning-outcomes-section";
+import { CourseHeroPoster } from "@/components/course/course-hero-poster";
 import {
 	CourseReviewsSection,
 	type Review,
@@ -117,9 +117,13 @@ export default async function CourseDetailPage({
 	// the page UX correct even if a stray row escaped the create/update invariant.
 	const isFreeView = course.isFree || Number(course.price) === 0;
 	const price = isFreeView ? "ฟรี" : formatTHB(course.price);
-	const hasPreviewableLesson = curriculum.some((m) =>
-		m.lessons.some((l) => l.isPreview || l.isFree),
-	);
+	const firstPreviewLesson = curriculum
+		.flatMap((m) => m.lessons)
+		.find((l) => l.isPreview || l.isFree);
+	const hasPreviewableLesson = firstPreviewLesson !== undefined;
+	const previewHref = firstPreviewLesson
+		? `/courses/${course.slug}/preview/${firstPreviewLesson.id}`
+		: null;
 	const isBestseller = course.enrollmentCount >= 100;
 	const durationHours =
 		totalDuration === 0
@@ -158,28 +162,12 @@ export default async function CourseDetailPage({
 
 					<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
 						<div>
-							<div className="relative mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
-								{coverImageUrl(course.coverStorageKey) ? (
-									<div className="relative aspect-video w-full overflow-hidden bg-muted">
-										<Image
-											src={coverImageUrl(course.coverStorageKey)!}
-											alt={course.title}
-											fill
-											sizes="(max-width: 1024px) 100vw, 720px"
-											className="object-cover"
-											priority
-										/>
-									</div>
-								) : (
-									<div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-linear-to-br from-hero-from to-hero-to">
-										<span
-											className="font-semibold text-white"
-											style={{ fontSize: 80, letterSpacing: "-0.02em" }}
-										>
-											{course.title.trim().charAt(0).toUpperCase()}
-										</span>
-									</div>
-								)}
+							<div className="mb-7 overflow-hidden rounded-[16px] shadow-(--shadow-lg)">
+								<CourseHeroPoster
+									title={course.title}
+									coverImageUrl={coverImageUrl(course.coverStorageKey)}
+									previewHref={previewHref}
+								/>
 							</div>
 
 							<div className="mb-4 flex flex-wrap items-center gap-2">
