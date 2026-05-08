@@ -1,4 +1,5 @@
 import { publicUrl } from "@/lib/r2-url";
+import { coverKey } from "@/lib/storage-keys";
 
 /**
  * Build a public cover image URL from a media asset storage key.
@@ -15,6 +16,6 @@ export function coverImageUrl(
   // Defensive: some legacy rows store the full path; most store just the uuid.
   const key = storageKey.startsWith("covers/")
     ? storageKey
-    : `covers/${storageKey}-640.webp`;
+    : coverKey(storageKey, 640);
   return publicUrl(key);
 }

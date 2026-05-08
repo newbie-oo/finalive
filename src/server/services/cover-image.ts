@@ -1,6 +1,7 @@
 import "server-only";
 import type { ObjectStorage } from "./storage";
 import { logger } from "@/lib/logger";
+import { coverKeys } from "@/lib/storage-keys";
 
 export interface CoverImageDeps {
   storage: ObjectStorage;
@@ -38,9 +39,11 @@ export class CoverImageService {
       const oldAsset = await this.deps.getMediaAsset(params.oldCoverMediaId);
       if (oldAsset) {
         try {
-          const uuid = oldAsset.storageKey;
-          await this.deps.storage.delete(`covers/${uuid}-640.webp`);
-          await this.deps.storage.delete(`covers/${uuid}-1200.webp`);
+          await Promise.all(
+            coverKeys(oldAsset.storageKey).map((key) =>
+              this.deps.storage.delete(key),
+            ),
+          );
         } catch (err) {
           logger.error("cover_image.cleanup_failed", err, {
             mediaAssetId: oldAsset.id,

@@ -5,6 +5,7 @@ import {
 	runImageUpload,
 } from "@/server/services/image-upload-factory";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
+import { coverKey } from "@/lib/storage-keys";
 
 // Rate limiting is handled by the Vercel Firewall rule for /api/upload/*
 // (60/min/IP, Challenge action) — see README.md "Rate limiting".
@@ -26,13 +27,13 @@ function makeService(imageUuid: string) {
 			return [
 				{
 					buffer: coverBuffer,
-					key: `covers/${imageUuid}-640.webp`,
+					key: coverKey(imageUuid, 640),
 					contentType: "image/webp",
 					name: "cover",
 				},
 				{
 					buffer: ogBuffer,
-					key: `covers/${imageUuid}-1200.webp`,
+					key: coverKey(imageUuid, 1200),
 					contentType: "image/webp",
 					name: "og",
 				},
