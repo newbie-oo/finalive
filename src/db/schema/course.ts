@@ -14,6 +14,16 @@ import {
 import { sql } from "drizzle-orm";
 import { mediaAsset } from "./media";
 
+/**
+ * Single source of truth for the `course.status` enum. The DB CHECK
+ * constraint below must stay in sync — keep both lists in alphabetical
+ * order so a `git diff` immediately surfaces accidental drift.
+ */
+export const COURSE_STATUS = ["draft", "published", "archived"] as const;
+export type CourseStatus = (typeof COURSE_STATUS)[number];
+/** Filter value that includes every status. */
+export type CourseStatusFilter = CourseStatus | "all";
+
 export const course = pgTable(
   "course",
   {

@@ -13,6 +13,7 @@ import {
 	revalidateCourseAdminPaths,
 } from "@/server/admin/admin-command";
 import { container } from "@/server/container";
+import { COURSE_STATUS } from "@/db/schema/course";
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -66,7 +67,7 @@ const updateSchema = z.object({
 		.regex(/^\d+(\.\d{1,2})?$/)
 		.optional(),
 	isFree: z.coerce.boolean().optional(),
-	status: z.enum(["draft", "published", "archived"]).optional(),
+	status: z.enum(COURSE_STATUS).optional(),
 });
 
 export const updateCourseAction = adminCourseAction(

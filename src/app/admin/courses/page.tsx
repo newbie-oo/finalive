@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MagnifyingGlass, Plus } from "@phosphor-icons/react/dist/ssr";
 import { listAdminCourses } from "@/server/repos/admin-course";
+import { COURSE_STATUS, type CourseStatusFilter } from "@/db/schema/course";
 import { formatTHB } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,19 +29,15 @@ export default async function AdminCoursesPage({
 	const sp = (await searchParams) ?? {};
 	const q = typeof sp.q === "string" ? sp.q : "";
 	const statusParam = typeof sp.status === "string" ? sp.status : "all";
-	const status: "draft" | "published" | "archived" | "all" =
-		statusParam === "draft" ||
-		statusParam === "published" ||
-		statusParam === "archived"
-			? statusParam
-			: "all";
+	const status: CourseStatusFilter = (
+		COURSE_STATUS as readonly string[]
+	).includes(statusParam)
+		? (statusParam as CourseStatusFilter)
+		: "all";
 	const courses = await listAdminCourses({ q, status });
 	const filtersActive = q.length > 0 || status !== "all";
 
-	const STATUSES: Array<{
-		key: "all" | "draft" | "published" | "archived";
-		label: string;
-	}> = [
+	const STATUSES: Array<{ key: CourseStatusFilter; label: string }> = [
 		{ key: "all", label: "ทั้งหมด" },
 		{ key: "published", label: "เผยแพร่" },
 		{ key: "draft", label: "ร่าง" },

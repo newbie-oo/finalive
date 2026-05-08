@@ -10,7 +10,13 @@ import {
 } from "drizzle-orm";
 import { db } from "@/db/client";
 import { notDeleted } from "@/db/predicates";
-import { course, courseModule, lesson } from "@/db/schema/course";
+import {
+	course,
+	courseModule,
+	lesson,
+	type CourseStatus,
+	type CourseStatusFilter,
+} from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
 import { quiz } from "@/db/schema/quiz";
@@ -21,7 +27,7 @@ export interface AdminCourseListItem {
 	id: string;
 	slug: string;
 	title: string;
-	status: string;
+	status: CourseStatus;
 	isFree: boolean;
 	price: string;
 	publishedAt: Date | null;
@@ -34,7 +40,7 @@ export interface ListAdminCoursesOptions {
 	/** Free-text search across title + slug. Case-insensitive. */
 	q?: string;
 	/** Filter by status. Pass "all" or omit to include every status. */
-	status?: "draft" | "published" | "archived" | "all";
+	status?: CourseStatusFilter;
 }
 
 export async function listAdminCourses(
@@ -70,7 +76,12 @@ export async function listAdminCourses(
 		.where(and(...conditions))
 		.orderBy(desc(course.createdAt));
 
-	return rows.map((r) => ({ ...r, enrollmentCount: r.enrollmentCount ?? 0 }));
+	return rows.map((r) => ({
+		...r,
+		// DB CHECK constraint guarantees this is a CourseStatus.
+		status: r.status as CourseStatus,
+		enrollmentCount: r.enrollmentCount ?? 0,
+	}));
 }
 
 /**
