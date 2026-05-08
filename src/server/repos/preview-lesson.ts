@@ -1,6 +1,6 @@
 import "server-only";
 import { and, eq, sql } from "drizzle-orm";
-import { notDeleted } from "@/db/predicates";
+import { coursePublic, notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
@@ -43,9 +43,8 @@ export async function getPreviewLesson(
 			and(
 				eq(lesson.id, lessonId),
 				eq(course.slug, courseSlug),
-				eq(course.status, "published"),
+				coursePublic(),
 				notDeleted(lesson),
-				notDeleted(course),
 			),
 		)
 		.limit(1);

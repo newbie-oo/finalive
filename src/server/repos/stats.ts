@@ -1,6 +1,6 @@
 import "server-only";
 import { and, eq, sql, countDistinct } from "drizzle-orm";
-import { notDeleted } from "@/db/predicates";
+import { coursePublic, notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -22,7 +22,7 @@ export async function getPublicHomeStats(): Promise<PublicHomeStats> {
   const [coursesRow] = await db
     .select({ value: sql<number>`count(*)::int` })
     .from(course)
-    .where(and(eq(course.status, "published"), notDeleted(course)));
+    .where(coursePublic());
 
   const [studentsRow] = await db
     .select({ value: countDistinct(enrollment.userId) })
@@ -36,10 +36,9 @@ export async function getPublicHomeStats(): Promise<PublicHomeStats> {
     .innerJoin(course, eq(courseModule.courseId, course.id))
     .where(
       and(
-        eq(course.status, "published"),
+        coursePublic(),
         notDeleted(lesson),
         notDeleted(courseModule),
-        notDeleted(course),
       ),
     );
 

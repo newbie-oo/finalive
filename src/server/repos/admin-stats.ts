@@ -1,6 +1,6 @@
 import "server-only";
 import { and, eq, gte, sql } from "drizzle-orm";
-import { notDeleted } from "@/db/predicates";
+import { coursePublic } from "@/db/predicates";
 import { db } from "@/db/client";
 import { paymentSlip } from "@/db/schema/payment";
 import { enrollment } from "@/db/schema/enrollment";
@@ -73,7 +73,7 @@ export const AdminStatsRepo = {
 			db
 				.select({ n: sql<number>`count(*)::int` })
 				.from(course)
-				.where(and(eq(course.status, "published"), notDeleted(course))),
+				.where(coursePublic()),
 			db
 				.select({
 					total: sql<number>`COALESCE(sum(${enrollment.priceAtPurchase}), 0)::float8`,

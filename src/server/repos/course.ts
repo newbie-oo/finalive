@@ -1,6 +1,6 @@
 import "server-only";
 import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { notDeleted } from "@/db/predicates";
+import { coursePublic, notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
@@ -66,7 +66,7 @@ export interface ListPublishedCoursesParams extends OffsetParams {
 export async function listPublishedCourses(
 	params: ListPublishedCoursesParams,
 ): Promise<OffsetResponse<PublicCourseSummary>> {
-	const conditions = [eq(course.status, "published"), notDeleted(course)];
+	const conditions = [coursePublic()];
 
 	const trimmed = params.q?.trim();
 	if (trimmed) {
@@ -186,7 +186,7 @@ export interface PendingCheckoutInfo {
 export async function listFeaturedCourses(
 	limit = 3,
 ): Promise<PublicCourseSummary[]> {
-	const where = and(eq(course.status, "published"), notDeleted(course));
+	const where = coursePublic();
 	const rows = await db
 		.select({
 			id: course.id,
