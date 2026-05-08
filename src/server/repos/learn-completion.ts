@@ -45,58 +45,60 @@ export async function checkAndMarkCourseComplete(
   userId: string,
   courseId: string,
 ): Promise<{ completed: boolean; enrollmentId: string | null }> {
-  const lessonRows = await db
-    .select({ lessonCount: count() })
-    .from(lesson)
-    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-    .where(
-      and(
-        eq(courseModule.courseId, courseId),
-        notDeleted(lesson),
-        notDeleted(courseModule),
+  // Lesson count, completed count, and quiz list all key off (userId, courseId)
+  // and don't depend on each other. Run them concurrently.
+  const [lessonRows, completedRows, courseQuizzes] = await Promise.all([
+    db
+      .select({ lessonCount: count() })
+      .from(lesson)
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .where(
+        and(
+          eq(courseModule.courseId, courseId),
+          notDeleted(lesson),
+          notDeleted(courseModule),
+        ),
       ),
-    );
+    db
+      .select({ completedCount: count() })
+      .from(lessonProgress)
+      .innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .where(
+        and(
+          eq(lessonProgress.userId, userId),
+          eq(courseModule.courseId, courseId),
+          eq(lessonProgress.status, "completed"),
+          notDeleted(lesson),
+          notDeleted(courseModule),
+        ),
+      ),
+    // Quiz gate: every quiz attached to the course's lessons must have been
+    // passed (latest attempt). Without this, the certificate fires the moment
+    // the last video ends, even if a quiz is still unanswered or failed.
+    db
+      .select({ quizId: quiz.id })
+      .from(quiz)
+      .innerJoin(lesson, eq(quiz.lessonId, lesson.id))
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .where(
+        and(
+          eq(courseModule.courseId, courseId),
+          notDeleted(quiz),
+          notDeleted(lesson),
+          notDeleted(courseModule),
+        ),
+      ),
+  ]);
 
   const lessonCount = lessonRows[0]?.lessonCount ?? 0;
   if (lessonCount === 0) return { completed: false, enrollmentId: null };
-
-  const completedRows = await db
-    .select({ completedCount: count() })
-    .from(lessonProgress)
-    .innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
-    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-    .where(
-      and(
-        eq(lessonProgress.userId, userId),
-        eq(courseModule.courseId, courseId),
-        eq(lessonProgress.status, "completed"),
-        notDeleted(lesson),
-        notDeleted(courseModule),
-      ),
-    );
 
   const completedCount = completedRows[0]?.completedCount ?? 0;
   if (completedCount !== lessonCount) {
     await unmarkCourseComplete(userId, courseId);
     return { completed: false, enrollmentId: null };
   }
-
-  // Quiz gate: every quiz attached to the course's lessons must have been
-  // passed (latest attempt). Without this, the certificate fires the moment
-  // the last video ends, even if a quiz is still unanswered or failed.
-  const courseQuizzes = await db
-    .select({ quizId: quiz.id })
-    .from(quiz)
-    .innerJoin(lesson, eq(quiz.lessonId, lesson.id))
-    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-    .where(
-      and(
-        eq(courseModule.courseId, courseId),
-        notDeleted(quiz),
-        notDeleted(lesson),
-        notDeleted(courseModule),
-      ),
-    );
 
   if (courseQuizzes.length > 0) {
     const quizIds = courseQuizzes.map((r) => r.quizId);

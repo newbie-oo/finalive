@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
@@ -96,8 +96,79 @@ async function _getLearnCourse(
 	const courseRow = courseRows[0];
 	if (!courseRow) return null;
 
-	// Delegate tree assembly to curriculum-repo (single source of truth).
-	const tree = await getCurriculumTree(courseRow.id);
+	// All four reads parallelise: each one only depends on courseRow.id and
+	// (optionally) userId, never on the result of another. Cuts the
+	// course-page TTFB from 4 sequential round-trips to 1.
+	const treePromise = getCurriculumTree(courseRow.id);
+
+	const enrollPromise = userId
+		? db
+				.select({ id: enrollment.id })
+				.from(enrollment)
+				.where(
+					and(
+						eq(enrollment.userId, userId),
+						eq(enrollment.courseId, courseRow.id),
+						eq(enrollment.status, "active"),
+					),
+				)
+				.limit(1)
+		: Promise.resolve([] as { id: string }[]);
+
+	// Scope progress by JOIN through lesson + module rather than IN(lessonIds).
+	// This removes the dependency on the curriculum tree result so the query
+	// can run alongside it.
+	const progressPromise: Promise<LearnProgress[]> = userId
+		? db
+				.select({
+					lessonId: lessonProgress.lessonId,
+					status: lessonProgress.status,
+					watchedSeconds: lessonProgress.watchedSeconds,
+				})
+				.from(lessonProgress)
+				.innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
+				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+				.where(
+					and(
+						eq(lessonProgress.userId, userId),
+						eq(courseModule.courseId, courseRow.id),
+						notDeleted(lesson),
+						notDeleted(courseModule),
+					),
+				)
+		: Promise.resolve([]);
+
+	// Resume: most recently updated lesson, preferring in_progress over completed.
+	// Done at the DB to keep status priority + updatedAt sorting consistent.
+	// Fire unconditionally when userId is present; the result is gated on
+	// isEnrolled below to preserve previous behaviour for stale rows.
+	const resumePromise = userId
+		? db
+				.select({ lessonId: lessonProgress.lessonId })
+				.from(lessonProgress)
+				.innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
+				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+				.where(
+					and(
+						eq(lessonProgress.userId, userId),
+						eq(courseModule.courseId, courseRow.id),
+						sql`${lessonProgress.status} <> 'not_started'`,
+					),
+				)
+				.orderBy(
+					sql`CASE WHEN ${lessonProgress.status} = 'in_progress' THEN 0 ELSE 1 END`,
+					desc(lessonProgress.updatedAt),
+				)
+				.limit(1)
+		: Promise.resolve([] as { lessonId: string }[]);
+
+	const [tree, enrollRows, progress, resumeRows] = await Promise.all([
+		treePromise,
+		enrollPromise,
+		progressPromise,
+		resumePromise,
+	]);
+
 	const curriculum: LearnModule[] = tree
 		.map((m) => ({
 			id: m.id,
@@ -115,66 +186,9 @@ async function _getLearnCourse(
 		}))
 		.filter((m) => m.lessons.length > 0);
 
-	let isEnrolled = false;
-	let progress: LearnProgress[] = [];
-	let resumeLessonId: string | null = null;
-
-	if (userId) {
-		const enrollRows = await db
-			.select({ id: enrollment.id })
-			.from(enrollment)
-			.where(
-				and(
-					eq(enrollment.userId, userId),
-					eq(enrollment.courseId, courseRow.id),
-					eq(enrollment.status, "active"),
-				),
-			)
-			.limit(1);
-		isEnrolled = enrollRows.length > 0;
-
-		// Fetch progress scoped to this course only
-		const lessonIds = curriculum.flatMap((m) => m.lessons.map((l) => l.id));
-		if (lessonIds.length > 0) {
-			const progRows = await db
-				.select({
-					lessonId: lessonProgress.lessonId,
-					status: lessonProgress.status,
-					watchedSeconds: lessonProgress.watchedSeconds,
-				})
-				.from(lessonProgress)
-				.where(
-					and(
-						eq(lessonProgress.userId, userId),
-						inArray(lessonProgress.lessonId, lessonIds),
-					),
-				);
-			progress = progRows;
-		}
-
-		if (isEnrolled) {
-			// Resume: most recently updated lesson, preferring in_progress over completed.
-			// Done at the DB to keep status priority + updatedAt sorting consistent.
-			const [resume] = await db
-				.select({ lessonId: lessonProgress.lessonId })
-				.from(lessonProgress)
-				.innerJoin(lesson, eq(lessonProgress.lessonId, lesson.id))
-				.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-				.where(
-					and(
-						eq(lessonProgress.userId, userId),
-						eq(courseModule.courseId, courseRow.id),
-						sql`${lessonProgress.status} <> 'not_started'`,
-					),
-				)
-				.orderBy(
-					sql`CASE WHEN ${lessonProgress.status} = 'in_progress' THEN 0 ELSE 1 END`,
-					desc(lessonProgress.updatedAt),
-				)
-				.limit(1);
-			if (resume) resumeLessonId = resume.lessonId;
-		}
-	}
+	const isEnrolled = enrollRows.length > 0;
+	const resume = isEnrolled ? resumeRows[0] : undefined;
+	let resumeLessonId: string | null = resume ? resume.lessonId : null;
 
 	// For non-enrolled users, resume points to first free/preview lesson.
 	if (!resumeLessonId) {
