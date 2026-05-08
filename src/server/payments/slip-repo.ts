@@ -294,4 +294,26 @@ export const SlipRepo = {
 	},
 };
 
+/**
+ * Full shape of the concrete SlipRepo. Avoid passing this around as a
+ * dependency — services should depend on the narrower role-specific
+ * interfaces below so the unused surface doesn't have to be mocked out
+ * in tests.
+ */
 export type SlipRepoShape = typeof SlipRepo;
+
+/** Methods the slip-review service actually uses. */
+export interface SlipReviewRepo {
+	loadForReview: SlipRepoShape["loadForReview"];
+	runAcceptTx: SlipRepoShape["runAcceptTx"];
+	runRejectTx: SlipRepoShape["runRejectTx"];
+}
+
+/** Methods the slip-upload service actually uses. */
+export interface SlipUploadRepo {
+	countSlipsForPending: SlipRepoShape["countSlipsForPending"];
+	loadPending: SlipRepoShape["loadPending"];
+	loadCourseInfo: SlipRepoShape["loadCourseInfo"];
+	reserveMediaAsset: SlipRepoShape["reserveMediaAsset"];
+	finalizeUploadTx: SlipRepoShape["finalizeUploadTx"];
+}

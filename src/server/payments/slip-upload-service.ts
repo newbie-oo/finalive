@@ -8,7 +8,7 @@ import { withIdempotency } from "@/server/repos/idempotency";
 import type { ObjectStorage } from "@/server/services/storage";
 import type { SlipNotifier } from "@/server/services/slip-notifier";
 import type { AuditLogger } from "@/server/services/audit";
-import type { SlipRepoShape } from "./slip-repo";
+import type { SlipUploadRepo } from "./slip-repo";
 
 export interface UploadSlipInput {
 	pendingId: string;
@@ -45,7 +45,7 @@ const extByMime: Record<
 };
 
 export interface SlipUploadServiceDeps {
-	repo: SlipRepoShape;
+	repo: SlipUploadRepo;
 	storage: ObjectStorage;
 	notifier: SlipNotifier;
 	auditLogger: AuditLogger;

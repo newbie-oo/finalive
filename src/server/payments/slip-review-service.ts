@@ -11,7 +11,7 @@ import {
 	EnrollmentAlreadyActiveError,
 	SlipAlreadyReviewedError,
 } from "./repo-errors";
-import type { SlipRepoShape, SlipReviewRow } from "./slip-repo";
+import type { SlipReviewRepo, SlipReviewRow } from "./slip-repo";
 
 export interface RejectSlipInput {
 	slipId: string;
@@ -35,7 +35,7 @@ export interface BulkResult {
 }
 
 export interface SlipReviewServiceDeps {
-	repo: SlipRepoShape;
+	repo: SlipReviewRepo;
 	notifier: SlipNotifier;
 	auditLogger: AuditLogger;
 }

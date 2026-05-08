@@ -31,15 +31,11 @@ const { SlipUploadService } = await import("./slip-upload-service");
 function fakeDeps() {
 	return {
 		repo: {
-			loadForReview: vi.fn().mockResolvedValue(null),
 			countSlipsForPending: vi.fn().mockResolvedValue(0),
 			loadPending: vi.fn().mockResolvedValue(null),
 			loadCourseInfo: vi.fn().mockResolvedValue(null),
-			runAcceptTx: vi.fn().mockResolvedValue({ enrollmentId: "enr-1" }),
-			runRejectTx: vi.fn().mockResolvedValue({ pendingId: "p1" }),
 			reserveMediaAsset: vi.fn().mockResolvedValue("media-123"),
 			finalizeUploadTx: vi.fn().mockResolvedValue("slip-456"),
-			getSlipImageMedia: vi.fn().mockResolvedValue(null),
 		},
 		storage: {
 			put: vi.fn().mockResolvedValue(undefined),

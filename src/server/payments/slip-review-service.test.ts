@@ -22,14 +22,8 @@ function fakeDeps() {
 	return {
 		repo: {
 			loadForReview: vi.fn(),
-			countSlipsForPending: vi.fn(),
 			runAcceptTx: vi.fn(),
 			runRejectTx: vi.fn(),
-			loadPending: vi.fn(),
-			loadCourseInfo: vi.fn(),
-			reserveMediaAsset: vi.fn(),
-			finalizeUploadTx: vi.fn(),
-			getSlipImageMedia: vi.fn(),
 		},
 		notifier: {
 			notifyStudentOfSlipReceipt: vi.fn().mockResolvedValue(undefined),
