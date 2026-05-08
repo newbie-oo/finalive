@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { createQuizAction } from "@/server/actions/admin-quiz";
-import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
+import type { AdminCurriculumLesson } from "@/server/repos/admin-curriculum";
 
 export function LessonQuizInlineAction({
 	courseId,

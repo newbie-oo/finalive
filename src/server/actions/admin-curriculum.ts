@@ -11,7 +11,7 @@ import {
 	deleteAdminLesson,
 	moduleExistsInCourse,
 	lessonExistsInCourse,
-} from "@/server/repos/admin-course";
+} from "@/server/repos/admin-curriculum";
 import {
 	reorderAdminModules,
 	reorderAdminLessons,

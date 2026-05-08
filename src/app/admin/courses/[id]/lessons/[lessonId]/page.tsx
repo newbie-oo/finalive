@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import { getSession } from "@/server/auth-session";
-import {
-	getAdminCourseById,
-	getAdminLessonById,
-} from "@/server/repos/admin-course";
+import { getAdminCourseById } from "@/server/repos/admin-course";
+import { getAdminLessonById } from "@/server/repos/admin-curriculum";
 import {
 	getCourseOwnerId,
 	getCollaboratorRole,

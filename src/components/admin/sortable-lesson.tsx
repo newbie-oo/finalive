@@ -6,7 +6,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { updateLessonAction } from "@/server/actions/admin-curriculum";
 import { LessonQuizInlineAction } from "./lesson-quiz-inline-action";
-import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
+import type { AdminCurriculumLesson } from "@/server/repos/admin-curriculum";
 
 export function SortableLesson({
 	lesson,

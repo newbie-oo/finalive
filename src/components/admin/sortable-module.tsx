@@ -9,7 +9,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { SortableLesson } from "./sortable-lesson";
-import type { AdminCurriculumModule } from "@/server/repos/admin-course";
+import type { AdminCurriculumModule } from "@/server/repos/admin-curriculum";
 
 export function SortableModule({
 	mod,

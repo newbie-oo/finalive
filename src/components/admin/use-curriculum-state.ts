@@ -24,7 +24,7 @@ import {
 import type {
 	AdminCurriculumLesson,
 	AdminCurriculumModule,
-} from "@/server/repos/admin-course";
+} from "@/server/repos/admin-curriculum";
 
 interface UseCurriculumStateArgs {
 	courseId: string;

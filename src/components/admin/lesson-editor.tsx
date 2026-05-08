@@ -10,7 +10,7 @@ import { VideoUploader } from "@/components/admin/video-uploader";
 import { TiptapEditor } from "@/components/admin/tiptap-editor";
 import { useUnsavedChangesWarning } from "@/lib/use-unsaved-changes";
 import { formatDuration } from "@/lib/format";
-import type { AdminCurriculumLesson } from "@/server/repos/admin-course";
+import type { AdminCurriculumLesson } from "@/server/repos/admin-curriculum";
 
 interface LessonEditorProps {
   courseId: string;

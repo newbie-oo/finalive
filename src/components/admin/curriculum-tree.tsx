@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { SortableModule } from "./sortable-module";
 import { LessonDetailPanel } from "./lesson-detail-panel";
 import { useCurriculumState } from "./use-curriculum-state";
-import type { AdminCurriculumModule } from "@/server/repos/admin-course";
+import type { AdminCurriculumModule } from "@/server/repos/admin-curriculum";
 
 interface CurriculumTreeProps {
 	courseId: string;
