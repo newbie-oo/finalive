@@ -58,3 +58,5 @@ uploads/video/
 # git worktrees
 .worktrees/
 
+# claude
+.claude/*
