@@ -18,13 +18,13 @@ export default defineConfig({
 			reporter: ["text", "html"],
 			// Floors are intentionally a few points below the current numbers so
 			// CI fails on regressions rather than every change. Current run:
-			// lines 26.95%, branches 74.93%, functions 50.97%, statements 26.95%.
+			// lines 40.15%, branches 80.83%, functions 61.83%, statements 40.15%.
 			// Raise these as the codebase grows.
 			thresholds: {
-				lines: 25,
-				functions: 45,
-				branches: 70,
-				statements: 25,
+				lines: 38,
+				functions: 58,
+				branches: 78,
+				statements: 38,
 			},
 			// `include` constrains coverage to the project source so the v8
 			// provider doesn't try to read source maps for Next.js's .next/dev
