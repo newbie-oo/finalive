@@ -4,6 +4,10 @@ import { formatTHB } from "@/lib/format";
 import { SlipImageViewer } from "./slip-image-viewer";
 import { REJECT_REASONS, REJECT_REASON_LABEL } from "./slip-reject-options";
 import {
+	UserTrustBlock,
+	type UserTrustSignals,
+} from "./user-trust-block";
+import {
 	CheckCircle,
 	Prohibit,
 	Coins,
@@ -26,6 +30,8 @@ export interface SlipDetailData {
 	studentName: string | null;
 	studentEmail: string | null;
 	courseTitle: string;
+	/** Optional trust signals — populated by the queue when available. */
+	studentTrust?: UserTrustSignals;
 }
 
 interface SlipDetailPanelProps {
@@ -129,6 +135,10 @@ export function SlipDetailPanel({
 							</div>
 						</div>
 					</div>
+
+					{slip.studentTrust && (
+						<UserTrustBlock signals={slip.studentTrust} />
+					)}
 
 					<div className="flex items-center gap-3 rounded-card border border-border bg-card p-3.5">
 						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
