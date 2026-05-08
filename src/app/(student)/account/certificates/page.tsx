@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  Certificate as CertIcon,
-  ArrowRight,
-  DownloadSimple,
-} from "@phosphor-icons/react/dist/ssr";
+import { Certificate as CertIcon } from "@phosphor-icons/react/dist/ssr";
 import { getSession } from "@/server/auth-session";
 import { listCertificatesByUserId } from "@/server/repos/certificate";
 import { publicUrl } from "@/server/services/r2";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatusChip } from "@/components/ui/status-chip";
+import { CertificateCard } from "@/components/account/certificate-card";
 
 export const dynamic = "force-dynamic";
 
@@ -44,49 +39,18 @@ export default async function AccountCertificatesPage() {
           }
         />
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {certs.map((cert) => (
             <li key={cert.certCode}>
-              <Card className="flex h-full flex-col gap-3">
-                <div className="flex items-start justify-between gap-2">
-                  <CertIcon
-                    size={28}
-                    weight="duotone"
-                    className="text-primary"
-                  />
-                  <StatusChip tone={cert.revokedAt ? "destructive" : "success"}>
-                    {cert.revokedAt ? "ถูกเพิกถอน" : "ใช้งานได้"}
-                  </StatusChip>
-                </div>
-                <h3 className="text-h4">{cert.courseTitle}</h3>
-                <p className="text-uism text-muted-foreground">
-                  ออกเมื่อ {cert.issuedAt.toLocaleDateString("th-TH")}
-                </p>
-                <p className="mono text-uism text-foreground-subtle">
-                  {cert.certCode}
-                </p>
-                {cert.revokedAt && (
-                  <p className="text-uism text-destructive">
-                    ถูกเพิกถอนเมื่อ {cert.revokedAt.toLocaleDateString("th-TH")}
-                  </p>
-                )}
-                <div className="mt-auto flex flex-wrap gap-2 pt-2">
-                  <Button asChild variant="secondary" size="sm">
-                    <a
-                      href={publicUrl(`certs/${cert.certCode}.pdf`)}
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      <DownloadSimple size={14} weight="bold" /> ดาวน์โหลด PDF
-                    </a>
-                  </Button>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/verify/${cert.certCode}`}>
-                      ตรวจสอบ <ArrowRight size={14} weight="bold" />
-                    </Link>
-                  </Button>
-                </div>
-              </Card>
+              <CertificateCard
+                certificate={{
+                  certCode: cert.certCode,
+                  courseTitle: cert.courseTitle,
+                  issuedAt: cert.issuedAt,
+                  pdfUrl: publicUrl(`certs/${cert.certCode}.pdf`),
+                  revokedAt: cert.revokedAt,
+                }}
+              />
             </li>
           ))}
         </ul>
