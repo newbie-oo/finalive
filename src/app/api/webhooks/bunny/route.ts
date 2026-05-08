@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api-error";
 import { getEnv } from "@/lib/env";
 import { verifyHmacSha256 } from "@/lib/webhook-signature";
 import { logger } from "@/lib/logger";
-import { makeBunnyStatusService } from "@/server/services/bunny-status-service-factory";
+import { container } from "@/server/container";
 
 const bunnyWebhookSchema = z.object({
 	VideoLibraryId: z.number().optional(),
@@ -71,8 +71,9 @@ export const POST = apiRouteRaw({
 			typeof parsed.data.Length === "number"
 				? Math.round(parsed.data.Length)
 				: null;
-		const service = makeBunnyStatusService();
-		const result = await service.sync(videoGuid, status, durationSeconds);
+		const result = await container
+			.bunnyStatus()
+			.sync(videoGuid, status, durationSeconds);
 
 		if (!result.changed) {
 			return { ok: true, note: "already_applied" };

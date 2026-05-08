@@ -2,7 +2,7 @@ import { z } from "zod";
 import { apiRoute } from "@/lib/api-route";
 import { getEnv } from "@/lib/env";
 import { rateLimitConfigs } from "@/lib/rate-limit";
-import { makeBunnyStatusService } from "@/server/services/bunny-status-service-factory";
+import { container } from "@/server/container";
 import { bunnyStatusName } from "@/server/services/bunny-video-status";
 
 export const runtime = "nodejs";
@@ -51,8 +51,7 @@ export const GET = apiRoute({
 			typeof data.length === "number" ? Math.round(data.length) : null;
 
 		if (isReady) {
-			const service = makeBunnyStatusService();
-			await service.sync(query.videoId, data.status, durationSeconds);
+			await container.bunnyStatus().sync(query.videoId, data.status, durationSeconds);
 		}
 
 		return {

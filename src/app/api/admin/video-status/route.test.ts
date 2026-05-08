@@ -27,8 +27,8 @@ vi.mock("@/server/auth-session", () => ({
 	requireRoleThrow,
 }));
 vi.mock("@/lib/env", () => ({ getEnv }));
-vi.mock("@/server/services/bunny-status-service-factory", () => ({
-	makeBunnyStatusService: () => ({ sync: syncBunnyStatus }),
+vi.mock("@/server/container", () => ({
+	container: { bunnyStatus: () => ({ sync: syncBunnyStatus }) },
 }));
 
 import { GET } from "./route";

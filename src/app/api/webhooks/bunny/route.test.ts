@@ -22,8 +22,8 @@ const { getEnv, syncBunnyStatus } = vi.hoisted(() => ({
 	syncBunnyStatus: vi.fn(),
 }));
 vi.mock("@/lib/env", () => ({ getEnv }));
-vi.mock("@/server/services/bunny-status-service-factory", () => ({
-	makeBunnyStatusService: () => ({ sync: syncBunnyStatus }),
+vi.mock("@/server/container", () => ({
+	container: { bunnyStatus: () => ({ sync: syncBunnyStatus }) },
 }));
 
 import { POST } from "./route";
