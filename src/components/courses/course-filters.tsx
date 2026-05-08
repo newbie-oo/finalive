@@ -19,6 +19,16 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const PRICE_OPTIONS = [
 	{ label: "ทั้งหมด", value: "" },
@@ -223,103 +233,179 @@ export function CourseFilters({
 
 			<div className="mx-auto max-w-[1200px] px-6 py-8 md:py-10">
 				<div className="flex flex-col gap-8 md:flex-row md:items-start">
-					<aside className="w-full shrink-0 md:w-[240px]">
-						<div className="md:sticky md:top-4 md:self-start">
-							<button
-								type="button"
-								onClick={() => setMobileOpen((v) => !v)}
-								className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-button border border-border bg-card py-2.5 text-ui md:hidden"
-								aria-expanded={mobileOpen}
-							>
-								<Faders size={16} />
-								ตัวกรอง
-								{hasFilters && (
-									<span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-										!
-									</span>
-								)}
-							</button>
-
-							<div
-								className={`space-y-6 ${mobileOpen ? "block" : "hidden md:block"}`}
-							>
-								<div className="rounded-card border border-border bg-card p-4">
-									<h3 className="mb-3 text-uism font-semibold text-foreground">
-										หมวดหมู่
-									</h3>
-									<ul className="space-y-2.5">
-										{CATEGORIES.map((cat) => (
-											<li key={cat.label}>
-												<Label
-													htmlFor={`cat-${cat.label}`}
-													className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
-												>
-													<Checkbox id={`cat-${cat.label}`} />
-													<span className="flex-1">{cat.label}</span>
-													<span className="num text-caption text-foreground-subtle">
-														({cat.count})
-													</span>
-												</Label>
-											</li>
-										))}
-									</ul>
-								</div>
-
-								<div className="rounded-card border border-border bg-card p-4">
-									<h3 className="mb-3 text-uism font-semibold text-foreground">
-										ราคา
-									</h3>
-									<RadioGroup
-										value={price === "" && freeOnly ? "free" : price}
-										onValueChange={(v) => {
-											setPrice(v);
-											setFreeOnly(v === "free");
-										}}
-										className="gap-2.5"
-									>
-										{PRICE_OPTIONS.map((o) => (
-											<Label
-												key={o.value || "all"}
-												htmlFor={`price-${o.value || "all"}`}
-												className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
-											>
-												<RadioGroupItem
-													id={`price-${o.value || "all"}`}
-													value={o.value}
-												/>
-												<span>{o.label}</span>
-											</Label>
-										))}
-									</RadioGroup>
-								</div>
-
-								<div className="rounded-card border border-border bg-card p-4">
-									<h3 className="mb-3 text-uism font-semibold text-foreground">
-										เรียงลำดับ
-									</h3>
-									<Select value={sortBy} onValueChange={setSortBy}>
-										<SelectTrigger
-											aria-label="Sort"
-											className="w-full"
-										>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{SORT_OPTIONS.map((o) => (
-												<SelectItem key={o.value} value={o.value}>
-													{o.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</div>
-							</div>
+					{/* Desktop sidebar — sticky filter rail at md+. */}
+					<aside className="hidden w-[240px] shrink-0 md:block">
+						<div className="space-y-6 md:sticky md:top-4 md:self-start">
+							<FilterPanels
+								categories={CATEGORIES}
+								price={price}
+								freeOnly={freeOnly}
+								sortBy={sortBy}
+								onPriceChange={(v) => {
+									setPrice(v);
+									setFreeOnly(v === "free");
+								}}
+								onSortChange={setSortBy}
+							/>
 						</div>
 					</aside>
 
 					<div className="min-w-0 flex-1">{children}</div>
 				</div>
 			</div>
+
+			{/* Mobile filter sheet — floating bottom button opens a shadcn Sheet
+			    so the filter rail no longer pushes results off-screen on small
+			    viewports. Hidden on md+ where the desktop rail is shown. */}
+			<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+				<SheetTrigger asChild>
+					<button
+						type="button"
+						className="fixed inset-x-4 bottom-4 z-30 inline-flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-ui font-semibold text-primary-foreground shadow-(--shadow-lg) transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:hidden"
+					>
+						<Faders size={16} weight="bold" />
+						ตัวกรอง
+						{hasFilters && (
+							<span className="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-foreground/20 px-1.5 text-caption font-bold">
+								•
+							</span>
+						)}
+					</button>
+				</SheetTrigger>
+				<SheetContent
+					side="bottom"
+					className="max-h-[85vh] gap-0 rounded-t-card p-0"
+				>
+					<SheetHeader className="border-b border-border px-5 py-4">
+						<SheetTitle>ตัวกรองคอร์ส</SheetTitle>
+						<SheetDescription className="sr-only">
+							เลือกหมวดหมู่ ราคา และการเรียงลำดับเพื่อกรองคอร์ส
+						</SheetDescription>
+					</SheetHeader>
+					<div className="flex-1 space-y-6 overflow-y-auto p-5">
+						<FilterPanels
+							categories={CATEGORIES}
+							price={price}
+							freeOnly={freeOnly}
+							sortBy={sortBy}
+							onPriceChange={(v) => {
+								setPrice(v);
+								setFreeOnly(v === "free");
+							}}
+							onSortChange={setSortBy}
+						/>
+					</div>
+					<SheetFooter className="flex-row gap-3 border-t border-border bg-background px-5 py-4">
+						{hasFilters && (
+							<Button
+								type="button"
+								variant="ghost"
+								size="md"
+								onClick={handleClear}
+								className="flex-1"
+							>
+								ล้างทั้งหมด
+							</Button>
+						)}
+						<Button
+							type="button"
+							variant="primary"
+							size="md"
+							onClick={() => setMobileOpen(false)}
+							className="flex-[1.5]"
+						>
+							ดูคอร์ส
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 		</div>
+	);
+}
+
+interface FilterPanelsProps {
+	categories: ReadonlyArray<{ readonly label: string; readonly count: number }>;
+	price: string;
+	freeOnly: boolean;
+	sortBy: string;
+	onPriceChange: (v: string) => void;
+	onSortChange: (v: string) => void;
+}
+
+/** Filter form bodies, shared between the desktop sidebar and the mobile
+ * Sheet. Stateless — caller owns the values + setters. */
+function FilterPanels({
+	categories,
+	price,
+	freeOnly,
+	sortBy,
+	onPriceChange,
+	onSortChange,
+}: FilterPanelsProps) {
+	return (
+		<>
+			<div className="rounded-card border border-border bg-card p-4">
+				<h3 className="mb-3 text-uism font-semibold text-foreground">
+					หมวดหมู่
+				</h3>
+				<ul className="space-y-2.5">
+					{categories.map((cat) => (
+						<li key={cat.label}>
+							<Label
+								htmlFor={`cat-${cat.label}`}
+								className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
+							>
+								<Checkbox id={`cat-${cat.label}`} />
+								<span className="flex-1">{cat.label}</span>
+								<span className="num text-caption text-foreground-subtle">
+									({cat.count})
+								</span>
+							</Label>
+						</li>
+					))}
+				</ul>
+			</div>
+
+			<div className="rounded-card border border-border bg-card p-4">
+				<h3 className="mb-3 text-uism font-semibold text-foreground">ราคา</h3>
+				<RadioGroup
+					value={price === "" && freeOnly ? "free" : price}
+					onValueChange={onPriceChange}
+					className="gap-2.5"
+				>
+					{PRICE_OPTIONS.map((o) => (
+						<Label
+							key={o.value || "all"}
+							htmlFor={`price-${o.value || "all"}`}
+							className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
+						>
+							<RadioGroupItem
+								id={`price-${o.value || "all"}`}
+								value={o.value}
+							/>
+							<span>{o.label}</span>
+						</Label>
+					))}
+				</RadioGroup>
+			</div>
+
+			<div className="rounded-card border border-border bg-card p-4">
+				<h3 className="mb-3 text-uism font-semibold text-foreground">
+					เรียงลำดับ
+				</h3>
+				<Select value={sortBy} onValueChange={onSortChange}>
+					<SelectTrigger aria-label="Sort" className="w-full">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{SORT_OPTIONS.map((o) => (
+							<SelectItem key={o.value} value={o.value}>
+								{o.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+		</>
 	);
 }

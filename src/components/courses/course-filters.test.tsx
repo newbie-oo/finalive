@@ -84,4 +84,34 @@ describe("CourseFilters", () => {
 
     expect(sortSelect).toHaveValue("price_asc");
   });
+
+  it("opens a bottom sheet when the mobile filter trigger is clicked", () => {
+    render(
+      <CourseFilters
+        initialQ=""
+        initialFreeOnly={false}
+        initialPrice=""
+        initialDuration=""
+        initialSort="newest"
+      >
+        <div />
+      </CourseFilters>,
+    );
+
+    // The mobile trigger uses the same "ตัวกรอง" label as nothing else by
+    // role=button — getByRole picks it up unambiguously.
+    const trigger = screen.getByRole("button", { name: /ตัวกรอง$/ });
+    fireEvent.click(trigger);
+
+    // Radix renders the sheet with role="dialog".
+    expect(
+      screen.getByRole("dialog", { name: /ตัวกรองคอร์ส/ }),
+    ).toBeInTheDocument();
+
+    // The footer's primary CTA closes the sheet — it's the way to "view
+    // results" with the current filter state applied.
+    expect(
+      screen.getByRole("button", { name: /^ดูคอร์ส$/ }),
+    ).toBeInTheDocument();
+  });
 });
