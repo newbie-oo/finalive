@@ -19,15 +19,19 @@ describe("CertificateCard", () => {
 		).toBeInTheDocument();
 		// Status chip uses the success tone copy.
 		expect(screen.getByText(/ใช้งานได้/)).toBeInTheDocument();
-		// Cert code is displayed in mono so credential viewers (HR, recruiters)
-		// can copy it cleanly.
-		expect(screen.getByText(/FNL-DCF-2024-0042/)).toHaveClass("mono");
+		// Cert code is displayed in mono (in both the band header and body) so
+		// credential viewers (HR, recruiters) can copy it cleanly.
+		const codeMatches = screen.getAllByText(/FNL-DCF-2024-0042/);
+		expect(codeMatches.length).toBeGreaterThanOrEqual(1);
+		expect(codeMatches.every((el) => el.className.includes("mono"))).toBe(
+			true,
+		);
 		// Two primary actions: download PDF + share/verify.
 		expect(
 			screen.getByRole("link", { name: /ดาวน์โหลด PDF/ }),
 		).toHaveAttribute("href", baseCert.pdfUrl);
 		expect(
-			screen.getByRole("link", { name: /แชร์ลิงก์ตรวจ/ }),
+			screen.getByRole("link", { name: /เปิดหน้าตรวจสอบ/ }),
 		).toHaveAttribute("href", "/verify/FNL-DCF-2024-0042");
 	});
 
