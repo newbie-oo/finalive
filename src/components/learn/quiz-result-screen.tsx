@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { QuizCelebration } from "./quiz-celebration";
 import { QuizScoreCircle } from "./quiz-score-circle";
-import { QuizResultRow } from "./quiz-result-row";
+import { QuizResultAccordion } from "./quiz-result-accordion";
 import type { QuizWithQuestions } from "@/server/repos/quiz";
 import type { QuestionResult } from "@/lib/quiz-types";
 
@@ -76,8 +76,8 @@ export function QuizResultScreen({
 				<div className="text-uism font-medium uppercase tracking-widest text-foreground-subtle mb-3">
 					สรุปผลแต่ละข้อ
 				</div>
-				<div className="flex flex-col gap-2.5">
-					{quiz.questions.map((q, idx) => {
+				<QuizResultAccordion
+					items={quiz.questions.map((q, idx) => {
 						const r = resultMap.get(q.id);
 						const selectedChoice = q.choices.find(
 							(c) => c.id === r?.selectedChoiceId,
@@ -87,42 +87,39 @@ export function QuizResultScreen({
 						);
 						const explanation =
 							selectedChoice?.explanation ?? correctChoice?.explanation;
-						const genericExp = !r?.isCorrect
-							? `คำตอบที่ถูกต้องคือ ${correctChoice?.body ?? "—"}`
-							: undefined;
-						return (
-							<QuizResultRow
-								key={q.id}
-								n={idx + 1}
-								ok={r?.isCorrect ?? false}
-								q={q.promptMd}
-								exp={explanation ?? genericExp}
-								correctAnswer={
-									!r?.isCorrect ? correctChoice?.body : undefined
-								}
-								selectedAnswer={
-									!r?.isCorrect ? selectedChoice?.body : undefined
-								}
-							/>
-						);
+						return {
+							n: idx + 1,
+							ok: r?.isCorrect ?? false,
+							question: q.promptMd,
+							selectedAnswer: selectedChoice?.body,
+							correctAnswer: correctChoice?.body,
+							explanation,
+						};
 					})}
-				</div>
+				/>
 			</div>
 
-			<div className="rounded-card border border-border bg-card p-6 text-center">
-				<h3 className="text-h3 mb-1">
+			<div
+				className={`overflow-hidden rounded-card border p-7 text-center sm:p-10 ${
+					result.passed
+						? "border-success/25 bg-linear-to-br from-success-bg via-card to-card"
+						: "border-warning/30 bg-linear-to-br from-warning-bg via-card to-card"
+				}`}
+			>
+				<h3 className="mb-1.5 text-h2">
 					{result.passed ? "พร้อมไปต่อแล้ว!" : "อย่าลืมทบทวนเนื้อหา"}
 				</h3>
-				<p className="text-body text-muted-foreground mb-5">
+				<p className="mx-auto mb-6 max-w-md text-body text-muted-foreground">
 					{result.passed
 						? "คุณผ่านแบบทดสอบแล้ว ไปบทถัดไปกันเลย"
 						: "ทบทวนเนื้อหาและลองทำแบบทดสอบอีกครั้ง"}
 				</p>
-				<div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+				<div className="mx-auto flex max-w-md flex-col items-stretch gap-2 sm:max-w-lg sm:flex-row sm:items-center sm:justify-center">
 					{nextLessonId ? (
 						<Button
 							variant={result.passed ? "primary" : "secondary"}
 							size="lg"
+							className="w-full sm:flex-1"
 							onClick={() =>
 								router.push(`/learn/${courseSlug}/${nextLessonId}`)
 							}
@@ -133,6 +130,7 @@ export function QuizResultScreen({
 						<Button
 							variant={result.passed ? "primary" : "secondary"}
 							size="lg"
+							className="w-full sm:flex-1"
 							onClick={() => router.push("/account/enrollments")}
 						>
 							<ListBullets size={16} weight="bold" /> ดูคอร์สของฉัน
@@ -141,9 +139,9 @@ export function QuizResultScreen({
 					{result.passed && (
 						<Button
 							asChild
-							variant="outline"
+							variant="secondary"
 							size="lg"
-							className="border-primary text-primary hover:bg-primary/5"
+							className="w-full sm:w-auto"
 						>
 							<a
 								href={`/verify/${courseSlug}`}
@@ -154,16 +152,22 @@ export function QuizResultScreen({
 							</a>
 						</Button>
 					)}
-					<Button
-						variant="ghost"
-						size="lg"
+				</div>
+				<div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-uism">
+					<button
+						type="button"
 						onClick={() => router.push(`/learn/${courseSlug}`)}
+						className="inline-flex items-center gap-1 font-medium text-muted-foreground transition-colors hover:text-foreground"
 					>
-						<BookOpen size={16} weight="bold" /> ทบทวนเนื้อหา
-					</Button>
-					<Button variant="secondary" size="lg" onClick={onRetry}>
+						<BookOpen size={14} weight="bold" /> ทบทวนเนื้อหา
+					</button>
+					<button
+						type="button"
+						onClick={onRetry}
+						className="font-medium text-muted-foreground transition-colors hover:text-foreground"
+					>
 						ทำอีกครั้ง
-					</Button>
+					</button>
 				</div>
 			</div>
 		</div>
