@@ -9,6 +9,12 @@ import {
 	CaretRight,
 } from "@phosphor-icons/react/dist/ssr";
 import { Progress } from "@/components/ui/progress";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
@@ -16,10 +22,12 @@ import { formatDurationAuto } from "@/lib/format";
 import { formatActivityTime } from "@/lib/format-time";
 import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
+import { WelcomeHero } from "@/components/dashboard/welcome-hero";
 import {
 	getActivityIcon,
 	getActivityBadge,
 } from "@/components/dashboard/activity-icons";
+import { Info } from "@phosphor-icons/react/dist/ssr";
 
 export const dynamic = "force-dynamic";
 
@@ -33,119 +41,97 @@ export default async function DashboardPage() {
 	const inProgress = data.enrollments.filter((e) => !e.completedAt);
 	const continueCourse = inProgress[0];
 	const watchedDuration = formatDurationAuto(data.totalWatchedSeconds);
+	const isNewStudent = data.enrollments.length === 0;
+	const firstName = session.user.name?.split(/\s+/)[0] ?? null;
 
 	return (
 		<section className="space-y-8">
-			<div
-				className="relative overflow-hidden rounded-card border border-border p-6 md:p-8"
-				style={{
-					background:
-						"linear-gradient(120deg, rgba(79,70,229,0.08) 0%, rgba(249,115,22,0.06) 100%)",
-				}}
-			>
-				<div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-					<div>
-						<h1 className="mb-1.5 text-h1 font-bold text-foreground">
-							สวัสดี {session.user.name?.split(/\s+/)[0] ?? "นักเรียน"} 👋
-						</h1>
+			{isNewStudent ? (
+				<WelcomeHero firstName={firstName} />
+			) : (
+				<div className="relative overflow-hidden rounded-card border border-border bg-linear-to-br from-primary/8 to-accent/6 p-6 md:p-8">
+					<div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+						<div>
+							<h1 className="mb-1.5 text-h1 font-bold text-foreground">
+								สวัสดี {firstName ?? "นักเรียน"} 👋
+							</h1>
+							{continueCourse ? (
+								<p className="text-bodylg text-muted-foreground">
+									เรียนต่อจาก{" "}
+									<strong className="num font-bold text-foreground">
+										{continueCourse.courseTitle}
+									</strong>{" "}
+									— ทำไปแล้ว{" "}
+									<strong className="num font-bold text-foreground">
+										{continueCourse.doneLessons}/{continueCourse.totalLessons}
+									</strong>{" "}
+									บทเรียน
+								</p>
+							) : (
+								<p className="text-bodylg text-muted-foreground">
+									เลือกคอร์สถัดไปได้เลย
+								</p>
+							)}
+						</div>
+						{/* Single prominent CTA: "เรียนต่อ" wins over "ดูคอร์ส" when a
+						    lesson is in progress so the dashboard's primary intent is
+						    obvious. */}
 						{continueCourse ? (
-							<p className="text-bodylg text-muted-foreground">
-								เรียนต่อจาก{" "}
-								<strong className="num font-bold text-foreground">
-									{continueCourse.courseTitle}
-								</strong>{" "}
-								— ทำไปแล้ว{" "}
-								<strong className="num font-bold text-foreground">
-									{continueCourse.doneLessons}/{continueCourse.totalLessons}
-								</strong>{" "}
-								บทเรียน
-							</p>
+							<div className="flex flex-col items-end gap-1.5">
+								<Link
+									href={`/learn/${continueCourse.courseSlug}`}
+									className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+								>
+									เรียนต่อ <ArrowRight size={16} />
+								</Link>
+								<Link
+									href="/courses"
+									className="text-uism font-medium text-muted-foreground hover:text-foreground"
+								>
+									หรือดูคอร์สใหม่
+								</Link>
+							</div>
 						) : (
-							<p className="text-bodylg text-muted-foreground">
-								เริ่มเรียนคอร์สใหม่ได้เลย
-							</p>
-						)}
-					</div>
-					{/* Single prominent CTA per the dashboard's primary intent. When the
-					    student has an in-progress lesson, "เรียนต่อ" wins and "ดูคอร์ส"
-					    drops to a quiet text link. With no progress, "ดูคอร์ส" is the
-					    only ask. Avoids competing equal-weight buttons. */}
-					{continueCourse ? (
-						<div className="flex flex-col items-end gap-1.5">
-							<Link
-								href={`/learn/${continueCourse.courseSlug}`}
-								className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-							>
-								เรียนต่อ <ArrowRight size={16} />
-							</Link>
 							<Link
 								href="/courses"
-								className="text-uism font-medium text-muted-foreground hover:text-foreground"
+								className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
 							>
-								หรือดูคอร์สใหม่
+								ดูคอร์ส <ArrowRight size={16} />
 							</Link>
-						</div>
-					) : (
-						<Link
-							href="/courses"
-							className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-						>
-							ดูคอร์ส <ArrowRight size={16} />
-						</Link>
-					)}
-				</div>
-			</div>
-
-			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-				{[
-					{
-						icon: Books,
-						value: String(data.enrollments.length),
-						label: "คอร์สที่เรียนอยู่",
-						color: "var(--primary)",
-					},
-					{
-						icon: Clock,
-						value: watchedDuration.value,
-						label: `${watchedDuration.unit}เรียนรวม`,
-						color: "var(--success)",
-					},
-					{
-						icon: Flame,
-						value: String(data.streak),
-						label: "วันต่อเนื่อง",
-						color: "var(--accent)",
-					},
-					{
-						icon: Trophy,
-						value: String(data.certCount),
-						label: "ใบประกาศ",
-						color: "var(--avatar-to)",
-					},
-				].map((s) => (
-					<div
-						key={s.label}
-						className="rounded-card border border-border bg-card p-5"
-					>
-						<div className="flex items-center gap-3.5">
-							<div
-								className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-								style={{ background: `${s.color}15`, color: s.color }}
-							>
-								<s.icon size={20} weight="bold" />
-							</div>
-							<div>
-								<div className="num text-h2 font-bold leading-none text-foreground">
-									{s.value}
-								</div>
-								<div className="mt-1 text-caption text-muted-foreground">
-									{s.label}
-								</div>
-							</div>
-						</div>
+						)}
 					</div>
-				))}
-			</div>
+				</div>
+			)}
+
+			<TooltipProvider>
+				<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+					<StatCard
+						icon={Books}
+						value={String(data.enrollments.length)}
+						label="คอร์สที่เรียนอยู่"
+						color="var(--primary)"
+					/>
+					<StatCard
+						icon={Clock}
+						value={watchedDuration.value}
+						label={`${watchedDuration.unit}เรียนรวม`}
+						color="var(--success)"
+					/>
+					<StatCard
+						icon={Flame}
+						value={String(data.streak)}
+						label="วันต่อเนื่อง"
+						color="var(--accent)"
+						tooltip="เรียนอย่างน้อย 1 บทต่อวันเพื่อรักษาสตรีค"
+					/>
+					<StatCard
+						icon={Trophy}
+						value={String(data.certCount)}
+						label="ใบประกาศ"
+						color="var(--avatar-to)"
+					/>
+				</div>
+			</TooltipProvider>
 
 			{inProgress.length > 0 && (
 				<div>
@@ -283,5 +269,51 @@ export default async function DashboardPage() {
 				</div>
 			)}
 		</section>
+	);
+}
+
+interface StatCardProps {
+	icon: React.ComponentType<{ size?: number; weight?: "bold" }>;
+	value: string;
+	label: string;
+	color: string;
+	/** When set, renders an info icon next to the label that explains the metric. */
+	tooltip?: string;
+}
+
+function StatCard({ icon: Icon, value, label, color, tooltip }: StatCardProps) {
+	return (
+		<div className="rounded-card border border-border bg-card p-5">
+			<div className="flex items-center gap-3.5">
+				<div
+					className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+					style={{ background: `${color}15`, color }}
+				>
+					<Icon size={20} weight="bold" />
+				</div>
+				<div>
+					<div className="num text-h2 leading-none font-bold text-foreground">
+						{value}
+					</div>
+					<div className="mt-1 flex items-center gap-1 text-caption text-muted-foreground">
+						<span>{label}</span>
+						{tooltip && (
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<button
+										type="button"
+										aria-label={`คำอธิบาย: ${label}`}
+										className="inline-flex items-center text-foreground-subtle transition-colors hover:text-foreground focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+									>
+										<Info size={12} aria-hidden />
+									</button>
+								</TooltipTrigger>
+								<TooltipContent side="top">{tooltip}</TooltipContent>
+							</Tooltip>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
 	);
 }
