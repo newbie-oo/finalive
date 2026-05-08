@@ -22,6 +22,7 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CertificateClaim } from "./certificate-claim";
+import { LessonToc } from "./lesson-toc";
 
 /** Fraction of duration the student must watch before they can self-mark a
  * lesson complete. Below this they see a disabled button with a tooltip
@@ -194,23 +195,26 @@ export function LessonPlayerLayout({
 					/>
 				)}
 				{activeTab === "content" && (
-					<>
-						{lessonBodyMd && (
-							<article className="prose-style mb-8">
-								<MarkdownView text={lessonBodyMd} />
-							</article>
-						)}
+					<div className="xl:grid xl:grid-cols-[minmax(0,1fr)_240px] xl:gap-8">
+						<div className="min-w-0">
+							{lessonBodyMd && (
+								<article className="prose-style mb-8">
+									<MarkdownView text={lessonBodyMd} />
+								</article>
+							)}
 
-						<LessonClient
-							lessonId={lessonId}
-							courseSlug={courseSlug}
-							nextLessonId={nextLessonId}
-							quizId={quizId}
-							durationSeconds={durationSeconds}
-							isAdmin={isAdmin}
-							completed={completed}
-						/>
-					</>
+							<LessonClient
+								lessonId={lessonId}
+								courseSlug={courseSlug}
+								nextLessonId={nextLessonId}
+								quizId={quizId}
+								durationSeconds={durationSeconds}
+								isAdmin={isAdmin}
+								completed={completed}
+							/>
+						</div>
+						{lessonBodyMd && <LessonToc lessonId={lessonId} />}
+					</div>
 				)}
 
 				<div className="mt-8 flex items-center justify-between border-t border-border pt-6">
