@@ -126,9 +126,6 @@ export default async function Home() {
 								<Link href="/register">ลงทะเบียนฟรี</Link>
 							</Button>
 						</div>
-						<p className="mt-3 text-uism text-muted-foreground">
-							ไม่ต้องใช้บัตรเครดิต · ยกเลิกได้ทุกเมื่อ
-						</p>
 
 						{hasStats && (
 							<div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
