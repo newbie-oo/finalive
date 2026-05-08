@@ -10,7 +10,13 @@ export interface CourseCardData extends PublicCourseSummary {
 	coverImageUrl: string | null;
 }
 
-export function CourseCard({ course }: { course: CourseCardData }) {
+export function CourseCard({
+	course,
+	priority,
+}: {
+	course: CourseCardData;
+	priority?: boolean;
+}) {
 	// Defensive: if a row slipped through with price=0 && isFree=false (the
 	// legacy bug fixed by migration), still render it as free in the catalog
 	// so students don't see "฿0.00" tags. The repos enforce the invariant on
@@ -34,7 +40,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 						fill
 						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 						className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-						loading="lazy"
+						{...(priority ? { priority: true } : { loading: "lazy" })}
 					/>
 				) : (
 					<CoverFallback title={course.title} />
@@ -94,7 +100,13 @@ function CoverFallback({ title }: { title: string }) {
 	);
 }
 
-export function CourseListItem({ course }: { course: CourseCardData }) {
+export function CourseListItem({
+	course,
+	priority,
+}: {
+	course: CourseCardData;
+	priority?: boolean;
+}) {
 	const isFree = course.isFree || Number(course.price) === 0;
 	const price = isFree ? "ฟรี" : formatTHB(course.price);
 	const imageUrl = course.coverImageUrl;
@@ -114,7 +126,7 @@ export function CourseListItem({ course }: { course: CourseCardData }) {
 						fill
 						sizes="200px"
 						className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-						loading="lazy"
+						{...(priority ? { priority: true } : { loading: "lazy" })}
 					/>
 				) : (
 					<CoverFallback title={course.title} />

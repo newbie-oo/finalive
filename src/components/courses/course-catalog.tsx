@@ -82,17 +82,17 @@ export function CourseCatalog({ result, searchParams }: CourseCatalogProps) {
 
 			{viewMode === "grid" ? (
 				<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-					{data.map((c) => (
+					{data.map((c, i) => (
 						<li key={c.id}>
-							<CourseCard course={c} />
+							<CourseCard course={c} priority={i === 0} />
 						</li>
 					))}
 				</ul>
 			) : (
 				<ul className="flex flex-col gap-4">
-					{data.map((c) => (
+					{data.map((c, i) => (
 						<li key={c.id}>
-							<CourseListItem course={c} />
+							<CourseListItem course={c} priority={i === 0} />
 						</li>
 					))}
 				</ul>
