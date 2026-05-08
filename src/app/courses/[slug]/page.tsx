@@ -18,7 +18,59 @@ import { StatusChip } from "@/components/ui/status-chip";
 import { FreeCourseCta } from "@/components/course/free-course-cta";
 import { MobileCourseCta } from "@/components/course/mobile-course-cta";
 import { LearningOutcomesSection } from "@/components/course/learning-outcomes-section";
+import {
+	CourseReviewsSection,
+	type Review,
+} from "@/components/course/reviews-section";
 import { CourseTabs } from "./course-tabs";
+
+// TODO(reviews): replace once a `course_review` table + listReviews repo
+// land. Until then, every published course gets the same rotation of
+// representative reviews so designers/QA can validate the UI.
+const STUB_REVIEWS: ReadonlyArray<Review> = [
+	{
+		name: "พิมพ์ชนก ส.",
+		role: "Equity Analyst",
+		rating: 5,
+		body: "อธิบายเป็นขั้นตอน เข้าใจง่าย ใช้ template Excel ในงานจริงได้เลย",
+		date: new Date("2024-09-12"),
+	},
+	{
+		name: "ธนพล ค.",
+		role: "นักลงทุนรายย่อย",
+		rating: 5,
+		body: "เริ่มจากศูนย์ ตอนนี้อ่านงบการเงินเองได้ พอร์ตปีนี้ทำผลตอบแทนได้ดีกว่าเดิม",
+		date: new Date("2024-08-03"),
+	},
+	{
+		name: "ดร.วราภรณ์ ม.",
+		role: "อาจารย์",
+		rating: 5,
+		body: "ใช้เป็นเสริมในวิชา Corporate Finance นักศึกษาเข้าใจ DCF ได้เร็วขึ้นมาก",
+		date: new Date("2024-07-18"),
+	},
+	{
+		name: "อภิเชษฐ์ ว.",
+		role: "Junior PM",
+		rating: 4,
+		body: "เนื้อหาแน่น แต่บางบทอยากให้ลงรายละเอียดมากกว่านี้",
+		date: new Date("2024-10-21"),
+	},
+	{
+		name: "นภัสนันท์ จ.",
+		role: "นักวิเคราะห์",
+		rating: 5,
+		body: "Q&A กับผู้สอนตอบเร็ว ให้คำแนะนำตรงประเด็น",
+		date: new Date("2024-11-01"),
+	},
+	{
+		name: "ปกรณ์ ส.",
+		role: "Founder",
+		rating: 4,
+		body: "ดูได้ทุกอุปกรณ์ ใช้ฟังขณะเดินทางก็ลงตัว",
+		date: new Date("2024-12-04"),
+	},
+];
 import {
 	getPublishedCourseBySlug,
 	getCourseCurriculum,
@@ -321,6 +373,8 @@ export default async function CourseDetailPage({
 				outcomes={curriculum.map((m) => m.title)}
 				eyebrow="หัวข้อในคอร์สนี้"
 			/>
+
+			<CourseReviewsSection reviews={STUB_REVIEWS} />
 
 			<CourseTabs
 				curriculum={curriculum}
