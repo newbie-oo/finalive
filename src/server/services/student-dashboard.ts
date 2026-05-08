@@ -8,6 +8,7 @@ import { countByUserId as countCertificatesByUserId } from "@/server/repos/certi
 import { StreakRepo } from "@/server/repos/streak";
 import { HeatmapRepo } from "@/server/repos/heatmap";
 import { StudentActivityRepo } from "@/server/repos/student-activity";
+import { UpNextRepo, type UpNextItem } from "@/server/repos/up-next";
 import {
 	type AchievementItem,
 	computeStreak,
@@ -21,6 +22,10 @@ export interface StudentEnrollmentItem extends StudentEnrollmentItemRaw {
 	coverImageUrl: string | null;
 }
 
+export interface UpNextEntry extends UpNextItem {
+	coverImageUrl: string | null;
+}
+
 /** Orchestrator: fetch raw data from focused repos then build view model. */
 export async function getStudentDashboard(userId: string) {
 	const [
@@ -31,6 +36,7 @@ export async function getStudentDashboard(userId: string) {
 		streakDates,
 		heatMapByDate,
 		recentActivity,
+		upNextRaw,
 	] = await Promise.all([
 		StudentEnrollmentRepo.listWithProgress(userId),
 		WatchTimeRepo.getTotal(userId),
@@ -39,11 +45,16 @@ export async function getStudentDashboard(userId: string) {
 		StreakRepo.getDates(userId),
 		HeatmapRepo.getData(userId, 35),
 		StudentActivityRepo.getRecent(userId),
+		UpNextRepo.listForUser(userId, 3),
 	]);
 
 	const enrollments = enrollmentsRaw.map((e) => ({
 		...e,
 		coverImageUrl: coverImageUrl(e.coverStorageKey),
+	}));
+	const upNext: UpNextEntry[] = upNextRaw.map((u) => ({
+		...u,
+		coverImageUrl: coverImageUrl(u.coverStorageKey),
 	}));
 
 	const completedCourses = enrollments.filter((e) => e.completedAt).length;
@@ -80,5 +91,6 @@ export async function getStudentDashboard(userId: string) {
 		heatmap,
 		recentActivity,
 		achievements,
+		upNext,
 	};
 }

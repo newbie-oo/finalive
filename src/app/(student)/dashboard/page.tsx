@@ -24,6 +24,7 @@ import { formatActivityTime } from "@/lib/format-time";
 import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
 import { WelcomeHero } from "@/components/dashboard/welcome-hero";
+import { UpNextList } from "@/components/dashboard/up-next-list";
 import {
 	getActivityIcon,
 	getActivityBadge,
@@ -132,6 +133,23 @@ export default async function DashboardPage() {
 					/>
 				</div>
 			</TooltipProvider>
+
+			{data.upNext.length > 0 && (
+				<div>
+					<div className="mb-4 flex items-baseline justify-between">
+						<h2 className="text-h2 font-bold text-foreground">
+							บทถัดไปที่แนะนำ
+						</h2>
+						<Link
+							href="/account/enrollments"
+							className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+						>
+							ดูทั้งหมด <CaretRight size={14} />
+						</Link>
+					</div>
+					<UpNextList items={data.upNext} />
+				</div>
+			)}
 
 			{inProgress.length > 0 && (
 				<div>
