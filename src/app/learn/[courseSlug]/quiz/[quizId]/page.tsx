@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Lock, X } from "@phosphor-icons/react/dist/ssr";
+import { Lock } from "@phosphor-icons/react/dist/ssr";
 import { getQuizById } from "@/server/repos/quiz";
 import { getSession } from "@/server/auth-session";
 import { QuizForm } from "@/components/learn/quiz-form";
+import { QuizExitButton } from "@/components/learn/quiz-exit-button";
 import { getLearnCourse } from "@/server/repos/learn";
 
 export const dynamic = "force-dynamic";
@@ -65,13 +65,9 @@ export default async function QuizPage({
   return (
     <>
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4 lg:px-6">
-        <Link
-          href={`/learn/${courseSlug}/${quizData.lessonId}`}
-          className="inline-flex items-center gap-1.5 rounded-nav px-2 py-1.5 text-uism text-foreground transition-colors hover:bg-muted"
-        >
-          <X size={16} />
-          ออกจากแบบทดสอบ
-        </Link>
+        <QuizExitButton
+          lessonHref={`/learn/${courseSlug}/${quizData.lessonId}`}
+        />
         <div className="text-caption text-muted-foreground flex items-center gap-1.5">
           <span className="num">{quizData.questions.length}</span> ข้อ · ผ่าน{" "}
           <span className="num">{quizData.passScorePct}%</span>
