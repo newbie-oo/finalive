@@ -5,12 +5,15 @@ import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { File, CheckCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import {
+  MAX_UPLOAD_BYTES,
+  SLIP_ACCEPT,
+  isSlipMimeAllowed,
+} from "@/lib/upload-limits";
 
 interface InlineSlipUploadProps {
   pendingId: string;
 }
-
-const MAX_SLIP_BYTES = 5 * 1024 * 1024;
 
 /**
  * Inline slip upload for the checkout page.
@@ -29,17 +32,16 @@ export function InlineSlipUpload({ pendingId }: InlineSlipUploadProps) {
       setPreview(null);
       return;
     }
-    const allowed = f.type.startsWith("image/") || f.type === "application/pdf";
-    const looksHeic =
-      /\.(heic|heif)$/i.test(f.name) || /heic|heif/i.test(f.type);
-    if (!allowed && !looksHeic) {
+    if (!isSlipMimeAllowed(f)) {
       toast.error("รองรับเฉพาะ PNG, JPG, PDF, HEIC");
       return;
     }
-    if (f.size > MAX_SLIP_BYTES) {
+    if (f.size > MAX_UPLOAD_BYTES) {
       toast.error("ไฟล์ใหญ่เกิน 5 MB");
       return;
     }
+    const looksHeic =
+      /\.(heic|heif)$/i.test(f.name) || /heic|heif/i.test(f.type);
     setFile(f);
     if (f.type.startsWith("image/") && !looksHeic) {
       const reader = new FileReader();
@@ -148,7 +150,7 @@ export function InlineSlipUpload({ pendingId }: InlineSlipUploadProps) {
             id="slip-file"
             name="slip"
             type="file"
-            accept="image/png,image/jpeg,image/heic,image/heif,application/pdf,.heic,.heif"
+            accept={SLIP_ACCEPT}
             required
             className="sr-only"
             onChange={(e) => handleFile(e.target.files?.[0] ?? null)}

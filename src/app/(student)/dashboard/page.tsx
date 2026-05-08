@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { getSession } from "@/server/auth-session";
 import { getStudentDashboard } from "@/server/services/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
-import { formatActivityTime } from "@/lib/format-time";
+import { formatActivityTime, MONTH_LABELS_TH } from "@/lib/format-time";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
 import {
 	getActivityIcon,
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
 						</div>
 						<div className="flex-1">
 							<div className="mb-2 flex justify-between px-1">
-								{["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค."].map((m) => (
+								{MONTH_LABELS_TH.slice(0, 5).map((m) => (
 									<span
 										key={m}
 										className="text-[11px] text-muted-foreground"

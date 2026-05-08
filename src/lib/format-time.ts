@@ -6,7 +6,8 @@
  * Services and view layers call these when building view models.
  */
 
-const MONTH_LABELS = [
+/** Thai abbreviated month labels, indexed 0..11. */
+export const MONTH_LABELS_TH = [
 	"ม.ค.",
 	"ก.พ.",
 	"มี.ค.",
@@ -19,7 +20,7 @@ const MONTH_LABELS = [
 	"ต.ค.",
 	"พ.ย.",
 	"ธ.ค.",
-];
+] as const;
 
 export function formatActivityTime(d: Date): string {
 	const now = new Date();
@@ -33,7 +34,7 @@ export function formatActivityTime(d: Date): string {
 	if (diffHour < 24) return `${diffHour} ชม. ที่แล้ว`;
 	if (diffDay === 1) return "เมื่อวาน";
 	if (diffDay < 7) return `${diffDay} วันที่แล้ว`;
-	return `${d.getDate()} ${MONTH_LABELS[d.getMonth()]} ${d.getFullYear() + 543}`;
+	return `${d.getDate()} ${MONTH_LABELS_TH[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
 export function timeAgo(date: Date): string {
@@ -55,7 +56,7 @@ export function timeAgo(date: Date): string {
 
 /** "6 พ.ค. 2568" */
 export function thaiDateString(d: Date): string {
-	return `${d.getDate()} ${MONTH_LABELS[d.getMonth()]} ${d.getFullYear() + 543}`;
+	return `${d.getDate()} ${MONTH_LABELS_TH[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
 /** "14:30" */

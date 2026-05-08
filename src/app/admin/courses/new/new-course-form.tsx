@@ -11,6 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SimpleTiptapEditor } from "@/components/admin/simple-tiptap-editor";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 
 function CoverUpload({
   onChange,
@@ -28,7 +29,7 @@ function CoverUpload({
         setError("กรุณาเลือกไฟล์รูปภาพ");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > MAX_UPLOAD_BYTES) {
         setError("ไฟล์ต้องไม่เกิน 5MB");
         return;
       }

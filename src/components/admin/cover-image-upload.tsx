@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
 import { updateCourseCoverAction } from "@/server/actions/admin-course";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 
 interface CoverImageUploadProps {
   courseId: string;
@@ -25,7 +26,7 @@ export function CoverImageUpload({
         toast.error("กรุณาเลือกไฟล์รูปภาพ");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > MAX_UPLOAD_BYTES) {
         toast.error("ไฟล์ต้องไม่เกิน 5MB");
         return;
       }

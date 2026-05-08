@@ -2,22 +2,7 @@ import "server-only";
 import { type AdminDashboardCounts } from "@/server/repos/admin-stats";
 import { type MonthlyRevenueRaw } from "@/server/repos/revenue";
 import { type RawActivityRow } from "@/server/repos/activity";
-import { formatActivityTime } from "@/lib/format-time";
-
-const MONTH_LABELS = [
-	"ม.ค.",
-	"ก.พ.",
-	"มี.ค.",
-	"เม.ย.",
-	"พ.ค.",
-	"มิ.ย.",
-	"ก.ค.",
-	"ส.ค.",
-	"ก.ย.",
-	"ต.ค.",
-	"พ.ย.",
-	"ธ.ค.",
-];
+import { formatActivityTime, MONTH_LABELS_TH } from "@/lib/format-time";
 
 const ACTIVITY_COLORS = [
 	"#4F46E5",
@@ -61,7 +46,7 @@ export function formatMonthlyRevenue(
 	rows: MonthlyRevenueRaw[],
 ): MonthlyRevenue[] {
 	return rows.map((r) => ({
-		month: MONTH_LABELS[r.monthIndex]!,
+		month: MONTH_LABELS_TH[r.monthIndex]!,
 		year: r.year,
 		current: r.current,
 		previous: r.previous,

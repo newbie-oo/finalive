@@ -8,6 +8,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 import {
   TextB,
   TextItalic,
@@ -98,7 +99,7 @@ export function TiptapEditor({
       window.alert("กรุณาเลือกไฟล์รูปภาพ");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > MAX_UPLOAD_BYTES) {
       window.alert("ไฟล์ใหญ่เกิน 5 MB");
       return;
     }

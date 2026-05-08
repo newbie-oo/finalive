@@ -3,6 +3,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { z } from "zod";
 import { ApiError } from "@/lib/api-error";
 import { sniffSlipFile } from "@/lib/file-sniff";
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 import { withIdempotency } from "@/server/repos/idempotency";
 import type { ObjectStorage } from "@/server/services/storage";
 import type { SlipNotifier } from "@/server/services/slip-notifier";
@@ -31,7 +32,7 @@ export type UploadSlipError =
 	| "pending_expired"
 	| "internal_error";
 
-const MAX_BYTES = 5 * 1024 * 1024;
+const MAX_BYTES = MAX_UPLOAD_BYTES;
 
 const extByMime: Record<
 	Exclude<ReturnType<typeof sniffSlipFile>, "unknown">,

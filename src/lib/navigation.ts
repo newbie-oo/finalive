@@ -1,3 +1,5 @@
+import { isAdmin } from "@/lib/auth-utils";
+
 export interface NavItem {
   href: string;
   label: string;
@@ -27,9 +29,10 @@ export function visibleNav(
   role: string | undefined,
   isAuthed: boolean,
 ): NavItem[] {
+  const admin = isAdmin({ role });
   return PUBLIC_NAV.filter((n) => {
-    if (n.visibility === "admin") return role === "admin";
-    if (n.visibility === "student") return isAuthed && role !== "admin";
+    if (n.visibility === "admin") return admin;
+    if (n.visibility === "student") return isAuthed && !admin;
     if (n.visibility === "auth") return isAuthed;
     return true;
   });

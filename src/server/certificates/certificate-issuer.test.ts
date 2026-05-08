@@ -238,9 +238,9 @@ describe("CertificateIssuer", () => {
 		deps.notifier.notify.mockRejectedValue(new Error("SMTP down"));
 		deps.generateCertCode.mockReturnValue("CERT-2024-TEST7777");
 
-		const consoleError = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		const stderrWrite = vi
+			.spyOn(process.stderr, "write")
+			.mockImplementation(() => true);
 		const issuer = new CertificateIssuer(deps);
 
 		const result = await issuer.issue(
@@ -251,12 +251,15 @@ describe("CertificateIssuer", () => {
 		);
 
 		expect(result.ok).toBe(true);
-		// Logger writes a single JSON line to console.error containing our event name.
-		expect(consoleError).toHaveBeenCalledTimes(1);
-		expect(consoleError.mock.calls[0]?.[0]).toContain(
-			"certificate.notify_failed",
+		// Logger writes a single JSON line to process.stderr containing our event name.
+		const stderrCalls = stderrWrite.mock.calls.map(
+			(call) => String(call[0] ?? ""),
 		);
+		const errorLine = stderrCalls.find((line) =>
+			line.includes("certificate.notify_failed"),
+		);
+		expect(errorLine).toBeTruthy();
 
-		consoleError.mockRestore();
+		stderrWrite.mockRestore();
 	});
 });

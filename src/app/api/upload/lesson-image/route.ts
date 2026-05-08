@@ -5,12 +5,11 @@ import {
 	runImageUpload,
 } from "@/server/services/image-upload-factory";
 import { rateLimitConfigs } from "@/lib/rate-limit";
-
-const MAX_SIZE = 5 * 1024 * 1024;
+import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 
 function makeService() {
 	return createImageUploadService({
-		maxSizeBytes: MAX_SIZE,
+		maxSizeBytes: MAX_UPLOAD_BYTES,
 		processImage: async (buffer) => {
 			const processed = await sharp(buffer)
 				.resize(1920, undefined, { fit: "inside", withoutEnlargement: true })
