@@ -1,6 +1,3 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
 	Check,
@@ -20,6 +17,7 @@ import type {
 	CurriculumModule,
 	CurriculumLesson,
 } from "@/server/repos/curriculum-repo";
+import { CourseTabsShell } from "./course-tabs-shell";
 
 const DEFAULT_OUTCOMES = [
 	"เข้าใจหลักการลงทุนแบบ Value Investing จากศูนย์",
@@ -322,14 +320,6 @@ function CourseContentsCard({
 	);
 }
 
-const TABS = [
-	{ id: "curriculum", label: "เนื้อหา" },
-	{ id: "instructor", label: "ผู้สอน" },
-	{ id: "faq", label: "FAQ" },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
-
 export interface CourseTabsProps {
 	curriculum: CurriculumModule[];
 	courseSlug: string;
@@ -338,6 +328,12 @@ export interface CourseTabsProps {
 	learningOutcomes?: string[];
 }
 
+/**
+ * Server Component. The 6 tab/sidebar subcomponents below are all pure JSX
+ * (no state, no effects), so they render on the server and ship as
+ * pre-built HTML — only the tab-switcher / scroll-into-view logic crosses
+ * the client boundary in CourseTabsShell.
+ */
 export function CourseTabs({
 	curriculum,
 	courseSlug,
@@ -345,79 +341,30 @@ export function CourseTabs({
 	totalDuration,
 	learningOutcomes,
 }: CourseTabsProps) {
-	const [activeTab, setActiveTab] = useState<TabId>(() => {
-		if (
-			typeof window !== "undefined" &&
-			window.location.hash === "#instructor"
-		) {
-			return "instructor";
-		}
-		return "curriculum";
-	});
-	const instructorRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		if (window.location.hash === "#instructor") {
-			instructorRef.current?.scrollIntoView({
-				behavior: "smooth",
-				block: "start",
-			});
-		}
-	}, []);
-
 	return (
-		<section ref={instructorRef} id="instructor" className="py-12 md:py-16">
-			<div className="mx-auto max-w-[1200px] px-6">
-				<div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-12">
-					<div>
-						<div className="mb-8 flex gap-1 border-b border-border">
-							{TABS.map((tab) => (
-								<button
-									key={tab.id}
-									type="button"
-									onClick={() => setActiveTab(tab.id)}
-									className={`relative px-3 pb-3 pt-1 text-ui font-medium transition-colors ${activeTab === tab.id
-											? "text-foreground"
-											: "text-muted-foreground hover:text-foreground"
-										}`}
-									aria-selected={activeTab === tab.id}
-									role="tab"
-								>
-									{tab.label}
-									{activeTab === tab.id && (
-										<span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
-									)}
-								</button>
-							))}
-						</div>
-
-						{activeTab === "curriculum" && (
-							<>
-								<LearningOutcomes
-									outcomes={learningOutcomes ?? DEFAULT_OUTCOMES}
-								/>
-								<CurriculumTab
-									curriculum={curriculum}
-									courseSlug={courseSlug}
-									totalLessons={totalLessons}
-									totalDuration={totalDuration}
-								/>
-							</>
-						)}
-						{activeTab === "instructor" && <InstructorTab />}
-						{activeTab === "faq" && <FaqTab />}
-					</div>
-
-					<div>
-						<InstructorCard />
-						<CourseContentsCard
-							totalLessons={totalLessons}
-							totalDuration={totalDuration}
-						/>
-					</div>
-				</div>
-			</div>
-		</section>
+		<CourseTabsShell
+			curriculumPanel={
+				<>
+					<LearningOutcomes outcomes={learningOutcomes ?? DEFAULT_OUTCOMES} />
+					<CurriculumTab
+						curriculum={curriculum}
+						courseSlug={courseSlug}
+						totalLessons={totalLessons}
+						totalDuration={totalDuration}
+					/>
+				</>
+			}
+			instructorPanel={<InstructorTab />}
+			faqPanel={<FaqTab />}
+			sidebar={
+				<>
+					<InstructorCard />
+					<CourseContentsCard
+						totalLessons={totalLessons}
+						totalDuration={totalDuration}
+					/>
+				</>
+			}
+		/>
 	);
 }
