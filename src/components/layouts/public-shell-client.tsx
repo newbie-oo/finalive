@@ -5,6 +5,7 @@ import { useState } from "react";
 import { YoutubeLogo } from "@phosphor-icons/react";
 import { visibleNav } from "@/lib/navigation";
 import { AppHeader } from "./app-header";
+import { YoutubeHeaderLink } from "./youtube-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
@@ -80,17 +81,7 @@ export function PublicShellClient({
 			<AppHeader
 				navItems={navItems}
 				user={initialUser}
-				rightSlot={
-					<a
-						href="https://www.youtube.com/@armrileyquant"
-						target="_blank"
-						rel="noopener noreferrer"
-						aria-label="YouTube"
-						className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-					>
-						<YoutubeLogo size={18} weight="fill" />
-					</a>
-				}
+				rightSlot={<YoutubeHeaderLink />}
 				onMobileMenuToggle={() => setDrawerOpen((o) => !o)}
 				mobileMenuOpen={drawerOpen}
 			/>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { STUDENT_NAV, ADMIN_NAV } from "@/lib/navigation";
 import { AppHeader } from "./app-header";
+import { YoutubeHeaderLink } from "./youtube-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sheet,
@@ -35,6 +36,7 @@ export function StudentShell({
       <AppHeader
         navItems={navItems}
         user={user}
+        rightSlot={<YoutubeHeaderLink />}
         onMobileMenuToggle={() => setDrawerOpen((o) => !o)}
         mobileMenuOpen={drawerOpen}
       />

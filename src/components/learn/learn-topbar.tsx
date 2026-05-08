@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { useSession } from "@/lib/auth-client";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { YoutubeHeaderLink } from "@/components/layouts/youtube-link";
 
 interface LearnTopbarProps {
   courseTitle: string;
@@ -101,6 +102,7 @@ export function LearnTopbar({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
+        <YoutubeHeaderLink />
         <button
           type="button"
           className="flex h-8 w-8 items-center justify-center rounded-nav text-foreground transition-colors hover:bg-muted"
