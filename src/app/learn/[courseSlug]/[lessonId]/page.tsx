@@ -5,6 +5,7 @@ import { getSession } from "@/server/auth-session";
 import { getLearnCourse, getLearnLesson } from "@/server/repos/learn";
 import { getQuizByLessonId } from "@/server/repos/quiz";
 import { checkLessonAccess } from "@/server/services/learn-access";
+import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function LearnLessonPage({
 	const { courseSlug, lessonId } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
-	const isAdmin = session?.user?.role === "admin";
+	const isAdmin = isAdminRole(session?.user);
 
 	const [courseData, lessonData, quizMeta] = await Promise.all([
 		getLearnCourse(courseSlug, userId, { allowUnpublished: isAdmin }),

@@ -5,6 +5,7 @@ import { getSession } from "@/server/auth-session";
 import { QuizForm } from "@/components/learn/quiz-form";
 import { QuizExitButton } from "@/components/learn/quiz-exit-button";
 import { getLearnCourse } from "@/server/repos/learn";
+import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function QuizPage({
   const { courseSlug, quizId } = await params;
   const session = await getSession();
   const userId = session?.user?.id ?? null;
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = isAdminRole(session?.user);
 
   const [courseData, quizData] = await Promise.all([
     getLearnCourse(courseSlug, userId, { allowUnpublished: isAdmin }),

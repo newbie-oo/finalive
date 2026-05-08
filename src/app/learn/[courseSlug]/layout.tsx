@@ -4,6 +4,7 @@ import { getLearnCourse } from "@/server/repos/learn";
 import { listLatestQuizPassByCourse } from "@/server/repos/quiz";
 import { LearnShellProvider } from "@/components/learn/learn-shell-context";
 import { LearnLayout } from "@/components/learn/learn-layout";
+import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function CourseLearnLayout({
 	const { courseSlug } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
-	const isAdmin = session?.user?.role === "admin";
+	const isAdmin = isAdminRole(session?.user);
 
 	const courseData = await getLearnCourse(courseSlug, userId, {
 		allowUnpublished: isAdmin,

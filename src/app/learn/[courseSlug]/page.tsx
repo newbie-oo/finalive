@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/server/auth-session";
 import { getLearnCourse } from "@/server/repos/learn";
+import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export default async function LearnCoursePage({
 }) {
   const { courseSlug } = await params;
   const session = await getSession();
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = isAdminRole(session?.user);
   const data = await getLearnCourse(courseSlug, session?.user?.id ?? null, {
     allowUnpublished: isAdmin,
   });

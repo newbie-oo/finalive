@@ -11,6 +11,7 @@ import {
 	Video,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusChip } from "@/components/ui/status-chip";
@@ -96,7 +97,7 @@ export default async function CourseDetailPage({
 	const { slug } = await params;
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
-	const isAdmin = session?.user?.role === "admin";
+	const isAdmin = isAdminRole(session?.user);
 	const course = await getPublishedCourseBySlug(slug, {
 		includeUnpublished: isAdmin,
 	});

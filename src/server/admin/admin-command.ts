@@ -7,6 +7,7 @@ import { getAdminCourseById } from "@/server/repos/admin-course";
 import { getCollaboratorRole } from "@/server/repos/course-authz";
 import type { SessionContext } from "@/server/auth-session";
 import { parseFormData } from "@/lib/form-data";
+import { isAdmin } from "@/lib/auth-utils";
 
 export type AdminResult<T> =
 	| { ok: true; session: SessionContext; data: T }
@@ -32,7 +33,7 @@ export async function requireAdmin(): Promise<
 > {
 	const auth = await requireAdminSession();
 	if (!auth.ok) return auth;
-	if (auth.session.user.role !== "admin") {
+	if (!isAdmin(auth.session.user)) {
 		return { ok: false, error: "forbidden" };
 	}
 	return { ok: true, session: auth.session };

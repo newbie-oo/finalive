@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
+import { isAdmin } from "@/lib/auth-utils";
 
 export interface AppHeaderUser {
 	name: string;
@@ -77,7 +78,7 @@ export function AppHeader({
 							image={user.image}
 							links={[
 								{ href: "/account", label: "บัญชี" },
-								...(user.role === "admin"
+								...(isAdmin(user)
 									? [{ href: "/admin", label: "แผงควบคุม" }]
 									: [
 										{ href: "/account/enrollments", label: "คอร์สของฉัน" },

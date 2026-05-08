@@ -14,11 +14,13 @@ const {
 	requireRoleThrow,
 	updateWatchedSeconds,
 	handleLessonComplete,
+	assertCanWriteLessonProgress,
 } = vi.hoisted(() => ({
 	requireSessionThrow: vi.fn(),
 	requireRoleThrow: vi.fn(),
 	updateWatchedSeconds: vi.fn(),
 	handleLessonComplete: vi.fn(),
+	assertCanWriteLessonProgress: vi.fn(),
 }));
 vi.mock("@/server/auth-session", () => ({
 	requireSessionThrow,
@@ -29,6 +31,9 @@ vi.mock("@/server/container", () => ({
 	container: {
 		courseCompletion: () => ({ handleLessonComplete }),
 	},
+}));
+vi.mock("@/server/services/lesson-progress-authz", () => ({
+	assertCanWriteLessonProgress,
 }));
 
 import { POST } from "./route";
@@ -58,6 +63,7 @@ describe("POST /api/learn/progress", () => {
 		_resetRateLimitForTests();
 		vi.clearAllMocks();
 		requireSessionThrow.mockResolvedValue({ sessionId: "s1", user: USER });
+		assertCanWriteLessonProgress.mockResolvedValue(undefined);
 	});
 
 	it("updates watched seconds when markComplete is false/absent", async () => {
@@ -130,6 +136,20 @@ describe("POST /api/learn/progress", () => {
 		);
 
 		expect(res.status).toBe(400);
+		expect(updateWatchedSeconds).not.toHaveBeenCalled();
+	});
+
+	it("returns 403 when user is not entitled to the lesson", async () => {
+		const { ApiError } = await import("@/lib/api-error");
+		assertCanWriteLessonProgress.mockRejectedValueOnce(
+			new ApiError("forbidden", "lesson not accessible"),
+		);
+
+		const res = await POST(
+			makeReq({ lessonId: LESSON_ID, watchedSeconds: 10 }),
+		);
+
+		expect(res.status).toBe(403);
 		expect(updateWatchedSeconds).not.toHaveBeenCalled();
 	});
 

@@ -8,6 +8,7 @@ import { listGrantableCoursesForUser } from "@/server/repos/admin-course";
 import { GrantDialog } from "@/components/admin/grant-dialog";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { Card } from "@/components/ui/card";
+import { isAdmin } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function AdminUserDetailPage({
 	const { id } = await params;
 
 	const session = await getSession();
-	if (!session?.user?.id || session.user.role !== "admin") {
+	if (!session?.user?.id || !isAdmin(session.user)) {
 		return <p className="text-body text-muted-foreground">ไม่มีสิทธิ์เข้าถึง</p>;
 	}
 

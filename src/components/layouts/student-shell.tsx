@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { SessionUser } from "@/server/auth-session";
+import { isAdmin } from "@/lib/auth-utils";
 
 export function StudentShell({
   user,
@@ -21,7 +22,7 @@ export function StudentShell({
   children: React.ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navItems = user.role === "admin" ? ADMIN_NAV : STUDENT_NAV;
+  const navItems = isAdmin(user) ? ADMIN_NAV : STUDENT_NAV;
 
   return (
     <div className="flex min-h-full flex-col">

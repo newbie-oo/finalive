@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationNav } from "@/components/ui/pagination-nav";
 import type { SearchParams } from "@/lib/pagination";
+import { isAdmin } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function AdminUsersPage({
 	searchParams: SearchParams;
 }) {
 	const session = await getSession();
-	if (!session?.user?.id || session.user.role !== "admin") {
+	if (!session?.user?.id || !isAdmin(session.user)) {
 		return (
 			<p className="text-body text-muted-foreground">ไม่มีสิทธิ์เข้าถึง</p>
 		);
