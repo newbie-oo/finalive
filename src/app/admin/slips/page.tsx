@@ -2,6 +2,7 @@ import { listPendingSlips, type SlipQueueStatus } from "@/server/repos/slip";
 import type { SearchParams } from "@/lib/pagination";
 import { SlipQueue } from "@/components/admin/slip-queue";
 import { SlipQueueRefreshButton } from "@/components/admin/slip-queue-refresh-button";
+import { SlipShortcutsHelp } from "@/components/admin/slip-shortcuts-help";
 import { SlipStatusTabs } from "@/components/admin/slip-status-tabs";
 
 function pickStatus(raw: string | string[] | undefined): SlipQueueStatus {
@@ -31,22 +32,15 @@ export default async function AdminSlipsPage({
         <div>
           <h1 className="text-h1">คิวตรวจสลิป</h1>
           <p className="mt-1 text-body text-muted-foreground">
-            ใช้คีย์ลัด:{" "}
+            กด{" "}
             <kbd className="mono rounded-sm border border-border px-1 text-uism">
-              A
+              ?
             </kbd>{" "}
-            ยอมรับ ·{" "}
-            <kbd className="mono rounded-sm border border-border px-1 text-uism">
-              R
-            </kbd>{" "}
-            ปฏิเสธ ·{" "}
-            <kbd className="mono rounded-sm border border-border px-1 text-uism">
-              S
-            </kbd>{" "}
-            ข้าม
+            เพื่อดูคีย์ลัดทั้งหมด
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <SlipShortcutsHelp />
           <SlipQueueRefreshButton />
           <SlipStatusTabs status={status} />
         </div>
