@@ -5,6 +5,12 @@ import Link from "next/link";
 import { STUDENT_NAV, ADMIN_NAV } from "@/lib/navigation";
 import { AppHeader } from "./app-header";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { SessionUser } from "@/server/auth-session";
 
 export function StudentShell({
@@ -32,10 +38,18 @@ export function StudentShell({
         mobileMenuOpen={drawerOpen}
       />
 
-      {drawerOpen && (
-        <div className="sticky top-16 z-40 border-t border-border bg-card md:hidden">
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent
+          side="right"
+          className="flex w-72 max-w-[85vw] flex-col gap-0 bg-card p-0 md:hidden"
+        >
+          <SheetHeader className="border-b border-border px-6 py-4">
+            <SheetTitle className="text-uism font-semibold uppercase tracking-wide text-foreground-subtle">
+              เมนู
+            </SheetTitle>
+          </SheetHeader>
           <nav
-            className="mx-auto flex max-w-[1200px] flex-col gap-1 px-6 py-4"
+            className="flex flex-1 flex-col gap-1 overflow-y-auto px-6 py-4"
             aria-label="เมนูมือถือ"
           >
             {navItems.map((n) => (
@@ -60,8 +74,8 @@ export function StudentShell({
               <ThemeToggle />
             </div>
           </nav>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
 
       <main
         id="main"

@@ -12,6 +12,14 @@ import { thaiDateString, thaiTimeString } from "@/lib/format-time";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import { RevenueChart } from "@/components/admin/revenue-chart";
 import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import {
 	Money,
 	Users,
 	Books,
@@ -417,53 +425,48 @@ export default async function AdminDashboardPage() {
 						ยังไม่มีกิจกรรมล่าสุด
 					</div>
 				) : (
-					<div className="overflow-x-auto">
-						<table className="w-full border-collapse">
-							<thead>
-								<tr className="bg-muted">
-									{["เวลา", "ผู้ใช้", "การกระทำ", "จำนวน", "สถานะ"].map((h) => (
-										<th
-											key={h}
-											className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-wider text-foreground-subtle"
-										>
-											{h}
-										</th>
-									))}
-								</tr>
-							</thead>
-							<tbody>
-								{activityRows.map((r, i) => (
-									<tr
-										key={i}
-										className="border-t border-border transition-colors hover:bg-muted/50"
+					<Table>
+						<TableHeader>
+							<TableRow className="bg-muted hover:bg-muted">
+								{["เวลา", "ผู้ใช้", "การกระทำ", "จำนวน", "สถานะ"].map((h) => (
+									<TableHead
+										key={h}
+										className="px-6 py-3 text-[12px] font-semibold uppercase tracking-wider text-foreground-subtle"
 									>
-										<td className="px-6 py-3.5 text-[13px] tabular-nums text-muted-foreground">
-											{r.time}
-										</td>
-										<td className="px-6 py-3.5">
-											<div className="flex items-center gap-2.5">
-												<AvatarInitials name={r.userName} size="sm" />
-												<span className="text-uism font-medium text-foreground">
-													{r.userName}
-												</span>
-											</div>
-										</td>
-										<td className="px-6 py-3.5 text-uism text-foreground">
-											{r.action}
-										</td>
-										<td className="px-6 py-3.5 text-uism num font-semibold text-foreground">
-											{r.amount ?? "—"}
-										</td>
-										<td className="px-6 py-3.5">
-											<StatusBadge variant={r.status}>
-												{r.statusLabel}
-											</StatusBadge>
-										</td>
-									</tr>
+										{h}
+									</TableHead>
 								))}
-							</tbody>
-						</table>
-					</div>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{activityRows.map((r, i) => (
+								<TableRow key={i}>
+									<TableCell className="px-6 py-3.5 text-[13px] tabular-nums text-muted-foreground">
+										{r.time}
+									</TableCell>
+									<TableCell className="px-6 py-3.5">
+										<div className="flex items-center gap-2.5">
+											<AvatarInitials name={r.userName} size="sm" />
+											<span className="text-uism font-medium text-foreground">
+												{r.userName}
+											</span>
+										</div>
+									</TableCell>
+									<TableCell className="px-6 py-3.5 text-uism text-foreground">
+										{r.action}
+									</TableCell>
+									<TableCell className="px-6 py-3.5 text-uism num font-semibold text-foreground">
+										{r.amount ?? "—"}
+									</TableCell>
+									<TableCell className="px-6 py-3.5">
+										<StatusBadge variant={r.status}>
+											{r.statusLabel}
+										</StatusBadge>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				)}
 			</div>
 		</section>

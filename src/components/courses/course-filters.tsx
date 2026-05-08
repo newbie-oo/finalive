@@ -6,10 +6,19 @@ import { useDebouncedValue } from "@/lib/use-debounced-value";
 import {
 	MagnifyingGlass,
 	X,
-	CaretDown,
 	Faders,
 	Check,
 } from "@phosphor-icons/react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const PRICE_OPTIONS = [
 	{ label: "ทั้งหมด", value: "" },
@@ -249,16 +258,16 @@ export function CourseFilters({
 									<ul className="space-y-2.5">
 										{CATEGORIES.map((cat) => (
 											<li key={cat.label}>
-												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-muted-foreground transition-colors hover:text-foreground">
-													<input
-														type="checkbox"
-														className="h-4 w-4 rounded-sm border-border accent-primary"
-													/>
+												<Label
+													htmlFor={`cat-${cat.label}`}
+													className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
+												>
+													<Checkbox id={`cat-${cat.label}`} />
 													<span className="flex-1">{cat.label}</span>
 													<span className="num text-caption text-foreground-subtle">
 														({cat.count})
 													</span>
-												</label>
+												</Label>
 											</li>
 										))}
 									</ul>
@@ -268,53 +277,49 @@ export function CourseFilters({
 									<h3 className="mb-3 text-uism font-semibold text-foreground">
 										ราคา
 									</h3>
-									<ul className="space-y-2.5">
+									<RadioGroup
+										value={price === "" && freeOnly ? "free" : price}
+										onValueChange={(v) => {
+											setPrice(v);
+											setFreeOnly(v === "free");
+										}}
+										className="gap-2.5"
+									>
 										{PRICE_OPTIONS.map((o) => (
-											<li key={o.value}>
-												<label className="flex cursor-pointer items-center gap-2.5 text-ui text-muted-foreground transition-colors hover:text-foreground">
-													<input
-														type="radio"
-														name="price"
-														checked={
-															price === o.value ||
-															(o.value === "free" && freeOnly)
-														}
-														onChange={() => {
-															setPrice(o.value);
-															if (o.value === "free") setFreeOnly(true);
-															else setFreeOnly(false);
-														}}
-														className="h-4 w-4 accent-primary"
-													/>
-													<span>{o.label}</span>
-												</label>
-											</li>
+											<Label
+												key={o.value || "all"}
+												htmlFor={`price-${o.value || "all"}`}
+												className="flex cursor-pointer items-center gap-2.5 text-ui font-normal text-muted-foreground transition-colors hover:text-foreground"
+											>
+												<RadioGroupItem
+													id={`price-${o.value || "all"}`}
+													value={o.value}
+												/>
+												<span>{o.label}</span>
+											</Label>
 										))}
-									</ul>
+									</RadioGroup>
 								</div>
 
 								<div className="rounded-card border border-border bg-card p-4">
 									<h3 className="mb-3 text-uism font-semibold text-foreground">
 										เรียงลำดับ
 									</h3>
-									<div className="relative">
-										<select
-											value={sortBy}
-											onChange={(e) => setSortBy(e.target.value)}
-											className="h-10 w-full appearance-none rounded-button border border-border bg-card px-3 pr-8 text-ui outline-hidden focus:border-primary"
+									<Select value={sortBy} onValueChange={setSortBy}>
+										<SelectTrigger
 											aria-label="เรียงลำดับ"
+											className="w-full"
 										>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
 											{SORT_OPTIONS.map((o) => (
-												<option key={o.value} value={o.value}>
+												<SelectItem key={o.value} value={o.value}>
 													{o.label}
-												</option>
+												</SelectItem>
 											))}
-										</select>
-										<CaretDown
-											size={14}
-											className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-										/>
-									</div>
+										</SelectContent>
+									</Select>
 								</div>
 							</div>
 						</div>
