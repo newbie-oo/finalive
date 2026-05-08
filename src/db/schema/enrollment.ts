@@ -88,3 +88,7 @@ export const enrollment = pgTable(
 export type Enrollment = typeof enrollment.$inferSelect;
 export type NewEnrollment = typeof enrollment.$inferInsert;
 export type AdminGrant = typeof adminGrant.$inferSelect;
+
+// Status constants — must mirror the CHECK constraints above.
+export const ENROLLMENT_STATUS = ["active", "cancelled"] as const;
+export type EnrollmentStatus = (typeof ENROLLMENT_STATUS)[number];

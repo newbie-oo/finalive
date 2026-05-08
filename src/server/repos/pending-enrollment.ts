@@ -2,7 +2,7 @@ import "server-only";
 import { and, eq, gt, inArray, lte } from "drizzle-orm";
 import { db } from "@/db/client";
 import { course } from "@/db/schema/course";
-import { pendingEnrollment } from "@/db/schema/payment";
+import { pendingEnrollment, PENDING_OPEN_STATUSES } from "@/db/schema/payment";
 
 export const PendingEnrollmentRepo = {
 	async getCourseBySlug(
@@ -36,10 +36,7 @@ export const PendingEnrollmentRepo = {
 				and(
 					eq(pendingEnrollment.userId, userId),
 					eq(pendingEnrollment.courseId, courseId),
-					inArray(pendingEnrollment.status, [
-						"awaiting_payment",
-						"slip_submitted",
-					]),
+					inArray(pendingEnrollment.status, [...PENDING_OPEN_STATUSES]),
 					gt(pendingEnrollment.expiresAt, new Date()),
 				),
 			)
@@ -64,10 +61,7 @@ export const PendingEnrollmentRepo = {
 				and(
 					eq(pendingEnrollment.userId, userId),
 					eq(pendingEnrollment.courseId, courseId),
-					inArray(pendingEnrollment.status, [
-						"awaiting_payment",
-						"slip_submitted",
-					]),
+					inArray(pendingEnrollment.status, [...PENDING_OPEN_STATUSES]),
 					lte(pendingEnrollment.expiresAt, new Date()),
 				),
 			);

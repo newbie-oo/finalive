@@ -1,7 +1,12 @@
 import "server-only";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
+import {
+	paymentSlip,
+	pendingEnrollment,
+	SLIP_STATUS,
+	type SlipStatus,
+} from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
 import { user as userTable } from "@/db/schema/auth";
 import {
@@ -11,11 +16,11 @@ import {
 	type CursorResponse,
 } from "@/lib/pagination";
 
-export type SlipQueueStatus = "submitted" | "accepted" | "rejected" | "all";
+export type SlipQueueStatus = SlipStatus | "all";
 
 export interface PendingSlipRow {
 	id: string;
-	status: string;
+	status: SlipStatus;
 	expectedAmount: string;
 	reportedAmount: string | null;
 	rejectionReason: string | null;
@@ -92,6 +97,7 @@ export async function listPendingSlips(
 
 	const rows: PendingSlipRow[] = dbRows.map((r) => ({
 		...r,
+		status: r.status as SlipStatus,
 		createdAt: r.createdAt.toISOString(),
 	}));
 
@@ -99,7 +105,7 @@ export async function listPendingSlips(
 }
 
 export async function countPendingSlipsByStatus(): Promise<
-	Record<string, number>
+	Record<SlipStatus, number>
 > {
 	const rows = await db
 		.select({
@@ -108,11 +114,13 @@ export async function countPendingSlipsByStatus(): Promise<
 		})
 		.from(paymentSlip)
 		.groupBy(paymentSlip.status);
-	const out: Record<string, number> = {
-		submitted: 0,
-		accepted: 0,
-		rejected: 0,
-	};
-	for (const r of rows) out[r.status] = r.total;
+	const out = Object.fromEntries(
+		SLIP_STATUS.map((s) => [s, 0]),
+	) as Record<SlipStatus, number>;
+	for (const r of rows) {
+		if ((SLIP_STATUS as readonly string[]).includes(r.status)) {
+			out[r.status as SlipStatus] = r.total;
+		}
+	}
 	return out;
 }

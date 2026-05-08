@@ -1,7 +1,11 @@
 import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { paymentSlip, pendingEnrollment } from "@/db/schema/payment";
+import {
+	paymentSlip,
+	pendingEnrollment,
+	type PendingStatus,
+} from "@/db/schema/payment";
 import { course } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { user as userTable } from "@/db/schema/auth";
@@ -28,7 +32,7 @@ export interface PendingRow {
 	userId: string;
 	courseId: string;
 	amount: string;
-	status: string;
+	status: PendingStatus;
 	expiresAt: Date;
 	refCode: string;
 }
@@ -96,7 +100,9 @@ export const SlipRepo = {
 			.from(pendingEnrollment)
 			.where(eq(pendingEnrollment.id, pendingId))
 			.limit(1);
-		return rows[0] ?? null;
+		const row = rows[0];
+		if (!row) return null;
+		return { ...row, status: row.status as PendingStatus };
 	},
 
 	async loadCourseInfo(courseId: string): Promise<CourseInfo | null> {

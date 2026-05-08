@@ -92,3 +92,20 @@ export const paymentSlip = pgTable(
 
 export type PendingEnrollment = typeof pendingEnrollment.$inferSelect;
 export type PaymentSlip = typeof paymentSlip.$inferSelect;
+
+// Status constants — must mirror the CHECK constraints above.
+// Single source of truth for inArray() / eq() filters and FSM transitions.
+export const PENDING_STATUS = [
+  "awaiting_payment",
+  "slip_submitted",
+  "paid",
+  "expired",
+  "cancelled",
+] as const;
+export type PendingStatus = (typeof PENDING_STATUS)[number];
+
+/** Pending statuses that block a new pending row from being created. */
+export const PENDING_OPEN_STATUSES = ["awaiting_payment", "slip_submitted"] as const;
+
+export const SLIP_STATUS = ["submitted", "accepted", "rejected"] as const;
+export type SlipStatus = (typeof SLIP_STATUS)[number];
