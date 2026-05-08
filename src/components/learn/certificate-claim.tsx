@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Certificate, ArrowRight } from "@phosphor-icons/react";
+import { Certificate, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 
 export function CertificateClaim({

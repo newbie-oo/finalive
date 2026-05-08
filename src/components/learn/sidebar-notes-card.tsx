@@ -1,6 +1,6 @@
 "use client";
 
-import { NotePencil } from "@phosphor-icons/react";
+import { NotePencil } from "@phosphor-icons/react/dist/ssr";
 import { useSession } from "@/lib/auth-client";
 import { getNotePreview } from "@/lib/note-preview";
 

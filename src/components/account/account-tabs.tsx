@@ -6,8 +6,8 @@ import {
   UserCircle,
   Books,
   Certificate,
-  type Icon,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react/lib";
 import { cn } from "@/lib/utils";
 
 interface Tab {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SquaresFour, List } from "@phosphor-icons/react";
+import { SquaresFour, List } from "@phosphor-icons/react/dist/ssr";
 import type { OffsetResponse } from "@/lib/pagination";
 import {
 	CourseCard,

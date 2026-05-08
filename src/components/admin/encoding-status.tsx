@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Spinner, CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { Spinner, CheckCircle, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 
 interface EncodingStatusProps {
   videoId: string;

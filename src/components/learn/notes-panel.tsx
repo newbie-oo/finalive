@@ -10,7 +10,7 @@ import {
   CaretUp,
   Trash,
   CheckCircle,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 interface NotesPanelProps {
   lessonId: string;

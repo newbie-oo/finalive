@@ -8,7 +8,7 @@ import {
 	ArrowRight,
 	LinkedinLogo,
 	BookOpen,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 

@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
-import { ArrowClockwise } from "@phosphor-icons/react";
+import { ArrowClockwise } from "@phosphor-icons/react/dist/ssr";
 import { queryKeys } from "@/lib/query-keys";
 
 export function SlipQueueRefreshButton() {

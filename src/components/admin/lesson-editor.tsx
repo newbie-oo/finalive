@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Play, Clock, FloppyDisk } from "@phosphor-icons/react";
+import { Play, Clock, FloppyDisk } from "@phosphor-icons/react/dist/ssr";
 import { updateLessonAction } from "@/server/actions/admin-curriculum";
 import { VideoUploader } from "@/components/admin/video-uploader";
 import { TiptapEditor } from "@/components/admin/tiptap-editor";

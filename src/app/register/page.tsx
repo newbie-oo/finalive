@@ -11,7 +11,7 @@ import {
 	EnvelopeSimple,
 	LockSimple,
 	Play,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { signUp } from "@/lib/auth-client";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";

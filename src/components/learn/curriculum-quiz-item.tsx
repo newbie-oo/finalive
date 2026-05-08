@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Question } from "@phosphor-icons/react";
+import { Check, Question } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 
 const ITEM_CLASS = cn(

@@ -2,7 +2,7 @@
 
 import { Fragment } from "react";
 import { useParams } from "next/navigation";
-import { LockSimple, CaretDown, CaretRight } from "@phosphor-icons/react";
+import { LockSimple, CaretDown, CaretRight } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
 import { useLessonAccess } from "@/hooks/use-lesson-access";

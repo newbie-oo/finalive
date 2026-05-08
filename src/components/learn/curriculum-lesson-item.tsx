@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Play, Question, LockSimple } from "@phosphor-icons/react";
+import { Check, Play, Question, LockSimple } from "@phosphor-icons/react/dist/ssr";
 import { LessonAccessBadge } from "@/components/course/lesson-access-badge";
 import { formatDuration } from "@/lib/format";
 

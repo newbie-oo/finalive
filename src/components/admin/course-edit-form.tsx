@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LockSimple } from "@phosphor-icons/react";
+import { LockSimple } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "sonner";
 import { updateCourseAction } from "@/server/actions/admin-course";
 import { CoverImageUpload } from "@/components/admin/cover-image-upload";

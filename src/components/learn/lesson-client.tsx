@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Question } from "@phosphor-icons/react";
+import { ArrowRight, Question } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 
 interface LessonClientProps {

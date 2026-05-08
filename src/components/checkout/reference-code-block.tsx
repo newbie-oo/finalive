@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { Copy, Check } from "@phosphor-icons/react";
+import { Copy, Check } from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 

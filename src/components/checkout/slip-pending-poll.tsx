@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle, Hourglass } from "@phosphor-icons/react";
+import { CheckCircle, Hourglass } from "@phosphor-icons/react/dist/ssr";
 import { Card } from "@/components/ui/card";
 import { queryKeys } from "@/lib/query-keys";
 

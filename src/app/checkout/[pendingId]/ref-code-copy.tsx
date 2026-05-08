@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Copy, Check } from "@phosphor-icons/react";
+import { Copy, Check } from "@phosphor-icons/react/dist/ssr";
 
 interface RefCodeCopyProps {
   refCode: string;

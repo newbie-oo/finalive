@@ -9,7 +9,7 @@ import {
 	MagnifyingGlassMinus,
 	ArrowsClockwise,
 	ArrowsOutSimple,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { queryKeys } from "@/lib/query-keys";
 import { Button } from "@/components/ui/button";
 

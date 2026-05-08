@@ -1,4 +1,4 @@
-import { MagnifyingGlass, X, Check } from "@phosphor-icons/react";
+import { MagnifyingGlass, X, Check } from "@phosphor-icons/react/dist/ssr";
 import {
 	QUICK_FILTERS,
 	type QuickFilterType,

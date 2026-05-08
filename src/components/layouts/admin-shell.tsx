@@ -12,8 +12,8 @@ import {
   CaretLeft,
   CaretRight,
   List,
-  type Icon,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react/lib";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AdminUserMenu } from "@/components/admin/admin-user-menu";
 import { Button } from "@/components/ui/button";

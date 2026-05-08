@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { VidstackPlayer } from "@/components/course/vidstack-player";
 import { LearnTopbar } from "./learn-topbar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, X } from "@phosphor-icons/react";
+import { ArrowRight, BookOpen, X } from "@phosphor-icons/react/dist/ssr";
 import { useLearnShell } from "./learn-shell-context";
 import { LessonPlayerLayout } from "./lesson-player-layout";
 import { useAutoplayCountdown } from "@/hooks/use-autoplay-countdown";

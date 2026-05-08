@@ -6,7 +6,7 @@ import {
 	BookOpen,
 	ListBullets,
 	Trophy,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { Button } from "@/components/ui/button";
 import { QuizCelebration } from "./quiz-celebration";
 import { QuizScoreCircle } from "./quiz-score-circle";

@@ -12,7 +12,7 @@ import {
 	Video,
 	FileText,
 	Certificate,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 import { signIn } from "@/lib/auth-client";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";

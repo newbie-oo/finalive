@@ -1,4 +1,4 @@
-import { CaretUp, CaretDown, X } from "@phosphor-icons/react";
+import { CaretUp, CaretDown, X } from "@phosphor-icons/react/dist/ssr";
 import { SlipStatusChip } from "./slip-status-chip";
 
 interface SlipDetailHeaderProps {

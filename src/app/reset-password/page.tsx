@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle } from "@phosphor-icons/react/dist/ssr";
 import { authClient } from "@/lib/auth-client";
 import { PublicShellClient as PublicShell } from "@/components/layouts/public-shell-client";
 import { AuthCard } from "@/components/layouts/auth-card";

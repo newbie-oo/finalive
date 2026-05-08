@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trophy, ArrowCounterClockwise } from "@phosphor-icons/react";
+import { Trophy, ArrowCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 
 interface QuizCelebrationProps {
   passed: boolean;

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { File, CheckCircle } from "@phosphor-icons/react";
+import { File, CheckCircle } from "@phosphor-icons/react/dist/ssr";
 import {
 	MAX_UPLOAD_BYTES,
 	SLIP_ACCEPT,

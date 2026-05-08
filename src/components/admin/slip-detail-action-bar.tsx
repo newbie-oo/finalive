@@ -2,7 +2,7 @@ import {
 	CheckCircle,
 	Prohibit,
 	ArrowCounterClockwise,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 interface SlipDetailActionBarProps {
 	status: string;

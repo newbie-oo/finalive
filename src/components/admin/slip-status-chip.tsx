@@ -1,4 +1,4 @@
-import { CheckCircle, Prohibit, Clock } from "@phosphor-icons/react";
+import { CheckCircle, Prohibit, Clock } from "@phosphor-icons/react/dist/ssr";
 
 const BASE =
 	"inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-medium";

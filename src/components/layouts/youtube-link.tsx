@@ -1,4 +1,4 @@
-import { YoutubeLogo } from "@phosphor-icons/react";
+import { YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 
 const YOUTUBE_URL = "https://www.youtube.com/@armrileyquant";
 

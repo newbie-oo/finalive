@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Prohibit } from "@phosphor-icons/react";
+import { Coins, Prohibit } from "@phosphor-icons/react/dist/ssr";
 import { formatTHB } from "@/lib/format";
 import { SlipImageViewer } from "./slip-image-viewer";
 import { REJECT_REASONS, REJECT_REASON_LABEL } from "./slip-reject-options";

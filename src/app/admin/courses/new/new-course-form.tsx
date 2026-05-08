@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LockSimple, UploadSimple, X } from "@phosphor-icons/react";
+import { LockSimple, UploadSimple, X } from "@phosphor-icons/react/dist/ssr";
 import { createCourseAction } from "@/server/actions/admin-course";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { YoutubeLogo } from "@phosphor-icons/react";
+import { YoutubeLogo } from "@phosphor-icons/react/dist/ssr";
 import { visibleNav } from "@/lib/navigation";
 import { AppHeader } from "./app-header";
 import { YoutubeHeaderLink } from "./youtube-link";

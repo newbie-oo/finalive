@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CaretLeft, CaretRight, Prohibit } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Prohibit } from "@phosphor-icons/react/dist/ssr";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";

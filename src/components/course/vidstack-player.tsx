@@ -14,7 +14,7 @@ import {
 	Exam,
 	Repeat,
 	WarningCircle,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 import "@vidstack/react/player/styles/default/theme.css";
 import "@vidstack/react/player/styles/default/layouts/video.css";

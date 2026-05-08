@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { List, X } from "@phosphor-icons/react";
+import { List, X } from "@phosphor-icons/react/dist/ssr";
 import type { NavItem } from "@/lib/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";

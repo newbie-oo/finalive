@@ -1,4 +1,4 @@
-import { Faders } from "@phosphor-icons/react";
+import { Faders } from "@phosphor-icons/react/dist/ssr";
 import {
 	Sheet,
 	SheetContent,

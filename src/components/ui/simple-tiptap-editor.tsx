@@ -8,7 +8,7 @@ import {
   TextItalic,
   ListBullets,
   ListNumbers,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 interface SimpleTiptapEditorProps {
   value: string;

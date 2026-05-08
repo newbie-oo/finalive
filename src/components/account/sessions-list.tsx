@@ -5,7 +5,7 @@ import {
 	DeviceMobile,
 	DesktopTower,
 	Laptop,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

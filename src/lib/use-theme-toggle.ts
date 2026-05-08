@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "@phosphor-icons/react";
+import { Sun, Moon } from "@phosphor-icons/react/dist/ssr";
 
 export const THEME_ORDER = ["light", "dark"] as const;
 export type ThemeKey = (typeof THEME_ORDER)[number];

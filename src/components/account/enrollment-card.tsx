@@ -5,7 +5,7 @@ import {
   PlayCircle,
   Certificate as CertIcon,
 } from "@phosphor-icons/react/dist/ssr";
-import { type Icon as IconCmp } from "@phosphor-icons/react";
+import type { Icon as IconCmp } from "@phosphor-icons/react/lib";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/ui/status-chip";
 

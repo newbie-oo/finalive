@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { Bank, QrCode } from "@phosphor-icons/react";
+import { Bank, QrCode } from "@phosphor-icons/react/dist/ssr";
 
 interface PaymentMethodTabsProps {
   bankText: string | null;

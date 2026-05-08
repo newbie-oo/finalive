@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CaretDown } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 
 interface AccordionItemProps {

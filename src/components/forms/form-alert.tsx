@@ -1,4 +1,4 @@
-import { CheckCircle, WarningIcon } from "@phosphor-icons/react";
+import { CheckCircle, WarningIcon } from "@phosphor-icons/react/dist/ssr";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FormAlertProps {

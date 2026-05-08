@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Sparkle, X as XIcon } from "@phosphor-icons/react";
+import { Check, Sparkle, X as XIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Keyboard } from "@phosphor-icons/react";
+import { Keyboard } from "@phosphor-icons/react/dist/ssr";
 import {
 	Dialog,
 	DialogContent,

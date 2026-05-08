@@ -27,7 +27,7 @@ import {
   Eraser,
   ArrowCounterClockwise,
   ArrowClockwise,
-} from "@phosphor-icons/react";
+} from "@phosphor-icons/react/dist/ssr";
 
 interface TiptapEditorProps {
   value: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WarningIcon } from "@phosphor-icons/react";
+import { WarningIcon } from "@phosphor-icons/react/dist/ssr";
 import { deleteCurrentAccountAction } from "@/server/actions/delete-account";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

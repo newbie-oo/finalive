@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EnvelopeOpen, WarningIcon } from "@phosphor-icons/react";
+import { EnvelopeOpen, WarningIcon } from "@phosphor-icons/react/dist/ssr";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

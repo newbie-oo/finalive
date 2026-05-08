@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CaretUp, SignOut, User } from "@phosphor-icons/react";
+import { CaretUp, SignOut, User } from "@phosphor-icons/react/dist/ssr";
 import { AvatarInitials } from "@/components/ui/avatar-initials";
 import {
   DropdownMenu,
