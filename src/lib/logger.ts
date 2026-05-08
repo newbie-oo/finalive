@@ -3,7 +3,6 @@
  * In production this should be replaced with a real aggregator
  * (e.g. Datadog, Sentry, or a syslog drain).
  */
-/* eslint-disable no-console */
 
 export interface LogContext {
   requestId?: string;
@@ -34,15 +33,9 @@ function log(
     payload.err = String(err);
   }
 
-  const line = JSON.stringify(payload);
-
-  if (level === "error") {
-    console.error(line);
-  } else if (level === "warn") {
-    console.warn(line);
-  } else {
-    console.log(line);
-  }
+  const line = `${JSON.stringify(payload)}\n`;
+  const stream = level === "info" ? process.stdout : process.stderr;
+  stream.write(line);
 }
 
 export const logger = {

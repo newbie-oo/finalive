@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
 import { updateCourseCoverAction } from "@/server/actions/admin-course";
@@ -92,11 +93,13 @@ export function CoverImageUpload({
     >
       {preview ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={preview}
             alt="Cover preview"
-            className="h-full w-full rounded-sm object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 600px"
+            className="rounded-sm object-cover"
+            unoptimized
           />
           <div className="absolute inset-0 flex items-center justify-center rounded-sm bg-black/40 opacity-0 transition-opacity hover:opacity-100">
             <label className="cursor-pointer text-sm text-white">

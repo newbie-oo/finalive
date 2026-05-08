@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -88,11 +89,13 @@ function CoverUpload({
       >
         {preview ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={preview}
               alt="Cover preview"
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 768px) 100vw, 600px"
+              className="object-cover"
+              unoptimized
             />
             <button
               type="button"
@@ -146,11 +149,13 @@ function PreviewCard({
     <Card className="sticky top-24 overflow-hidden">
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
         {coverUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Image
             src={coverUrl}
             alt="Cover"
-            className="h-full w-full object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            className="object-cover"
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">

@@ -11,6 +11,7 @@ import {
 } from "@/components/course/course-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PaginationNav } from "@/components/ui/pagination-nav";
+import { Skeleton } from "@/components/ui/skeleton";
 import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 
 interface CourseCatalogProps {
@@ -115,11 +116,8 @@ export function CourseCatalogSkeleton() {
 	return (
 		<>
 			<div className="mb-5 flex items-center justify-between">
-				<div className="h-4 w-52 animate-pulse rounded-md bg-muted" />
-				<div className="inline-flex h-9 w-[72px] rounded-button border border-border bg-card p-0.5">
-					<div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
-					<div className="h-8 w-8 rounded-md" />
-				</div>
+				<Skeleton className="h-4 w-44 rounded-md" />
+				<Skeleton className="h-9 w-[72px] rounded-button" />
 			</div>
 			<ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				{Array.from({ length: 6 }).map((_, i) => (
@@ -129,16 +127,13 @@ export function CourseCatalogSkeleton() {
 				))}
 			</ul>
 			<div className="mt-10 flex items-center justify-center gap-2">
-				<div className="h-9 w-20 animate-pulse rounded-button bg-muted" />
+				<Skeleton className="h-9 w-20 rounded-button" />
 				<div className="flex items-center gap-1.5">
 					{Array.from({ length: 5 }).map((_, i) => (
-						<div
-							key={i}
-							className="h-9 w-9 animate-pulse rounded-button bg-muted"
-						/>
+						<Skeleton key={i} className="h-9 w-9 rounded-button" />
 					))}
 				</div>
-				<div className="h-9 w-20 animate-pulse rounded-button bg-muted" />
+				<Skeleton className="h-9 w-20 rounded-button" />
 			</div>
 		</>
 	);

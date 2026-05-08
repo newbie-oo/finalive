@@ -1,28 +1,29 @@
+import Image from "next/image";
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import {
 	ArrowRight,
 	Books,
 	CurrencyCircleDollar,
 	GraduationCap,
-	Quotes,
 	ShieldCheck,
-	BookOpen,
 	Certificate,
 	Play,
 	VideoCamera,
 	Translate,
 	Trophy,
-	ChartLine,
-	ChartBar,
-	TrendUp,
-	FileText,
-	Money,
-	Globe,
-	CaretRight,
-	Star,
-	Users,
+	Check,
+	BookOpen,
 } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { AvatarInitials } from "@/components/ui/avatar-initials";
+import { CourseCard } from "@/components/course/course-card";
+import { listFeaturedCourses } from "@/server/repos/course";
+import { getPublicHomeStats } from "@/server/repos/stats";
+import { coverImageUrl } from "@/lib/media-url";
 
 const STEPS = [
 	{
@@ -59,94 +60,62 @@ const FEATURES = [
 	{
 		icon: Trophy,
 		title: "ใบประกาศนียบัตร",
-		body: "รับใบประกาศที่ตรวจสอบออนไลน์ได้ด้วย SHA-256 แชร์ลง LinkedIn หรือโชว์ผลงานได้ทันที",
+		body: "รับใบประกาศที่ตรวจสอบออนไลน์ได้ แชร์ลง LinkedIn หรือโชว์ผลงานได้ทันที",
 	},
 ];
 
-const TESTIMONIALS = [
-	{
-		quote:
-			"อาจารย์อธิบายเข้าใจง่ายมาก เริ่มจากพื้นฐานที่ไม่เคยรู้ จนตอนนี้อ่านงบบริษัทแล้วเข้าใจและกล้าตัดสินใจลงทุนเอง ไฟล์ Excel ที่แถมก็ใช้ทำงานจริงต่อได้เลย",
-		name: "ณัฐกานต์ จิรพัฒน์",
-		role: "นักวิเคราะห์การลงทุน",
-		initials: "ณก",
-	},
-	{
-		quote:
-			"เนื้อหาละเอียดมาก ไม่ใช่แค่ทฤษฎี แต่มีตัวอย่างจริงจากตลาดหุ้นไทย ใบประกาศก็เอาไปโชว์ใน LinkedIn ได้เลย",
-		name: "ปิยะวัฒน์ สุขสมบูรณ์",
-		role: "Financial Analyst",
-		initials: "ปส",
-	},
-	{
-		quote:
-			"ลงทุนมา 3 ปี ขาดทุนตลอด พอมาเรียนเข้าใจว่าตัวเองพลาดตรงไหน ตอนนี้พอร์ตกำไรแล้ว ขอบคุณอาจารย์อาร์มมากครับ",
-		name: "ธนกร มหาชัย",
-		role: "เจ้าของธุรกิจ SME",
-		initials: "ธม",
-	},
+const INSTRUCTOR_BADGES = [
+	"CFA Charterholder",
+	"Independent Equity Analyst",
+	"อดีต VP Investment",
 ];
 
-const CATEGORIES = [
-	{
-		label: "DCF & Valuation",
-		icon: ChartLine,
-		count: 8,
-		color: "#4F46E5",
-		bg: "#EEF2FF",
+const getCachedHomeData = unstable_cache(
+	async () => {
+		const [stats, featured] = await Promise.all([
+			getPublicHomeStats(),
+			listFeaturedCourses(3),
+		]);
+		return {
+			stats,
+			featured: featured.map((c) => ({
+				...c,
+				coverImageUrl: coverImageUrl(c.coverStorageKey),
+			})),
+		};
 	},
-	{
-		label: "Excel & Modeling",
-		icon: ChartBar,
-		count: 6,
-		color: "#10B981",
-		bg: "#ECFDF5",
-	},
-	{
-		label: "พื้นฐานการลงทุน",
-		icon: TrendUp,
-		count: 12,
-		color: "#F97316",
-		bg: "#FFF7ED",
-	},
-	{
-		label: "บัญชี & งบการเงิน",
-		icon: FileText,
-		count: 5,
-		color: "#8B5CF6",
-		bg: "#F5F3FF",
-	},
-	{
-		label: "การเงินส่วนบุคคล",
-		icon: Money,
-		count: 7,
-		color: "#EC4899",
-		bg: "#FDF2F8",
-	},
-	{
-		label: "Crypto & Web3",
-		icon: Globe,
-		count: 3,
-		color: "#0EA5E9",
-		bg: "#F0F9FF",
-	},
-];
+	["home-page-data"],
+	{ revalidate: 600 },
+);
 
-const LOGOS = ["SCB 10X", "KASIKORN", "BAY", "BLS", "FINNOMENA", "JITTA"];
+export default async function Home() {
+	const { stats, featured } = await getCachedHomeData();
 
-export default function Home() {
+	const formattedStudents =
+		stats.activeStudents >= 100
+			? `${stats.activeStudents.toLocaleString("en-US")}+`
+			: stats.activeStudents.toLocaleString("en-US");
+
+	const heroCourse = featured[0] ?? null;
+	const hasStats =
+		stats.publishedCourses > 0 ||
+		stats.activeStudents > 0 ||
+		stats.publishedLessons > 0;
+
 	return (
 		<PublicShell>
 			<section className="mx-auto max-w-[1200px] px-6 py-16 md:py-24">
 				<div className="grid items-center gap-10 md:grid-cols-[1.05fr_0.95fr] md:gap-16">
 					<div>
-						<span className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-uism text-muted-foreground">
+						<Badge variant="outline" className="mb-6 h-auto gap-2 px-3 py-1.5">
 							<span
 								className="h-2 w-2 rounded-full bg-primary"
 								aria-hidden
 							/>
-							คอร์สยอดนิยม: DCF Valuation ขั้นสูง — เปิดลงทะเบียนแล้ว
-						</span>
+							{heroCourse
+								? `คอร์สแนะนำ: ${heroCourse.title}`
+								: "เปิดคอร์สใหม่ทุกเดือน"}
+						</Badge>
 						<h1 className="text-display text-foreground">
 							เรียนวิเคราะห์การเงิน
 							<br />
@@ -160,161 +129,87 @@ export default function Home() {
 							และสอบรับใบประกาศที่ตรวจสอบได้ออนไลน์
 						</p>
 						<div className="mt-8 flex flex-wrap gap-3">
+							<Button asChild variant="accent" size="lg">
+								<Link href="/courses">
+									ดูคอร์สทั้งหมด <ArrowRight size={16} weight="bold" />
+								</Link>
+							</Button>
+							<Button asChild variant="secondary" size="lg">
+								<Link href="/register">ลงทะเบียนฟรี</Link>
+							</Button>
+						</div>
+
+						{hasStats && (
+							<div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+								{stats.activeStudents > 0 && (
+									<TrustStat
+										value={formattedStudents}
+										label="นักเรียนที่ลงทะเบียน"
+									/>
+								)}
+								{stats.publishedCourses > 0 && (
+									<>
+										<span
+											className="hidden h-8 w-px bg-border sm:block"
+											aria-hidden
+										/>
+										<TrustStat
+											value={stats.publishedCourses.toLocaleString("en-US")}
+											label="คอร์สเปิดสอน"
+										/>
+									</>
+								)}
+								{stats.publishedLessons > 0 && (
+									<>
+										<span
+											className="hidden h-8 w-px bg-border sm:block"
+											aria-hidden
+										/>
+										<TrustStat
+											value={stats.publishedLessons.toLocaleString("en-US")}
+											label="บทเรียน"
+										/>
+									</>
+								)}
+							</div>
+						)}
+					</div>
+
+					<HeroVisual
+						course={heroCourse}
+						publishedCourses={stats.publishedCourses}
+						publishedLessons={stats.publishedLessons}
+					/>
+				</div>
+			</section>
+
+			{featured.length > 0 && (
+				<section className="bg-muted py-16 md:py-24">
+					<div className="mx-auto max-w-[1200px] px-6">
+						<div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+							<div>
+								<Eyebrow>คอร์สแนะนำ</Eyebrow>
+								<h2 className="mt-2 text-h2">เริ่มต้นจากคอร์สล่าสุด</h2>
+							</div>
 							<Link
 								href="/courses"
-								className="inline-flex h-12 items-center gap-2 rounded-full bg-accent px-8 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
+								className="inline-flex items-center gap-1.5 text-ui font-medium text-primary hover:underline"
 							>
-								ดูคอร์สทั้งหมด <ArrowRight size={16} weight="bold" />
-							</Link>
-							<Link
-								href="/register"
-								className="inline-flex h-12 items-center rounded-full border border-border bg-muted px-8 text-ui font-medium text-foreground transition-colors hover:bg-surface-sunken"
-							>
-								ลงทะเบียนฟรี
+								ดูทั้งหมด <ArrowRight size={14} weight="bold" />
 							</Link>
 						</div>
-
-						<div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-							<TrustStat value="12,500+" label="นักเรียนที่ลงทะเบียน" />
-							<span
-								className="hidden h-8 w-px bg-border sm:block"
-								aria-hidden
-							/>
-							<TrustStat value="41" label="คอร์สเปิดสอน" />
-							<span
-								className="hidden h-8 w-px bg-border sm:block"
-								aria-hidden
-							/>
-							<TrustStat value="180+" label="บทเรียน" />
-						</div>
-					</div>
-
-					<HeroVisual />
-				</div>
-			</section>
-
-			<section className="border-y border-border bg-card py-8">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="flex flex-col items-center gap-5 md:flex-row md:justify-center">
-						<span
-							className="text-uism text-foreground-subtle"
-							style={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
-						>
-							เรียนรู้กับนักลงทุนและทีมงานจาก
-						</span>
-						<div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 md:gap-x-8">
-							{LOGOS.map((logo) => (
-								<span
-									key={logo}
-									className="text-uism font-semibold text-muted-foreground"
-									style={{
-										textTransform: "uppercase",
-										letterSpacing: "0.06em",
-									}}
-								>
-									{logo}
-								</span>
+						<ul className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
+							{featured.map((c) => (
+								<li key={c.id} className="h-full">
+									<CourseCard course={c} />
+								</li>
 							))}
-						</div>
+						</ul>
 					</div>
-				</div>
-			</section>
+				</section>
+			)}
 
-			<section className="bg-muted py-16 md:py-24">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="mb-8 flex flex-wrap items-end justify-between gap-3">
-						<div>
-							<Eyebrow>คอร์สแนะนำ</Eyebrow>
-							<h2 className="mt-2 text-h2">เริ่มต้นจากคอร์สยอดนิยม</h2>
-						</div>
-						<Link
-							href="/courses"
-							className="inline-flex items-center gap-1.5 text-ui font-medium text-primary hover:underline"
-						>
-							ดูทั้งหมด <ArrowRight size={14} weight="bold" />
-						</Link>
-					</div>
-					<ul className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
-						<li className="h-full">
-							<StaticCourseCard
-								slug="dcf-valuation-advanced"
-								title="DCF Valuation ขั้นสูง"
-								summary="เรียนรู้การประเมินมูลค่าธุรกิจด้วย Discounted Cash Flow แบบมืออาชีพ พร้อมไฟล์ Excel ตัวอย่าง"
-								price="3,990"
-								students="2,340"
-								tag="ขายดี"
-								tagTone="warning"
-							/>
-						</li>
-						<li className="h-full">
-							<StaticCourseCard
-								slug="stock-thai-30-days"
-								title="หุ้นไทย 30 วัน"
-								summary="พื้นฐานการลงทุนในตลาดหลักทรัพย์ไทย ตั้งแต่ศัพท์เทคนิคจนถึงการอ่านงบการเงิน"
-								price="ฟรี"
-								students="5,120"
-								tag="ฟรี"
-								tagTone="success"
-							/>
-						</li>
-						<li className="h-full">
-							<StaticCourseCard
-								slug="excel-financial-modeling"
-								title="Excel Financial Modeling"
-								summary="สร้างโมเดลการเงินด้วย Excel ตั้งแต่พื้นฐานจนถึงระดับมืออาชีพ ใช้งานจริงได้ทันที"
-								price="2,990"
-								students="1,890"
-							/>
-						</li>
-					</ul>
-				</div>
-			</section>
-
-			<section className="py-16 md:py-24">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="mb-12 text-center">
-						<Eyebrow>หมวดหมู่</Eyebrow>
-						<h2 className="mt-2 text-h2">ค้นหาตามหมวดหมู่</h2>
-						<p className="mt-2 text-body text-muted-foreground">
-							เลือกเรียนตามความสนใจ — จากพื้นฐานสู่ระดับมืออาชีพ
-						</p>
-					</div>
-					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{CATEGORIES.map((cat) => {
-							const Ic = cat.icon;
-							return (
-								<Link
-									key={cat.label}
-									href={`/courses?category=${encodeURIComponent(cat.label)}`}
-									className="group flex items-center gap-4 rounded-card border border-border bg-card p-5 transition-colors hover:border-primary"
-								>
-									<div
-										className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-card"
-										style={{ backgroundColor: cat.bg, color: cat.color }}
-									>
-										<Ic size={24} weight="bold" />
-									</div>
-									<div className="min-w-0 flex-1">
-										<div className="text-ui font-semibold text-foreground">
-											{cat.label}
-										</div>
-										<div className="text-caption text-muted-foreground">
-											{cat.count} คอร์ส
-										</div>
-									</div>
-									<CaretRight
-										size={16}
-										weight="bold"
-										className="shrink-0 text-foreground-subtle transition-colors group-hover:text-primary"
-									/>
-								</Link>
-							);
-						})}
-					</div>
-				</div>
-			</section>
-
-			<section id="about" className="bg-muted py-16 md:py-24">
+			<section id="about" className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
 						<Eyebrow>วิธีใช้งาน</Eyebrow>
@@ -324,57 +219,31 @@ export default function Home() {
 						{STEPS.map((s) => {
 							const Ic = s.icon;
 							return (
-								<article
-									key={s.n}
-									className="rounded-card border border-border bg-card p-6"
-								>
-									<div className="mb-5 flex items-center justify-between">
-										<div className="inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
-											<Ic size={28} weight="bold" />
+								<Card key={s.n}>
+									<CardContent className="p-0">
+										<div className="mb-5 flex items-center justify-between">
+											<div className="inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
+												<Ic size={28} weight="bold" />
+											</div>
+											<span
+												className="num text-foreground-subtle"
+												style={{
+													fontSize: 32,
+													fontWeight: 700,
+													letterSpacing: "-0.02em",
+												}}
+											>
+												{s.n}
+											</span>
 										</div>
-										<span
-											className="num text-foreground-subtle"
-											style={{
-												fontSize: 32,
-												fontWeight: 700,
-												letterSpacing: "-0.02em",
-											}}
-										>
-											{s.n}
-										</span>
-									</div>
-									<h3 className="text-h3">{s.title}</h3>
-									<p className="mt-2 text-body text-muted-foreground">
-										{s.body}
-									</p>
-								</article>
+										<h3 className="text-h3">{s.title}</h3>
+										<p className="mt-2 text-body text-muted-foreground">
+											{s.body}
+										</p>
+									</CardContent>
+								</Card>
 							);
 						})}
-					</div>
-				</div>
-			</section>
-
-			<section className="py-16 md:py-24">
-				<div className="mx-auto max-w-[1200px] px-6">
-					<div className="mb-12 text-center">
-						<Eyebrow>ทำไมต้อง Finalive</Eyebrow>
-						<h2 className="mt-2 text-h2">เรียนกับผู้เชี่ยวชาญตัวจริง</h2>
-					</div>
-					<div className="grid gap-6 md:grid-cols-3">
-						{FEATURES.map((f) => (
-							<article
-								key={f.title}
-								className="rounded-card border border-border bg-card p-6"
-							>
-								<div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
-									<f.icon size={28} weight="bold" />
-								</div>
-								<h3 className="text-h3">{f.title}</h3>
-								<p className="mt-2 text-body text-muted-foreground">
-									{f.body}
-								</p>
-							</article>
-						))}
 					</div>
 				</div>
 			</section>
@@ -382,36 +251,22 @@ export default function Home() {
 			<section className="bg-muted py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="mb-12 text-center">
-						<Eyebrow>รีวิวจากนักเรียน</Eyebrow>
-						<h2 className="mt-2 text-h2">เสียงจากผู้เรียนจริง</h2>
+						<Eyebrow>ทำไมต้อง Finalive</Eyebrow>
+						<h2 className="mt-2 text-h2">เรียนกับผู้เชี่ยวชาญตัวจริง</h2>
 					</div>
 					<div className="grid gap-6 md:grid-cols-3">
-						{TESTIMONIALS.map((t) => (
-							<article
-								key={t.initials}
-								className="relative rounded-card border border-border bg-card p-6"
-							>
-								<Quotes
-									size={32}
-									weight="bold"
-									className="mb-4 text-primary/20"
-									aria-hidden
-								/>
-								<p className="text-body text-foreground">“{t.quote}”</p>
-								<div className="mt-6 flex items-center gap-3">
-									<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-sm font-semibold text-white">
-										{t.initials}
+						{FEATURES.map((f) => (
+							<Card key={f.title}>
+								<CardContent className="p-0">
+									<div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-card border border-border bg-muted text-primary">
+										<f.icon size={28} weight="bold" />
 									</div>
-									<div>
-										<div className="text-ui font-semibold text-foreground">
-											{t.name}
-										</div>
-										<div className="text-caption text-muted-foreground">
-											{t.role}
-										</div>
-									</div>
-								</div>
-							</article>
+									<h3 className="text-h3">{f.title}</h3>
+									<p className="mt-2 text-body text-muted-foreground">
+										{f.body}
+									</p>
+								</CardContent>
+							</Card>
 						))}
 					</div>
 				</div>
@@ -433,90 +288,68 @@ export default function Home() {
 								<circle cx="200" cy="350" r="80" fill="#6366F1" />
 							</svg>
 							<div className="relative">
-								<div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/10 text-3xl font-bold text-white backdrop-blur-sm">
-									อร
-								</div>
-								<div className="text-uism font-medium text-white/70">
+								<AvatarInitials
+									name="อาร์ม ริลีย์"
+									size="xl"
+									className="h-20! w-20! text-2xl! bg-linear-to-br! from-[#F97316]! to-[#EA580C]!"
+								/>
+								<div className="mt-4 text-uism font-medium text-white/70">
 									ผู้ก่อตั้ง &amp; ผู้สอนหลัก
 								</div>
-								<div className="mt-1 text-h3 text-white">อาจารย์อาร์ม</div>
+								<div className="mt-1 text-h3 text-white">
+									อาร์ม ริลีย์{" "}
+									<span className="ml-1 text-base font-normal text-white/70">
+										Arm Riley
+									</span>
+								</div>
 								<div className="mt-1 text-body text-white/70">
-									CFA Charterholder · 15 ปีประสบการณ์
+									CFA Charterholder · Independent Equity Analyst
 								</div>
 							</div>
 						</div>
 
 						<div>
-							<Eyebrow>ผู้สอนแนะนำ</Eyebrow>
+							<Eyebrow>ผู้สอน</Eyebrow>
 							<h2 className="mt-2 text-h2">เรียนกับผู้เชี่ยวชาญตัวจริง</h2>
 							<div className="mt-4 flex flex-wrap gap-2">
-								{[
-									"CFA Charterholder",
-									"15 ปีประสบการณ์",
-									"อดีต VP Investment",
-								].map((badge) => (
-									<span
-										key={badge}
-										className="inline-flex items-center rounded-full border border-border bg-muted px-3 py-1 text-uism text-muted-foreground"
-									>
+								{INSTRUCTOR_BADGES.map((badge) => (
+									<Badge key={badge} variant="secondary">
 										{badge}
-									</span>
+									</Badge>
 								))}
 							</div>
 							<p className="mt-5 text-body text-muted-foreground">
-								อาจารย์อาร์มมีประสบการณ์กว่า 15 ปีในวงการการเงินและการลงทุน
-								เคยดำรงตำแหน่ง VP Investment ในบริษัทจัดการกองทุนชั้นนำ และถือใบอนุญาต
-								CFA Charterholder
-								ด้วยความตั้งใจถ่ายทอดความรู้ให้คนไทยเข้าใจการลงทุนแบบมืออาชีพ
+								อาร์มเริ่มต้นอาชีพในสายการลงทุนตั้งแต่ปี{" "}
+								<span className="num font-medium">2013</span> ในฐานะ Equity
+								Analyst และเคยดำรงตำแหน่ง VP Investment ในกองทุนใหญ่ที่ไทยและสิงคโปร์
+								เชี่ยวชาญด้าน DCF valuation และ financial modeling
+								ตั้งใจถ่ายทอดความรู้ให้คนไทยเข้าใจการลงทุนแบบมืออาชีพ
 								ผ่านคอร์สที่ออกแบบมาอย่างเป็นระบบ
 							</p>
-							<div className="mt-6 flex flex-wrap gap-6">
-								<div>
-									<div
-										className="num text-foreground"
-										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
-									>
-										15
-									</div>
-									<div className="mt-1 text-caption text-muted-foreground">
-										คอร์ส
-									</div>
-								</div>
-								<div>
-									<div
-										className="num text-foreground"
-										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
-									>
-										50,000+
-									</div>
-									<div className="mt-1 text-caption text-muted-foreground">
-										นักเรียน
-									</div>
-								</div>
-								<div>
-									<div
-										className="num flex items-center gap-1 text-foreground"
-										style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
-									>
-										4.9
-										<Star
-											size={18}
-											weight="fill"
-											className="text-warning"
+							{hasStats && (
+								<div className="mt-6 flex flex-wrap gap-6">
+									{stats.publishedCourses > 0 && (
+										<InstructorStat
+											value={stats.publishedCourses.toLocaleString("en-US")}
+											label="คอร์ส"
 										/>
-									</div>
-									<div className="mt-1 text-caption text-muted-foreground">
-										คะแนนเฉลี่ย
-									</div>
+									)}
+									{stats.activeStudents > 0 && (
+										<InstructorStat
+											value={formattedStudents}
+											label="นักเรียน"
+										/>
+									)}
+									<InstructorStat value="12" label="ปีประสบการณ์" />
+									<InstructorStat value="CFA" label="Charterholder" />
 								</div>
-							</div>
+							)}
 							<div className="mt-8">
-								<Link
-									href="/instructor"
-									className="inline-flex h-12 items-center gap-2 rounded-full bg-primary px-8 text-ui font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-								>
-									เรียนรู้เพิ่มเติม <ArrowRight size={16} weight="bold" />
-								</Link>
+								<Button asChild size="lg">
+									<Link href="/instructor">
+										เรียนรู้เพิ่มเติม <ArrowRight size={16} weight="bold" />
+									</Link>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -535,109 +368,23 @@ export default function Home() {
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-3">
-							<Link
-								href="/register"
-								className="inline-flex h-12 items-center gap-2 rounded-full bg-accent px-8 text-ui font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
+							<Button asChild variant="accent" size="lg">
+								<Link href="/register">
+									ลงทะเบียนฟรี <ArrowRight size={16} weight="bold" />
+								</Link>
+							</Button>
+							<Button
+								asChild
+								size="lg"
+								className="border border-white/25 bg-white/10 text-white hover:bg-white/20"
 							>
-								ลงทะเบียนฟรี <ArrowRight size={16} weight="bold" />
-							</Link>
-							<Link
-								href="/courses"
-								className="inline-flex h-12 items-center rounded-full border border-white/25 bg-white/10 px-8 text-ui font-medium text-white transition-colors hover:bg-white/20"
-							>
-								ดูคอร์สทั้งหมด
-							</Link>
+								<Link href="/courses">ดูคอร์สทั้งหมด</Link>
+							</Button>
 						</div>
 					</div>
 				</div>
 			</section>
 		</PublicShell>
-	);
-}
-
-function StaticCourseCard({
-	slug,
-	title,
-	summary,
-	price,
-	students,
-	tag,
-	tagTone,
-}: {
-	slug: string;
-	title: string;
-	summary: string;
-	price: string;
-	students: string;
-	tag?: string;
-	tagTone?: "success" | "warning" | "primary";
-}) {
-	const tagStyles = {
-		success: "bg-success-bg text-success",
-		warning: "bg-warning-bg text-warning",
-		primary: "bg-primary/10 text-primary",
-	};
-
-	return (
-		<Link
-			href={`/courses/${slug}`}
-			className="group flex h-full flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm) transition-[transform,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-(--shadow-md) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-		>
-			<div
-				className="relative aspect-video w-full overflow-hidden bg-muted"
-				aria-hidden
-			>
-				<div className="relative flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
-					<div
-						aria-hidden
-						className="absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-[#F97316]/20 blur-2xl"
-					/>
-					<div
-						aria-hidden
-						className="absolute -left-8 -top-8 h-32 w-32 rounded-full bg-[#818CF8]/30 blur-2xl"
-					/>
-					<span
-						className="relative font-semibold text-white"
-						style={{ fontSize: 56, letterSpacing: "-0.02em" }}
-					>
-						{(title.trim().charAt(0) || "F").toUpperCase()}
-					</span>
-				</div>
-				{tag && (
-					<span
-						className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-semibold ${tagTone ? tagStyles[tagTone] : tagStyles.primary}`}
-					>
-						{tag}
-					</span>
-				)}
-			</div>
-			<div className="flex flex-1 flex-col gap-2 p-5">
-				<h3 className="line-clamp-2 text-h4 text-foreground group-hover:text-primary">
-					{title}
-				</h3>
-				<p className="line-clamp-2 text-body text-muted-foreground">
-					{summary}
-				</p>
-				<div className="mt-auto flex items-center justify-between pt-2">
-					<span className="num text-h4 font-semibold text-foreground">
-						{price === "ฟรี" ? (
-							<span className="text-success">ฟรี</span>
-						) : (
-							<>
-								{price}
-								<span className="ml-1 text-caption text-muted-foreground">
-									บาท
-								</span>
-							</>
-						)}
-					</span>
-					<span className="inline-flex items-center gap-1 text-uism text-muted-foreground">
-						<Users size={14} />
-						<span className="num">{students}</span> ผู้เรียน
-					</span>
-				</div>
-			</div>
-		</Link>
 	);
 }
 
@@ -652,15 +399,12 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 	);
 }
 
-function TrustStat({
-	value,
-	suffix,
-	label,
-}: {
+interface StatProps {
 	value: string;
-	suffix?: string;
 	label: string;
-}) {
+}
+
+function TrustStat({ value, label }: StatProps) {
 	return (
 		<div>
 			<div
@@ -668,38 +412,82 @@ function TrustStat({
 				style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
 			>
 				{value}
-				{suffix && (
-					<span className="ml-1 text-ui font-medium text-muted-foreground">
-						{suffix}
-					</span>
-				)}
 			</div>
 			<div className="mt-1 text-caption text-muted-foreground">{label}</div>
 		</div>
 	);
 }
 
-function HeroVisual() {
+function InstructorStat({ value, label }: StatProps) {
+	return (
+		<div>
+			<div
+				className="num text-foreground"
+				style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}
+			>
+				{value}
+			</div>
+			<div className="mt-1 text-caption text-muted-foreground">{label}</div>
+		</div>
+	);
+}
+
+interface HeroCourse {
+	slug: string;
+	title: string;
+	coverImageUrl: string | null;
+}
+
+function HeroVisual({
+	course,
+	publishedCourses,
+	publishedLessons,
+}: {
+	course: HeroCourse | null;
+	publishedCourses: number;
+	publishedLessons: number;
+}) {
+	const showStatCards = publishedCourses > 0 || publishedLessons > 0;
 	return (
 		<div
 			className="relative ml-auto hidden w-full max-w-[540px] select-none grid-cols-2 gap-5 md:grid"
 			style={{ pointerEvents: "none" }}
 		>
-			<div className="col-span-2 overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-lg)">
-				<div className="relative aspect-video bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
-					<div
-						aria-hidden
-						className="absolute -right-8 -bottom-8 h-50 w-50 rounded-full bg-[#F97316]/20 blur-2xl"
-					/>
-					<div
-						aria-hidden
-						className="absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#818CF8]/20 blur-2xl"
-					/>
+			<Link
+				href={course ? `/courses/${course.slug}` : "/courses"}
+				className="col-span-2 overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-lg)"
+				style={{ pointerEvents: "auto" }}
+			>
+				<div
+					className="relative aspect-video overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]"
+					aria-hidden
+				>
+					{course?.coverImageUrl ? (
+						<Image
+							src={course.coverImageUrl}
+							alt={course.title}
+							fill
+							sizes="(max-width: 768px) 100vw, 540px"
+							className="object-cover"
+							priority
+						/>
+					) : (
+						<>
+							<div
+								aria-hidden
+								className="absolute -right-8 -bottom-8 h-50 w-50 rounded-full bg-[#F97316]/20 blur-2xl"
+							/>
+							<div
+								aria-hidden
+								className="absolute -left-8 -top-8 h-40 w-40 rounded-full bg-[#818CF8]/20 blur-2xl"
+							/>
+						</>
+					)}
 					<div className="absolute inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
 						<Play size={22} weight="bold" className="text-[#1E1B4B]" />
 					</div>
 					<span className="absolute left-4 top-4 rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
-						ตัวอย่างฟรี
+						{course ? "ดูตัวอย่าง" : "เร็วๆ นี้"}
 					</span>
 					<div className="absolute inset-x-4 bottom-4 text-white">
 						<div
@@ -709,74 +497,86 @@ function HeroVisual() {
 								letterSpacing: "0.06em",
 							}}
 						>
-							คอร์สแนะนำ
+							{course ? "คอร์สแนะนำ" : "Finalive"}
 						</div>
-						<div style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.25 }}>
-							DCF Valuation ขั้นสูง
+						<div
+							className="line-clamp-2"
+							style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.25 }}
+						>
+							{course?.title ?? "เรียนวิเคราะห์การเงินกับ creator ไทย"}
 						</div>
 					</div>
 				</div>
-				<div className="flex items-center justify-between p-4">
-					<div className="text-caption text-muted-foreground">
-						<span className="num">30</span> บทเรียน ·{" "}
-						<span className="num">15</span> ชม.
-					</div>
-					<span className="flex items-baseline gap-1">
-						<span className="num text-h4 font-bold text-foreground">
-							3,990
-						</span>
-						<span className="text-caption text-muted-foreground">บาท</span>
-					</span>
-				</div>
-			</div>
+			</Link>
 
-			<div className="rounded-card border border-border bg-card p-4 shadow-(--shadow-md)">
-				<div className="mb-3.5 flex items-center gap-2.5">
-					<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-						<BookOpen size={16} weight="bold" />
-					</div>
-					<div className="min-w-0">
-						<div className="text-uism font-semibold">คอร์สทั้งหมด</div>
-						<div className="truncate text-caption text-muted-foreground">
-							41 คอร์ส พร้อมเนื้อหา
-						</div>
-					</div>
-				</div>
-				<div className="flex gap-1.5">
-					{["#4F46E5", "#10B981", "#F97316", "#8B5CF6", "#EC4899"].map(
-						(color, i) => (
-							<div
-								key={i}
-								className="h-1.5 flex-1 rounded-full"
-								style={{ backgroundColor: color }}
-							/>
-						),
-					)}
-				</div>
-				<div className="mt-2.5 flex items-center justify-between">
-					<span className="text-caption text-muted-foreground">
-						6 หมวดหมู่
-					</span>
-					<span className="num text-caption font-semibold text-primary">
-						180+ บทเรียน
-					</span>
-				</div>
-			</div>
+			{showStatCards ? (
+				<>
+					<Card className="flex flex-col p-5 shadow-(--shadow-md)">
+						<CardContent className="flex flex-1 flex-col p-0">
+							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+								<BookOpen size={18} weight="bold" />
+							</div>
+							<div className="mt-4">
+								<div
+									className="num leading-none text-foreground"
+									style={{ fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em" }}
+								>
+									{publishedCourses.toLocaleString("en-US")}
+								</div>
+								<div className="mt-1.5 text-caption text-muted-foreground">
+									คอร์สเปิดสอน
+								</div>
+							</div>
+							<div className="flex-1" />
+							{publishedLessons > 0 && (
+								<div className="mt-4 border-t border-border pt-3 text-caption text-muted-foreground">
+									<span className="num font-semibold text-foreground">
+										{publishedLessons.toLocaleString("en-US")}
+									</span>{" "}
+									บทเรียนทั้งหมด
+								</div>
+							)}
+						</CardContent>
+					</Card>
 
-			<div className="flex flex-col rounded-card border border-border bg-card p-4 shadow-(--shadow-md)">
-				<div className="mb-3 flex h-8 w-8 items-center justify-center rounded-md bg-success-bg text-success">
-					<Certificate size={18} weight="bold" />
-				</div>
-				<div className="text-uism font-semibold">ใบประกาศ</div>
-				<div className="text-caption text-muted-foreground">
-					ตรวจสอบออนไลน์ได้
-				</div>
-				<div className="flex-1" />
-				<div className="mt-3 flex items-center gap-1.5 text-muted-foreground">
-					<ShieldCheck size={13} />
-					<span className="text-caption">SHA-256 verify</span>
-				</div>
-			</div>
+					<Card className="flex flex-col p-5 shadow-(--shadow-md)">
+						<CardContent className="flex flex-1 flex-col p-0">
+							<div className="flex h-9 w-9 items-center justify-center rounded-md bg-success-bg text-success">
+								<Certificate size={18} weight="bold" />
+							</div>
+							<div className="mt-4">
+								<div className="text-h4 font-semibold leading-tight text-foreground">
+									เรียนจบ
+									<br />
+									รับใบประกาศ
+								</div>
+								<div className="mt-1.5 text-caption text-muted-foreground">
+									ตรวจสอบออนไลน์ได้
+								</div>
+							</div>
+							<div className="flex-1" />
+							<div className="mt-4 flex items-center gap-1.5 border-t border-border pt-3 text-caption text-muted-foreground">
+								<ShieldCheck size={13} />
+								<span>แชร์ลง LinkedIn</span>
+							</div>
+						</CardContent>
+					</Card>
+				</>
+			) : (
+				<Card className="col-span-2 p-4 shadow-(--shadow-md)">
+					<CardContent className="flex items-center gap-3 p-0">
+						<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-success-bg text-success">
+							<Check size={18} weight="bold" />
+						</div>
+						<div className="min-w-0">
+							<div className="text-uism font-semibold">ใบประกาศตรวจสอบได้</div>
+							<div className="truncate text-caption text-muted-foreground">
+								จบคอร์สรับใบประกาศที่ตรวจสอบออนไลน์ได้
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }

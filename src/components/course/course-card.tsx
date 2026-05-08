@@ -4,6 +4,7 @@ import { Users } from "@phosphor-icons/react/dist/ssr";
 import type { PublicCourseSummary } from "@/server/repos/course";
 import { formatTHB } from "@/lib/format";
 import { StatusChip } from "@/components/ui/status-chip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface CourseCardData extends PublicCourseSummary {
 	coverImageUrl: string | null;
@@ -153,15 +154,12 @@ export function CourseListItem({ course }: { course: CourseCardData }) {
 export function CourseListItemSkeleton() {
 	return (
 		<div className="flex gap-5 overflow-hidden rounded-card border border-border bg-card p-4">
-			<div
-				className="aspect-video h-28 w-44 shrink-0 animate-pulse rounded-lg bg-muted"
-				aria-hidden
-			/>
+			<Skeleton className="aspect-video h-28 w-44 shrink-0 rounded-lg" />
 			<div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-				<div className="h-5 w-2/3 animate-pulse rounded-md bg-muted" />
-				<div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-				<div className="h-4 w-1/2 animate-pulse rounded-md bg-muted" />
-				<div className="mt-2 h-5 w-24 animate-pulse rounded-md bg-muted" />
+				<Skeleton className="h-5 w-2/3 rounded-md" />
+				<Skeleton className="h-4 w-full rounded-md" />
+				<Skeleton className="h-4 w-1/2 rounded-md" />
+				<Skeleton className="mt-2 h-5 w-24 rounded-md" />
 			</div>
 		</div>
 	);
@@ -169,18 +167,15 @@ export function CourseListItemSkeleton() {
 
 export function CourseCardSkeleton() {
 	return (
-		<div className="flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm)">
-			<div
-				className="aspect-video w-full animate-pulse bg-muted"
-				aria-hidden
-			/>
+		<div className="flex h-full flex-col overflow-hidden rounded-card border border-border bg-card shadow-(--shadow-sm)">
+			<Skeleton className="aspect-video w-full rounded-none" />
 			<div className="flex flex-1 flex-col gap-2 p-5">
-				<div className="h-5 w-3/4 animate-pulse rounded-md bg-muted" />
-				<div className="h-4 w-full animate-pulse rounded-md bg-muted" />
-				<div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
+				<Skeleton className="h-5 w-3/4 rounded-md" />
+				<Skeleton className="h-4 w-full rounded-md" />
+				<Skeleton className="h-4 w-2/3 rounded-md" />
 				<div className="mt-auto flex items-center justify-between pt-2">
-					<div className="h-5 w-16 animate-pulse rounded-md bg-muted" />
-					<div className="h-4 w-24 animate-pulse rounded-md bg-muted" />
+					<Skeleton className="h-5 w-16 rounded-md" />
+					<Skeleton className="h-4 w-24 rounded-md" />
 				</div>
 			</div>
 		</div>

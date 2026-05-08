@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, MagnifyingGlassPlus } from "@phosphor-icons/react";
@@ -54,11 +55,13 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
         onClick={() => setLightboxOpen(true)}
         className="group relative block w-full cursor-zoom-in rounded-sm border border-border bg-muted/40 p-2"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- presigned R2 URL changes per fetch; not a candidate for next/image optimization */}
-        <img
+        <Image
           src={query.data.url}
           alt="ภาพ slip"
-          className="mx-auto max-h-[50vh] w-auto rounded-sm"
+          width={800}
+          height={1200}
+          className="mx-auto h-auto max-h-[50vh] w-auto rounded-sm"
+          unoptimized
         />
         <div className="absolute inset-0 m-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
           <MagnifyingGlassPlus size={20} />
@@ -77,12 +80,14 @@ export function SlipImageViewer({ slipId }: { slipId: string }) {
           >
             <X size={20} />
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={query.data.url}
             alt="ภาพ slip (ขยาย)"
-            className="max-h-[90vh] max-w-full rounded-sm shadow-2xl"
+            width={1600}
+            height={2400}
+            className="h-auto max-h-[90vh] w-auto max-w-full rounded-sm shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            unoptimized
           />
         </div>
       )}

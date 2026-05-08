@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import {
 	MagnifyingGlass,
@@ -69,7 +69,6 @@ export function CourseFilters({
 	children,
 }: CourseFiltersProps) {
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const [q, setQ] = useState(initialQ);
 	const [freeOnly, setFreeOnly] = useState(initialFreeOnly);
 	const [price, setPrice] = useState(initialPrice);
@@ -87,21 +86,14 @@ export function CourseFilters({
 			isFirstRun.current = false;
 			return;
 		}
-		const next = new URLSearchParams(searchParams.toString());
+		const next = new URLSearchParams();
 		if (debouncedQ.trim()) next.set("q", debouncedQ.trim());
-		else next.delete("q");
 		if (freeOnly) next.set("free", "1");
-		else next.delete("free");
 		if (price) next.set("price", price);
-		else next.delete("price");
 		if (duration) next.set("duration", duration);
-		else next.delete("duration");
 		if (sortBy && sortBy !== "newest") next.set("sort", sortBy);
-		else next.delete("sort");
-		next.delete("page");
 		const qs = next.toString();
 		router.replace(qs ? `/courses?${qs}` : "/courses", { scroll: false });
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedQ, freeOnly, price, duration, sortBy, router]);
 
 	const handleClear = () => {

@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 const STORAGE_KEY = "finalive.cookieConsent";
 const STORAGE_TIMESTAMP_KEY = "finalive.cookieConsent.acceptedAt";
 
 type Choice = "accepted" | "essential";
+
+function readChoice(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function subscribeStorage(onChange: () => void): () => void {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
+// Sentinel returned during SSR/initial hydration so the banner stays hidden
+// until we can read localStorage on the client. Returning users never see a
+// banner flash.
+const SSR_SENTINEL = "__ssr__";
 
 /**
  * PDPA-friendly first-visit consent banner. We don't load any non-essential
@@ -15,37 +33,24 @@ type Choice = "accepted" | "essential";
  * `localStorage.getItem(STORAGE_KEY) === 'accepted'`.
  */
 export function CookieBanner() {
-  // Initialize from localStorage in a layout effect so the first render
-  // already has the correct value (avoids the flash + the
-  // react-hooks/set-state-in-effect lint warning that's triggered by
-  // setState-during-effect on mount).
-  const [visible, setVisible] = useState<boolean | null>(null);
+  const persistedChoice = useSyncExternalStore(
+    subscribeStorage,
+    readChoice,
+    () => SSR_SENTINEL,
+  );
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    if (visible !== null) return;
-    let stored: string | null = null;
-    try {
-      stored = localStorage.getItem(STORAGE_KEY);
-    } catch {
-      // localStorage unavailable — fall through to "don't show" behavior.
-    }
-    // localStorage is an external system; reading it on mount is the
-    // canonical setState-in-effect pattern for client-side persistence.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setVisible(stored === null);
-  }, [visible]);
-
-  function persist(choice: Choice) {
+  const persist = useCallback((choice: Choice) => {
     try {
       localStorage.setItem(STORAGE_KEY, choice);
       localStorage.setItem(STORAGE_TIMESTAMP_KEY, new Date().toISOString());
     } catch {
       // Best-effort only.
     }
-    setVisible(false);
-  }
+    setDismissed(true);
+  }, []);
 
-  if (visible !== true) return null;
+  if (persistedChoice !== null || dismissed) return null;
 
   return (
     <div

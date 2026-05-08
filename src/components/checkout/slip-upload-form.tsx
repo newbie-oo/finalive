@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { File, CheckCircle } from "@phosphor-icons/react";
@@ -106,13 +107,15 @@ export function SlipUploadForm({ pendingId }: SlipUploadFormProps) {
         {file ? (
           <>
             <div className="flex w-full max-w-sm items-center gap-4 rounded-xl border border-border bg-background p-3.5 text-left">
-              <div className="flex h-[72px] w-14 shrink-0 items-center justify-center rounded-lg border border-border bg-linear-to-br from-orange-50 to-orange-200">
+              <div className="relative flex h-[72px] w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-linear-to-br from-orange-50 to-orange-200">
                 {preview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={preview}
                     alt=""
-                    className="h-full w-full rounded-lg object-cover"
+                    fill
+                    sizes="56px"
+                    className="object-cover"
+                    unoptimized
                   />
                 ) : (
                   <File size={24} weight="fill" className="text-orange-400" />

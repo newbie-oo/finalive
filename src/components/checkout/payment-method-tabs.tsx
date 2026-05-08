@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { Bank, QrCode } from "@phosphor-icons/react";
 
@@ -142,13 +143,13 @@ function BankContent({ text }: { text: string }) {
 function QrContent({ url }: { url: string }) {
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={url}
         width={224}
         height={224}
         alt="PromptPay QR สำหรับโอนค่าคอร์ส"
         className="h-56 w-56 rounded-card border border-border bg-white object-contain p-2"
+        unoptimized
       />
       <p className="text-uism text-muted-foreground">
         สแกน QR เพื่อชำระเงิน

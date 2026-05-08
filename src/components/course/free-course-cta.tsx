@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,24 +11,16 @@ interface FreeCourseCtaProps {
   courseSlug: string;
 }
 
-/**
- * "เริ่มเรียน" CTA on a free course.
- *
- * Two paths:
- *  - Authenticated → enroll (idempotent server action) → /learn/[slug]
- *  - Not authenticated → /login?next=/courses/[slug]?autoEnroll=1
- *    On return, the autoEnroll query triggers enrollment automatically so the
- *    student doesn't have to click again. This was the #1 reported friction:
- *    silent redirect to login with no return path.
- */
 export function FreeCourseCta({ courseSlug }: FreeCourseCtaProps) {
   const router = useRouter();
   const params = useSearchParams();
   const { data: session, isPending } = useSession();
   const [loading, setLoading] = useState(false);
   const autoEnrollRequested = params.get("autoEnroll") === "1";
+  const userId = session?.user?.id ?? null;
 
-  async function enroll() {
+  const enroll = useCallback(async () => {
+    setLoading(true);
     try {
       const result = await enrollFreeCourse(courseSlug);
       if (result.ok) {
@@ -40,20 +32,13 @@ export function FreeCourseCta({ courseSlug }: FreeCourseCtaProps) {
       toast.error(msg);
       setLoading(false);
     }
-  }
+  }, [courseSlug, router]);
 
-  // Auto-enroll on return from login. The rule "no setState in effect" is
-  // disabled here because the trigger genuinely is a transition into a new
-  // session — we can't move it to render without infinite loops, and we
-  // can't move it earlier because the session arrives async.
   useEffect(() => {
     if (!autoEnrollRequested) return;
-    if (!session?.user) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
+    if (!userId) return;
     void enroll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoEnrollRequested, session?.user]);
+  }, [autoEnrollRequested, userId, enroll]);
 
   const handleClick = () => {
     if (isPending) return;
@@ -62,7 +47,6 @@ export function FreeCourseCta({ courseSlug }: FreeCourseCtaProps) {
       router.push(`/login?next=${encodeURIComponent(next)}`);
       return;
     }
-    setLoading(true);
     void enroll();
   };
 

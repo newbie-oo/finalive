@@ -1,4 +1,5 @@
 import * as React from "react";
+import Image from "next/image";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -46,12 +47,18 @@ export function AvatarInitials({
       <span
         className={cn(
           avatarVariants({ size, className }),
-          "overflow-hidden bg-muted",
+          "relative overflow-hidden bg-muted",
         )}
         {...props}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={name} className="h-full w-full object-cover" />
+        <Image
+          src={src}
+          alt={name}
+          fill
+          sizes="96px"
+          className="object-cover"
+          unoptimized
+        />
       </span>
     );
   }
