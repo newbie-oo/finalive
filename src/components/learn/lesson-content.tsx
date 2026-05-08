@@ -99,6 +99,7 @@ export function LessonContent({
 					nextLessonId={nextLessonId}
 					quizId={quizId}
 					prevLessonId={_prevLessonId}
+					watchedSeconds={watchedSeconds}
 					isAdmin={isAdmin}
 					isCompleted={isCompleted}
 					playerSlot={

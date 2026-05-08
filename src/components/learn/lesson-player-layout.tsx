@@ -8,14 +8,19 @@ import { MarkdownView } from "@/lib/markdown";
 import { LessonClient } from "./lesson-client";
 import { NotesPanel } from "./notes-panel";
 import { formatDurationMinutes } from "@/lib/format";
-import {
-	BookmarkSimple,
-	Check,
-	ArrowLeft,
-	ArrowRight,
-} from "@phosphor-icons/react";
+import { Check, ArrowLeft, ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { CertificateClaim } from "./certificate-claim";
+
+/** Fraction of duration the student must watch before they can self-mark a
+ * lesson complete. Below this they see a disabled button with a tooltip
+ * explaining why; admins bypass it for QA. */
+const COMPLETE_THRESHOLD = 0.8;
 
 export interface LessonPlayerLayoutProps {
 	lessonId: string;
@@ -29,6 +34,9 @@ export interface LessonPlayerLayoutProps {
 	nextLessonId: string | null;
 	prevLessonId: string | null;
 	quizId: string | null;
+	/** Watched-seconds snapshot from the server. Used to gate the "mark
+	 * complete" button until the student has watched enough of the lesson. */
+	watchedSeconds?: number;
 	isAdmin?: boolean;
 	isCompleted?: boolean;
 	playerSlot: React.ReactNode;
@@ -46,20 +54,21 @@ export function LessonPlayerLayout({
 	nextLessonId,
 	prevLessonId,
 	quizId,
+	watchedSeconds = 0,
 	isAdmin = false,
 	isCompleted = false,
 	playerSlot,
 }: LessonPlayerLayoutProps) {
 	const router = useRouter();
 	const [activeTab, setActiveTab] = useState<"content" | "notes">("content");
-	const [bookmarked, setBookmarked] = useState(false);
 	const [localCompleted, setLocalCompleted] = useState(false);
 	const completed = localCompleted || isCompleted;
 
-	const handleBookmark = useCallback(() => {
-		setBookmarked((v) => !v);
-		toast.success(bookmarked ? "ยกเลิกบุ๊กมาร์กแล้ว" : "บุ๊กมาร์กบทเรียนแล้ว");
-	}, [bookmarked]);
+	const watchThresholdMet =
+		!durationSeconds ||
+		durationSeconds <= 0 ||
+		watchedSeconds >= durationSeconds * COMPLETE_THRESHOLD;
+	const canMarkComplete = isAdmin || watchThresholdMet;
 
 	const handleMarkComplete = useCallback(async () => {
 		if (isAdmin) {
@@ -126,34 +135,12 @@ export function LessonPlayerLayout({
 							<span className="text-caption">{moduleTitle}</span>
 						</div>
 					</div>
-					<div className="flex items-center gap-2 shrink-0">
-						<Button
-							variant="secondary"
-							size="md"
-							onClick={handleBookmark}
-							aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
-						>
-							<BookmarkSimple
-								size={16}
-								weight={bookmarked ? "fill" : "regular"}
-							/>
-						</Button>
-						<Button
+					<div className="flex shrink-0 items-center gap-2">
+						<MarkCompleteButton
+							completed={completed}
+							canMarkComplete={canMarkComplete}
 							onClick={handleMarkComplete}
-							disabled={completed}
-							variant={completed ? "secondary" : "primary"}
-							size="md"
-						>
-							{completed ? (
-								<>
-									<Check size={16} weight="bold" /> จบบทเรียนแล้ว
-								</>
-							) : (
-								<>
-									<Check size={16} weight="bold" /> ทำเครื่องหมายว่าจบ
-								</>
-							)}
-						</Button>
+						/>
 					</div>
 				</div>
 			</div>
@@ -242,4 +229,48 @@ export function LessonPlayerLayout({
 			</div>
 		</>
 	);
+}
+
+interface MarkCompleteButtonProps {
+	completed: boolean;
+	canMarkComplete: boolean;
+	onClick: () => void;
+}
+
+function MarkCompleteButton({
+	completed,
+	canMarkComplete,
+	onClick,
+}: MarkCompleteButtonProps) {
+	const button = (
+		<Button
+			onClick={onClick}
+			disabled={completed || !canMarkComplete}
+			variant={completed ? "secondary" : "primary"}
+			size="md"
+		>
+			<Check size={16} weight="bold" />
+			{completed ? "จบบทเรียนแล้ว" : "ทำเครื่องหมายว่าจบ"}
+		</Button>
+	);
+
+	// When the button is gated by watch progress, wrap in a Tooltip explaining
+	// the requirement — keeps the disabled control discoverable. The
+	// already-completed state has its own clear label so it doesn't need one.
+	if (!completed && !canMarkComplete) {
+		return (
+			<Tooltip>
+				<TooltipTrigger asChild>
+					{/* span needed because disabled buttons swallow pointer events
+					    that the tooltip listens to. */}
+					<span tabIndex={0}>{button}</span>
+				</TooltipTrigger>
+				<TooltipContent side="bottom">
+					ดูบทเรียนให้ถึง 80% ก่อนทำเครื่องหมายจบได้
+				</TooltipContent>
+			</Tooltip>
+		);
+	}
+
+	return button;
 }
