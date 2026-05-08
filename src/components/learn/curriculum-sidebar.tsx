@@ -18,7 +18,7 @@ import { formatDuration } from "@/lib/format";
 import { useSession } from "@/lib/auth-client";
 import { useCurriculumProgress } from "@/hooks/use-curriculum-progress";
 import { useLessonAccess } from "@/hooks/use-lesson-access";
-import { useNotePreview } from "@/hooks/use-note-preview";
+import { getNotePreview } from "@/lib/note-preview";
 
 interface SidebarLesson {
 	id: string;
@@ -137,7 +137,7 @@ function StatusIcon({
 function SidebarNotesCard({ lessonId }: { lessonId: string }) {
 	const { data: session } = useSession();
 	const userId = session?.user?.id ?? "";
-	const preview = useNotePreview(userId, lessonId);
+	const preview = getNotePreview(userId, lessonId);
 
 	if (!preview) return null;
 
