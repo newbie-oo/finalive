@@ -106,7 +106,7 @@ export default async function DashboardPage() {
 						icon: Clock,
 						value: formatDuration(data.totalWatchedSeconds),
 						label: formatDurationLabel(data.totalWatchedSeconds) + "เรียนรวม",
-						color: "#10B981",
+						color: "var(--success)",
 					},
 					{
 						icon: Flame,
@@ -118,7 +118,7 @@ export default async function DashboardPage() {
 						icon: Trophy,
 						value: String(data.certCount),
 						label: "ใบประกาศ",
-						color: "#8B5CF6",
+						color: "var(--avatar-to)",
 					},
 				].map((s) => (
 					<div
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
 												className="h-full w-full object-cover"
 											/>
 										) : (
-											<div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B] text-white">
+											<div className="flex h-full w-full items-center justify-center bg-linear-to-br from-hero-from to-hero-to text-white">
 												<span className="text-h2">
 													{e.courseTitle.trim().charAt(0).toUpperCase()}
 												</span>

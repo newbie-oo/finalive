@@ -188,7 +188,7 @@ function InstructorTab() {
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center gap-4">
-				<div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-h3 font-semibold text-white">
+				<div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-avatar-from to-avatar-to text-h3 font-semibold text-white">
 					อา
 				</div>
 				<div>
@@ -212,7 +212,7 @@ function InstructorTab() {
 					href="https://www.youtube.com/@ArmRileyQuant"
 					target="_blank"
 					rel="noopener noreferrer"
-					className="inline-flex items-center gap-2 rounded-button bg-destructive px-4 py-2.5 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C]"
+					className="inline-flex items-center gap-2 rounded-button bg-destructive px-4 py-2.5 text-ui font-semibold text-white transition-colors hover:bg-destructive/90"
 				>
 					<YoutubeLogo size={18} weight="fill" />
 					ติดตามบน YouTube
@@ -254,7 +254,7 @@ function InstructorCard() {
 				ผู้สอน
 			</div>
 			<div className="mb-4 flex items-center gap-3.5">
-				<div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-h4 font-semibold text-white">
+				<div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-avatar-from to-avatar-to text-h4 font-semibold text-white">
 					อา
 				</div>
 				<div>

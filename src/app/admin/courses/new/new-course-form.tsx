@@ -159,7 +159,7 @@ function PreviewCard({
             unoptimized
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
+          <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-hero-from to-hero-to">
             <span className="text-sm text-white/60">ไม่มีรูปปก</span>
           </div>
         )}

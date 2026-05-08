@@ -75,10 +75,10 @@ function CoverFallback({ title }: { title: string }) {
 	// look broken when a cover hasn't been uploaded.
 	const initial = (title.trim().charAt(0) || "F").toUpperCase();
 	return (
-		<div className="relative flex h-full w-full items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
+		<div className="relative flex h-full w-full items-center justify-center bg-linear-to-br from-hero-from to-hero-to">
 			<div
 				aria-hidden
-				className="absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-[#F97316]/20 blur-2xl"
+				className="absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-accent/20 blur-2xl"
 			/>
 			<div
 				aria-hidden

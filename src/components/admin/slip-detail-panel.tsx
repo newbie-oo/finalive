@@ -117,7 +117,7 @@ export function SlipDetailPanel({
 
 				<div className="flex flex-col gap-4 p-5">
 					<div className="flex items-center gap-3 rounded-card border border-border bg-card p-3.5">
-						<span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-[14px] font-semibold text-white">
+						<span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-avatar-from to-avatar-to text-[14px] font-semibold text-white">
 							{(slip.studentName || "?").trim().slice(0, 2)}
 						</span>
 						<div className="min-w-0 flex-1">
@@ -245,7 +245,7 @@ export function SlipDetailPanel({
 							ref={rejectButtonRef}
 							onClick={onToggleReject}
 							disabled={busy}
-							className="flex flex-1 items-center justify-center gap-1.5 rounded-button bg-destructive py-3 text-ui font-semibold text-white transition-colors hover:bg-[#B91C1C] disabled:opacity-50"
+							className="flex flex-1 items-center justify-center gap-1.5 rounded-button bg-destructive py-3 text-ui font-semibold text-white transition-colors hover:bg-destructive/90 disabled:opacity-50"
 						>
 							<Prohibit size={16} weight="bold" />
 							ปฏิเสธ

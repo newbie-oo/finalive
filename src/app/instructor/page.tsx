@@ -93,10 +93,10 @@ export default async function InstructorPage() {
 								<AvatarInitials
 									name="อาร์ม ริลีย์"
 									size="xl"
-									className="!h-36 !w-36 !text-4xl !bg-linear-to-br !from-[#F97316] !to-[#EA580C]"
+									className="!h-36 !w-36 !text-4xl !bg-linear-to-br !from-accent !to-accent-hover"
 								/>
 							</div>
-							<div className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-[#4F46E5] bg-[#10B981]">
+							<div className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full border-[3px] border-primary bg-success">
 								<Check size={16} weight="bold" className="text-white" />
 							</div>
 						</div>
@@ -146,7 +146,7 @@ export default async function InstructorPage() {
 						<div className="flex shrink-0 flex-col gap-2.5 md:min-w-[200px]">
 							<Link
 								href="/courses"
-								className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#F97316] px-6 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#EA580C] hover:shadow-lg"
+								className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-accent px-6 text-sm font-semibold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-accent-hover hover:shadow-lg"
 							>
 								<Books size={16} weight="bold" />
 								ดูคอร์สทั้งหมด

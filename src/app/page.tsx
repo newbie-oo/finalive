@@ -275,7 +275,7 @@ export default async function Home() {
 			<section className="py-16 md:py-24">
 				<div className="mx-auto max-w-[1200px] px-6">
 					<div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-						<div className="relative overflow-hidden rounded-card border border-border bg-linear-to-br from-[#312E81] to-[#1E1B4B] p-8 md:p-10">
+						<div className="relative overflow-hidden rounded-card border border-border bg-linear-to-br from-hero-from to-hero-to p-8 md:p-10">
 							<svg
 								aria-hidden
 								className="absolute inset-0 h-full w-full opacity-20"
@@ -291,7 +291,7 @@ export default async function Home() {
 								<AvatarInitials
 									name="อาร์ม ริลีย์"
 									size="xl"
-									className="h-20! w-20! text-2xl! bg-linear-to-br! from-[#F97316]! to-[#EA580C]!"
+									className="h-20! w-20! text-2xl! bg-linear-to-br! from-accent! to-accent-hover!"
 								/>
 								<div className="mt-4 text-uism font-medium text-white/70">
 									ผู้ก่อตั้ง &amp; ผู้สอนหลัก
@@ -459,7 +459,7 @@ function HeroVisual({
 				style={{ pointerEvents: "auto" }}
 			>
 				<div
-					className="relative aspect-video overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]"
+					className="relative aspect-video overflow-hidden bg-linear-to-br from-hero-from to-hero-to"
 					aria-hidden
 				>
 					{course?.coverImageUrl ? (
@@ -475,7 +475,7 @@ function HeroVisual({
 						<>
 							<div
 								aria-hidden
-								className="absolute -right-8 -bottom-8 h-50 w-50 rounded-full bg-[#F97316]/20 blur-2xl"
+								className="absolute -right-8 -bottom-8 h-50 w-50 rounded-full bg-accent/20 blur-2xl"
 							/>
 							<div
 								aria-hidden
@@ -484,7 +484,7 @@ function HeroVisual({
 						</>
 					)}
 					<div className="absolute inset-0 m-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
-						<Play size={22} weight="bold" className="text-[#1E1B4B]" />
+						<Play size={22} weight="bold" className="text-foreground" />
 					</div>
 					<span className="absolute left-4 top-4 rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
 						{course ? "ดูตัวอย่าง" : "เร็วๆ นี้"}

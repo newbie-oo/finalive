@@ -118,7 +118,7 @@ export default async function CourseDetailPage({
 										/>
 									</div>
 								) : (
-									<div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-linear-to-br from-[#312E81] to-[#1E1B4B]">
+									<div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-linear-to-br from-hero-from to-hero-to">
 										<span
 											className="font-semibold text-white"
 											style={{ fontSize: 80, letterSpacing: "-0.02em" }}
@@ -174,7 +174,7 @@ export default async function CourseDetailPage({
 								href="#instructor"
 								className="mt-5 inline-flex items-center gap-3 rounded-card border border-transparent p-1 transition-colors hover:border-border hover:bg-muted"
 							>
-								<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-ui font-semibold text-white">
+								<div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-avatar-from to-avatar-to text-ui font-semibold text-white">
 									อา
 								</div>
 								<div>

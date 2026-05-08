@@ -36,6 +36,10 @@
   --color-info-foreground: var(--info);
   --color-review-bg: var(--review-bg);
   --color-review-foreground: var(--review-fg);
+  --color-hero-from: var(--hero-from);
+  --color-hero-to: var(--hero-to);
+  --color-avatar-from: var(--avatar-from);
+  --color-avatar-to: var(--avatar-to);
 
   /* shadcn-compat aliases (so existing primitives keep working) */
   --color-card: var(--surface);
@@ -113,6 +117,13 @@
   --heat-2: #818CF8;
   --heat-3: #4F46E5;
   --heat-4: #3730A3;
+  /* Brand gradient palette — used for hero panels, course-cover fallbacks,
+     avatar circles. Kept stable across themes (the gradients are dark in
+     both modes by design). */
+  --hero-from: #312E81;
+  --hero-to: #1E1B4B;
+  --avatar-from: #6366F1;
+  --avatar-to: #8B5CF6;
 }
 
 [data-theme="dark"] {
@@ -153,6 +164,11 @@
   --heat-2: #4F46E5;
   --heat-3: #818CF8;
   --heat-4: #A5B4FC;
+  /* Brand gradient palette — same values as light mode (deep enough for both). */
+  --hero-from: #312E81;
+  --hero-to: #1E1B4B;
+  --avatar-from: #818CF8;
+  --avatar-to: #A78BFA;
 }
 
 /* Backwards-compat for any leftover .dark class users (during migration) */

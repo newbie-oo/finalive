@@ -66,7 +66,7 @@ export function AvatarInitials({
     <span
       className={cn(
         avatarVariants({ size, className }),
-        "bg-linear-to-br from-[#6366F1] to-[#8B5CF6]",
+        "bg-linear-to-br from-avatar-from to-avatar-to",
       )}
       aria-label={name}
       {...props}

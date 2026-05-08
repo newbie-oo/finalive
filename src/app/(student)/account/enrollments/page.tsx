@@ -120,7 +120,7 @@ export default async function EnrollmentsPage() {
 															className="object-cover"
 														/>
 													) : (
-														<div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-[#312E81] to-[#1E1B4B] text-white">
+														<div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-hero-from to-hero-to text-white">
 															<span className="text-h2">
 																{p.courseTitle.trim().charAt(0).toUpperCase()}
 															</span>
