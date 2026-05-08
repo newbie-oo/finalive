@@ -24,6 +24,13 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Stepper } from "@/components/ui/stepper";
+
+const REGISTER_STEPS = [
+	{ label: "ลงทะเบียน" },
+	{ label: "ยืนยันอีเมล" },
+	{ label: "เริ่มเรียน" },
+] as const;
 
 const registerSchema = z.object({
 	name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -71,22 +78,29 @@ export default function RegisterPage() {
 		return (
 			<PublicShell hideFooter>
 				<div className="flex min-h-full items-center justify-center px-6 py-12">
-					<div className="w-full max-w-[400px] text-center">
-						<CheckCircle
-							size={56}
-							weight="fill"
-							className="mx-auto mb-4 text-success"
+					<div className="w-full max-w-[480px]">
+						<Stepper
+							steps={[...REGISTER_STEPS]}
+							current={1}
+							className="mb-8"
 						/>
-						<h1 className="text-h2 mb-2">สมัครสมาชิกสำเร็จ</h1>
-						<p className="text-body text-muted-foreground">
-							ตรวจสอบอีเมลเพื่อยืนยันบัญชี
-						</p>
-						<p className="mb-6 mt-2 text-body text-muted-foreground">
-							เราส่งลิงก์ยืนยันไปยังอีเมลของคุณแล้ว
-						</p>
-						<Button asChild variant="primary" size="lg" className="w-full">
-							<Link href="/login">ไปหน้าเข้าสู่ระบบ</Link>
-						</Button>
+						<div className="text-center">
+							<CheckCircle
+								size={56}
+								weight="fill"
+								className="mx-auto mb-4 text-success"
+							/>
+							<h1 className="text-h2 mb-2">สมัครสมาชิกสำเร็จ</h1>
+							<p className="text-body text-muted-foreground">
+								ตรวจสอบอีเมลเพื่อยืนยันบัญชี
+							</p>
+							<p className="mb-6 mt-2 text-body text-muted-foreground">
+								เราส่งลิงก์ยืนยันไปยังอีเมลของคุณแล้ว
+							</p>
+							<Button asChild variant="primary" size="lg" className="w-full">
+								<Link href="/login">ไปหน้าเข้าสู่ระบบ</Link>
+							</Button>
+						</div>
 					</div>
 				</div>
 			</PublicShell>

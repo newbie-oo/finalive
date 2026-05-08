@@ -88,9 +88,9 @@ export const PasswordInput = React.forwardRef<
 				<button
 					type="button"
 					onClick={() => setShowPassword((v) => !v)}
-					className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground"
-					tabIndex={-1}
-					aria-label={showPassword ? "Hide password" : "Show password"}
+					className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-foreground focus-visible:rounded-radius-input focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+					aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
+					aria-pressed={showPassword}
 				>
 					{showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
 				</button>

@@ -3,18 +3,21 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { PasswordInput } from "./password-input";
 
 describe("PasswordInput", () => {
-  it("toggles password visibility", () => {
+  it("toggles password visibility and is keyboard-focusable", () => {
     render(<PasswordInput value="secret" />);
     const input = screen.getByDisplayValue("secret");
     expect(input).toHaveAttribute("type", "password");
 
-    const btn = screen.getByRole("button", { name: /Show password/ });
+    // The toggle is reachable via keyboard — no tabIndex={-1} hack.
+    const btn = screen.getByRole("button", { name: /แสดงรหัสผ่าน/ });
+    expect(btn).not.toHaveAttribute("tabindex", "-1");
+    expect(btn).toHaveAttribute("aria-pressed", "false");
+
     fireEvent.click(btn);
 
     expect(input).toHaveAttribute("type", "text");
-    expect(
-      screen.getByRole("button", { name: /Hide password/ }),
-    ).toBeInTheDocument();
+    const after = screen.getByRole("button", { name: /ซ่อนรหัสผ่าน/ });
+    expect(after).toHaveAttribute("aria-pressed", "true");
   });
 
   it("shows no strength bars by default", () => {
