@@ -12,6 +12,11 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusChip } from "@/components/ui/status-chip";
 import { EnrollmentCard } from "@/components/account/enrollment-card";
+import {
+	EnrollmentsFilterBar,
+	type EnrollmentSort,
+	type EnrollmentTab,
+} from "@/components/account/enrollments-filter-bar";
 import { coverImageUrl } from "@/lib/media-url";
 import {
 	PENDING_STATUS_LABEL,
@@ -33,7 +38,32 @@ const statusTone: Record<
 	cancelled: "neutral",
 };
 
-export default async function EnrollmentsPage() {
+const VALID_TABS: EnrollmentTab[] = [
+	"all",
+	"in_progress",
+	"completed",
+	"pending",
+];
+const VALID_SORTS: EnrollmentSort[] = ["newest", "progress", "alpha"];
+
+interface SearchParams {
+	tab?: string;
+	sort?: string;
+}
+
+export default async function EnrollmentsPage({
+	searchParams,
+}: {
+	searchParams: Promise<SearchParams>;
+}) {
+	const sp = await searchParams;
+	const tab: EnrollmentTab = VALID_TABS.includes(sp.tab as EnrollmentTab)
+		? (sp.tab as EnrollmentTab)
+		: "all";
+	const sort: EnrollmentSort = VALID_SORTS.includes(sp.sort as EnrollmentSort)
+		? (sp.sort as EnrollmentSort)
+		: "newest";
+
 	const { user } = await requireSession();
 	const [pendings, enrollments] = await Promise.all([
 		listAccountPendings(user.id),
@@ -47,13 +77,51 @@ export default async function EnrollmentsPage() {
 			isActionable(p.status as PendingStatus),
 	);
 
-	// Active = student hasn't finished. Completed = enrollment.completedAt set.
-	// Splitting them visually keeps the "in-progress" deck front and centre,
-	// while finished courses become a smaller browseable archive below.
 	const inProgress = enrollments.filter((e) => !e.completedAt);
 	const completed = enrollments.filter((e) => e.completedAt);
 
-	const hasContent = enrollments.length > 0 || actionablePendings.length > 0;
+	const counts = {
+		all: enrollments.length + actionablePendings.length,
+		in_progress: inProgress.length,
+		completed: completed.length,
+		pending: actionablePendings.length,
+	};
+
+	function sortEnrollments<
+		T extends {
+			courseTitle: string;
+			doneLessons: number;
+			totalLessons: number;
+		},
+	>(items: T[]): T[] {
+		const next = [...items];
+		if (sort === "alpha") {
+			next.sort((a, b) => a.courseTitle.localeCompare(b.courseTitle, "th"));
+		} else if (sort === "progress") {
+			next.sort((a, b) => {
+				const ap = a.totalLessons > 0 ? a.doneLessons / a.totalLessons : 0;
+				const bp = b.totalLessons > 0 ? b.doneLessons / b.totalLessons : 0;
+				return bp - ap;
+			});
+		}
+		// "newest" preserves repo order (already DESC enrollment.createdAt).
+		return next;
+	}
+
+	const showInProgress = tab === "all" || tab === "in_progress";
+	const showCompleted = tab === "all" || tab === "completed";
+	const showPending = tab === "all" || tab === "pending";
+
+	const filteredInProgress = showInProgress ? sortEnrollments(inProgress) : [];
+	const filteredCompleted = showCompleted ? sortEnrollments(completed) : [];
+	const filteredPending = showPending ? actionablePendings : [];
+
+	const hasContent =
+		filteredInProgress.length +
+			filteredCompleted.length +
+			filteredPending.length >
+		0;
+	const totalAcrossAll = counts.all;
 
 	return (
 		<section>
@@ -64,7 +132,7 @@ export default async function EnrollmentsPage() {
 				</p>
 			</header>
 
-			{!hasContent ? (
+			{totalAcrossAll === 0 ? (
 				<EmptyState
 					icon={<GraduationCap size={28} weight="duotone" />}
 					title="ยังไม่มีคอร์ส"
@@ -76,12 +144,27 @@ export default async function EnrollmentsPage() {
 					}
 				/>
 			) : (
-				<div className="space-y-10">
-					{inProgress.length > 0 && (
+				<div className="space-y-6">
+					<EnrollmentsFilterBar active={tab} sort={sort} counts={counts} />
+
+					{!hasContent && (
+						<EmptyState
+							icon={<GraduationCap size={28} weight="duotone" />}
+							title="ไม่มีคอร์สในหมวดนี้"
+							description="ลองเปลี่ยนตัวกรองด้านบน หรือดูคอร์สใหม่ได้เลย"
+							action={
+								<Button asChild variant="secondary">
+									<Link href="/account/enrollments">ดูทั้งหมด</Link>
+								</Button>
+							}
+						/>
+					)}
+
+					{filteredInProgress.length > 0 && (
 						<section className="space-y-4">
-							<h2 className="text-h3">กำลังเรียน</h2>
+							{tab === "all" && <h2 className="text-h3">กำลังเรียน</h2>}
 							<ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-								{inProgress.map((e) => (
+								{filteredInProgress.map((e) => (
 									<li key={e.enrollmentId}>
 										<EnrollmentCard
 											courseSlug={e.courseSlug}
@@ -97,11 +180,11 @@ export default async function EnrollmentsPage() {
 						</section>
 					)}
 
-					{actionablePendings.length > 0 && (
+					{filteredPending.length > 0 && (
 						<section className="space-y-4">
-							<h2 className="text-h3">รอดำเนินการ</h2>
+							{tab === "all" && <h2 className="text-h3">รอดำเนินการ</h2>}
 							<ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-								{actionablePendings.map((p) => {
+								{filteredPending.map((p) => {
 									const tone = statusTone[p.status] ?? "neutral";
 									return (
 										<li key={p.pendingId}>
@@ -139,7 +222,10 @@ export default async function EnrollmentsPage() {
 														{p.courseTitle}
 													</h3>
 													<p className="text-uism text-muted-foreground">
-														<span className="num">{formatTHB(p.amount)}</span> ·{" "}
+														<span className="num">
+															{formatTHB(p.amount)}
+														</span>{" "}
+														·{" "}
 														<span className="mono text-caption">
 															{p.refCode}
 														</span>
@@ -160,11 +246,11 @@ export default async function EnrollmentsPage() {
 						</section>
 					)}
 
-					{completed.length > 0 && (
+					{filteredCompleted.length > 0 && (
 						<section className="space-y-4">
-							<h2 className="text-h3">เรียนจบแล้ว</h2>
+							{tab === "all" && <h2 className="text-h3">เรียนจบแล้ว</h2>}
 							<ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-								{completed.map((e) => (
+								{filteredCompleted.map((e) => (
 									<li key={e.enrollmentId}>
 										<EnrollmentCard
 											courseSlug={e.courseSlug}

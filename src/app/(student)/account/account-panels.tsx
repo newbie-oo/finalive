@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EmailVerifyBanner } from "@/components/account/email-verify-banner";
 import { SessionsList } from "@/components/account/sessions-list";
+import { EmailFieldDisplay } from "@/components/account/email-field-display";
 
 const profileSchema = z.object({
 	name: z.string().min(1, "กรุณากรอกชื่อ"),
@@ -131,7 +132,7 @@ function ProfileSection({
 				</div>
 				<div>
 					<Label>อีเมล</Label>
-					<p className="text-body text-foreground">{email}</p>
+					<EmailFieldDisplay email={email} />
 				</div>
 				{saved && (
 					<Alert variant="success">
