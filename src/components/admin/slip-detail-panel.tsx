@@ -3,6 +3,7 @@
 import { formatTHB } from "@/lib/format";
 import { SlipImageViewer } from "./slip-image-viewer";
 import { REJECT_REASONS, REJECT_REASON_LABEL } from "./slip-reject-options";
+import { RejectWizard } from "./reject-wizard";
 import {
 	UserTrustBlock,
 	type UserTrustSignals,
@@ -39,7 +40,7 @@ interface SlipDetailPanelProps {
 	busy: boolean;
 	error: string | null;
 	rejectOpen: boolean;
-	onReject: (reason: (typeof REJECT_REASONS)[number]) => void;
+	onReject: (reason: (typeof REJECT_REASONS)[number], note?: string) => void;
 	onToggleReject?: () => void;
 	onAccept?: () => void;
 	onMovePrev?: () => void;
@@ -203,22 +204,11 @@ export function SlipDetailPanel({
 					)}
 
 					{rejectOpen && slip.status === "submitted" && (
-						<div className="rounded-card border border-border bg-muted p-4">
-							<p className="mb-2 text-sm font-medium">เลือกเหตุผล</p>
-							<div className="flex flex-wrap gap-2">
-								{REJECT_REASONS.map((r) => (
-									<button
-										key={r}
-										type="button"
-										disabled={busy}
-										onClick={() => onReject(r)}
-										className="rounded-nav border border-border bg-card px-2.5 py-1.5 text-sm transition-colors hover:bg-muted disabled:opacity-50"
-									>
-										{REJECT_REASON_LABEL[r]}
-									</button>
-								))}
-							</div>
-						</div>
+						<RejectWizard
+							busy={busy}
+							onCancel={() => onToggleReject?.()}
+							onSubmit={({ reason, note }) => onReject(reason, note)}
+						/>
 					)}
 
 					{showKeyboardHints && (

@@ -1,6 +1,7 @@
 "use client";
 
 import type { SlipQueueStatus } from "@/server/repos/slip";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useSlipQueue } from "./use-slip-queue";
 import { SlipDetailPanel } from "./slip-detail-panel";
 import { SlipTable } from "./slip-table";
@@ -29,6 +30,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 		reject,
 		clearSelection,
 	} = useSlipQueue({ status, initialSelectedId });
+	const isDesktop = useMediaQuery("(min-width: 1024px)");
 
 	return (
 		<div
@@ -68,7 +70,7 @@ export function SlipQueue({ status, initialSelectedId }: SlipQueueProps) {
 				)}
 			</aside>
 
-			{active && (
+			{active && isDesktop === false && (
 				<SlipMobileDrawer
 					slip={active}
 					busy={busy}

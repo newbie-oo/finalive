@@ -1,7 +1,15 @@
 "use client";
 
+import {
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+} from "@/components/ui/sheet";
 import { SlipDetailPanel } from "./slip-detail-panel";
 import type { SlipRow } from "./slip-table";
+import type { REJECT_REASONS } from "./slip-reject-options";
 
 interface SlipMobileDrawerProps {
 	slip: SlipRow;
@@ -10,16 +18,19 @@ interface SlipMobileDrawerProps {
 	rejectOpen: boolean;
 	rejectButtonRef: React.RefObject<HTMLButtonElement | null>;
 	onAccept: () => void;
-	onReject: (
-		reason: typeof import("./slip-reject-options").REJECT_REASONS[number],
-		note?: string,
-	) => void;
+	onReject: (reason: (typeof REJECT_REASONS)[number], note?: string) => void;
 	onToggleReject: () => void;
 	onMovePrev: () => void;
 	onMoveNext: () => void;
 	onClose: () => void;
 }
 
+/**
+ * Mobile presentation of the slip detail. Uses shadcn `<Sheet side="bottom">`
+ * so admins triaging slips on phones get a sliding bottom sheet with focus
+ * trap, escape-to-close, and Radix-managed a11y. `<lg:hidden>` keeps it
+ * mounted only at the relevant breakpoint.
+ */
 export function SlipMobileDrawer({
 	slip,
 	busy,
@@ -34,21 +45,18 @@ export function SlipMobileDrawer({
 	onClose,
 }: SlipMobileDrawerProps) {
 	return (
-		<div
-			className="fixed inset-0 z-[60] flex justify-end lg:hidden"
-			style={{
-				background: "rgba(15,23,42,0.5)",
-				backdropFilter: "blur(4px)",
-			}}
-			onClick={(e) => {
-				if (e.target === e.currentTarget) onClose();
-			}}
-		>
-			<div
-				className="flex h-full w-full max-w-[540px] flex-col bg-card shadow-lg"
-				style={{ borderLeft: "1px solid var(--border)" }}
-				onClick={(e) => e.stopPropagation()}
+		<Sheet open onOpenChange={(open) => !open && onClose()}>
+			<SheetContent
+				side="bottom"
+				showCloseButton={false}
+				className="lg:hidden flex flex-col p-0 max-h-[92dvh] gap-0 rounded-t-card"
 			>
+				<SheetHeader className="sr-only">
+					<SheetTitle>รายละเอียดสลิป</SheetTitle>
+					<SheetDescription>
+						ตรวจสอบสลิปและเลือกอนุมัติหรือปฏิเสธ
+					</SheetDescription>
+				</SheetHeader>
 				<SlipDetailPanel
 					slip={slip}
 					busy={busy}
@@ -63,7 +71,7 @@ export function SlipMobileDrawer({
 					rejectButtonRef={rejectButtonRef}
 					showKeyboardHints={false}
 				/>
-			</div>
-		</div>
+			</SheetContent>
+		</Sheet>
 	);
 }
