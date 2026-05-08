@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { quiz, quizQuestion, quizChoice } from "@/db/schema/quiz";
 import { courseModule, lesson } from "@/db/schema/course";
@@ -41,7 +42,7 @@ export async function listLatestQuizPassByCourse(
 		.from(quiz)
 		.innerJoin(lesson, eq(lesson.id, quiz.lessonId))
 		.innerJoin(courseModule, eq(courseModule.id, lesson.moduleId))
-		.where(and(eq(courseModule.courseId, courseId), isNull(quiz.deletedAt)));
+		.where(and(eq(courseModule.courseId, courseId), notDeleted(quiz)));
 	const quizIds = quizRows.map((r) => r.quizId);
 	if (quizIds.length === 0) return new Map();
 
@@ -76,7 +77,7 @@ export async function getQuizByLessonId(
 	const rows = await db
 		.select({ id: quiz.id, title: quiz.title })
 		.from(quiz)
-		.where(and(eq(quiz.lessonId, lessonId), isNull(quiz.deletedAt)))
+		.where(and(eq(quiz.lessonId, lessonId), notDeleted(quiz)))
 		.limit(1);
 	return rows[0] ?? null;
 }
@@ -94,7 +95,7 @@ export async function getQuizById(
 		})
 		.from(quiz)
 		.innerJoin(lesson, eq(lesson.id, quiz.lessonId))
-		.where(and(eq(quiz.id, quizId), isNull(quiz.deletedAt)))
+		.where(and(eq(quiz.id, quizId), notDeleted(quiz)))
 		.limit(1);
 
 	const qz = quizRows[0];
@@ -107,7 +108,7 @@ export async function getQuizById(
 			sortOrder: quizQuestion.sortOrder,
 		})
 		.from(quizQuestion)
-		.where(and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)))
+		.where(and(eq(quizQuestion.quizId, quizId), notDeleted(quizQuestion)))
 		.orderBy(asc(quizQuestion.sortOrder));
 
 	const choices = await db
@@ -119,7 +120,7 @@ export async function getQuizById(
 		})
 		.from(quizChoice)
 		.innerJoin(quizQuestion, eq(quizChoice.questionId, quizQuestion.id))
-		.where(and(eq(quizQuestion.quizId, quizId), isNull(quizChoice.deletedAt)))
+		.where(and(eq(quizQuestion.quizId, quizId), notDeleted(quizChoice)))
 		.orderBy(asc(quizChoice.sortOrder));
 
 	const byQuestion = new Map<string, QuestionWithChoices["choices"]>();
@@ -152,7 +153,7 @@ export async function getCorrectChoices(
 			and(
 				eq(quizQuestion.quizId, quizId),
 				eq(quizChoice.isCorrect, true),
-				isNull(quizChoice.deletedAt),
+				notDeleted(quizChoice),
 			),
 		);
 	return rows;

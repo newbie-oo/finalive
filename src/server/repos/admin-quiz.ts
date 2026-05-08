@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { quiz, quizQuestion, quizChoice } from "@/db/schema/quiz";
 import { lesson, courseModule, course } from "@/db/schema/course";
@@ -60,7 +61,7 @@ export async function getAdminQuizById(
     .innerJoin(lesson, eq(quiz.lessonId, lesson.id))
     .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
     .innerJoin(course, eq(courseModule.courseId, course.id))
-    .where(and(eq(quiz.id, quizId), isNull(quiz.deletedAt)))
+    .where(and(eq(quiz.id, quizId), notDeleted(quiz)))
     .limit(1);
 
   const qz = quizRows[0];
@@ -73,7 +74,7 @@ export async function getAdminQuizById(
       sortOrder: quizQuestion.sortOrder,
     })
     .from(quizQuestion)
-    .where(and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)))
+    .where(and(eq(quizQuestion.quizId, quizId), notDeleted(quizQuestion)))
     .orderBy(asc(quizQuestion.sortOrder));
 
   const choices = await db
@@ -86,7 +87,7 @@ export async function getAdminQuizById(
     })
     .from(quizChoice)
     .innerJoin(quizQuestion, eq(quizChoice.questionId, quizQuestion.id))
-    .where(and(eq(quizQuestion.quizId, quizId), isNull(quizChoice.deletedAt)))
+    .where(and(eq(quizQuestion.quizId, quizId), notDeleted(quizChoice)))
     .orderBy(asc(quizChoice.sortOrder));
 
   const byQuestion = new Map<string, AdminQuizChoice[]>();
@@ -133,7 +134,7 @@ export async function saveAdminQuiz(
       .select({ id: quizQuestion.id })
       .from(quizQuestion)
       .where(
-        and(eq(quizQuestion.quizId, quizId), isNull(quizQuestion.deletedAt)),
+        and(eq(quizQuestion.quizId, quizId), notDeleted(quizQuestion)),
       );
 
     const existingQuestionIds = new Set(existingQuestions.map((q) => q.id));
@@ -183,7 +184,7 @@ export async function saveAdminQuiz(
         .where(
           and(
             eq(quizChoice.questionId, questionId),
-            isNull(quizChoice.deletedAt),
+            notDeleted(quizChoice),
           ),
         );
 

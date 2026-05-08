@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
@@ -28,7 +29,7 @@ const courseDurationSubq = db
 	})
 	.from(lesson)
 	.innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-	.where(isNull(lesson.deletedAt))
+	.where(notDeleted(lesson))
 	.groupBy(courseModule.courseId)
 	.as("course_duration");
 
@@ -65,7 +66,7 @@ export interface ListPublishedCoursesParams extends OffsetParams {
 export async function listPublishedCourses(
 	params: ListPublishedCoursesParams,
 ): Promise<OffsetResponse<PublicCourseSummary>> {
-	const conditions = [eq(course.status, "published"), isNull(course.deletedAt)];
+	const conditions = [eq(course.status, "published"), notDeleted(course)];
 
 	const trimmed = params.q?.trim();
 	if (trimmed) {
@@ -185,7 +186,7 @@ export interface PendingCheckoutInfo {
 export async function listFeaturedCourses(
 	limit = 3,
 ): Promise<PublicCourseSummary[]> {
-	const where = and(eq(course.status, "published"), isNull(course.deletedAt));
+	const where = and(eq(course.status, "published"), notDeleted(course));
 	const rows = await db
 		.select({
 			id: course.id,
@@ -230,7 +231,7 @@ export async function getPublishedCourseBySlug(
 	slug: string,
 	options: GetCourseBySlugOptions = {},
 ): Promise<PublicCourseSummary | null> {
-	const conditions = [eq(course.slug, slug), isNull(course.deletedAt)];
+	const conditions = [eq(course.slug, slug), notDeleted(course)];
 	if (!options.includeUnpublished) {
 		conditions.push(eq(course.status, "published"));
 	}

@@ -5,11 +5,11 @@ import {
 	desc,
 	eq,
 	inArray,
-	isNull,
 	notInArray,
 	sql,
 } from "drizzle-orm";
 import { db } from "@/db/client";
+import { notDeleted } from "@/db/predicates";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { mediaAsset } from "@/db/schema/media";
@@ -40,7 +40,7 @@ export interface ListAdminCoursesOptions {
 export async function listAdminCourses(
 	options: ListAdminCoursesOptions = {},
 ): Promise<AdminCourseListItem[]> {
-	const conditions = [isNull(course.deletedAt)];
+	const conditions = [notDeleted(course)];
 
 	if (options.status && options.status !== "all") {
 		conditions.push(eq(course.status, options.status));
@@ -90,10 +90,10 @@ export async function listGrantableCoursesForUser(
 	const where = enrolledIds.length
 		? and(
 				eq(course.status, "published"),
-				isNull(course.deletedAt),
+				notDeleted(course),
 				notInArray(course.id, enrolledIds),
 			)
-		: and(eq(course.status, "published"), isNull(course.deletedAt));
+		: and(eq(course.status, "published"), notDeleted(course));
 
 	return db
 		.select({ id: course.id, title: course.title })
@@ -106,7 +106,7 @@ export async function getAdminCourseById(courseId: string) {
 	const rows = await db
 		.select()
 		.from(course)
-		.where(and(eq(course.id, courseId), isNull(course.deletedAt)))
+		.where(and(eq(course.id, courseId), notDeleted(course)))
 		.limit(1);
 	return rows[0] ?? null;
 }
@@ -229,8 +229,8 @@ export async function getAdminLessonById(lessonId: string) {
 		.select(lessonSelectColumns)
 		.from(lesson)
 		.leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
-		.leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))
-		.where(and(eq(lesson.id, lessonId), isNull(lesson.deletedAt)))
+		.leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), notDeleted(quiz)))
+		.where(and(eq(lesson.id, lessonId), notDeleted(lesson)))
 		.limit(1);
 	return rows[0] ?? null;
 }
@@ -301,7 +301,7 @@ export async function deleteAdminModule(moduleId: string) {
 		const lessonRows = await tx
 			.select({ id: lesson.id })
 			.from(lesson)
-			.where(and(eq(lesson.moduleId, moduleId), isNull(lesson.deletedAt)));
+			.where(and(eq(lesson.moduleId, moduleId), notDeleted(lesson)));
 		const lessonIds = lessonRows.map((r) => r.id);
 		if (lessonIds.length > 0) {
 			await tx
@@ -312,7 +312,7 @@ export async function deleteAdminModule(moduleId: string) {
 			await tx
 				.update(quiz)
 				.set({ deletedAt: now, updatedAt: now })
-				.where(and(inArray(quiz.lessonId, lessonIds), isNull(quiz.deletedAt)));
+				.where(and(inArray(quiz.lessonId, lessonIds), notDeleted(quiz)));
 		}
 	});
 }
@@ -327,7 +327,7 @@ export async function deleteAdminLesson(lessonId: string) {
 		await tx
 			.update(quiz)
 			.set({ deletedAt: now, updatedAt: now })
-			.where(and(eq(quiz.lessonId, lessonId), isNull(quiz.deletedAt)));
+			.where(and(eq(quiz.lessonId, lessonId), notDeleted(quiz)));
 	});
 }
 
@@ -360,7 +360,7 @@ export async function moduleExistsInCourse(
 			and(
 				eq(courseModule.id, moduleId),
 				eq(courseModule.courseId, courseId),
-				isNull(courseModule.deletedAt),
+				notDeleted(courseModule),
 			),
 		)
 		.limit(1);
@@ -380,8 +380,8 @@ export async function lessonExistsInCourse(
 			and(
 				eq(lesson.id, lessonId),
 				eq(courseModule.courseId, courseId),
-				isNull(lesson.deletedAt),
-				isNull(courseModule.deletedAt),
+				notDeleted(lesson),
+				notDeleted(courseModule),
 			),
 		)
 		.limit(1);

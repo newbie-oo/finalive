@@ -1,5 +1,6 @@
 import "server-only";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, lesson, courseModule } from "@/db/schema/course";
 
@@ -9,7 +10,7 @@ export async function getCourseMetaForPublish(
 	const rows = await db
 		.select({ title: course.title, summary: course.summary })
 		.from(course)
-		.where(and(eq(course.id, courseId), isNull(course.deletedAt)))
+		.where(and(eq(course.id, courseId), notDeleted(course)))
 		.limit(1);
 	return rows[0] ?? null;
 }
@@ -34,8 +35,8 @@ export async function getLessonsForPublish(courseId: string): Promise<
 		.where(
 			and(
 				eq(courseModule.courseId, courseId),
-				isNull(lesson.deletedAt),
-				isNull(courseModule.deletedAt),
+				notDeleted(lesson),
+				notDeleted(courseModule),
 			),
 		);
 }

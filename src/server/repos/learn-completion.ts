@@ -1,5 +1,6 @@
 import "server-only";
 import { and, count, eq, isNull, inArray, desc } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -51,8 +52,8 @@ export async function checkAndMarkCourseComplete(
     .where(
       and(
         eq(courseModule.courseId, courseId),
-        isNull(lesson.deletedAt),
-        isNull(courseModule.deletedAt),
+        notDeleted(lesson),
+        notDeleted(courseModule),
       ),
     );
 
@@ -69,8 +70,8 @@ export async function checkAndMarkCourseComplete(
         eq(lessonProgress.userId, userId),
         eq(courseModule.courseId, courseId),
         eq(lessonProgress.status, "completed"),
-        isNull(lesson.deletedAt),
-        isNull(courseModule.deletedAt),
+        notDeleted(lesson),
+        notDeleted(courseModule),
       ),
     );
 
@@ -91,9 +92,9 @@ export async function checkAndMarkCourseComplete(
     .where(
       and(
         eq(courseModule.courseId, courseId),
-        isNull(quiz.deletedAt),
-        isNull(lesson.deletedAt),
-        isNull(courseModule.deletedAt),
+        notDeleted(quiz),
+        notDeleted(lesson),
+        notDeleted(courseModule),
       ),
     );
 

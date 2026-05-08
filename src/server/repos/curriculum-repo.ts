@@ -1,5 +1,6 @@
 import "server-only";
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { courseModule, lesson } from "@/db/schema/course";
 import { mediaAsset } from "@/db/schema/media";
@@ -67,7 +68,7 @@ export async function getCurriculumTree(
 		})
 		.from(courseModule)
 		.where(
-			and(eq(courseModule.courseId, courseId), isNull(courseModule.deletedAt)),
+			and(eq(courseModule.courseId, courseId), notDeleted(courseModule)),
 		)
 		.orderBy(asc(courseModule.sortOrder));
 
@@ -79,8 +80,8 @@ export async function getCurriculumTree(
 		.select(lessonSelectColumns)
 		.from(lesson)
 		.leftJoin(mediaAsset, eq(lesson.videoMediaId, mediaAsset.id))
-		.leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), isNull(quiz.deletedAt)))
-		.where(and(isNull(lesson.deletedAt), inArray(lesson.moduleId, moduleIds)))
+		.leftJoin(quiz, and(eq(quiz.lessonId, lesson.id), notDeleted(quiz)))
+		.where(and(notDeleted(lesson), inArray(lesson.moduleId, moduleIds)))
 		.orderBy(asc(lesson.sortOrder));
 
 	const byModule = new Map<string, CurriculumLesson[]>();

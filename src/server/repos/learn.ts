@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { notDeleted } from "@/db/predicates";
 import { db } from "@/db/client";
 import { course, courseModule, lesson } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
@@ -75,7 +76,7 @@ async function _getLearnCourse(
 ): Promise<GetLearnCourseResult | null> {
 	const courseConditions = [
 		eq(course.slug, courseSlug),
-		isNull(course.deletedAt),
+		notDeleted(course),
 	];
 	if (!options.allowUnpublished) {
 		courseConditions.push(eq(course.status, "published"));
@@ -226,8 +227,8 @@ export async function getLearnLesson(
 	const conditions = [
 		eq(lesson.id, lessonId),
 		eq(course.slug, courseSlug),
-		isNull(lesson.deletedAt),
-		isNull(course.deletedAt),
+		notDeleted(lesson),
+		notDeleted(course),
 	];
 	if (!options.allowUnpublished) {
 		conditions.push(eq(course.status, "published"));
@@ -273,8 +274,8 @@ export async function getLearnLesson(
 		.where(
 			and(
 				eq(courseModule.courseId, row.courseId),
-				isNull(lesson.deletedAt),
-				isNull(courseModule.deletedAt),
+				notDeleted(lesson),
+				notDeleted(courseModule),
 				sql`(${courseModule.sortOrder}, ${lesson.sortOrder}) > (${row.moduleSortOrder}, ${row.lessonSortOrder})`,
 			),
 		)
@@ -291,8 +292,8 @@ export async function getLearnLesson(
 		.where(
 			and(
 				eq(courseModule.courseId, row.courseId),
-				isNull(lesson.deletedAt),
-				isNull(courseModule.deletedAt),
+				notDeleted(lesson),
+				notDeleted(courseModule),
 				sql`(${courseModule.sortOrder}, ${lesson.sortOrder}) < (${row.moduleSortOrder}, ${row.lessonSortOrder})`,
 			),
 		)
