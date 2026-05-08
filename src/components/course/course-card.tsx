@@ -40,7 +40,8 @@ export function CourseCard({
 						fill
 						sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
 						className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-						{...(priority ? { priority: true } : { loading: "lazy" })}
+						priority={priority}
+						loading={priority ? undefined : "lazy"}
 					/>
 				) : (
 					<CoverFallback title={course.title} />
@@ -126,7 +127,8 @@ export function CourseListItem({
 						fill
 						sizes="200px"
 						className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-						{...(priority ? { priority: true } : { loading: "lazy" })}
+						priority={priority}
+						loading={priority ? undefined : "lazy"}
 					/>
 				) : (
 					<CoverFallback title={course.title} />

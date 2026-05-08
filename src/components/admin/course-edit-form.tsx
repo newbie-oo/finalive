@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { LockSimple } from "@phosphor-icons/react/dist/ssr";
 import { toast } from "sonner";
 import { updateCourseAction } from "@/server/actions/admin-course";
@@ -24,44 +23,9 @@ import { Label, FieldError, FieldHelper } from "@/components/ui/label";
 import { FormAlert } from "@/components/forms/form-alert";
 import { COURSE_STATUS } from "@/db/schema/course";
 import type { course } from "@/db/schema/course";
+import { courseEditSchema, type CourseEditForm } from "./course-edit-schema";
 
 type Course = typeof course.$inferSelect;
-
-const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const PRICE_PATTERN = /^\d+(\.\d{1,2})?$/;
-
-const courseEditSchema = z
-	.object({
-		slug: z
-			.string()
-			.trim()
-			.min(1, "Slug จำเป็นต้องกรอก")
-			.regex(SLUG_PATTERN, "ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น"),
-		title: z.string().trim().min(1, "ชื่อคอร์สจำเป็นต้องกรอก"),
-		summary: z.string().trim().min(1, "คำอธิบายสั้นจำเป็นต้องกรอก"),
-		price: z.string(),
-		isFree: z.boolean(),
-		status: z.enum(COURSE_STATUS),
-	})
-	.superRefine((data, ctx) => {
-		if (data.isFree) return;
-		const v = data.price.trim();
-		if (!v) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["price"],
-				message: "ราคาจำเป็นต้องกรอก",
-			});
-		} else if (!PRICE_PATTERN.test(v)) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["price"],
-				message: "ราคาต้องเป็นตัวเลข (ทศนิยมไม่เกิน 2 ตำแหน่ง)",
-			});
-		}
-	});
-
-type CourseEditForm = z.infer<typeof courseEditSchema>;
 
 const STATUS_LABELS: Record<(typeof COURSE_STATUS)[number], string> = {
 	draft: "ร่าง",

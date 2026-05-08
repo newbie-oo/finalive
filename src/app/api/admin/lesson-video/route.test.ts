@@ -165,6 +165,47 @@ describe("POST /api/admin/lesson-video", () => {
 		expect(createVideo).not.toHaveBeenCalled();
 	});
 
+	it("allows an editor collaborator to create a video", async () => {
+		// Non-owner user, but listed as editor — apiCourseRoute should accept.
+		requireSessionThrow.mockResolvedValue({
+			sessionId: "s1",
+			user: NON_OWNER,
+		});
+		getCourseOwnerId.mockResolvedValue("someone-else");
+		getCollaboratorRole.mockResolvedValue("editor");
+		createVideo.mockResolvedValue({
+			bunnyVideoId: "bunny-2",
+			uploadUrl: "https://upload.example/2",
+			assetId: "asset-2",
+			oldMediaId: null,
+		});
+
+		const res = await POST(
+			makeReq({
+				action: "create",
+				courseId: COURSE_ID,
+				lessonId: LESSON_ID,
+			}),
+		);
+
+		expect(res.status).toBe(200);
+		expect(createVideo).toHaveBeenCalledTimes(1);
+	});
+
+	it("rejects malformed body with 400 before hitting course-access lookups", async () => {
+		const res = await POST(
+			makeReq({
+				action: "create",
+				courseId: "not-a-uuid",
+				lessonId: LESSON_ID,
+			}),
+		);
+
+		expect(res.status).toBe(400);
+		expect(getCourseOwnerId).not.toHaveBeenCalled();
+		expect(createVideo).not.toHaveBeenCalled();
+	});
+
 	it("returns 422 when bunny API key not configured", async () => {
 		getEnv.mockReturnValue({ BUNNY_API_KEY: undefined });
 

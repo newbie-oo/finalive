@@ -19,28 +19,30 @@ export interface PublicHomeStats {
  * hardcoded "8,900+ นักเรียน" as misleading when only 2 existed).
  */
 export async function getPublicHomeStats(): Promise<PublicHomeStats> {
-  const [coursesRow] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(course)
-    .where(coursePublic());
-
-  const [studentsRow] = await db
-    .select({ value: countDistinct(enrollment.userId) })
-    .from(enrollment)
-    .where(eq(enrollment.status, "active"));
-
-  const [lessonsRow] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(lesson)
-    .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
-    .innerJoin(course, eq(courseModule.courseId, course.id))
-    .where(
-      and(
-        coursePublic(),
-        notDeleted(lesson),
-        notDeleted(courseModule),
+  // Three independent counts — fan out in parallel so the page TTFB is one
+  // DB roundtrip instead of three.
+  const [[coursesRow], [studentsRow], [lessonsRow]] = await Promise.all([
+    db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(course)
+      .where(coursePublic()),
+    db
+      .select({ value: countDistinct(enrollment.userId) })
+      .from(enrollment)
+      .where(eq(enrollment.status, "active")),
+    db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(lesson)
+      .innerJoin(courseModule, eq(lesson.moduleId, courseModule.id))
+      .innerJoin(course, eq(courseModule.courseId, course.id))
+      .where(
+        and(
+          coursePublic(),
+          notDeleted(lesson),
+          notDeleted(courseModule),
+        ),
       ),
-    );
+  ]);
 
   return {
     publishedCourses: coursesRow?.value ?? 0,
