@@ -5,7 +5,6 @@ import { ActiveFilterChips } from "@/components/courses/active-filter-chips";
 import {
 	CourseCatalog,
 	CourseCatalogSkeleton,
-	type CatalogViewMode,
 } from "@/components/courses/course-catalog";
 import {
 	listPublishedCourses,
@@ -19,11 +18,9 @@ export const dynamic = "force-dynamic";
 async function CourseGrid({
 	params,
 	searchParams,
-	viewMode,
 }: {
 	params: ListPublishedCoursesParams;
 	searchParams: string;
-	viewMode: CatalogViewMode;
 }) {
 	const result = await listPublishedCourses(params);
 	const enriched = {
@@ -33,13 +30,7 @@ async function CourseGrid({
 			coverImageUrl: coverImageUrl(c.coverStorageKey),
 		})),
 	};
-	return (
-		<CourseCatalog
-			result={enriched}
-			searchParams={searchParams}
-			viewMode={viewMode}
-		/>
-	);
+	return <CourseCatalog result={enriched} searchParams={searchParams} />;
 }
 
 export default async function CoursesPage({
@@ -57,7 +48,6 @@ export default async function CoursesPage({
 	const price = typeof sp.price === "string" ? sp.price : "";
 	const duration = typeof sp.duration === "string" ? sp.duration : "";
 	const sortBy = typeof sp.sort === "string" ? sp.sort : "newest";
-	const viewMode: CatalogViewMode = sp.view === "list" ? "list" : "grid";
 
 	// Parse price range
 	let priceMin: number | undefined;
@@ -124,12 +114,8 @@ export default async function CoursesPage({
 					duration={duration}
 					sort={sortBy}
 				/>
-				<Suspense fallback={<CourseCatalogSkeleton viewMode={viewMode} />}>
-					<CourseGrid
-						params={params}
-						searchParams={filterQs}
-						viewMode={viewMode}
-					/>
+				<Suspense fallback={<CourseCatalogSkeleton />}>
+					<CourseGrid params={params} searchParams={filterQs} />
 				</Suspense>
 			</CourseFilters>
 		</PublicShell>
