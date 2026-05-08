@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Defense-in-depth: fast cookie presence check before page render.
-// Pages and API routes enforce their own authorization; this middleware
+// Pages and API routes enforce their own authorization; this proxy
 // only catches the obvious "no session cookie at all" case.
 
 const PROTECTED = {
@@ -14,7 +14,7 @@ function isProtected(path: string, prefixes: string[]): boolean {
   return prefixes.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public assets and API routes (they handle auth internally).
