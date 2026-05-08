@@ -22,7 +22,7 @@ import {
 	EmailCourseCompletionNotifier,
 	type CourseCompletionNotifier,
 } from "@/server/services/notifier";
-import { makeDbAuditLogger } from "@/server/services/audit";
+import { makeDbAuditLogger, type AuditLogger } from "@/server/services/audit";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
 import { CourseCompletionChecker } from "@/server/services/course-completion-checker";
@@ -59,94 +59,128 @@ import {
  * factories that previously lived in their own *-factory.ts files are
  * inlined here so callers have one place to look up which concrete
  * implementation backs a given service.
+ *
+ * Services are memoised lazily — none hold per-request state, so a single
+ * instance per Node process is correct and saves the allocation churn
+ * the previous "new on every call" approach paid for things like the
+ * audit logger and the slip-review wiring on every endpoint hit.
  */
+
+// ── Memoised instances (lazy) ──────────────────────────────────────
+let _publicStorage: R2ObjectStorage | undefined;
+let _privateStorage: R2ObjectStorage | undefined;
+let _auditLogger: AuditLogger | undefined;
+let _coverImage: CoverImageService | undefined;
+let _freeEnrollment: FreeEnrollmentService | undefined;
+let _courseGrant: CourseGrantService | undefined;
+let _slipReview: SlipReviewService | undefined;
+let _slipUpload: SlipUploadService | undefined;
+let _courseCompletion: CourseCompletionService | undefined;
+let _courseCompletionChecker: CourseCompletionChecker | undefined;
+let _quizService: QuizService | undefined;
+let _bunnyStatus: BunnyVideoStatusService | undefined;
+let _certificateIssuer: CertificateIssuer | undefined;
+let _slipNotifier: SlipNotifier | undefined;
+let _courseCompletionNotifier: CourseCompletionNotifier | undefined;
+
+function publicStorage(): R2ObjectStorage {
+	return (_publicStorage ??= new R2ObjectStorage("public"));
+}
+
+function privateStorage(): R2ObjectStorage {
+	return (_privateStorage ??= new R2ObjectStorage("private"));
+}
+
+function auditLogger(): AuditLogger {
+	return (_auditLogger ??= makeDbAuditLogger());
+}
 
 export const container = {
 	coverImage(): CoverImageService {
-		return new CoverImageService({
-			storage: new R2ObjectStorage("public"),
+		return (_coverImage ??= new CoverImageService({
+			storage: publicStorage(),
 			getMediaAsset: MediaAssetRepo.getById,
 			deleteMediaAsset: MediaAssetRepo.delete,
 			updateCourseCover,
-		});
+		}));
 	},
 
 	freeEnrollment(): FreeEnrollmentService {
-		return new FreeEnrollmentService({
+		return (_freeEnrollment ??= new FreeEnrollmentService({
 			getCourseBySlug: getCourseBySlugForEnrollment,
 			findActiveEnrollment: EnrollmentRepo.hasActive,
 			createEnrollment: createActiveEnrollment,
-		});
+		}));
 	},
 
 	courseGrant(): CourseGrantService {
-		return new CourseGrantService({
+		return (_courseGrant ??= new CourseGrantService({
 			hasActiveEnrollment: EnrollmentRepo.hasActive,
 			createGrant: AdminGrantRepo.create,
 			createEnrollment: createEnrollmentFromGrant,
 			getStudentContact: UserRepo.getContact,
 			getCourseInfo,
 			sendNotification: sendGrantNotification,
-		});
+		}));
 	},
 
 	slipReview(): SlipReviewService {
-		return new SlipReviewService({
+		return (_slipReview ??= new SlipReviewService({
 			repo: SlipRepo,
 			notifier: this.slipNotifier(),
-			auditLogger: makeDbAuditLogger(),
-		});
+			auditLogger: auditLogger(),
+		}));
 	},
 
 	slipUpload(): SlipUploadService {
-		return new SlipUploadService({
+		return (_slipUpload ??= new SlipUploadService({
 			repo: SlipRepo,
-			storage: new R2ObjectStorage("private"),
+			storage: privateStorage(),
 			notifier: this.slipNotifier(),
-			auditLogger: makeDbAuditLogger(),
+			auditLogger: auditLogger(),
 			adminNotifyEmail: () => getEnv().ADMIN_NOTIFY_EMAIL,
-		});
+		}));
 	},
 
 	courseCompletion(): CourseCompletionService {
-		return new CourseCompletionService({
+		return (_courseCompletion ??= new CourseCompletionService({
 			markLessonComplete,
 			getCourseIdByLessonId,
 			checkAndMarkCourseComplete,
 			certificateIssuer: this.certificateIssuer(),
-		});
+		}));
 	},
 
 	courseCompletionChecker(): CourseCompletionChecker {
-		return new CourseCompletionChecker({
+		return (_courseCompletionChecker ??= new CourseCompletionChecker({
 			checkAndMarkCourseComplete,
 			certificateIssuer: this.certificateIssuer(),
-		});
+		}));
 	},
 
 	quizService(): QuizService {
-		return new QuizService({
+		return (_quizService ??= new QuizService({
 			getQuizById,
 			getCorrectChoices,
 			isUserEnrolledInCourse: EnrollmentRepo.hasActive,
 			getCourseIdByLessonId,
 			insertQuizAttempt,
 			completionChecker: this.courseCompletionChecker(),
-		});
+		}));
 	},
 
 	bunnyStatus(): BunnyVideoStatusService {
-		return new BunnyVideoStatusService({
+		return (_bunnyStatus ??= new BunnyVideoStatusService({
 			findAssetByBunnyId: MediaAssetRepo.findAssetByBunnyId,
 			updateAsset: MediaAssetRepo.updateAsset,
 			updateLessonDuration: LessonVideoRepo.updateLessonDuration,
-		});
+		}));
 	},
 
 	certificateIssuer(): CertificateIssuer {
-		return new CertificateIssuer({
+		return (_certificateIssuer ??= new CertificateIssuer({
 			renderer: new ReactPdfCertificateRenderer(),
-			storage: new R2ObjectStorage("public"),
+			storage: publicStorage(),
 			notifier: this.courseCompletionNotifier(),
 			getCertificateByEnrollmentId,
 			getEnrollmentById: EnrollmentRepo.getById,
@@ -155,15 +189,17 @@ export const container = {
 			createMediaAsset: MediaAssetRepo.createRaw,
 			createCertificate,
 			generateCertCode,
-		});
+		}));
 	},
 
 	slipNotifier(): SlipNotifier {
-		return new EmailSlipNotifier(db);
+		return (_slipNotifier ??= new EmailSlipNotifier(db));
 	},
 
 	courseCompletionNotifier(): CourseCompletionNotifier {
-		return new EmailCourseCompletionNotifier(db);
+		return (_courseCompletionNotifier ??= new EmailCourseCompletionNotifier(
+			db,
+		));
 	},
 
 	baseUrl(): string {

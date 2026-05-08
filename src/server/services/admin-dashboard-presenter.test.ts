@@ -10,10 +10,13 @@ vi.mock("server-only", () => ({}));
 describe("formatAdminDashboardCounts", () => {
 	it("passes counts through unchanged (already numbers)", () => {
 		const counts = {
-			activeStudents: 12,
-			pendingSlips: 3,
-			publishedCourses: 7,
-			monthlyRevenue: 100_000,
+			slipsSubmitted: 5,
+			slipsAcceptedToday: 3,
+			slipsRejectedToday: 1,
+			enrollmentsActive: 12,
+			coursesPublished: 7,
+			revenueMtd: 100_000,
+			certsMtd: 4,
 		};
 		expect(formatAdminDashboardCounts(counts)).toBe(counts);
 	});
