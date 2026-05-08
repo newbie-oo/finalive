@@ -9,6 +9,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SlipQueueStatus } from "@/server/repos/slip";
+import { queryKeys } from "@/lib/query-keys";
 import type { SlipRow } from "./slip-table";
 import { REJECT_REASONS } from "./slip-reject-options";
 
@@ -78,7 +79,7 @@ export function useSlipQueue({
 	const qc = useQueryClient();
 
 	const query = useInfiniteQuery({
-		queryKey: ["admin-slips", status],
+		queryKey: queryKeys.adminSlips.byStatus(status),
 		queryFn: ({ pageParam }) => fetchPage({ pageParam, status }),
 		initialPageParam: undefined as string | undefined,
 		getNextPageParam: (last) => last.pagination.next_cursor ?? undefined,
@@ -147,7 +148,7 @@ export function useSlipQueue({
 	);
 
 	const refresh = useCallback(async () => {
-		await qc.invalidateQueries({ queryKey: ["admin-slips"] });
+		await qc.invalidateQueries({ queryKey: queryKeys.adminSlips.all() });
 		router.refresh();
 	}, [qc, router]);
 

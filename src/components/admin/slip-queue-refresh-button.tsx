@@ -4,11 +4,12 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { ArrowClockwise } from "@phosphor-icons/react";
+import { queryKeys } from "@/lib/query-keys";
 
 export function SlipQueueRefreshButton() {
   const qc = useQueryClient();
   const router = useRouter();
-  const fetching = useIsFetching({ queryKey: ["admin-slips"] }) > 0;
+  const fetching = useIsFetching({ queryKey: queryKeys.adminSlips.all() }) > 0;
   const [pending, startTransition] = useTransition();
   const busy = fetching || pending;
 
@@ -17,7 +18,7 @@ export function SlipQueueRefreshButton() {
       type="button"
       disabled={busy}
       onClick={() => {
-        void qc.invalidateQueries({ queryKey: ["admin-slips"] });
+        void qc.invalidateQueries({ queryKey: queryKeys.adminSlips.all() });
         startTransition(() => router.refresh());
       }}
       aria-label="Refresh slip review queue"

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, MagnifyingGlassPlus } from "@phosphor-icons/react";
+import { queryKeys } from "@/lib/query-keys";
 
 interface ImageUrlResponse {
   url: string;
@@ -25,7 +26,7 @@ const REFETCH_INTERVAL_MS = (600 - 60) * 1000;
 export function SlipImageViewer({ slipId }: { slipId: string }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const query = useQuery({
-    queryKey: ["slip-image-url", slipId],
+    queryKey: queryKeys.slipImageUrl(slipId),
     queryFn: () => fetchImageUrl(slipId),
     staleTime: REFETCH_INTERVAL_MS,
     refetchInterval: REFETCH_INTERVAL_MS,
