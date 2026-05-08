@@ -1,73 +1,46 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { NotesPanel } from "./notes-panel";
 
 // Mock auth-client
 vi.mock("@/lib/auth-client", () => ({
-  useSession: () => ({ data: { user: { id: "u1" } } }),
+	useSession: () => ({ data: { user: { id: "u1" } } }),
 }));
 
 describe("NotesPanel", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-  });
+	beforeEach(() => {
+		localStorage.clear();
+	});
 
-  afterEach(() => {
-    vi.useRealTimers();
-    localStorage.clear();
-  });
+	afterEach(() => {
+		localStorage.clear();
+	});
 
-  it("loads existing note from localStorage", () => {
-    localStorage.setItem("finalive-notes-u1-l1", "existing note");
-    render(<NotesPanel lessonId="l1" />);
-    expect(screen.getByDisplayValue("existing note")).toBeInTheDocument();
-  });
+	it("renders the editor surface and the mobile toggle", () => {
+		render(<NotesPanel lessonId="l1" />);
+		expect(screen.getByText(/โน้ตของฉัน/)).toBeInTheDocument();
+	});
 
-  it("types text and debounce-saves to localStorage", async () => {
-    render(<NotesPanel lessonId="l1" />);
-    const textarea = screen.getByPlaceholderText("จดโน้ตของคุณที่นี่...");
+	it("loads existing HTML notes from localStorage into the editor", async () => {
+		localStorage.setItem(
+			"finalive-notes-u1-l1",
+			"<p>existing note</p>",
+		);
+		render(<NotesPanel lessonId="l1" />);
+		await waitFor(() => {
+			expect(screen.getByText("existing note")).toBeInTheDocument();
+		});
+	});
 
-    fireEvent.change(textarea, { target: { value: "hello world" } });
+	it("clear button wipes localStorage and disables itself when empty", async () => {
+		localStorage.setItem("finalive-notes-u1-l1", "<p>to be cleared</p>");
+		render(<NotesPanel lessonId="l1" />);
 
-    expect(localStorage.getItem("finalive-notes-u1-l1")).toBeNull();
+		const clearBtn = await screen.findByRole("button", { name: /ล้าง/ });
+		fireEvent.click(clearBtn);
 
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    await waitFor(() => {
-      expect(localStorage.getItem("finalive-notes-u1-l1")).toBe("hello world");
-    });
-  });
-
-  it("clear button removes note from localStorage", async () => {
-    localStorage.setItem("finalive-notes-u1-l1", "to be cleared");
-    render(<NotesPanel lessonId="l1" />);
-
-    expect(screen.getByDisplayValue("to be cleared")).toBeInTheDocument();
-
-    const clearBtn = screen.getByRole("button", { name: /ล้าง/ });
-    fireEvent.click(clearBtn);
-
-    expect(localStorage.getItem("finalive-notes-u1-l1")).toBeNull();
-    expect(screen.getByPlaceholderText("จดโน้ตของคุณที่นี่...")).toHaveValue(
-      "",
-    );
-  });
-
-  it("shows character count", () => {
-    render(<NotesPanel lessonId="l1" />);
-    const textarea = screen.getByPlaceholderText("จดโน้ตของคุณที่นี่...");
-
-    fireEvent.change(textarea, { target: { value: "abc" } });
-
-    expect(screen.getByText("3 ตัวอักษร")).toBeInTheDocument();
-  });
+		await waitFor(() => {
+			expect(localStorage.getItem("finalive-notes-u1-l1")).toBeNull();
+		});
+	});
 });

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SimpleTiptapEditor } from "@/components/admin/simple-tiptap-editor";
+import { SimpleTiptapEditor } from "@/components/ui/simple-tiptap-editor";
 import { MAX_UPLOAD_BYTES } from "@/lib/upload-limits";
 
 function CoverUpload({
