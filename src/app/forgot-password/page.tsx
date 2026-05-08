@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { EnvelopeSimple, WarningIcon } from "@phosphor-icons/react";
 import { PublicShell } from "@/components/layouts/public-shell";
@@ -24,26 +25,19 @@ export default function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
-  } = useForm<ForgotForm>();
+  } = useForm<ForgotForm>({
+    resolver: zodResolver(forgotSchema),
+  });
 
   async function onSubmit(data: ForgotForm) {
     setServerError(null);
-    const parsed = forgotSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as keyof ForgotForm;
-        setError(field, { message: issue.message });
-      }
-      return;
-    }
 
     const res = await fetch("/api/auth/request-password-reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: parsed.data.email,
+        email: data.email,
         redirectTo: "/reset-password",
       }),
     });

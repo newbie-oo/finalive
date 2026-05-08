@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CheckCircle, WarningIcon } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client";
@@ -40,20 +41,13 @@ function ResetForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isSubmitting },
-  } = useForm<ResetForm>();
+  } = useForm<ResetForm>({
+    resolver: zodResolver(resetSchema),
+  });
 
   async function onSubmit(data: ResetForm) {
     setServerError(null);
-    const parsed = resetSchema.safeParse(data);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as keyof ResetForm;
-        setError(field, { message: issue.message });
-      }
-      return;
-    }
 
     if (!token) {
       setServerError("ลิงก์ไม่ถูกต้องหรือหมดอายุ");
@@ -61,7 +55,7 @@ function ResetForm() {
     }
 
     const result = await authClient.resetPassword({
-      newPassword: parsed.data.password,
+      newPassword: data.password,
       token,
     });
 
