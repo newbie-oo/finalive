@@ -6,6 +6,13 @@
  * Services and view layers call these when building view models.
  */
 
+/** Offset to convert Gregorian year (พ.ศ. - ค.ศ. = 543). */
+export const THAI_YEAR_OFFSET = 543;
+
+const MS_PER_MINUTE = 60_000;
+const MS_PER_HOUR = 3_600_000;
+const MS_PER_DAY = 86_400_000;
+
 /** Thai abbreviated month labels, indexed 0..11. */
 export const MONTH_LABELS_TH = [
 	"ม.ค.",
@@ -25,24 +32,24 @@ export const MONTH_LABELS_TH = [
 export function formatActivityTime(d: Date): string {
 	const now = new Date();
 	const diffMs = now.getTime() - d.getTime();
-	const diffMin = Math.floor(diffMs / 60000);
-	const diffHour = Math.floor(diffMs / 3600000);
-	const diffDay = Math.floor(diffMs / 86400000);
+	const diffMin = Math.floor(diffMs / MS_PER_MINUTE);
+	const diffHour = Math.floor(diffMs / MS_PER_HOUR);
+	const diffDay = Math.floor(diffMs / MS_PER_DAY);
 
 	if (diffMin < 1) return "เมื่อสักครู่";
 	if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`;
 	if (diffHour < 24) return `${diffHour} ชม. ที่แล้ว`;
 	if (diffDay === 1) return "เมื่อวาน";
 	if (diffDay < 7) return `${diffDay} วันที่แล้ว`;
-	return `${d.getDate()} ${MONTH_LABELS_TH[d.getMonth()]} ${d.getFullYear() + 543}`;
+	return thaiDateString(d);
 }
 
 export function timeAgo(date: Date): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
-	const diffMin = Math.floor(diffMs / 60000);
-	const diffHour = Math.floor(diffMs / 3600000);
-	const diffDay = Math.floor(diffMs / 86400000);
+	const diffMin = Math.floor(diffMs / MS_PER_MINUTE);
+	const diffHour = Math.floor(diffMs / MS_PER_HOUR);
+	const diffDay = Math.floor(diffMs / MS_PER_DAY);
 
 	if (diffMin < 1) return "เมื่อสักครู่";
 	if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`;
@@ -56,7 +63,7 @@ export function timeAgo(date: Date): string {
 
 /** "6 พ.ค. 2568" */
 export function thaiDateString(d: Date): string {
-	return `${d.getDate()} ${MONTH_LABELS_TH[d.getMonth()]} ${d.getFullYear() + 543}`;
+	return `${d.getDate()} ${MONTH_LABELS_TH[d.getMonth()]} ${d.getFullYear() + THAI_YEAR_OFFSET}`;
 }
 
 /** "14:30" */
