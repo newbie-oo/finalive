@@ -1,15 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-	CaretRight,
-	Check,
-	Clock,
-	Certificate as CertificateIcon,
-	Users,
-	Play,
-	ChatCircle,
-	Video,
-} from "@phosphor-icons/react/dist/ssr";
+import { CaretRight, Check, Users, Play } from "@phosphor-icons/react/dist/ssr";
 import { PublicShell } from "@/components/layouts/public-shell";
 import { isAdmin as isAdminRole } from "@/lib/auth-utils";
 import { Button } from "@/components/ui/button";
@@ -23,13 +14,8 @@ import {
 	CourseReviewsSection,
 	type Review,
 } from "@/components/course/reviews-section";
-import {
-	getPublishedCourseBySlug,
-	getCourseCurriculum,
-} from "@/server/repos/course";
-import { EnrollmentRepo } from "@/server/repos/enrollment";
+import { resolveCourseDetailPage } from "@/server/presenters/course-detail";
 import { getSession } from "@/server/auth-session";
-import { formatTHB } from "@/lib/format";
 import { coverImageUrl } from "@/lib/media-url";
 import { CourseTabs } from "./course-tabs";
 
@@ -98,47 +84,23 @@ export default async function CourseDetailPage({
 	const session = await getSession();
 	const userId = session?.user?.id ?? null;
 	const isAdmin = isAdminRole(session?.user);
-	const course = await getPublishedCourseBySlug(slug, {
-		includeUnpublished: isAdmin,
-	});
-	if (!course) notFound();
-	const isEnrolled = userId
-		? await EnrollmentRepo.hasActive(userId, course.id)
-		: false;
-	const curriculum = await getCourseCurriculum(course.id, {
-		includeEmptyModules: false,
-	});
-	const totalLessons = curriculum.reduce((sum, m) => sum + m.lessons.length, 0);
-	const totalDuration = curriculum.reduce(
-		(sum, m) =>
-			sum + m.lessons.reduce((s, l) => s + (l.durationSeconds ?? 0), 0),
-		0,
-	);
-	// Defensive: render free if either flag set OR price is literally 0 — keeps
-	// the page UX correct even if a stray row escaped the create/update invariant.
-	const isFreeView = course.isFree || Number(course.price) === 0;
-	const price = isFreeView ? "ฟรี" : formatTHB(course.price);
-	const firstPreviewLesson = curriculum
-		.flatMap((m) => m.lessons)
-		.find((l) => l.isPreview || l.isFree);
-	const previewHref = firstPreviewLesson
-		? `/courses/${course.slug}/preview/${firstPreviewLesson.id}`
-		: null;
-	const isBestseller = course.enrollmentCount >= 100;
-	const durationHours = formatCourseDuration(totalDuration);
-	const lastUpdated = course.publishedAt
-		? course.publishedAt.toLocaleDateString("th-TH", {
-			year: "numeric",
-			month: "short",
-		})
-		: null;
 
-	const featurePills = [
-		{ icon: Video, label: `${totalLessons} บทเรียน` },
-		...(durationHours ? [{ icon: Clock, label: durationHours }] : []),
-		{ icon: CertificateIcon, label: "ใบประกาศ" },
-		{ icon: ChatCircle, label: "Q&A กับผู้สอน" },
-	];
+	const vm = await resolveCourseDetailPage(slug, userId, isAdmin);
+	if (!vm) notFound();
+
+	const {
+		course,
+		curriculum,
+		isEnrolled,
+		totalLessons,
+		totalDuration,
+		isFreeView,
+		price,
+		previewHref,
+		isBestseller,
+		lastUpdated,
+		featurePills,
+	} = vm;
 
 	return (
 		<PublicShell>
@@ -214,9 +176,7 @@ export default async function CourseDetailPage({
 									อา
 								</div>
 								<div>
-									<div className="text-uism text-muted-foreground">
-										ผู้สอน
-									</div>
+									<div className="text-uism text-muted-foreground">ผู้สอน</div>
 									<div className="text-ui font-semibold text-foreground">
 										อ.อาร์ม{" "}
 										<span className="text-uism font-medium text-muted-foreground">
@@ -247,9 +207,7 @@ export default async function CourseDetailPage({
 							<Card className="shadow-(--shadow-md)">
 								<div className="mb-5">
 									{course.isFree ? (
-										<div className="text-h2 font-semibold text-success">
-											ฟรี
-										</div>
+										<div className="text-h2 font-semibold text-success">ฟรี</div>
 									) : (
 										<div className="flex items-baseline gap-3">
 											<span
@@ -373,10 +331,4 @@ export default async function CourseDetailPage({
 			/>
 		</PublicShell>
 	);
-}
-
-function formatCourseDuration(totalSeconds: number): string | null {
-	if (totalSeconds === 0) return null;
-	if (totalSeconds >= 3600) return `${Math.ceil(totalSeconds / 3600)} ชม.`;
-	return `${Math.ceil(totalSeconds / 60)} นาที`;
 }

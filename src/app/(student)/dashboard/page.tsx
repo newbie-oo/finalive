@@ -11,9 +11,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getSession } from "@/server/auth-session";
-import { getStudentDashboard } from "@/server/services/student-dashboard";
+import { resolveStudentDashboardPage } from "@/server/presenters/student-dashboard";
 import { coverImageUrl } from "@/lib/media-url";
-import { formatDurationAuto } from "@/lib/format";
 import { formatActivityTime } from "@/lib/format-time";
 import { ActivityHeatmap } from "@/components/dashboard/activity-heatmap";
 import { AchievementIcon } from "@/components/dashboard/achievement-icon";
@@ -33,33 +32,32 @@ export default async function DashboardPage() {
 		redirect("/login");
 	}
 
-	const data = await getStudentDashboard(session.user.id);
-	const inProgress = data.enrollments.filter((e) => !e.completedAt);
-	const continueCourse = inProgress[0];
-	const watchedDuration = formatDurationAuto(data.totalWatchedSeconds);
-	const isNewStudent = data.enrollments.length === 0;
-	const firstName = session.user.name?.split(/\s+/)[0] ?? null;
+	const vm = await resolveStudentDashboardPage(
+		session.user.id,
+		session.user.name,
+	);
 
 	return (
 		<section className="space-y-8">
-			{isNewStudent ? (
-				<WelcomeHero firstName={firstName} />
+			{vm.isNewStudent ? (
+				<WelcomeHero firstName={vm.firstName} />
 			) : (
 				<div className="relative overflow-hidden rounded-card border border-border bg-linear-to-br from-primary/8 to-accent/6 p-6 md:p-8">
 					<div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
 						<div>
 							<h1 className="mb-1.5 text-h1 font-bold text-foreground">
-								สวัสดี {firstName ?? "นักเรียน"} 👋
+								สวัสดี {vm.firstName ?? "นักเรียน"} 👋
 							</h1>
-							{continueCourse ? (
+							{vm.continueCourse ? (
 								<p className="text-bodylg text-muted-foreground">
 									เรียนต่อจาก{" "}
 									<strong className="num font-bold text-foreground">
-										{continueCourse.courseTitle}
+										{vm.continueCourse.courseTitle}
 									</strong>{" "}
 									— ทำไปแล้ว{" "}
 									<strong className="num font-bold text-foreground">
-										{continueCourse.doneLessons}/{continueCourse.totalLessons}
+										{vm.continueCourse.doneLessons}/
+										{vm.continueCourse.totalLessons}
 									</strong>{" "}
 									บทเรียน
 								</p>
@@ -72,10 +70,10 @@ export default async function DashboardPage() {
 						{/* Single prominent CTA: "เรียนต่อ" wins over "ดูคอร์ส" when a
 						    lesson is in progress so the dashboard's primary intent is
 						    obvious. */}
-						{continueCourse ? (
+						{vm.continueCourse ? (
 							<div className="flex flex-col items-end gap-1.5">
 								<Link
-									href={`/learn/${continueCourse.courseSlug}`}
+									href={`/learn/${vm.continueCourse.courseSlug}`}
 									className="inline-flex h-10 items-center gap-2 rounded-button bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
 								>
 									เรียนต่อ <ArrowRight size={16} />
@@ -103,38 +101,36 @@ export default async function DashboardPage() {
 				<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 					<StatCard
 						icon={Books}
-						value={String(data.enrollments.length)}
+						value={String(vm.enrollments.length)}
 						label="คอร์สที่เรียนอยู่"
 						color="var(--primary)"
 					/>
 					<StatCard
 						icon={Clock}
-						value={watchedDuration.value}
-						label={`${watchedDuration.unit}เรียนรวม`}
+						value={vm.watchedDuration.value}
+						label={`${vm.watchedDuration.unit}เรียนรวม`}
 						color="var(--success)"
 					/>
 					<StatCard
 						icon={Flame}
-						value={String(data.streak)}
+						value={String(vm.streak)}
 						label="วันต่อเนื่อง"
 						color="var(--accent)"
 						tooltip="เรียนอย่างน้อย 1 บทต่อวันเพื่อรักษาสตรีค"
 					/>
 					<StatCard
 						icon={Trophy}
-						value={String(data.certCount)}
+						value={String(vm.certCount)}
 						label="ใบประกาศ"
 						color="var(--avatar-to)"
 					/>
 				</div>
 			</TooltipProvider>
 
-			{data.upNext.length > 0 && (
+			{vm.upNext.length > 0 && (
 				<div>
 					<div className="mb-4 flex items-baseline justify-between">
-						<h2 className="text-h2 font-bold text-foreground">
-							บทถัดไปที่แนะนำ
-						</h2>
+						<h2 className="text-h2 font-bold text-foreground">บทถัดไปที่แนะนำ</h2>
 						<Link
 							href="/account/enrollments"
 							className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
@@ -142,11 +138,11 @@ export default async function DashboardPage() {
 							ดูทั้งหมด <CaretRight size={14} />
 						</Link>
 					</div>
-					<UpNextList items={data.upNext} />
+					<UpNextList items={vm.upNext} />
 				</div>
 			)}
 
-			{inProgress.length > 0 && (
+			{vm.inProgress.length > 0 && (
 				<div>
 					<div className="mb-5 flex items-baseline justify-between">
 						<h2 className="text-h2 font-bold text-foreground">
@@ -160,65 +156,56 @@ export default async function DashboardPage() {
 						</Link>
 					</div>
 					<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-						{inProgress.slice(0, 3).map((e) => {
-							const pct =
-								e.totalLessons > 0
-									? Math.round((e.doneLessons / e.totalLessons) * 100)
-									: 0;
-							return (
-								<div
-									key={e.enrollmentId}
-									className="flex flex-col overflow-hidden rounded-card border border-border bg-card"
-								>
-									<div className="relative aspect-16/7 w-full overflow-hidden bg-muted">
-										{e.coverStorageKey ? (
-											<img
-												src={coverImageUrl(e.coverStorageKey) ?? ""}
-												alt=""
-												className="h-full w-full object-cover"
-											/>
-										) : (
-											<div className="flex h-full w-full items-center justify-center bg-linear-to-br from-hero-from to-hero-to text-white">
-												<span className="text-h2">
-													{e.courseTitle.trim().charAt(0).toUpperCase()}
-												</span>
-											</div>
-										)}
-									</div>
-									<div className="flex flex-1 flex-col p-5">
-										<h3 className="line-clamp-1 text-h4 font-semibold text-foreground">
-											{e.courseTitle}
-										</h3>
-										<p className="mt-1 text-caption text-muted-foreground">
-											{e.doneLessons}/{e.totalLessons} บทเรียน
-										</p>
-										<div className="mt-4 space-y-2">
-											<Progress value={pct} className="h-1.5" />
-											<div className="flex items-center justify-between">
-												<span className="text-uism font-semibold text-primary">
-													{pct}%
-												</span>
-												<Link
-													href={`/learn/${e.courseSlug}`}
-													className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-												>
-													เรียนต่อ <ArrowRight size={14} />
-												</Link>
-											</div>
+						{vm.inProgress.slice(0, 3).map((e) => (
+							<div
+								key={e.enrollmentId}
+								className="flex flex-col overflow-hidden rounded-card border border-border bg-card"
+							>
+								<div className="relative aspect-16/7 w-full overflow-hidden bg-muted">
+									{e.coverStorageKey ? (
+										<img
+											src={coverImageUrl(e.coverStorageKey) ?? ""}
+											alt=""
+											className="h-full w-full object-cover"
+										/>
+									) : (
+										<div className="flex h-full w-full items-center justify-center bg-linear-to-br from-hero-from to-hero-to text-white">
+											<span className="text-h2">
+												{e.courseTitle.trim().charAt(0).toUpperCase()}
+											</span>
+										</div>
+									)}
+								</div>
+								<div className="flex flex-1 flex-col p-5">
+									<h3 className="line-clamp-1 text-h4 font-semibold text-foreground">
+										{e.courseTitle}
+									</h3>
+									<p className="mt-1 text-caption text-muted-foreground">
+										{e.doneLessons}/{e.totalLessons} บทเรียน
+									</p>
+									<div className="mt-4 space-y-2">
+										<Progress value={e.progressPct} className="h-1.5" />
+										<div className="flex items-center justify-between">
+											<span className="text-uism font-semibold text-primary">
+												{e.progressPct}%
+											</span>
+											<Link
+												href={`/learn/${e.courseSlug}`}
+												className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+											>
+												เรียนต่อ <ArrowRight size={14} />
+											</Link>
 										</div>
 									</div>
 								</div>
-							);
-						})}
+							</div>
+						))}
 					</div>
 				</div>
 			)}
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr]">
-				<ActivityHeatmap
-					heatmap={data.heatmap}
-					startDate={data.heatmapStart}
-				/>
+				<ActivityHeatmap heatmap={vm.heatmap} startDate={vm.heatmapStart} />
 
 				<div className="rounded-card border border-border bg-card p-6">
 					<div className="mb-5 flex items-baseline justify-between">
@@ -228,7 +215,7 @@ export default async function DashboardPage() {
 						</span>
 					</div>
 					<div className="space-y-4">
-						{data.achievements.map((a) => (
+						{vm.achievements.map((a) => (
 							<div key={a.title} className="flex items-center gap-3.5">
 								<div
 									className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
@@ -250,17 +237,15 @@ export default async function DashboardPage() {
 				</div>
 			</div>
 
-			{data.recentActivity.length > 0 && (
+			{vm.recentActivity.length > 0 && (
 				<div>
-					<h2 className="mb-5 text-h2 font-bold text-foreground">
-						กิจกรรมล่าสุด
-					</h2>
+					<h2 className="mb-5 text-h2 font-bold text-foreground">กิจกรรมล่าสุด</h2>
 					<div className="rounded-card border border-border bg-card">
-						{data.recentActivity.map((a, i, arr) => (
+						{vm.recentActivity.map((a, i, arr) => (
 							<div
 								key={i}
-								className={`flex items-center gap-4 px-5 py-4 ${i < arr.length - 1 ? "border-b border-border" : ""
-									}`}
+								className={`flex items-center gap-4 px-5 py-4 ${i < arr.length - 1 ? "border-b border-border" : ""}
+								`}
 							>
 								<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
 									{getActivityIcon(a.type)}
@@ -310,9 +295,7 @@ function StatCard({ icon: Icon, value, label, color, tooltip }: StatCardProps) {
 					</div>
 					<div className="mt-1 flex items-center gap-1 text-caption text-muted-foreground">
 						<span>{label}</span>
-						{tooltip && (
-							<StatCardTooltip label={label} tooltip={tooltip} />
-						)}
+						{tooltip && <StatCardTooltip label={label} tooltip={tooltip} />}
 					</div>
 				</div>
 			</div>
