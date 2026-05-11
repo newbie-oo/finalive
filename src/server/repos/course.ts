@@ -98,23 +98,18 @@ export async function listPublishedCourses(
 
 	const where = and(...conditions);
 
-	// Build order-by clause based on sortBy
-	let orderBy = desc(course.publishedAt);
-	switch (params.sortBy) {
-		case "price_asc":
-			orderBy = asc(course.price);
-			break;
-		case "price_desc":
-			orderBy = desc(course.price);
-			break;
-		case "popular":
-			orderBy = desc(sql`coalesce(${enrollmentCountSubq.count}, 0)`);
-			break;
-		case "newest":
-		default:
-			orderBy = desc(course.publishedAt);
-			break;
-	}
+	// Build order-by clause via lookup map (open/closed: new sort key =
+	// one map entry, no conditional logic changes).
+	const ORDER_BY_MAP: Record<
+		NonNullable<ListPublishedCoursesParams["sortBy"]>,
+		ReturnType<typeof desc>
+	> = {
+		newest: desc(course.publishedAt),
+		price_asc: asc(course.price) as unknown as ReturnType<typeof desc>,
+		price_desc: desc(course.price),
+		popular: desc(sql`coalesce(${enrollmentCountSubq.count}, 0)`),
+	};
+	const orderBy = ORDER_BY_MAP[params.sortBy ?? "newest"];
 
 	const [rows, totalRows] = await Promise.all([
 		db
