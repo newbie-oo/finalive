@@ -49,13 +49,13 @@ export async function assertCanWriteLessonProgress(
 		? false
 		: await lookups.hasActiveEnrollment(input.userId, access.courseId);
 
-	const result = checkLessonAccess(
-		{ isPreview: access.lessonIsPreview, isFree: access.lessonIsFree },
-		{ isFree: access.courseIsFree },
-		enrolled,
-		true,
-		admin,
-	);
+	const result = checkLessonAccess({
+		lesson: { isPreview: access.lessonIsPreview, isFree: access.lessonIsFree },
+		course: { isFree: access.courseIsFree },
+		isEnrolled: enrolled,
+		isAuthenticated: true,
+		isAdmin: admin,
+	});
 
 	if (!result.ok) {
 		throw new ApiError("forbidden", "lesson not accessible");

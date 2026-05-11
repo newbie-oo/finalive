@@ -26,41 +26,41 @@ describe("checkLessonAccess truth table", () => {
   it.each(cases)(
     "%s → ok=%p",
     (_label, lesson, course, enrolled, auth, expectedOk) => {
-      const result = checkLessonAccess(lesson, course, enrolled, auth);
+      const result = checkLessonAccess({ lesson, course, isEnrolled: enrolled, isAuthenticated: auth });
       expect(result.ok).toBe(expectedOk);
     },
   );
 
   it("returns login_required when not authenticated for paid", () => {
-    const result = checkLessonAccess(
-      { isPreview: false, isFree: false },
-      { isFree: false },
-      false,
-      false,
-    );
+    const result = checkLessonAccess({
+      lesson: { isPreview: false, isFree: false },
+      course: { isFree: false },
+      isEnrolled: false,
+      isAuthenticated: false,
+    });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("login_required");
   });
 
   it("returns purchase_required when auth but not enrolled", () => {
-    const result = checkLessonAccess(
-      { isPreview: false, isFree: false },
-      { isFree: false },
-      false,
-      true,
-    );
+    const result = checkLessonAccess({
+      lesson: { isPreview: false, isFree: false },
+      course: { isFree: false },
+      isEnrolled: false,
+      isAuthenticated: true,
+    });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toBe("purchase_required");
   });
 
   it("returns ok for admin even when not enrolled", () => {
-    const result = checkLessonAccess(
-      { isPreview: false, isFree: false },
-      { isFree: false },
-      false,
-      true,
-      true,
-    );
+    const result = checkLessonAccess({
+      lesson: { isPreview: false, isFree: false },
+      course: { isFree: false },
+      isEnrolled: false,
+      isAuthenticated: true,
+      isAdmin: true,
+    });
     expect(result.ok).toBe(true);
   });
 });

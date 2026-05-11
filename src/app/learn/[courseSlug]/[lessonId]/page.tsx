@@ -26,13 +26,13 @@ export default async function LearnLessonPage({
 	]);
 
 	if (!courseData || !lessonData) notFound();
-	const access = checkLessonAccess(
-		{ isPreview: lessonData.isPreview, isFree: lessonData.isFree },
-		{ isFree: courseData.course.isFree },
-		courseData.isEnrolled,
-		userId !== null,
+	const access = checkLessonAccess({
+		lesson: { isPreview: lessonData.isPreview, isFree: lessonData.isFree },
+		course: { isFree: courseData.course.isFree },
+		isEnrolled: courseData.isEnrolled,
+		isAuthenticated: userId !== null,
 		isAdmin,
-	);
+	});
 
 	if (!access.ok) {
 		if (access.reason === "login_required") {

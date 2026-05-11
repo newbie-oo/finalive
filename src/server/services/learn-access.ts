@@ -4,32 +4,45 @@ export type AccessResult =
   | { ok: true }
   | { ok: false; reason: "login_required" | "purchase_required" };
 
-interface LessonAccess {
-  isPreview: boolean;
-  isFree: boolean;
+export interface CheckLessonAccessInput {
+  lesson: { isPreview: boolean; isFree: boolean };
+  course: { isFree: boolean };
+  isEnrolled: boolean;
+  isAuthenticated: boolean;
+  isAdmin?: boolean;
 }
 
-interface CourseAccess {
-  isFree: boolean;
-}
+type AccessRule = (ctx: CheckLessonAccessInput) => AccessResult | null;
 
-export function checkLessonAccess(
-  lesson: LessonAccess,
-  course: CourseAccess,
-  isEnrolled: boolean,
-  isAuthenticated: boolean,
-  isAdmin = false,
-): AccessResult {
+const ACCESS_RULES: AccessRule[] = [
   // Admins can view any lesson without enrollment.
-  if (isAdmin) return { ok: true };
+  (ctx) => (ctx.isAdmin ? { ok: true } : null),
   // Preview or free lessons are always accessible.
-  if (lesson.isPreview || lesson.isFree) return { ok: true };
+  (ctx) =>
+    ctx.lesson.isPreview || ctx.lesson.isFree ? { ok: true } : null,
   // Entirely free courses are always accessible.
-  if (course.isFree) return { ok: true };
+  (ctx) => (ctx.course.isFree ? { ok: true } : null),
   // Authenticated + enrolled users get everything.
-  if (isEnrolled) return { ok: true };
+  (ctx) => (ctx.isEnrolled ? { ok: true } : null),
   // Not authenticated → login first.
-  if (!isAuthenticated) return { ok: false, reason: "login_required" };
+  (ctx) =>
+    !ctx.isAuthenticated
+      ? { ok: false, reason: "login_required" }
+      : null,
   // Authenticated but not enrolled → buy.
+  () => ({ ok: false, reason: "purchase_required" }),
+];
+
+/**
+ * Evaluate lesson access through an ordered rule engine.
+ * Rules are checked in sequence; the first non-null result wins.
+ * New access modes append a rule without touching existing ones.
+ */
+export function checkLessonAccess(input: CheckLessonAccessInput): AccessResult {
+  for (const rule of ACCESS_RULES) {
+    const result = rule(input);
+    if (result) return result;
+  }
+  // Should never reach here (last rule is a catch-all).
   return { ok: false, reason: "purchase_required" };
 }
