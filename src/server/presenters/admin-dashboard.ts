@@ -8,7 +8,10 @@ import {
 } from "@/server/services/admin-dashboard-presenter";
 import { listPendingSlips } from "@/server/repos/slip";
 import { thaiDateString, thaiTimeString } from "@/lib/format-time";
-import type { ActivityRow, MonthlyRevenue } from "@/server/services/admin-dashboard-presenter";
+import type {
+	ActivityRow,
+	MonthlyRevenue,
+} from "@/server/services/admin-dashboard-presenter";
 import type { AdminDashboardCounts } from "@/server/repos/admin-stats";
 
 export interface KpiDelta {
@@ -58,8 +61,7 @@ export async function getAdminDashboard(): Promise<AdminDashboardViewModel> {
 		lastMonth && lastMonth.previous > 0
 			? {
 					value:
-						((lastMonth.current - lastMonth.previous) /
-							lastMonth.previous) *
+						((lastMonth.current - lastMonth.previous) / lastMonth.previous) *
 						100,
 					label: "YoY",
 				}

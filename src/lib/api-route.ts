@@ -188,7 +188,8 @@ export async function buildPipeline<
 	options: PipelineOptions<TBody, TQuery>,
 	rid: string,
 ): Promise<
-	{ ok: true; ctx: PipelineCtx<TBody, TQuery> } | { ok: false; response: NextResponse }
+	| { ok: true; ctx: PipelineCtx<TBody, TQuery> }
+	| { ok: false; response: NextResponse }
 > {
 	try {
 		checkRateLimitOrThrow(req, options.rateLimit, rid);
@@ -217,16 +218,18 @@ interface ApiRouteOptions<
 	TQuery extends Record<string, unknown> = Record<string, unknown>,
 	TResponse = unknown,
 > extends PipelineOptions<TBody, TQuery> {
-	handler: (ctx: PipelineCtx<TBody, TQuery>) =>
-		Promise<TResponse | NextResponse> | TResponse | NextResponse;
+	handler: (
+		ctx: PipelineCtx<TBody, TQuery>,
+	) => Promise<TResponse | NextResponse> | TResponse | NextResponse;
 }
 
 interface ApiRouteRawOptions<
 	TQuery extends Record<string, unknown> = Record<string, unknown>,
 	TResponse = unknown,
 > extends Omit<PipelineOptions<never, TQuery>, "body"> {
-	handler: (ctx: Omit<PipelineCtx<never, TQuery>, "body">) =>
-		Promise<TResponse | NextResponse> | TResponse | NextResponse;
+	handler: (
+		ctx: Omit<PipelineCtx<never, TQuery>, "body">,
+	) => Promise<TResponse | NextResponse> | TResponse | NextResponse;
 }
 
 /**
@@ -264,7 +267,11 @@ export function apiRouteRaw<
 		const rid = requestId();
 		const pipe = await buildPipeline<never, TQuery>(
 			req,
-			{ auth: options.auth, rateLimit: options.rateLimit, query: options.query },
+			{
+				auth: options.auth,
+				rateLimit: options.rateLimit,
+				query: options.query,
+			},
 			rid,
 		);
 		if (!pipe.ok) return pipe.response;

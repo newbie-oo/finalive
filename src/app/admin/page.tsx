@@ -159,7 +159,9 @@ export default async function AdminDashboardPage() {
 					iconBg="bg-warning/10"
 					title="ตรวจสลิป"
 					subtitle="ตรวจสอบการชำระเงิน"
-					badge={vm.counts.slipsSubmitted > 0 ? vm.counts.slipsSubmitted : undefined}
+					badge={
+						vm.counts.slipsSubmitted > 0 ? vm.counts.slipsSubmitted : undefined
+					}
 				/>
 				<QuickLinkCard
 					href="/admin/courses"
@@ -211,7 +213,10 @@ export default async function AdminDashboardPage() {
 				<TopCoursesSection courses={vm.topCourses} maxEnroll={vm.maxEnroll} />
 			</div>
 			{vm.counts.slipsSubmitted > 0 && (
-				<PendingSlipsAlert slips={vm.pendingSlips} count={vm.counts.slipsSubmitted} />
+				<PendingSlipsAlert
+					slips={vm.pendingSlips}
+					count={vm.counts.slipsSubmitted}
+				/>
 			)}
 			<ActivitySection rows={vm.activityRows} />
 		</section>
@@ -240,7 +245,13 @@ function QuickLinkCard({
 			href={href}
 			className="flex items-center gap-3 rounded-[12px] border border-border bg-card p-4 transition-colors hover:border-primary hover:bg-muted"
 		>
-			<div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", iconBg, iconColor)}>
+			<div
+				className={cn(
+					"flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+					iconBg,
+					iconColor,
+				)}
+			>
 				<Icon size={18} weight="bold" />
 			</div>
 			<div className="flex-1">
@@ -258,14 +269,21 @@ function QuickLinkCard({
 	);
 }
 
-function RevenueSection({ data }: { data: { month: string; year: number; current: number; previous: number }[] }) {
+function RevenueSection({
+	data,
+}: {
+	data: { month: string; year: number; current: number; previous: number }[];
+}) {
 	return (
 		<div className="rounded-card border border-border bg-card p-6 shadow-xs">
 			<div className="mb-6 flex items-start justify-between">
 				<div>
-					<div className="text-ui font-semibold text-foreground">รายได้รายเดือน</div>
+					<div className="text-ui font-semibold text-foreground">
+						รายได้รายเดือน
+					</div>
 					<div className="text-caption text-muted-foreground">
-						{data[0]?.month} – {data[data.length - 1]?.month} {data[data.length - 1]?.year}
+						{data[0]?.month} – {data[data.length - 1]?.month}{" "}
+						{data[data.length - 1]?.year}
 					</div>
 				</div>
 				<div className="flex items-center gap-4">
@@ -288,24 +306,40 @@ function TopCoursesSection({
 	courses,
 	maxEnroll,
 }: {
-	courses: { id: string; title: string; enrollmentCount: number; revenue: number; isFree: boolean }[];
+	courses: {
+		id: string;
+		title: string;
+		enrollmentCount: number;
+		revenue: number;
+		isFree: boolean;
+	}[];
 	maxEnroll: number;
 }) {
-	const colors = ["bg-primary", "bg-success", "bg-accent", "bg-review-foreground"];
+	const colors = [
+		"bg-primary",
+		"bg-success",
+		"bg-accent",
+		"bg-review-foreground",
+	];
 	return (
 		<div className="rounded-card border border-border bg-card p-6 shadow-xs">
 			<div className="mb-1 text-ui font-semibold text-foreground">คอร์สขายดี</div>
 			<div className="mb-5 text-caption text-muted-foreground">เดือนนี้</div>
 			<div className="flex flex-col gap-4">
 				{courses.length === 0 ? (
-					<div className="py-8 text-center text-caption text-muted-foreground">ยังไม่มีข้อมูลการสมัคร</div>
+					<div className="py-8 text-center text-caption text-muted-foreground">
+						ยังไม่มีข้อมูลการสมัคร
+					</div>
 				) : (
 					courses.map((c, i) => {
-						const pct = maxEnroll > 0 ? (c.enrollmentCount / maxEnroll) * 100 : 0;
+						const pct =
+							maxEnroll > 0 ? (c.enrollmentCount / maxEnroll) * 100 : 0;
 						return (
 							<div key={c.id}>
 								<div className="mb-1.5 flex items-center justify-between gap-2">
-									<span className="truncate text-uism font-medium text-foreground">{c.title}</span>
+									<span className="truncate text-uism font-medium text-foreground">
+										{c.title}
+									</span>
 									<span className="shrink-0 text-uism text-muted-foreground">
 										<span className="num">{c.enrollmentCount}</span>
 										{" · "}
@@ -315,7 +349,13 @@ function TopCoursesSection({
 									</span>
 								</div>
 								<div className="h-1.5 overflow-hidden rounded-full bg-muted">
-									<div className={cn("h-full rounded-full", colors[i % colors.length])} style={{ width: `${pct}%` }} />
+									<div
+										className={cn(
+											"h-full rounded-full",
+											colors[i % colors.length],
+										)}
+										style={{ width: `${pct}%` }}
+									/>
 								</div>
 							</div>
 						);
@@ -326,7 +366,18 @@ function TopCoursesSection({
 	);
 }
 
-function PendingSlipsAlert({ slips, count }: { slips: { id: string; studentName: string | null; expectedAmount: string; courseTitle: string | null }[]; count: number }) {
+function PendingSlipsAlert({
+	slips,
+	count,
+}: {
+	slips: {
+		id: string;
+		studentName: string | null;
+		expectedAmount: string;
+		courseTitle: string | null;
+	}[];
+	count: number;
+}) {
 	return (
 		<div className="flex items-start gap-4 rounded-[16px] border border-warning/30 bg-warning-bg/60 p-5">
 			<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-button bg-warning/15 text-warning">
@@ -341,12 +392,21 @@ function PendingSlipsAlert({ slips, count }: { slips: { id: string; studentName:
 				</div>
 				<div className="flex flex-wrap gap-2">
 					{slips.slice(0, 4).map((s) => (
-						<div key={s.id} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[13px]">
+						<div
+							key={s.id}
+							className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[13px]"
+						>
 							<AvatarInitials name={s.studentName ?? "Student"} size="xs" />
-							<span className="truncate text-foreground">{s.studentName ?? "Student"}</span>
-							<span className="num shrink-0 font-semibold text-foreground">{formatTHB(Number(s.expectedAmount))}</span>
+							<span className="truncate text-foreground">
+								{s.studentName ?? "Student"}
+							</span>
+							<span className="num shrink-0 font-semibold text-foreground">
+								{formatTHB(Number(s.expectedAmount))}
+							</span>
 							<span className="text-foreground-subtle">·</span>
-							<span className="truncate text-muted-foreground">{s.courseTitle}</span>
+							<span className="truncate text-muted-foreground">
+								{s.courseTitle}
+							</span>
 						</div>
 					))}
 				</div>
@@ -362,26 +422,49 @@ function PendingSlipsAlert({ slips, count }: { slips: { id: string; studentName:
 	);
 }
 
-function ActivitySection({ rows }: { rows: { time: string; userName: string; action: string; amount: string | null; status: "success" | "warning" | "primary"; statusLabel: string }[] }) {
+function ActivitySection({
+	rows,
+}: {
+	rows: {
+		time: string;
+		userName: string;
+		action: string;
+		amount: string | null;
+		status: "success" | "warning" | "primary";
+		statusLabel: string;
+	}[];
+}) {
 	return (
 		<div className="overflow-hidden rounded-card border border-border bg-card shadow-xs">
 			<div className="flex items-center justify-between border-b border-border px-6 py-4">
 				<div>
-					<div className="text-ui font-semibold text-foreground">กิจกรรมล่าสุด</div>
-					<div className="text-caption text-muted-foreground">ระบบบันทึกการกระทำล่าสุด</div>
+					<div className="text-ui font-semibold text-foreground">
+						กิจกรรมล่าสุด
+					</div>
+					<div className="text-caption text-muted-foreground">
+						ระบบบันทึกการกระทำล่าสุด
+					</div>
 				</div>
-				<Link href="/admin/slips" className="text-uism font-medium text-primary hover:underline">
+				<Link
+					href="/admin/slips"
+					className="text-uism font-medium text-primary hover:underline"
+				>
 					ดูทั้งหมด →
 				</Link>
 			</div>
 			{rows.length === 0 ? (
-				<div className="px-6 py-10 text-center text-caption text-muted-foreground">ยังไม่มีกิจกรรมล่าสุด</div>
+				<div className="px-6 py-10 text-center text-caption text-muted-foreground">
+					ยังไม่มีกิจกรรมล่าสุด
+				</div>
 			) : (
 				<Table>
 					<TableHeader>
 						<TableRow className="bg-muted hover:bg-muted">
 							{["เวลา", "ผู้ใช้", "การกระทำ", "จำนวน", "สถานะ"].map((h) => (
-								<TableHead key={h} className="px-6 py-3 text-[12px] font-semibold uppercase tracking-wider text-foreground-subtle">
+								<TableHead
+									key={h}
+									className="px-6 py-3 text-[12px] font-semibold uppercase tracking-wider text-foreground-subtle"
+								>
 									{h}
 								</TableHead>
 							))}
@@ -390,15 +473,23 @@ function ActivitySection({ rows }: { rows: { time: string; userName: string; act
 					<TableBody>
 						{rows.map((r, i) => (
 							<TableRow key={i}>
-								<TableCell className="px-6 py-3.5 text-[13px] tabular-nums text-muted-foreground">{r.time}</TableCell>
+								<TableCell className="px-6 py-3.5 text-[13px] tabular-nums text-muted-foreground">
+									{r.time}
+								</TableCell>
 								<TableCell className="px-6 py-3.5">
 									<div className="flex items-center gap-2.5">
 										<AvatarInitials name={r.userName} size="sm" />
-										<span className="text-uism font-medium text-foreground">{r.userName}</span>
+										<span className="text-uism font-medium text-foreground">
+											{r.userName}
+										</span>
 									</div>
 								</TableCell>
-								<TableCell className="px-6 py-3.5 text-uism text-foreground">{r.action}</TableCell>
-								<TableCell className="px-6 py-3.5 text-uism num font-semibold text-foreground">{r.amount ?? "—"}</TableCell>
+								<TableCell className="px-6 py-3.5 text-uism text-foreground">
+									{r.action}
+								</TableCell>
+								<TableCell className="px-6 py-3.5 text-uism num font-semibold text-foreground">
+									{r.amount ?? "—"}
+								</TableCell>
 								<TableCell className="px-6 py-3.5">
 									<StatusBadge variant={r.status}>{r.statusLabel}</StatusBadge>
 								</TableCell>
