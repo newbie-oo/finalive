@@ -1,13 +1,7 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getSession } from "@/server/auth-session";
+import { notFound } from "next/navigation";
 import { getAdminCourseById } from "@/server/repos/admin-course";
 import { getAdminCourseCurriculum } from "@/server/repos/admin-curriculum";
-import {
-	getCourseOwnerId,
-	getCollaboratorRole,
-} from "@/server/repos/course-authz";
-import { canEditCoursePure } from "@/server/services/course-authz";
 import { CurriculumTree } from "@/components/admin/curriculum-tree";
 import { PublishButton } from "@/components/admin/publish-button";
 import { Button } from "@/components/ui/button";
@@ -21,35 +15,8 @@ export default async function AdminCurriculumPage({
 }) {
 	const { id } = await params;
 
-	const session = await getSession();
-	if (!session?.user?.id) {
-		return (
-			<div className="p-6">
-				<p className="text-sm text-muted-foreground">กรุณาเข้าสู่ระบบ</p>
-			</div>
-		);
-	}
-
 	const course = await getAdminCourseById(id);
 	if (!course) notFound();
-
-	const [courseOwnerId, collaboratorRole] = await Promise.all([
-		getCourseOwnerId(id),
-		getCollaboratorRole(id, session.user.id),
-	]);
-	const canEdit = canEditCoursePure({
-		userId: session.user.id,
-		userRole: session.user.role,
-		courseOwnerId,
-		collaboratorRole,
-	});
-	if (!canEdit) {
-		return (
-			<div className="p-6">
-				<p className="text-sm text-muted-foreground">ไม่มีสิทธิ์แก้ไขคอร์สนี้</p>
-			</div>
-		);
-	}
 
 	const curriculum = await getAdminCourseCurriculum(id);
 
