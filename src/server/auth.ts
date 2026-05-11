@@ -9,10 +9,7 @@ import { enrollment } from "@/db/schema/enrollment";
 import { pendingEnrollment } from "@/db/schema/payment";
 import { lessonProgress, quizAttempt } from "@/db/schema/progress";
 import { getEnv } from "@/lib/env";
-import {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} from "./services/mailer";
+import { dispatchEmail } from "@/server/email";
 
 const env = getEnv();
 
@@ -59,14 +56,20 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
-      await sendPasswordResetEmail({ to: user.email, name: user.name, url });
+      await dispatchEmail("password_reset", user.email, {
+        name: user.name,
+        url,
+      });
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendVerificationEmail({ to: user.email, name: user.name, url });
+      await dispatchEmail("verify_email", user.email, {
+        name: user.name,
+        url,
+      });
     },
   },
   user: {

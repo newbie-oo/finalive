@@ -1,8 +1,7 @@
 import "server-only";
 import { db } from "@/db/client";
 import { emailMessage } from "@/db/schema/audit";
-import { dispatchEmail } from "@/server/email/template-registry";
-import "@/server/email/register-all";
+import { dispatchEmail } from "@/server/email";
 
 export interface EmailPayload {
 	template: string;

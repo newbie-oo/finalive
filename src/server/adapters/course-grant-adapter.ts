@@ -1,5 +1,5 @@
 import { EnrollmentRepo } from "@/server/repos/enrollment";
-import { sendGrantCourseEmail } from "@/server/services/mailer";
+import { dispatchEmail } from "@/server/email";
 
 export async function createEnrollmentFromGrant(args: {
 	userId: string;
@@ -22,8 +22,7 @@ export async function sendGrantNotification(n: {
 	courseTitle: string;
 	learnUrl: string;
 }): Promise<void> {
-	await sendGrantCourseEmail({
-		to: n.to,
+	await dispatchEmail("course_granted", n.to, {
 		name: n.name ?? "",
 		courseTitle: n.courseTitle,
 		learnUrl: n.learnUrl,
