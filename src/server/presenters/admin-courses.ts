@@ -1,4 +1,7 @@
-import { listAdminCourses, type AdminCourseListItem } from "@/server/repos/admin-course";
+import {
+	listAdminCourses,
+	type AdminCourseListItem,
+} from "@/server/repos/admin-course";
 import { COURSE_STATUS, type CourseStatusFilter } from "@/db/schema/course";
 
 export interface AdminCourseListViewModel {

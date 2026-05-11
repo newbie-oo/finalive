@@ -43,9 +43,7 @@ export default async function AdminCourseLayout({
 	if (!canEdit) {
 		return (
 			<div className="p-6">
-				<p className="text-sm text-muted-foreground">
-					ไม่มีสิทธิ์แก้ไขคอร์สนี้
-				</p>
+				<p className="text-sm text-muted-foreground">ไม่มีสิทธิ์แก้ไขคอร์สนี้</p>
 			</div>
 		);
 	}

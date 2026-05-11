@@ -86,9 +86,7 @@ export default async function AdminCoursesPage({
 
 			{vm.courses.length === 0 ? (
 				<p className="text-body text-muted-foreground">
-					{vm.filtersActive
-						? "ไม่พบคอร์สที่ตรงกับเงื่อนไข"
-						: "ยังไม่มีคอร์ส"}
+					{vm.filtersActive ? "ไม่พบคอร์สที่ตรงกับเงื่อนไข" : "ยังไม่มีคอร์ส"}
 				</p>
 			) : (
 				<AdminCourseTable courses={vm.courses} />

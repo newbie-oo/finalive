@@ -45,10 +45,7 @@ export function AdminCourseTable({
 				</thead>
 				<tbody>
 					{courses.map((c) => (
-						<tr
-							key={c.id}
-							className="border-b border-border last:border-b-0"
-						>
+						<tr key={c.id} className="border-b border-border last:border-b-0">
 							<td className="px-5 py-4 font-medium text-foreground">
 								{c.title}
 							</td>

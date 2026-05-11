@@ -124,9 +124,10 @@ export async function countPendingSlipsByStatus(): Promise<
 		})
 		.from(paymentSlip)
 		.groupBy(paymentSlip.status);
-	const out = Object.fromEntries(
-		SLIP_STATUS.map((s) => [s, 0]),
-	) as Record<SlipStatus, number>;
+	const out = Object.fromEntries(SLIP_STATUS.map((s) => [s, 0])) as Record<
+		SlipStatus,
+		number
+	>;
 	for (const r of rows) {
 		if ((SLIP_STATUS as readonly string[]).includes(r.status)) {
 			out[r.status as SlipStatus] = r.total;
@@ -173,7 +174,9 @@ export interface RejectTxResult {
 	pendingId: string;
 }
 
-export async function loadSlipForReview(slipId: string): Promise<SlipReviewRow | null> {
+export async function loadSlipForReview(
+	slipId: string,
+): Promise<SlipReviewRow | null> {
 	const rows = await db
 		.select({
 			slipId: paymentSlip.id,
@@ -207,7 +210,9 @@ export async function countSlipsForPending(pendingId: string): Promise<number> {
 	return rows[0]?.total ?? 0;
 }
 
-export async function loadPending(pendingId: string): Promise<PendingRow | null> {
+export async function loadPending(
+	pendingId: string,
+): Promise<PendingRow | null> {
 	const rows = await db
 		.select({
 			id: pendingEnrollment.id,
@@ -226,7 +231,9 @@ export async function loadPending(pendingId: string): Promise<PendingRow | null>
 	return { ...row, status: row.status as PendingStatus };
 }
 
-export async function loadCourseInfo(courseId: string): Promise<CourseInfo | null> {
+export async function loadCourseInfo(
+	courseId: string,
+): Promise<CourseInfo | null> {
 	const rows = await db
 		.select({ title: course.title, slug: course.slug })
 		.from(course)
@@ -278,8 +285,7 @@ export async function runAcceptTx(
 				})
 				.returning({ id: enrollment.id });
 			const created = inserted[0];
-			if (!created)
-				throw new RepoIntegrityError("enrollment insert failed");
+			if (!created) throw new RepoIntegrityError("enrollment insert failed");
 			enrollmentId = created.id;
 		} catch (e) {
 			if (isUniqueViolation(e, "one_active_enrollment")) {
