@@ -7,20 +7,16 @@ import {
 	Flame,
 	Trophy,
 } from "@phosphor-icons/react/dist/ssr";
+import type { ReactElement } from "react";
+
+const ICON_MAP: Record<string, ReactElement> = {
+	trophy: <Trophy size={22} weight="bold" />,
+	flame: <Flame size={22} weight="bold" />,
+	books: <Books size={22} weight="bold" />,
+	"check-circle": <CheckCircle size={22} weight="bold" />,
+	certificate: <Certificate size={22} weight="bold" />,
+};
 
 export function AchievementIcon({ icon }: { icon: string }) {
-	switch (icon) {
-		case "trophy":
-			return <Trophy size={22} weight="bold" />;
-		case "flame":
-			return <Flame size={22} weight="bold" />;
-		case "books":
-			return <Books size={22} weight="bold" />;
-		case "check-circle":
-			return <CheckCircle size={22} weight="bold" />;
-		case "certificate":
-			return <Certificate size={22} weight="bold" />;
-		default:
-			return <Trophy size={22} weight="bold" />;
-	}
+	return ICON_MAP[icon] ?? ICON_MAP.trophy;
 }

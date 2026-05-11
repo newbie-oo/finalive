@@ -199,39 +199,76 @@ function parseBlocks(input: string): Block[] {
   return blocks;
 }
 
+/* ─── Block renderers (lookup map replaces switch statement) ─── */
+
+function renderHeading(
+  b: Block & { kind: "h" },
+  key: number,
+): ReactNode {
+  const Heading = b.level === 2 ? "h2" : b.level === 3 ? "h3" : "h4";
+  return <Heading key={key}>{renderInline(b.text)}</Heading>;
+}
+
+function renderParagraph(b: Block & { kind: "p" }, key: number): ReactNode {
+  return <p key={key}>{renderInline(b.text)}</p>;
+}
+
+function renderBlockquote(
+  b: Block & { kind: "blockquote" },
+  key: number,
+): ReactNode {
+  return (
+    <blockquote key={key}>
+      <p>{renderInline(b.text)}</p>
+    </blockquote>
+  );
+}
+
+function renderUnorderedList(
+  b: Block & { kind: "ul" },
+  key: number,
+): ReactNode {
+  return (
+    <ul key={key}>
+      {b.items.map((item, idx) => (
+        <li key={idx}>{renderInline(item)}</li>
+      ))}
+    </ul>
+  );
+}
+
+function renderOrderedList(
+  b: Block & { kind: "ol" },
+  key: number,
+): ReactNode {
+  return (
+    <ol key={key}>
+      {b.items.map((item, idx) => (
+        <li key={idx}>{renderInline(item)}</li>
+      ))}
+    </ol>
+  );
+}
+
+function renderHr(_b: Block & { kind: "hr" }, key: number): ReactNode {
+  return <hr key={key} />;
+}
+
+type BlockRenderer = (b: Block, key: number) => ReactNode;
+
+const BLOCK_RENDERERS: Record<string, BlockRenderer> = {
+  h: renderHeading as BlockRenderer,
+  p: renderParagraph as BlockRenderer,
+  blockquote: renderBlockquote as BlockRenderer,
+  ul: renderUnorderedList as BlockRenderer,
+  ol: renderOrderedList as BlockRenderer,
+  hr: renderHr as BlockRenderer,
+};
+
 function renderBlock(b: Block, key: number): ReactNode {
-  switch (b.kind) {
-    case "hr":
-      return <hr key={key} />;
-    case "h":
-      if (b.level === 2) return <h2 key={key}>{renderInline(b.text)}</h2>;
-      if (b.level === 3) return <h3 key={key}>{renderInline(b.text)}</h3>;
-      return <h4 key={key}>{renderInline(b.text)}</h4>;
-    case "p":
-      return <p key={key}>{renderInline(b.text)}</p>;
-    case "blockquote":
-      return (
-        <blockquote key={key}>
-          <p>{renderInline(b.text)}</p>
-        </blockquote>
-      );
-    case "ul":
-      return (
-        <ul key={key}>
-          {b.items.map((item, idx) => (
-            <li key={idx}>{renderInline(item)}</li>
-          ))}
-        </ul>
-      );
-    case "ol":
-      return (
-        <ol key={key}>
-          {b.items.map((item, idx) => (
-            <li key={idx}>{renderInline(item)}</li>
-          ))}
-        </ol>
-      );
-  }
+  const renderer = BLOCK_RENDERERS[b.kind];
+  if (!renderer) return null;
+  return renderer(b, key);
 }
 
 // Inline parser: **bold**, *em*, `code`. Naive but handles the seed bodies.
