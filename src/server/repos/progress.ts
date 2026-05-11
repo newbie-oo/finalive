@@ -1,4 +1,5 @@
 import "server-only";
+import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { lessonProgress } from "@/db/schema/progress";
 
@@ -77,4 +78,10 @@ export async function markLessonComplete(
 				updatedAt: now,
 			},
 		});
+}
+
+export async function deleteLessonProgressByUserId(
+	userId: string,
+): Promise<void> {
+	await db.delete(lessonProgress).where(eq(lessonProgress.userId, userId));
 }

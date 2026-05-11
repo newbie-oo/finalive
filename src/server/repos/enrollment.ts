@@ -87,4 +87,11 @@ export const EnrollmentRepo = {
 			.limit(1);
 		return rows[0]?.title ?? null;
 	},
+
+	async cancelByUserId(userId: string): Promise<void> {
+		await db
+			.update(enrollment)
+			.set({ status: "cancelled", updatedAt: new Date() })
+			.where(eq(enrollment.userId, userId));
+	},
 };

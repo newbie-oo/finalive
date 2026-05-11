@@ -183,3 +183,9 @@ export async function insertQuizAttempt(
 
 	return { attemptId: inserted!.id };
 }
+
+export async function deleteQuizAttemptsByUserId(
+	userId: string,
+): Promise<void> {
+	await db.delete(quizAttempt).where(eq(quizAttempt.userId, userId));
+}

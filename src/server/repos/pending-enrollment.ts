@@ -109,4 +109,19 @@ export const PendingEnrollmentRepo = {
 			.limit(1);
 		return rows[0];
 	},
+
+	async cancelOpenByUserId(userId: string): Promise<void> {
+		await db
+			.update(pendingEnrollment)
+			.set({ status: "cancelled", updatedAt: new Date() })
+			.where(
+				and(
+					eq(pendingEnrollment.userId, userId),
+					inArray(pendingEnrollment.status, [
+						"awaiting_payment",
+						"slip_submitted",
+					]),
+				),
+			);
+	},
 };
