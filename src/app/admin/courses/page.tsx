@@ -1,48 +1,26 @@
 import Link from "next/link";
 import { MagnifyingGlass, Plus } from "@phosphor-icons/react/dist/ssr";
-import { listAdminCourses } from "@/server/repos/admin-course";
-import { COURSE_STATUS, type CourseStatusFilter } from "@/db/schema/course";
-import { formatTHB } from "@/lib/format";
+import { resolveAdminCourseList } from "@/server/presenters/admin-courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StatusChip } from "@/components/ui/status-chip";
+import { AdminCourseTable } from "@/components/admin/admin-course-table";
+import type { CourseStatusFilter } from "@/db/schema/course";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABEL: Record<string, string> = {
-	draft: "ร่าง",
-	published: "เผยแพร่",
-	archived: "เก็บถาวร",
-};
-
-const STATUS_TONE: Record<string, "neutral" | "success" | "warning"> = {
-	draft: "neutral",
-	published: "success",
-	archived: "warning",
-};
+const STATUSES: Array<{ key: CourseStatusFilter; label: string }> = [
+	{ key: "all", label: "ทั้งหมด" },
+	{ key: "published", label: "เผยแพร่" },
+	{ key: "draft", label: "ร่าง" },
+	{ key: "archived", label: "เก็บถาวร" },
+];
 
 export default async function AdminCoursesPage({
 	searchParams,
 }: {
 	searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-	const sp = (await searchParams) ?? {};
-	const q = typeof sp.q === "string" ? sp.q : "";
-	const statusParam = typeof sp.status === "string" ? sp.status : "all";
-	const status: CourseStatusFilter = (
-		COURSE_STATUS as readonly string[]
-	).includes(statusParam)
-		? (statusParam as CourseStatusFilter)
-		: "all";
-	const courses = await listAdminCourses({ q, status });
-	const filtersActive = q.length > 0 || status !== "all";
-
-	const STATUSES: Array<{ key: CourseStatusFilter; label: string }> = [
-		{ key: "all", label: "ทั้งหมด" },
-		{ key: "published", label: "เผยแพร่" },
-		{ key: "draft", label: "ร่าง" },
-		{ key: "archived", label: "เก็บถาวร" },
-	];
+	const vm = await resolveAdminCourseList(await searchParams);
 
 	return (
 		<section className="space-y-6">
@@ -73,7 +51,7 @@ export default async function AdminCoursesPage({
 					id="admin-courses-q"
 					type="search"
 					name="q"
-					defaultValue={q}
+					defaultValue={vm.q}
 					placeholder="ค้นหาด้วยชื่อหรือ slug"
 					className="w-full sm:w-72"
 				/>
@@ -83,7 +61,7 @@ export default async function AdminCoursesPage({
 				<select
 					id="admin-courses-status"
 					name="status"
-					defaultValue={status}
+					defaultValue={vm.status}
 					className="h-10 rounded-button border border-border bg-card px-3 text-ui text-foreground"
 				>
 					{STATUSES.map((s) => (
@@ -96,7 +74,7 @@ export default async function AdminCoursesPage({
 					<MagnifyingGlass size={16} weight="bold" />
 					ค้นหา
 				</Button>
-				{filtersActive && (
+				{vm.filtersActive && (
 					<Link
 						href="/admin/courses"
 						className="text-uism text-muted-foreground hover:underline"
@@ -106,69 +84,14 @@ export default async function AdminCoursesPage({
 				)}
 			</form>
 
-			{courses.length === 0 ? (
+			{vm.courses.length === 0 ? (
 				<p className="text-body text-muted-foreground">
-					{filtersActive ? "ไม่พบคอร์สที่ตรงกับเงื่อนไข" : "ยังไม่มีคอร์ส"}
+					{vm.filtersActive
+						? "ไม่พบคอร์สที่ตรงกับเงื่อนไข"
+						: "ยังไม่มีคอร์ส"}
 				</p>
 			) : (
-				<div className="overflow-x-auto rounded-card border border-border bg-card">
-					<table className="min-w-[640px] w-full text-ui">
-						<thead>
-							<tr className="border-b border-border bg-muted text-left">
-								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
-									ชื่อ
-								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
-									URL
-								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
-									สถานะ
-								</th>
-								<th className="px-5 py-3 text-uism font-semibold text-muted-foreground">
-									ราคา
-								</th>
-								<th className="px-5 py-3 text-right text-uism font-semibold text-muted-foreground">
-									ผู้เรียน
-								</th>
-								<th className="px-5 py-3" aria-label="actions" />
-							</tr>
-						</thead>
-						<tbody>
-							{courses.map((c) => (
-								<tr
-									key={c.id}
-									className="border-b border-border last:border-b-0"
-								>
-									<td className="px-5 py-4 font-medium text-foreground">
-										{c.title}
-									</td>
-									<td className="mono px-5 py-4 text-uism text-muted-foreground">
-										{c.slug}
-									</td>
-									<td className="px-5 py-4">
-										<StatusChip tone={STATUS_TONE[c.status] ?? "neutral"}>
-											{STATUS_LABEL[c.status] ?? c.status}
-										</StatusChip>
-									</td>
-									<td className="num px-5 py-4 text-foreground">
-										{c.isFree ? "ฟรี" : formatTHB(c.price)}
-									</td>
-									<td className="num px-5 py-4 text-right text-foreground">
-										{c.enrollmentCount.toLocaleString("th-TH")}
-									</td>
-									<td className="px-5 py-4 text-right">
-										<Link
-											href={`/admin/courses/${c.id}`}
-											className="text-uism font-medium text-primary hover:underline"
-										>
-											แก้ไข →
-										</Link>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+				<AdminCourseTable courses={vm.courses} />
 			)}
 		</section>
 	);
