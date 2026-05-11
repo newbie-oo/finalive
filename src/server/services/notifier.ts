@@ -1,7 +1,7 @@
 import "server-only";
 import {
 	sendEmail,
-	type EmailQueueWriter,
+	type EmailQueueRepo,
 } from "@/server/repos/email-queue";
 import { getEnv } from "@/lib/env";
 import type { EmailPayload } from "@/server/email/templates";
@@ -24,9 +24,9 @@ export class EmailCourseCompletionNotifier implements CourseCompletionNotifier {
 		userId?: string | null,
 	) => Promise<string>;
 
-	constructor(writer: EmailQueueWriter) {
+	constructor(repo: EmailQueueRepo) {
 		this.send = (toEmail, payload, userId) =>
-			sendEmail(writer, toEmail, payload, userId);
+			sendEmail(repo, toEmail, payload, userId);
 	}
 
 	async notify(params: {

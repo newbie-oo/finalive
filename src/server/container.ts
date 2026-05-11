@@ -1,5 +1,4 @@
 import "server-only";
-import { db } from "@/db/client";
 import { getCourseIdByLessonId, getCourseInfo } from "@/server/repos/course";
 import { MediaAssetRepo } from "@/server/repos/media-asset";
 import { EnrollmentRepo } from "@/server/repos/enrollment";
@@ -22,6 +21,7 @@ import {
 	EmailCourseCompletionNotifier,
 	type CourseCompletionNotifier,
 } from "@/server/services/notifier";
+import { makeDbEmailQueueRepo } from "@/server/repos/email-queue";
 import { makeDbAuditLogger, type AuditLogger } from "@/server/services/audit";
 import { getEnv } from "@/lib/env";
 import { CourseCompletionService } from "@/server/services/course-completion";
@@ -82,6 +82,7 @@ let _bunnyStatus: BunnyVideoStatusService | undefined;
 let _certificateIssuer: CertificateIssuer | undefined;
 let _slipNotifier: SlipNotifier | undefined;
 let _courseCompletionNotifier: CourseCompletionNotifier | undefined;
+let _emailQueueRepo: ReturnType<typeof makeDbEmailQueueRepo> | undefined;
 
 function publicStorage(): R2ObjectStorage {
 	return (_publicStorage ??= new R2ObjectStorage("public"));
@@ -93,6 +94,10 @@ function privateStorage(): R2ObjectStorage {
 
 function auditLogger(): AuditLogger {
 	return (_auditLogger ??= makeDbAuditLogger());
+}
+
+function emailQueueRepo() {
+	return (_emailQueueRepo ??= makeDbEmailQueueRepo());
 }
 
 export const container = {
@@ -193,12 +198,12 @@ export const container = {
 	},
 
 	slipNotifier(): SlipNotifier {
-		return (_slipNotifier ??= new EmailSlipNotifier(db));
+		return (_slipNotifier ??= new EmailSlipNotifier(emailQueueRepo()));
 	},
 
 	courseCompletionNotifier(): CourseCompletionNotifier {
 		return (_courseCompletionNotifier ??= new EmailCourseCompletionNotifier(
-			db,
+			emailQueueRepo(),
 		));
 	},
 

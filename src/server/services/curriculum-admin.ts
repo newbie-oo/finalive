@@ -1,9 +1,6 @@
 import "server-only";
 import type { CurriculumModule } from "@/server/repos/curriculum-repo";
-import {
-	isForeignKeyViolation,
-	isUniqueViolation,
-} from "@/lib/pg-error";
+import { isForeignKeyViolation, isUniqueViolation } from "@/lib/pg-error";
 
 function classifyDbError(
 	err: unknown,
@@ -70,19 +67,6 @@ export interface VerifyError {
 }
 
 export interface CurriculumAdminService {
-	computeNextModuleSortOrder(courseId: string): Promise<number>;
-	computeNextLessonSortOrder(
-		courseId: string,
-		moduleId: string,
-	): Promise<number | null>;
-	verifyModuleInCourse(
-		moduleId: string,
-		courseId: string,
-	): Promise<VerifyResult | VerifyError>;
-	verifyLessonInCourse(
-		lessonId: string,
-		courseId: string,
-	): Promise<VerifyResult | VerifyError>;
 	createModule(
 		courseId: string,
 		title: string,
@@ -174,11 +158,6 @@ export function createCurriculumAdminService(
 	}
 
 	return {
-		computeNextModuleSortOrder,
-		computeNextLessonSortOrder,
-		verifyModuleInCourse,
-		verifyLessonInCourse,
-
 		async createModule(courseId, title, createdByUserId) {
 			const sortOrder = await computeNextModuleSortOrder(courseId);
 			const moduleId = await deps.createAdminModule({

@@ -2,7 +2,7 @@ import "server-only";
 import { getEnv } from "@/lib/env";
 import {
 	sendEmail,
-	type EmailQueueWriter,
+	type EmailQueueRepo,
 } from "@/server/repos/email-queue";
 import type { EmailPayload } from "@/server/email/templates";
 
@@ -54,9 +54,9 @@ export class EmailSlipNotifier implements SlipNotifier {
 		userId?: string | null,
 	) => Promise<string>;
 
-	constructor(writer: EmailQueueWriter) {
+	constructor(repo: EmailQueueRepo) {
 		this.send = (toEmail, payload, userId) =>
-			sendEmail(writer, toEmail, payload, userId);
+			sendEmail(repo, toEmail, payload, userId);
 	}
 
 	async notifyStudentOfSlipReceipt(params: {

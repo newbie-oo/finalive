@@ -1,9 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { MarkdownView } from "@/lib/markdown";
 import { LessonClient } from "./lesson-client";
 import { NotesPanel } from "./notes-panel";
@@ -23,11 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CertificateClaim } from "./certificate-claim";
 import { LessonToc } from "./lesson-toc";
-
-/** Fraction of duration the student must watch before they can self-mark a
- * lesson complete. Below this they see a disabled button with a tooltip
- * explaining why; admins bypass it for QA. */
-const COMPLETE_THRESHOLD = 0.8;
+import { useLessonPlayer } from "@/hooks/use-lesson-player";
 
 export interface LessonPlayerLayoutProps {
 	lessonId: string;
@@ -41,8 +34,6 @@ export interface LessonPlayerLayoutProps {
 	nextLessonId: string | null;
 	prevLessonId: string | null;
 	quizId: string | null;
-	/** Watched-seconds snapshot from the server. Used to gate the "mark
-	 * complete" button until the student has watched enough of the lesson. */
 	watchedSeconds?: number;
 	isAdmin?: boolean;
 	isCompleted?: boolean;
@@ -66,43 +57,14 @@ export function LessonPlayerLayout({
 	isCompleted = false,
 	playerSlot,
 }: LessonPlayerLayoutProps) {
-	const router = useRouter();
-	const [activeTab, setActiveTab] = useState<"content" | "notes" | "qna">(
-		"content",
-	);
-	const [localCompleted, setLocalCompleted] = useState(false);
-	const completed = localCompleted || isCompleted;
-
-	const watchThresholdMet =
-		!durationSeconds ||
-		durationSeconds <= 0 ||
-		watchedSeconds >= durationSeconds * COMPLETE_THRESHOLD;
-	const canMarkComplete = isAdmin || watchThresholdMet;
-
-	const handleMarkComplete = useCallback(async () => {
-		if (isAdmin) {
-			toast.info("admin preview — ไม่บันทึกความคืบหน้า");
-			return;
-		}
-		try {
-			const res = await fetch("/api/learn/progress", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({
-					lessonId,
-					watchedSeconds: durationSeconds ?? 0,
-					markComplete: true,
-					durationSeconds: durationSeconds ?? undefined,
-				}),
-			});
-			if (!res.ok) throw new Error("failed");
-			setLocalCompleted(true);
-			toast.success("จบบทเรียนแล้ว");
-			router.refresh();
-		} catch {
-			toast.error("บันทึกไม่สำเร็จ");
-		}
-	}, [isAdmin, lessonId, durationSeconds, router]);
+	const { activeTab, setActiveTab, completed, canMarkComplete, markComplete } =
+		useLessonPlayer({
+			lessonId,
+			durationSeconds,
+			watchedSeconds,
+			isAdmin,
+			isCompleted,
+		});
 
 	return (
 		<>
@@ -148,7 +110,7 @@ export function LessonPlayerLayout({
 						<MarkCompleteButton
 							completed={completed}
 							canMarkComplete={canMarkComplete}
-							onClick={handleMarkComplete}
+							onClick={markComplete}
 						/>
 					</div>
 				</div>
@@ -290,15 +252,10 @@ function MarkCompleteButton({
 		</Button>
 	);
 
-	// When the button is gated by watch progress, wrap in a Tooltip explaining
-	// the requirement — keeps the disabled control discoverable. The
-	// already-completed state has its own clear label so it doesn't need one.
 	if (!completed && !canMarkComplete) {
 		return (
 			<Tooltip>
 				<TooltipTrigger asChild>
-					{/* span needed because disabled buttons swallow pointer events
-					    that the tooltip listens to. */}
 					<span tabIndex={0}>{button}</span>
 				</TooltipTrigger>
 				<TooltipContent side="bottom">

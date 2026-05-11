@@ -10,84 +10,13 @@ import {
 	type RateLimitConfig,
 } from "@/lib/rate-limit";
 
-function checkRateLimitOrThrow(
-	req: NextRequest,
-	config: RateLimitConfig | undefined,
-	_rid: string,
-): void {
-	if (!config) return;
-	const ip = getClientIP(req);
-	const result = checkRateLimit(ip, req.url, config);
-	if (!result.allowed) {
-		throw new ApiError(
-			"rate_limited",
-			`Rate limit exceeded. Retry after ${result.resetAt}.`,
-		);
-	}
-}
+/* ─── Shared utilities ─── */
 
-/** Auth requirement for an API route. */
-export type ApiAuth = "required" | "admin";
-
-/** User context injected by the wrapper after auth. */
-export interface ApiUser {
-	id: string;
-	email: string;
-	role?: string;
-}
-
-interface ApiRouteOptions<
-	TBody = unknown,
-	TQuery extends Record<string, unknown> = Record<string, unknown>,
-	TResponse = unknown,
-> {
-	/** Auth requirement. Omit for public routes. */
-	auth?: ApiAuth;
-	/** Rate-limit config. Checked before auth to avoid burning session lookups. */
-	rateLimit?: RateLimitConfig;
-	/** Zod schema for JSON body. Omit for routes that don't parse JSON. */
-	body?: z.ZodSchema<TBody>;
-	/** Zod schema for query params. Omit for routes without query validation. */
-	query?: z.ZodType<TQuery, z.ZodTypeDef, unknown>;
-	/**
-	 * Business logic handler. Receives parsed input and user context.
-	 * Return a JSON-serializable object or a NextResponse for full control.
-	 */
-	handler: (ctx: {
-		req: NextRequest;
-		user: ApiUser | undefined;
-		body: TBody;
-		query: TQuery;
-	}) => Promise<TResponse | NextResponse> | TResponse | NextResponse;
-}
-
-interface ApiRouteRawOptions<
-	TQuery extends Record<string, unknown> = Record<string, unknown>,
-	TResponse = unknown,
-> {
-	/** Auth requirement. Omit for public routes. */
-	auth?: ApiAuth;
-	/** Rate-limit config. Checked before auth to avoid burning session lookups. */
-	rateLimit?: RateLimitConfig;
-	/** Zod schema for query params. Omit for routes without query validation. */
-	query?: z.ZodType<TQuery, z.ZodTypeDef, unknown>;
-	/**
-	 * Business logic handler. Receives the raw request and user context.
-	 * The handler is responsible for parsing its own body (FormData, etc.).
-	 * Return a JSON-serializable object or a NextResponse for full control.
-	 */
-	handler: (ctx: {
-		req: NextRequest;
-		user: ApiUser | undefined;
-		query: TQuery;
-	}) => Promise<TResponse | NextResponse> | TResponse | NextResponse;
-}
-
-function requestId(): string {
+export function requestId(): string {
 	return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function errorResponse(
+export function errorResponse(
 	code: string,
 	message: string,
 	status: number,
@@ -96,50 +25,14 @@ function errorResponse(
 	return NextResponse.json({ code, message, request_id: rid }, { status });
 }
 
-async function resolveAuth(
-	auth: ApiAuth | undefined,
-): Promise<ApiUser | undefined> {
-	if (auth === "admin") {
-		const s = await requireRoleThrow("admin");
-		return s.user;
-	}
-	if (auth === "required") {
-		const s = await requireSessionThrow();
-		return s.user;
-	}
-	return undefined;
-}
-
-function resolveQuery<TQuery extends Record<string, unknown>>(
-	req: NextRequest,
-	schema: z.ZodType<TQuery, z.ZodTypeDef, unknown> | undefined,
-	rid: string,
-): { ok: true; data: TQuery } | { ok: false; response: NextResponse } {
-	if (!schema) return { ok: true, data: {} as TQuery };
-	const url = new URL(req.url);
-	const parsed = schema.safeParse(Object.fromEntries(url.searchParams));
-	if (!parsed.success) {
-		return {
-			ok: false,
-			response: errorResponse(
-				"validation_failed",
-				parsed.error.errors[0]?.message ?? "invalid query",
-				400,
-				rid,
-			),
-		};
-	}
-	return { ok: true, data: parsed.data };
-}
-
-function wrapResult<T>(result: T | NextResponse): NextResponse {
+export function wrapResult<T>(result: T | NextResponse): NextResponse {
 	if (result instanceof NextResponse) {
 		return result;
 	}
 	return NextResponse.json(result);
 }
 
-function handleApiError(e: unknown, rid: string): NextResponse {
+export function handleApiError(e: unknown, rid: string): NextResponse {
 	if (e instanceof ApiError) {
 		return NextResponse.json(
 			{ code: e.code, message: e.message, request_id: rid },
@@ -163,24 +56,182 @@ function handleApiError(e: unknown, rid: string): NextResponse {
 	);
 }
 
+/* ─── Middleware primitives ─── */
+
+/** Auth requirement for an API route. */
+export type ApiAuth = "required" | "admin";
+
+/** User context injected by the wrapper after auth. */
+export interface ApiUser {
+	id: string;
+	email: string;
+	role?: string;
+}
+
+export async function resolveAuth(
+	auth: ApiAuth | undefined,
+): Promise<ApiUser | undefined> {
+	if (auth === "admin") {
+		const s = await requireRoleThrow("admin");
+		return s.user;
+	}
+	if (auth === "required") {
+		const s = await requireSessionThrow();
+		return s.user;
+	}
+	return undefined;
+}
+
+export function checkRateLimitOrThrow(
+	req: NextRequest,
+	config: RateLimitConfig | undefined,
+	_rid: string,
+): void {
+	if (!config) return;
+	const ip = getClientIP(req);
+	const result = checkRateLimit(ip, req.url, config);
+	if (!result.allowed) {
+		throw new ApiError(
+			"rate_limited",
+			`Rate limit exceeded. Retry after ${result.resetAt}.`,
+		);
+	}
+}
+
+export function resolveQuery<TQuery extends Record<string, unknown>>(
+	req: NextRequest,
+	schema: z.ZodType<TQuery, z.ZodTypeDef, unknown> | undefined,
+	rid: string,
+): { ok: true; data: TQuery } | { ok: false; response: NextResponse } {
+	if (!schema) return { ok: true, data: {} as TQuery };
+	const url = new URL(req.url);
+	const parsed = schema.safeParse(Object.fromEntries(url.searchParams));
+	if (!parsed.success) {
+		return {
+			ok: false,
+			response: errorResponse(
+				"validation_failed",
+				parsed.error.errors[0]?.message ?? "invalid query",
+				400,
+				rid,
+			),
+		};
+	}
+	return { ok: true, data: parsed.data };
+}
+
+export async function resolveBody<TBody>(
+	req: NextRequest,
+	schema: z.ZodSchema<TBody>,
+	rid: string,
+): Promise<{ ok: true; data: TBody } | { ok: false; response: NextResponse }> {
+	let raw: unknown;
+	try {
+		raw = await req.json();
+	} catch {
+		return {
+			ok: false,
+			response: errorResponse(
+				"validation_failed",
+				"invalid JSON body",
+				400,
+				rid,
+			),
+		};
+	}
+	const parsed = schema.safeParse(raw);
+	if (!parsed.success) {
+		return {
+			ok: false,
+			response: errorResponse(
+				"validation_failed",
+				parsed.error.errors[0]?.message ?? "invalid body",
+				400,
+				rid,
+			),
+		};
+	}
+	return { ok: true, data: parsed.data };
+}
+
+/* ─── Pipeline builder ─── */
+
+interface PipelineCtx<
+	TBody = unknown,
+	TQuery extends Record<string, unknown> = Record<string, unknown>,
+> {
+	req: NextRequest;
+	user: ApiUser | undefined;
+	body: TBody;
+	query: TQuery;
+}
+
+interface PipelineOptions<
+	TBody = unknown,
+	TQuery extends Record<string, unknown> = Record<string, unknown>,
+> {
+	auth?: ApiAuth;
+	rateLimit?: RateLimitConfig;
+	body?: z.ZodSchema<TBody>;
+	query?: z.ZodType<TQuery, z.ZodTypeDef, unknown>;
+}
+
+/**
+ * Build the common API pipeline: rate-limit → auth → query → body (optional).
+ * Returns the populated context or an error response.
+ */
+export async function buildPipeline<
+	TBody = unknown,
+	TQuery extends Record<string, unknown> = Record<string, unknown>,
+>(
+	req: NextRequest,
+	options: PipelineOptions<TBody, TQuery>,
+	rid: string,
+): Promise<
+	{ ok: true; ctx: PipelineCtx<TBody, TQuery> } | { ok: false; response: NextResponse }
+> {
+	try {
+		checkRateLimitOrThrow(req, options.rateLimit, rid);
+		const user = await resolveAuth(options.auth);
+
+		const qResult = resolveQuery(req, options.query, rid);
+		if (!qResult.ok) return qResult;
+
+		let body = {} as TBody;
+		if (options.body) {
+			const bResult = await resolveBody(req, options.body, rid);
+			if (!bResult.ok) return bResult;
+			body = bResult.data;
+		}
+
+		return { ok: true, ctx: { req, user, body, query: qResult.data } };
+	} catch (e: unknown) {
+		return { ok: false, response: handleApiError(e, rid) };
+	}
+}
+
+/* ─── Route wrappers ─── */
+
+interface ApiRouteOptions<
+	TBody = unknown,
+	TQuery extends Record<string, unknown> = Record<string, unknown>,
+	TResponse = unknown,
+> extends PipelineOptions<TBody, TQuery> {
+	handler: (ctx: PipelineCtx<TBody, TQuery>) =>
+		Promise<TResponse | NextResponse> | TResponse | NextResponse;
+}
+
+interface ApiRouteRawOptions<
+	TQuery extends Record<string, unknown> = Record<string, unknown>,
+	TResponse = unknown,
+> extends Omit<PipelineOptions<never, TQuery>, "body"> {
+	handler: (ctx: Omit<PipelineCtx<never, TQuery>, "body">) =>
+		Promise<TResponse | NextResponse> | TResponse | NextResponse;
+}
+
 /**
  * Declarative API route wrapper that handles auth, validation, and error
  * formatting so handlers focus purely on business logic.
- *
- * **Return value contract:**
- * - Returning a plain object → wrapped in `NextResponse.json()` with standard
- *   headers and request_id injection.
- * - Returning `NextResponse` directly → passed through unchanged. This escape
- *   hatch is intentional for routes that need custom response shapes
- *   (redirects, raw binary, streaming). Use it sparingly — most routes should
- *   return plain objects so cross-cutting concerns are handled uniformly.
- *
- * Usage:
- *   const POST = apiRoute({
- *     auth: "required",
- *     body: z.object({ lessonId: z.string().uuid() }),
- *     handler: async ({ body, user }) => { … }
- *   });
  */
 export function apiRoute<
 	TBody = unknown,
@@ -189,41 +240,11 @@ export function apiRoute<
 >(options: ApiRouteOptions<TBody, TQuery, TResponse>) {
 	return async (req: NextRequest): Promise<NextResponse> => {
 		const rid = requestId();
+		const pipe = await buildPipeline<TBody, TQuery>(req, options, rid);
+		if (!pipe.ok) return pipe.response;
+
 		try {
-			checkRateLimitOrThrow(req, options.rateLimit, rid);
-			const user = await resolveAuth(options.auth);
-
-			const qResult = resolveQuery(req, options.query, rid);
-			if (!qResult.ok) return qResult.response;
-			const query = qResult.data;
-
-			// ── Body parsing ──
-			let body = {} as TBody;
-			if (options.body) {
-				let raw: unknown;
-				try {
-					raw = await req.json();
-				} catch {
-					return errorResponse(
-						"validation_failed",
-						"invalid JSON body",
-						400,
-						rid,
-					);
-				}
-				const parsed = options.body.safeParse(raw);
-				if (!parsed.success) {
-					return errorResponse(
-						"validation_failed",
-						parsed.error.errors[0]?.message ?? "invalid body",
-						400,
-						rid,
-					);
-				}
-				body = parsed.data;
-			}
-
-			const result = await options.handler({ req, user, body, query });
+			const result = await options.handler(pipe.ctx);
 			return wrapResult(result);
 		} catch (e: unknown) {
 			return handleApiError(e, rid);
@@ -234,18 +255,6 @@ export function apiRoute<
 /**
  * Variant of apiRoute for handlers that parse their own body
  * (e.g. FormData, multipart uploads). Skips JSON body parsing.
- *
- * **Return value contract:** same as `apiRoute` — plain objects are wrapped,
- * `NextResponse` is passed through.
- *
- * Usage:
- *   const POST = apiRouteRaw({
- *     auth: "required",
- *     handler: async ({ req, user }) => {
- *       const formData = await req.formData();
- *       …
- *     }
- *   });
  */
 export function apiRouteRaw<
 	TQuery extends Record<string, unknown> = Record<string, unknown>,
@@ -253,15 +262,16 @@ export function apiRouteRaw<
 >(options: ApiRouteRawOptions<TQuery, TResponse>) {
 	return async (req: NextRequest): Promise<NextResponse> => {
 		const rid = requestId();
+		const pipe = await buildPipeline<never, TQuery>(
+			req,
+			{ auth: options.auth, rateLimit: options.rateLimit, query: options.query },
+			rid,
+		);
+		if (!pipe.ok) return pipe.response;
+
 		try {
-			checkRateLimitOrThrow(req, options.rateLimit, rid);
-			const user = await resolveAuth(options.auth);
-
-			const qResult = resolveQuery(req, options.query, rid);
-			if (!qResult.ok) return qResult.response;
-			const query = qResult.data;
-
-			const result = await options.handler({ req, user, query });
+			const { body: _body, ...ctxNoBody } = pipe.ctx;
+			const result = await options.handler(ctxNoBody);
 			return wrapResult(result);
 		} catch (e: unknown) {
 			return handleApiError(e, rid);

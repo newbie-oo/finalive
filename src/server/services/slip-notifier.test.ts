@@ -12,9 +12,11 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import { EmailSlipNotifier } from "./slip-notifier";
-import type { EmailQueueWriter } from "@/server/repos/email-queue";
+import type { EmailQueueRepo } from "@/server/repos/email-queue";
 
-const fakeWriter = {} as EmailQueueWriter;
+const fakeRepo: EmailQueueRepo = {
+	recordEmail: vi.fn().mockResolvedValue({ id: "queued-id" }),
+};
 
 beforeEach(() => {
 	sendEmailMock.mockReset();
@@ -23,7 +25,7 @@ beforeEach(() => {
 
 describe("EmailSlipNotifier", () => {
 	it("notifies the student that a slip was received", async () => {
-		const notifier = new EmailSlipNotifier(fakeWriter);
+		const notifier = new EmailSlipNotifier(fakeRepo);
 
 		await notifier.notifyStudentOfSlipReceipt({
 			toEmail: "stu@example.com",
@@ -50,7 +52,7 @@ describe("EmailSlipNotifier", () => {
 	});
 
 	it("notifies the admin without a userId on the email job", async () => {
-		const notifier = new EmailSlipNotifier(fakeWriter);
+		const notifier = new EmailSlipNotifier(fakeRepo);
 
 		await notifier.notifyAdminOfNewSlip({
 			adminEmail: "admin@example.com",
@@ -77,7 +79,7 @@ describe("EmailSlipNotifier", () => {
 	});
 
 	it("strips the trailing slash from BETTER_AUTH_URL when building accept link context", async () => {
-		const notifier = new EmailSlipNotifier(fakeWriter);
+		const notifier = new EmailSlipNotifier(fakeRepo);
 
 		await notifier.notifyStudentOfSlipAcceptance({
 			toEmail: "stu@example.com",
@@ -95,7 +97,7 @@ describe("EmailSlipNotifier", () => {
 	});
 
 	it("forwards rejection reason and note verbatim", async () => {
-		const notifier = new EmailSlipNotifier(fakeWriter);
+		const notifier = new EmailSlipNotifier(fakeRepo);
 
 		await notifier.notifyStudentOfSlipRejection({
 			toEmail: "stu@example.com",
@@ -116,7 +118,7 @@ describe("EmailSlipNotifier", () => {
 	});
 
 	it("preserves null note", async () => {
-		const notifier = new EmailSlipNotifier(fakeWriter);
+		const notifier = new EmailSlipNotifier(fakeRepo);
 
 		await notifier.notifyStudentOfSlipRejection({
 			toEmail: "stu@example.com",
