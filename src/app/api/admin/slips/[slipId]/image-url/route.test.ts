@@ -25,8 +25,8 @@ vi.mock("@/server/auth-session", () => ({
 	requireRoleThrow,
 }));
 vi.mock("@/server/services/r2", () => ({ presignReadUrl }));
-vi.mock("@/server/payments/slip-repo", () => ({
-	SlipRepo: { getSlipImageMedia },
+vi.mock("@/server/repos/slip", () => ({
+	getSlipImageMedia,
 }));
 
 import { GET } from "./route";

@@ -1,4 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
+
+beforeAll(() => {
+  process.env.DATABASE_URL ??= "postgres://x:x@localhost:5432/x";
+});
 
 vi.mock("server-only", () => ({}));
 
@@ -14,7 +18,7 @@ const { SlipReviewService } = await import("./slip-review-service");
 const {
 	SlipAlreadyReviewedError,
 	EnrollmentAlreadyActiveError,
-} = await import("./repo-errors");
+} = await import("@/server/repos/slip-repo-errors");
 
 // --- helpers ------------------------------------------------------------------
 

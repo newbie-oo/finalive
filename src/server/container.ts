@@ -12,7 +12,7 @@ import { FreeEnrollmentService } from "@/server/services/free-enrollment";
 import { CourseGrantService } from "@/server/services/course-grant";
 import { SlipReviewService } from "@/server/payments/slip-review-service";
 import { SlipUploadService } from "@/server/payments/slip-upload-service";
-import { SlipRepo } from "@/server/payments/slip-repo";
+import * as SlipRepo from "@/server/repos/slip";
 import {
 	EmailSlipNotifier,
 	type SlipNotifier,
@@ -131,7 +131,11 @@ export const container = {
 
 	slipReview(): SlipReviewService {
 		return (_slipReview ??= new SlipReviewService({
-			repo: SlipRepo,
+			repo: {
+				loadForReview: SlipRepo.loadSlipForReview,
+				runAcceptTx: SlipRepo.runAcceptTx,
+				runRejectTx: SlipRepo.runRejectTx,
+			},
 			notifier: this.slipNotifier(),
 			auditLogger: auditLogger(),
 		}));
@@ -139,7 +143,13 @@ export const container = {
 
 	slipUpload(): SlipUploadService {
 		return (_slipUpload ??= new SlipUploadService({
-			repo: SlipRepo,
+			repo: {
+				countSlipsForPending: SlipRepo.countSlipsForPending,
+				loadPending: SlipRepo.loadPending,
+				loadCourseInfo: SlipRepo.loadCourseInfo,
+				reserveMediaAsset: SlipRepo.reserveMediaAsset,
+				finalizeUploadTx: SlipRepo.finalizeUploadTx,
+			},
 			storage: privateStorage(),
 			notifier: this.slipNotifier(),
 			auditLogger: auditLogger(),

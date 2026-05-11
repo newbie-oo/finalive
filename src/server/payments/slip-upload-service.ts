@@ -8,7 +8,7 @@ import { withIdempotency } from "@/server/repos/idempotency";
 import type { ObjectStorage } from "@/server/services/storage";
 import type { SlipNotifier } from "@/server/services/slip-notifier";
 import type { AuditLogger } from "@/server/services/audit";
-import type { SlipUploadRepo } from "./slip-repo";
+import type * as SlipRepo from "@/server/repos/slip";
 
 export interface UploadSlipInput {
 	pendingId: string;
@@ -43,6 +43,15 @@ const extByMime: Record<
 	"image/heic": "heic",
 	"application/pdf": "pdf",
 };
+
+/** Narrow interface: only the SlipRepo methods the upload service needs. */
+export interface SlipUploadRepo {
+	countSlipsForPending: typeof SlipRepo.countSlipsForPending;
+	loadPending: typeof SlipRepo.loadPending;
+	loadCourseInfo: typeof SlipRepo.loadCourseInfo;
+	reserveMediaAsset: typeof SlipRepo.reserveMediaAsset;
+	finalizeUploadTx: typeof SlipRepo.finalizeUploadTx;
+}
 
 export interface SlipUploadServiceDeps {
 	repo: SlipUploadRepo;

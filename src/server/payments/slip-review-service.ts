@@ -10,8 +10,16 @@ import type { AuditLogger } from "@/server/services/audit";
 import {
 	EnrollmentAlreadyActiveError,
 	SlipAlreadyReviewedError,
-} from "./repo-errors";
-import type { SlipReviewRepo, SlipReviewRow } from "./slip-repo";
+} from "@/server/repos/slip-repo-errors";
+import type * as SlipRepo from "@/server/repos/slip";
+import type { SlipReviewRow } from "@/server/repos/slip";
+
+/** Narrow interface: only the SlipRepo methods the review service needs. */
+export interface SlipReviewRepo {
+	loadForReview: typeof SlipRepo.loadSlipForReview;
+	runAcceptTx: typeof SlipRepo.runAcceptTx;
+	runRejectTx: typeof SlipRepo.runRejectTx;
+}
 
 export interface RejectSlipInput {
 	slipId: string;
