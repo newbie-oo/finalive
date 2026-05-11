@@ -1,8 +1,13 @@
 import "server-only";
 import { db } from "@/db/client";
 import { emailMessage } from "@/db/schema/audit";
-import { dispatchEmail } from "@/server/email/dispatch";
-import type { EmailPayload } from "@/server/email/templates";
+import { dispatchEmail } from "@/server/email/template-registry";
+import "@/server/email/register-all";
+
+export interface EmailPayload {
+	template: string;
+	params: Record<string, unknown>;
+}
 import { logger } from "@/lib/logger";
 
 /** Runtime template names (kept for DB-layer compatibility). */

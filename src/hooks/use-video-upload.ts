@@ -118,9 +118,7 @@ export function useVideoUpload({
 					!body.uploadUrl ||
 					!body.apiKey
 				) {
-					throw new Error(
-						body.message || `สร้างวิดีโอล้มเหลว (${res.status})`,
-					);
+					throw new Error(body.message || `สร้างวิดีโอล้มเหลว (${res.status})`);
 				}
 				config = {
 					bunnyVideoId: body.bunnyVideoId,
@@ -129,8 +127,7 @@ export function useVideoUpload({
 				};
 				currentConfigRef.current = config;
 			} catch (err) {
-				const msg =
-					err instanceof Error ? err.message : "สร้างวิดีโอล้มเหลว";
+				const msg = err instanceof Error ? err.message : "สร้างวิดีโอล้มเหลว";
 				setPhase("error");
 				setError(msg);
 				toast.error(msg);
@@ -178,9 +175,7 @@ export function useVideoUpload({
 					setPhase("done");
 					setError(null);
 					setBunnyVideoId(config.bunnyVideoId);
-					toast.success(
-						"อัปโหลดเสร็จแล้ว วิดีโอกำลังเข้ารหัสที่ Bunny (1–5 นาที)",
-					);
+					toast.success("อัปโหลดเสร็จแล้ว วิดีโอกำลังเข้ารหัสที่ Bunny (1–5 นาที)");
 					onUploadComplete?.();
 					return;
 				}
