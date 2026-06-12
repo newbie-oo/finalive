@@ -6,6 +6,10 @@ import {
 	updateAdminCourse,
 } from "@/server/repos/admin-course";
 import {
+	normalizeCoursePrice,
+	normalizeCoursePriceRequired,
+} from "@/server/services/course-price";
+import {
 	adminAction,
 	adminCourseAction,
 	formDataParser,
@@ -37,14 +41,18 @@ const createSchema = z.object({
 export const createCourseAction = adminAction(
 	jsonParser(createSchema),
 	async ({ session, input }) => {
+		const { price, isFree } = normalizeCoursePriceRequired({
+			price: input.price ?? "0.00",
+			isFree: input.isFree,
+		});
 		const courseId = await createAdminCourse({
 			slug: input.slug,
 			title: input.title,
 			summary: input.summary,
 			descriptionMd: input.description || undefined,
 			coverMediaId: input.coverMediaId || undefined,
-			isFree: input.isFree,
-			price: input.price ?? "0.00",
+			isFree,
+			price,
 			ownerUserId: session.user.id,
 		});
 		revalidateCourseAdminPaths(courseId);
@@ -75,12 +83,16 @@ export const updateCourseAction = adminCourseAction(
 	(input) => input.courseId,
 	async ({ course, input }) => {
 		const { courseId: _, ...updates } = input;
+		const normalised = normalizeCoursePrice({
+			price: updates.price,
+			isFree: updates.isFree,
+		});
 		await updateAdminCourse(course.id, {
 			...(updates.slug !== undefined && { slug: updates.slug }),
 			...(updates.title !== undefined && { title: updates.title }),
 			...(updates.summary !== undefined && { summary: updates.summary }),
-			...(updates.price !== undefined && { price: updates.price }),
-			...(updates.isFree !== undefined && { isFree: updates.isFree }),
+			...(normalised.price !== undefined && { price: normalised.price }),
+			...(normalised.isFree !== undefined && { isFree: normalised.isFree }),
 			...(updates.status !== undefined && { status: updates.status }),
 		});
 

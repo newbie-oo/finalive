@@ -9,10 +9,6 @@ import {
 } from "@/db/schema/course";
 import { enrollment } from "@/db/schema/enrollment";
 import { enrollmentCountSubq } from "./course-queries";
-import {
-	normalizeCoursePrice,
-	normalizeCoursePriceRequired,
-} from "@/server/services/course-price";
 
 export interface AdminCourseListItem {
 	id: string;
@@ -123,10 +119,6 @@ export async function createAdminCourse(input: {
 	isFree: boolean;
 	ownerUserId: string;
 }) {
-	const { price, isFree } = normalizeCoursePriceRequired({
-		price: input.price,
-		isFree: input.isFree,
-	});
 	const [row] = await db
 		.insert(course)
 		.values({
@@ -135,8 +127,8 @@ export async function createAdminCourse(input: {
 			summary: input.summary,
 			descriptionMd: input.descriptionMd,
 			coverMediaId: input.coverMediaId,
-			price,
-			isFree,
+			price: input.price,
+			isFree: input.isFree,
 			ownerUserId: input.ownerUserId,
 			createdByUserId: input.ownerUserId,
 			status: "draft",
@@ -158,18 +150,8 @@ export async function updateAdminCourse(
 		coverMediaId?: string | null;
 	},
 ) {
-	const normalised = normalizeCoursePrice({
-		price: input.price,
-		isFree: input.isFree,
-	});
-	const updates: typeof input = {
-		...input,
-		...(normalised.price !== undefined ? { price: normalised.price } : {}),
-		...(normalised.isFree !== undefined ? { isFree: normalised.isFree } : {}),
-	};
-
 	await db
 		.update(course)
-		.set({ ...updates, updatedAt: new Date() })
+		.set({ ...input, updatedAt: new Date() })
 		.where(eq(course.id, courseId));
 }
