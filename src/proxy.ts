@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
 // Defense-in-depth: fast cookie presence check before page render.
 // Pages and API routes enforce their own authorization; this proxy
@@ -22,9 +23,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasSessionCookie =
-    request.cookies.has("better-auth.session_token") ||
-    request.cookies.has("session_token");
+  // Use Better Auth's helper so the `__Secure-` cookie prefix added on HTTPS
+  // (production) is handled automatically. A manual `cookies.has("better-auth
+  // .session_token")` check misses `__Secure-better-auth.session_token` and
+  // would treat every logged-in user as anonymous on prod.
+  const hasSessionCookie = getSessionCookie(request) != null;
 
   if (!hasSessionCookie) {
     if (
